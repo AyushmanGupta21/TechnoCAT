@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --orange: #f26b23;
+  --orange-dark: #d15a2b;
+  --orange-hover: #e86a3a;
+  --whatsapp: #075e54;
+  --black: #000000;
+  --navy: #0E0F13;
+  --navy-dark: #13225B;
+  --white: #ffffff;
+  --yellow: #f6b200;
+  --yellow-light: #FFFCA3;
+  --hero-bg: linear-gradient(180deg, #E3F0FC 0%, #D9E2F3 100%);
+  --card-glass: linear-gradient(134deg, rgba(255,255,255,0.64) 11.27%, rgba(233,243,253,0.64) 85.1%);
+  --section-radial: radial-gradient(49.23% 49.23% at 41.96% 55.22%, #FFFFFF 0%, #B1BDCF 100%);
+  --app-section: linear-gradient(180deg, #FFF4DF 0%, #AAD4FE 100%);
+  --feedback-bg: #D9E2F3;
+  --comparison-bg: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #f5f0ff 100%);
+}
+
+html, body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #000;
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { text-decoration: none; color: inherit; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; }
+img { max-width: 100%; display: block; }
+ul { list-style: none; }
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Custom scrollbar for carousels */
+.scrollbar-ipmat::-webkit-scrollbar { height: 4px; }
+.scrollbar-ipmat::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.scrollbar-ipmat::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+/* Pulse animation */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+/* Bebas Neue for headings */
+.bebas { font-family: 'Bebas Neue', sans-serif; }
+
+/* Max width container */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Utility */
+.min-h-screen { min-height: 100vh; }
+.bg-black { background-color: #000; }
+.text-white { color: #fff; }
+.text-black { color: #000; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Section spacing */
+section { width: 100%; }
