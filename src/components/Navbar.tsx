@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
+  const { user, openAuthModal } = useAuth();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -125,7 +127,18 @@ export default function Navbar() {
             </div>
 
             <div className={styles.navActions}>
-              <button className={styles.loginBtn}>Login</button>
+              {user && !user.isGuest ? (
+                <a href="/dashboard" className={styles.loginBtn}>Dashboard</a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signin")}
+                  className={styles.loginBtn}
+                  style={{ border: "none", cursor: "pointer", font: "inherit" }}
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,1420 @@
+/* ===== TOPIC DETAIL PAGE STYLES ===== */
+.pageWrapper {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: #F4F6F9;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #111827;
+  position: relative;
+}
+
+/* ===== DARK UPPER HEADER ===== */
+.darkHeader {
+  background: #0E0F13;
+  color: #fff;
+  padding-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+}
+
+.headerInner {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* Top Navigation Bar */
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.logoTechno {
+  color: #ffffff;
+}
+
+.logoCAT {
+  color: #ED1C24;
+}
+
+.navLinks {
+  display: none;
+  align-items: center;
+  gap: 28px;
+}
+
+@media (min-width: 768px) {
+  .navLinks {
+    display: flex;
+  }
+}
+
+.navLink {
+  color: #9CA3AF;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  padding: 8px 0;
+}
+
+.navLink:hover {
+  color: #fff;
+}
+
+.navLinkActive {
+  color: #fff;
+  font-weight: 600;
+}
+
+.navLinkActive::after {
+  content: '';
+  position: absolute;
+  bottom: -19px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #ED1C24;
+  border-radius: 3px 3px 0 0;
+}
+
+.dropdownChevron {
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+}
+
+/* Right Nav Controls */
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.userPill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px 4px 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 11px;
+  color: #9CA3AF;
+  line-height: 1.2;
+}
+
+/* ===== SUBHEADER: BREADCRUMBS & TOPIC TITLE ===== */
+.subHeader {
+  width: 100%;
+  max-width: 1320px;
+  margin: 24px auto 18px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.breadcrumbLink {
+  color: #6B7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumbLink:hover {
+  color: #ED1C24;
+}
+
+.breadcrumbSep {
+  color: #9CA3AF;
+  font-size: 13px;
+}
+
+.breadcrumbCurrent {
+  color: #111827;
+  font-weight: 600;
+}
+
+.topicMainTitle {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+  word-break: break-word;
+}
+
+/* ===== MAIN 2-COLUMN LAYOUT ===== */
+.mainContainer {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto 80px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .mainContainer {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .mainContainer {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 28px;
+  }
+}
+
+@media (min-width: 1360px) {
+  .mainContainer {
+    grid-template-columns: minmax(0, 1fr) 410px;
+    gap: 32px;
+  }
+}
+
+/* ===================================================
+   LEFT COLUMN: VIDEO PLAYER & DETAILS
+   =================================================== */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Video Player Frame with YouTube Embed */
+.playerCard {
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.youtubeIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Custom TechnoCAT Player Controls Bar */
+.controlsBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(10, 11, 15, 0.4) 25%,
+    rgba(10, 11, 15, 0.92) 100%
+  );
+  padding: 24px 18px 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  user-select: none;
+}
+
+.controlsBarHidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+}
+
+.controlsBarVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Custom Interactive Scrubber / Progress Bar */
+.scrubberContainer {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.scrubberRail {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: height 0.15s ease;
+  overflow: visible;
+}
+
+.scrubberContainer:hover .scrubberRail {
+  height: 7px;
+}
+
+/* Highlighted segment for watched portion (maxWatchedTime) */
+.scrubberWatched {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(237, 28, 36, 0.38);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Bright red segment for current play position */
+.scrubberProgress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #ED1C24;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Scrubbing Handle / Thumb Knob */
+.scrubberThumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ED1C24;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 8px rgba(237, 28, 36, 0.9), 0 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease;
+}
+
+.scrubberContainer:hover .scrubberThumb {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Hover timestamp preview pill */
+.scrubberHoverPill {
+  position: absolute;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.96);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scrubberHoverLocked {
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Forward seek restriction warning banner */
+.seekWarningTooltip {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(24, 24, 32, 0.96);
+  border: 1px solid rgba(237, 28, 36, 0.7);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(237, 28, 36, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 30;
+  animation: fadeInSlideUp 0.25s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Controls row below scrubber */
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.controlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Control Icon Buttons */
+.ctrlBtn {
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.ctrlBtn:hover {
+  color: #ED1C24;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.08);
+}
+
+.ctrlPlayBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ED1C24;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(237, 28, 36, 0.4);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.ctrlPlayBtn:hover {
+  transform: scale(1.1);
+  background: #ff2a33;
+}
+
+/* Rewind 10s Button */
+.rewindBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #E5E7EB;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rewindBtn:hover {
+  background: rgba(237, 28, 36, 0.2);
+  border-color: rgba(237, 28, 36, 0.5);
+  color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+/* Time Indicator */
+.timeDisplay {
+  font-size: 13px;
+  font-weight: 600;
+  color: #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+}
+
+.timeWatchedBadge {
+  background: rgba(237, 28, 36, 0.18);
+  border: 1px solid rgba(237, 28, 36, 0.4);
+  color: #FFA3A6;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* Volume Group */
+.volumeGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.volumeSlider {
+  width: 65px;
+  height: 4px;
+  accent-color: #ED1C24;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Playback Speed Button */
+.speedBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.speedBtn:hover {
+  background: #ED1C24;
+  border-color: #ED1C24;
+}
+
+/* Custom Player Facade (Hides YouTube overlays, Watch on YouTube & Share links) */
+.facadeWrapper {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+  user-select: none;
+}
+
+.facadeThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.facadeWrapper:hover .facadeThumbnail {
+  transform: scale(1.02);
+  filter: brightness(0.9);
+}
+
+.facadeOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.1) 60%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  pointer-events: none;
+}
+
+.facadeTopRow {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.facadeBadge {
+  background: #ED1C24;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.facadeModule {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.facadePlayBtn {
+  position: relative;
+  z-index: 2;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #ED1C24;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(237, 28, 36, 0.5);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  padding-left: 4px;
+}
+
+.facadeWrapper:hover .facadePlayBtn {
+  transform: scale(1.1);
+  background: #ff2a33;
+  box-shadow: 0 10px 30px rgba(237, 28, 36, 0.7);
+}
+
+.facadeBottomRow {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.facadeTitle {
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.facadeDuration {
+  background: rgba(0, 0, 0, 0.65);
+  color: #E5E7EB;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Custom TechnoCAT Pause Screen (Clean centered indicator, controls bar remains accessible) */
+.pauseOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 11, 15, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease-out;
+  user-select: none;
+  padding-bottom: 50px;
+}
+
+.pauseBadge {
+  background: rgba(237, 28, 36, 0.15);
+  color: #ED1C24;
+  border: 1px solid rgba(237, 28, 36, 0.35);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pausePlayBtn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #ED1C24;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 26px rgba(237, 28, 36, 0.55);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  padding-left: 4px;
+}
+
+.pauseOverlay:hover .pausePlayBtn {
+  transform: scale(1.1);
+  background: #ff2a33;
+  box-shadow: 0 10px 32px rgba(237, 28, 36, 0.75);
+}
+
+.pauseTitle {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.4;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.pauseHint {
+  color: #9CA3AF;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Lesson Completed Overlay */
+.endedOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 11, 15, 0.92);
+  backdrop-filter: blur(8px);
+  z-index: 28;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  user-select: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.endedBadge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.endedTitle {
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.endedSubtitle {
+  color: #9CA3AF;
+  font-size: 14px;
+  max-width: 480px;
+}
+
+.endedActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rewatchBtn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rewatchBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nextLessonBtn {
+  background: #ED1C24;
+  border: none;
+  color: #FFFFFF;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(237, 28, 36, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nextLessonBtn:hover {
+  background: #ff2a33;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(237, 28, 36, 0.6);
+}
+
+/* Active Video Details Bar below player */
+.activeLessonBar {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 16px 20px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.activeLessonMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.codeBadge {
+  background: #FEF2F2;
+  color: #ED1C24;
+  border: 1px solid #FCA5A5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.quizTriggerPill {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.quizTriggerPill:hover {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.moduleTag {
+  background: #F3F4F6;
+  color: #4B5563;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.activeLessonTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.activeLessonCoverage {
+  font-size: 13px;
+  color: #6B7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.videoSourceTag {
+  font-size: 12px;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Instructor Row Card */
+.instructorCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 18px 24px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.instructorInfoLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mentorAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.mentorName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 3px 0;
+}
+
+.mentorTitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.instructorActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionCircleBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  color: #4B5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionCircleBtn:hover {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+  color: #ED1C24;
+}
+
+.actionCircleBtnActive {
+  background: #FEF2F2;
+  border-color: #ED1C24;
+  color: #ED1C24;
+}
+
+/* About Course Card */
+.aboutCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.sectionHeading {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 12px 0;
+}
+
+.aboutText {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #4B5563;
+  margin: 0 0 10px 0;
+}
+
+.showMoreBtn {
+  background: none;
+  border: none;
+  color: #ED1C24;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.suitsHeading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 20px 0 12px 0;
+}
+
+.suitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.5;
+}
+
+.bulletDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9CA3AF;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+/* ===================================================
+   RIGHT COLUMN: STUDY PROGRESS & LESSON COMPLETION
+   =================================================== */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Study Progress Card */
+.progressCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.progressCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.progressCardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.progressPercentBadge {
+  color: #ED1C24;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Stepped Milestone Track */
+.milestoneTrack {
+  position: relative;
+  margin: 24px 8px 32px;
+}
+
+.milestoneLineBg {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.milestoneLineFill {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 4px;
+  background: #ED1C24;
+  border-radius: 2px;
+  z-index: 2;
+  transition: width 0.3s;
+}
+
+.milestoneNodesRow {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  z-index: 3;
+}
+
+.milestoneNodeCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.milestoneDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid #D1D5DB;
+  transition: all 0.2s;
+}
+
+.milestoneDotFilled {
+  background: #ED1C24;
+  border-color: #ED1C24;
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.2);
+}
+
+.milestoneLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  margin-top: 8px;
+}
+
+.milestoneLabelActive {
+  color: #ED1C24;
+}
+
+/* Motivational Callout Box */
+.motivationalBox {
+  background: #F9FAFB;
+  border: 1px dashed #D1D5DB;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #4B5563;
+}
+
+/* Course Completion Card */
+.completionCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.completionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.completionTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.completionCount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6B7280;
+}
+
+/* Module Filter Tabs */
+.moduleFilterRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.moduleFilterChip {
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4B5563;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.moduleFilterChip:hover {
+  background: #E5E7EB;
+  color: #111827;
+}
+
+.moduleFilterChipActive {
+  background: #ED1C24;
+  border-color: #ED1C24;
+  color: #ffffff;
+}
+
+/* Lessons List with max-height and custom scrollbar */
+.lessonsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lessonsList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.lessonsList::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+.lessonItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #F9FAFB;
+  border: 1px solid #F3F4F6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lessonItem:hover {
+  background: #F3F4F6;
+  border-color: #E5E7EB;
+}
+
+.lessonItemActive {
+  background: #ED1C24 !important;
+  border-color: #ED1C24 !important;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(237, 28, 36, 0.25);
+}
+
+.lessonItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.lessonIconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #ED1C24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.lessonItemActive .lessonIconBox {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.lessonTextContainer {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lessonCodeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ED1C24;
+  letter-spacing: 0.02em;
+}
+
+.lessonItemActive .lessonCodeBadge {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lessonTitleText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1F2937;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.lessonItemActive .lessonTitleText {
+  color: #ffffff;
+}
+
+.lessonDurationText {
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 1px;
+}
+
+.lessonItemActive .lessonDurationText {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.checkCircleDone {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #10B981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
