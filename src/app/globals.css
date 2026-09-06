@@ -7,9 +7,12 @@
 }
 
 :root {
-  --orange: #f26b23;
-  --orange-dark: #d15a2b;
-  --orange-hover: #e86a3a;
+  --orange: #ED1C24;
+  --orange-dark: #C81016;
+  --orange-hover: #D32F2F;
+  --primary: #ED1C24;
+  --primary-dark: #C81016;
+  --primary-light: #FEE2E2;
   --whatsapp: #075e54;
   --black: #000000;
   --navy: #0E0F13;
@@ -17,12 +20,12 @@
   --white: #ffffff;
   --yellow: #f6b200;
   --yellow-light: #FFFCA3;
-  --hero-bg: linear-gradient(180deg, #E3F0FC 0%, #D9E2F3 100%);
-  --card-glass: linear-gradient(134deg, rgba(255,255,255,0.64) 11.27%, rgba(233,243,253,0.64) 85.1%);
-  --section-radial: radial-gradient(49.23% 49.23% at 41.96% 55.22%, #FFFFFF 0%, #B1BDCF 100%);
-  --app-section: linear-gradient(180deg, #FFF4DF 0%, #AAD4FE 100%);
-  --feedback-bg: #D9E2F3;
-  --comparison-bg: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #f5f0ff 100%);
+  --hero-bg: linear-gradient(180deg, #FFFFFF 0%, #F4F6F9 100%);
+  --card-glass: linear-gradient(134deg, rgba(255,255,255,0.85) 11.27%, rgba(245,246,248,0.85) 85.1%);
+  --section-radial: radial-gradient(49.23% 49.23% at 41.96% 55.22%, #FFFFFF 0%, #E2E8F0 100%);
+  --app-section: linear-gradient(180deg, #FFF5F5 0%, #F1F5F9 100%);
+  --feedback-bg: #F1F5F9;
+  --comparison-bg: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #FFFFFF 100%);
 }
 
 html, body {
@@ -76,3 +79,15 @@ ul { list-style: none; }
 
 /* Section spacing */
 section { width: 100%; }
+
+/* Mobile nav spacer: visible only on mobile, hidden on desktop */
+.mobile-nav-spacer {
+  height: 68px;
+  display: block;
+}
+@media (min-width: 1024px) {
+  .mobile-nav-spacer {
+    display: none !important;
+    height: 0 !important;
+  }
+}

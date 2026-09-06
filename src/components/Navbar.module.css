@@ -1,0 +1,307 @@
+/* ===== DESKTOP NAVBAR ===== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  transition: transform 0.3s;
+}
+
+@media (max-width: 1023px) {
+  .header { display: none; }
+}
+
+/* Top utility bar */
+.topBar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 3px 0;
+}
+.topBarInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.topBarLeft {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.whatsappBtn {
+  display: flex;
+  padding: 4px 8px;
+  align-items: center;
+  border-radius: 5px;
+  gap: 4px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 11px;
+  text-align: left;
+  background-color: #075e54;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+.whatsappBtn:hover { opacity: 0.9; }
+.whatsappIcon { width: 16px; height: 16px; }
+.whatsappSub { font-size: 9px; font-weight: 400; }
+
+.downloadAppBtn {
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: #fff;
+  background: #000;
+  text-align: left;
+  transition: background 0.2s;
+}
+.downloadAppBtn:hover { background: #222; }
+.downloadAppTitle { font-size: 14px; font-weight: 600; }
+
+.utilityLinks {
+  display: flex;
+  font-size: 12px;
+  color: #000;
+}
+.utilityLinks li {
+  border-right: 1px solid #ccc;
+  padding: 1px 14px;
+  cursor: pointer;
+}
+.utilityLinks li:last-child { border-right: none; }
+.utilityLinks li a:hover { text-decoration: underline; }
+
+/* Main nav */
+.mainNav {
+  background: #000;
+}
+.mainNavInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Text logo */
+.textLogo {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  user-select: none;
+  line-height: 1;
+}
+.textLogoTechno {
+  color: #ffffff;
+}
+.textLogoCAT {
+  color: #ED1C24;
+}
+.mobileLogoLink {
+  display: inline-flex;
+  align-items: center;
+}
+.logoLink { position: relative; }
+.logo { object-fit: contain; }
+.startupBadge { font-size: 10px; line-height: 1.2; color: #d1d5db; cursor: pointer; }
+.startupBadge:hover { color: #fff; }
+.recognisedBy { display: block; }
+.startupIndia { color: #f6b200; }
+
+.allCoursesBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  color: #000;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.allCoursesBtn:hover { background: #ED1C24; color: #fff; }
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.navItem { position: relative; }
+.navLinkBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  background: transparent;
+}
+.navLinkBtn:hover { color: #ED1C24; }
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.getPdfsBtn {
+  border: 1px solid #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  color: #fff;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s;
+}
+.getPdfsBtn:hover { background: #1f2937; }
+
+.callBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  background: #ED1C24;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.callBtn:hover { background: #C81016; }
+
+.loginBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.loginBtn:hover { background: #ED1C24; color: #fff; }
+
+/* ===== MOBILE NAVBAR ===== */
+.mobileNav {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  background: #fff;
+}
+@media (max-width: 1023px) {
+  .mobileNav { display: block; }
+}
+.mobileTopBar {
+  background: #075e54;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mobileWhatsappBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+.mobileGetPdfsBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 12px;
+  background: rgba(0,0,0,0.2);
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.mobileMainBar {
+  background: #000;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mobileNavLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mobileMenuBtn {
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+}
+.mobileLogo { height: 24px; }
+
+.mobileNavLeft .textLogo {
+  font-size: 18px;
+}
+.mobileNavRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mobileCoursesBtn {
+  background: #fff;
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.mobileJoinBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ED1C24;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Spacer for fixed navbar */
+.navSpacer {
+  height: 67px;
+}
+@media (min-width: 1024px) {
+  .navSpacer { height: 85px; }
+}

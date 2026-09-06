@@ -1,0 +1,100 @@
+.problemsSection {
+  background: radial-gradient(49.23% 49.23% at 41.96% 55.22%, #FFFFFF 0%, #B1BDCF 100%);
+  width: 100%;
+  padding: 32px 0;
+}
+
+@media (min-width: 640px) {
+  .problemsSection { padding: 64px 0; }
+}
+
+.keyFeaturesSection {
+  background: #fff;
+  width: 100%;
+  padding: 32px 0;
+}
+
+@media (min-width: 640px) {
+  .keyFeaturesSection { padding: 64px 0; }
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.heading {
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #000;
+  line-height: 1.25;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .heading { font-size: 2.6rem; }
+}
+
+.subHeading {
+  font-size: 0.9rem;
+  color: #5c5c80;
+  text-align: center;
+  line-height: 1.75;
+}
+
+@media (min-width: 640px) {
+  .subHeading { font-size: 1.1rem; }
+}
+
+.carouselOuter {
+  width: 100%;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.scrollContainer {
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.scrollContainer::-webkit-scrollbar { height: 4px; }
+.scrollContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.scrollContainer::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+.carousel {
+  display: flex;
+  gap: 8px;
+}
+
+.imgCard {
+  width: 300px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.featureCard {
+  width: 330px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardImg {
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+  object-fit: cover;
+  display: block;
+}

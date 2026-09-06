@@ -1,0 +1,203 @@
+.section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #FFF5F5 0%, #F1F5F9 100%);
+  padding: 32px 24px;
+}
+
+@media (min-width: 768px) {
+  .section { padding: 56px 64px; }
+}
+
+@media (min-width: 1024px) {
+  .section { padding: 56px 64px; }
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+  }
+}
+
+.leftCol {
+  width: 100%;
+  max-width: 512px;
+}
+
+@media (min-width: 1024px) {
+  .leftCol { width: 50%; }
+}
+
+/* Rating badge */
+.ratingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 9999px;
+  background: #000;
+  padding: 8px 16px;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.ratingItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .ratingItem { font-size: 12px; }
+}
+
+.storeIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.star { color: #facc15; }
+
+.divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* Heading */
+.heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  line-height: 46px;
+  letter-spacing: 0.05em;
+  color: #171717;
+}
+
+@media (min-width: 640px) {
+  .heading {
+    font-size: 4rem;
+    line-height: 1.05;
+  }
+}
+
+.inverted {
+  display: inline-block;
+  background: #ED1C24;
+  color: #fff;
+  padding: 0 8px;
+  border-radius: 4px;
+}
+
+/* Description */
+.description {
+  margin-top: 24px;
+  max-width: 448px;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #000;
+}
+
+@media (min-width: 768px) {
+  .description { font-size: 18px; }
+}
+
+/* Store buttons */
+.storeButtons {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .storeButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+.storeBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  background: #000;
+  padding: 10px 12px;
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.storeBtn:hover { background: #1f2937; }
+
+@media (min-width: 768px) {
+  .storeBtn { padding: 10px 20px; }
+}
+
+.storeBtnIcon {
+  width: 24px;
+  height: 24px;
+}
+
+@media (min-width: 768px) {
+  .storeBtnIcon { width: 32px; height: 32px; }
+}
+
+.storeBtnText {
+  text-align: left;
+  line-height: 1.25;
+}
+
+.storeSubLabel {
+  display: block;
+  font-size: 10px;
+  color: #d1d5db;
+}
+
+.storeMainLabel {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .storeMainLabel { font-size: 20px; }
+}
+
+/* Right: App image */
+.rightCol {
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .rightCol {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    width: 890px;
+    height: 600px;
+  }
+}
+
+.appImg {
+  width: 100%;
+  object-fit: contain;
+}
