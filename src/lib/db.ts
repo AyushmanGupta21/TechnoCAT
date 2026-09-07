@@ -43,7 +43,7 @@ function createPgPool(): Pool {
     host,
     port,
     user,
-    password: process.env.PGPASSWORD || "DebAyush@31",
+    password: process.env.PGPASSWORD || "KoJPbri8cQ5rAwtN",
     database: process.env.PGDATABASE || "postgres",
     ssl: { rejectUnauthorized: false },
     max: 10,

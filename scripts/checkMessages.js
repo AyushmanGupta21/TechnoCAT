@@ -4,7 +4,7 @@ const pool = new Pool({
   host: 'db.bcpisnqisnhiuxwhjuvo.supabase.co',
   port: 5432,
   user: 'postgres',
-  password: 'DebAyush@31',
+  password: 'KoJPbri8cQ5rAwtN',
   database: 'postgres',
   ssl: { rejectUnauthorized: false }
 });
