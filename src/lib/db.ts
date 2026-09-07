@@ -14,7 +14,7 @@ function createPgPool(): Pool {
     connectionString = connectionString
       .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co:5432", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
       .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
-      .replace("postgres:DebAyush", "postgres.bcpisnqisnhiuxwhjuvo:DebAyush");
+      .replace("://postgres:", "://postgres.bcpisnqisnhiuxwhjuvo:");
   }
 
   if (connectionString) {
