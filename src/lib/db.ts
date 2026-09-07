@@ -3,11 +3,46 @@ import { Pool } from "pg";
 // Create a single shared PostgreSQL connection pool for server-side routes
 let pool: Pool;
 
-if (!global._pgPool) {
-  global._pgPool = new Pool({
-    host: process.env.PGHOST || "db.bcpisnqisnhiuxwhjuvo.supabase.co",
-    port: parseInt(process.env.PGPORT || "5432", 10),
-    user: process.env.PGUSER || "postgres",
+// Helper function to resolve IPv4 pooler for Supabase in Vercel/serverless environments
+function createPgPool(): Pool {
+  let connectionString = process.env.DATABASE_URL;
+
+  // Supabase direct database host (db.<project>.supabase.co) is IPv6-only.
+  // Vercel serverless environments do not resolve IPv6 outbound, causing ENOTFOUND.
+  // We automatically route through the Supabase connection pooler in ap-southeast-1 with IPv4 support.
+  if (connectionString && connectionString.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
+    connectionString = connectionString
+      .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co:5432", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
+      .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
+      .replace("postgres:DebAyush", "postgres.bcpisnqisnhiuxwhjuvo:DebAyush");
+  }
+
+  if (connectionString) {
+    return new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+  }
+
+  let host = process.env.PGHOST || "aws-0-ap-southeast-1.pooler.supabase.com";
+  let port = parseInt(process.env.PGPORT || "6543", 10);
+  let user = process.env.PGUSER || "postgres.bcpisnqisnhiuxwhjuvo";
+
+  if (host.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
+    host = "aws-0-ap-southeast-1.pooler.supabase.com";
+    port = 6543;
+    if (user === "postgres") {
+      user = "postgres.bcpisnqisnhiuxwhjuvo";
+    }
+  }
+
+  return new Pool({
+    host,
+    port,
+    user,
     password: process.env.PGPASSWORD || "DebAyush@31",
     database: process.env.PGDATABASE || "postgres",
     ssl: { rejectUnauthorized: false },
@@ -15,6 +50,10 @@ if (!global._pgPool) {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
+}
+
+if (!global._pgPool) {
+  global._pgPool = createPgPool();
 }
 pool = global._pgPool;
 
