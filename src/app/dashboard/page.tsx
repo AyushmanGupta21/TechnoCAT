@@ -233,8 +233,6 @@ export default function DashboardPage() {
             {/* Right Utilities & Profile */}
             <PostLoginNavActions />
           </nav>
-        </div>
-      </header>
 
           {/* Welcome Row */}
           <div className={styles.welcomeRow}>
