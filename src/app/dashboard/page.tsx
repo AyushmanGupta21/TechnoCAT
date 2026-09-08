@@ -362,7 +362,7 @@ export default function DashboardPage() {
           {/* 4 Metric Cards Row */}
           <div className={styles.metricCardsRow}>
             {/* Card 1: In Progress */}
-            <div className={styles.metricCard}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }}>
               <div className={`${styles.metricIconBox} ${styles.iconPurple}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
@@ -376,7 +376,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 2: Completed */}
-            <div className={styles.metricCard}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', borderLeft: '4px solid #10b981' }}>
               <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -390,7 +390,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 3: Watching Time */}
-            <div className={styles.metricCard}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }}>
               <div className={`${styles.metricIconBox} ${styles.iconOrange}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m22 8-6 4 6 4V8Z" />
@@ -404,7 +404,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 4: Earning Point */}
-            <div className={styles.metricCard}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderLeft: '4px solid #f59e0b' }}>
               <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />

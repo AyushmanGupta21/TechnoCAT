@@ -12,11 +12,12 @@
 
 /* ===== DARK UPPER HEADER ===== */
 .darkHeader {
-  background: #0E0F13;
-  color: #fff;
+  background: #ffffff;
+  color: #111827;
   padding-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   width: 100%;
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .headerInner {
@@ -33,7 +34,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .brandLogo {
@@ -47,7 +48,7 @@
 }
 
 .logoTechno {
-  color: #ffffff;
+  color: #111827;
 }
 
 .logoCAT {
@@ -67,7 +68,7 @@
 }
 
 .navLink {
-  color: #9CA3AF;
+  color: #6B7280;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -80,11 +81,11 @@
 }
 
 .navLink:hover {
-  color: #fff;
+  color: #111827;
 }
 
 .navLinkActive {
-  color: #fff;
+  color: #111827;
   font-weight: 600;
 }
 
@@ -116,9 +117,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #D1D5DB;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,8 +128,8 @@
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #E5E7EB;
+  color: #111827;
 }
 
 .userPill {
@@ -136,8 +137,8 @@
   align-items: center;
   gap: 10px;
   padding: 4px 12px 4px 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
   border-radius: 30px;
   cursor: pointer;
 }
@@ -157,13 +158,13 @@
 .userName {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: #111827;
   line-height: 1.2;
 }
 
 .userRole {
   font-size: 11px;
-  color: #9CA3AF;
+  color: #6B7280;
   line-height: 1.2;
 }
 
@@ -1016,15 +1017,15 @@
 }
 
 .actionCircleBtn:hover {
-  background: #FEF2F2;
-  border-color: #FCA5A5;
-  color: #ED1C24;
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
 }
 
 .actionCircleBtnActive {
-  background: #FEF2F2;
-  border-color: #ED1C24;
-  color: #ED1C24;
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #2563EB;
 }
 
 /* About Course Card */
@@ -1057,7 +1058,7 @@
 .showMoreBtn {
   background: none;
   border: none;
-  color: #ED1C24;
+  color: #2563EB;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -1097,7 +1098,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #9CA3AF;
+  background: #2563EB;
   margin-top: 8px;
   flex-shrink: 0;
 }
@@ -1143,7 +1144,7 @@
 }
 
 .progressPercentBadge {
-  color: #ED1C24;
+  color: #2563EB;
   font-size: 18px;
   font-weight: 800;
 }
@@ -1170,7 +1171,7 @@
   top: 5px;
   left: 0;
   height: 4px;
-  background: #ED1C24;
+  background: #2563EB;
   border-radius: 2px;
   z-index: 2;
   transition: width 0.3s;
@@ -1199,9 +1200,9 @@
 }
 
 .milestoneDotFilled {
-  background: #ED1C24;
-  border-color: #ED1C24;
-  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.2);
+  background: #2563EB;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .milestoneLabel {
@@ -1291,8 +1292,8 @@
 }
 
 .moduleFilterChipActive {
-  background: #ED1C24;
-  border-color: #ED1C24;
+  background: #2563EB;
+  border-color: #2563EB;
   color: #ffffff;
 }
 
@@ -1333,10 +1334,10 @@
 }
 
 .lessonItemActive {
-  background: #ED1C24 !important;
-  border-color: #ED1C24 !important;
+  background: #2563EB !important;
+  border-color: #2563EB !important;
   color: #ffffff;
-  box-shadow: 0 6px 18px rgba(237, 28, 36, 0.25);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
 }
 
 .lessonItemLeft {
@@ -1351,7 +1352,7 @@
   height: 32px;
   border-radius: 8px;
   background: #FFFFFF;
-  color: #ED1C24;
+  color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1374,7 +1375,7 @@
 .lessonCodeBadge {
   font-size: 10px;
   font-weight: 700;
-  color: #ED1C24;
+  color: #2563EB;
   letter-spacing: 0.02em;
 }
 

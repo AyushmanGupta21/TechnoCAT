@@ -8,10 +8,11 @@
 
 /* ===== DARK HEADER SECTION ===== */
 .darkHeader {
-  background: #0E0F13;
-  color: #fff;
+  background: #ffffff;
+  color: #111827;
   padding-bottom: 36px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .headerInner {
@@ -26,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .brandLogo {
@@ -40,7 +41,7 @@
 }
 
 .logoTechno {
-  color: #ffffff;
+  color: #111827;
 }
 
 .logoCAT {
@@ -60,7 +61,7 @@
 }
 
 .navLink {
-  color: #9CA3AF;
+  color: #6B7280;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -73,11 +74,11 @@
 }
 
 .navLink:hover {
-  color: #fff;
+  color: #111827;
 }
 
 .navLinkActive {
-  color: #fff;
+  color: #111827;
   font-weight: 600;
 }
 
@@ -110,9 +111,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #D1D5DB;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,8 +122,8 @@
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #E5E7EB;
+  color: #111827;
 }
 
 .userPill {
@@ -130,8 +131,8 @@
   align-items: center;
   gap: 10px;
   padding: 4px 12px 4px 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
   border-radius: 30px;
   cursor: pointer;
 }
@@ -151,7 +152,7 @@
 .userName {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: #111827;
   line-height: 1.2;
 }
 
@@ -180,13 +181,13 @@
 .pageTitle {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: #111827;
   margin: 0 0 6px 0;
 }
 
 .pageSubtitle {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #6B7280;
   margin: 0;
 }
 
@@ -213,19 +214,19 @@
 .searchInput {
   width: 100%;
   padding: 11px 16px 11px 42px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid #D1D5DB;
   border-radius: 12px;
-  color: #fff;
+  color: #111827;
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
 }
 
 .searchInput:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: #ED1C24;
-  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.25);
+  background: #ffffff;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .searchInput::placeholder {
@@ -242,9 +243,9 @@
 }
 
 .categoryTab {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #D1D5DB;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #4B5563;
   padding: 8px 18px;
   border-radius: 20px;
   font-size: 13px;
@@ -255,13 +256,13 @@
 }
 
 .categoryTab:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #E5E7EB;
+  color: #111827;
 }
 
 .categoryTabActive {
-  background: #ED1C24;
-  border-color: #ED1C24;
+  background: #2563EB;
+  border-color: #2563EB;
   color: #fff;
   font-weight: 600;
 }
@@ -308,7 +309,7 @@
 .topicCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  border-color: #FCA5A5;
+  border-color: #BFDBFE;
 }
 
 .cardBanner {
@@ -416,7 +417,7 @@
 }
 
 .progressPercent {
-  color: #ED1C24;
+  color: #2563EB;
   font-weight: 700;
 }
 
@@ -431,7 +432,7 @@
 
 .progressBarFill {
   height: 100%;
-  background: #ED1C24;
+  background: #2563EB;
   border-radius: 4px;
   transition: width 0.3s;
 }
@@ -442,9 +443,9 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: #FEF2F2;
-  color: #ED1C24;
-  border: 1px solid #FCA5A5;
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 13px;
@@ -454,7 +455,7 @@
 }
 
 .topicCard:hover .cardActionBtn {
-  background: #ED1C24;
+  background: #2563EB;
   color: #ffffff;
-  border-color: #ED1C24;
+  border-color: #2563EB;
 }

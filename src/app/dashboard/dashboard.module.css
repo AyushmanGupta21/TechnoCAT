@@ -8,10 +8,11 @@
 
 /* ===== DARK HEADER SECTION ===== */
 .darkHeader {
-  background: #0E0F13;
-  color: #fff;
+  background: #ffffff;
+  color: #111827;
   padding-bottom: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .headerInner {
@@ -26,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .brandLogo {
@@ -40,7 +41,7 @@
 }
 
 .logoTechno {
-  color: #ffffff;
+  color: #111827;
 }
 
 .logoCAT {
@@ -60,7 +61,7 @@
 }
 
 .navLink {
-  color: #9CA3AF;
+  color: #6B7280;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -73,11 +74,11 @@
 }
 
 .navLink:hover {
-  color: #ffffff;
+  color: #111827;
 }
 
 .navLinkActive {
-  color: #ffffff;
+  color: #111827;
   font-weight: 600;
 }
 
@@ -109,9 +110,9 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #D1D5DB;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,8 +122,8 @@
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #E5E7EB;
+  color: #111827;
 }
 
 .notifDot {
@@ -141,14 +142,14 @@
   gap: 10px;
   padding: 4px 10px 4px 4px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .userProfile:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #F3F4F6;
 }
 
 .userAvatar {
@@ -169,12 +170,12 @@
 .userName {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: #111827;
 }
 
 .userRole {
   font-size: 11px;
-  color: #9CA3AF;
+  color: #6B7280;
 }
 
 /* Welcome Row */
@@ -197,13 +198,13 @@
 .welcomeHeading {
   font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: #111827;
   letter-spacing: -0.02em;
 }
 
 .welcomeSubtitle {
   font-size: 13.5px;
-  color: #9CA3AF;
+  color: #6B7280;
   margin-top: 4px;
 }
 
@@ -217,9 +218,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #E5E7EB;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  color: #374151;
   font-size: 13.5px;
   font-weight: 500;
   padding: 10px 16px;
@@ -229,7 +230,7 @@
 }
 
 .periodDropdown:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #F3F4F6;
 }
 
 .addCourseBtn {
@@ -273,19 +274,19 @@
 }
 
 .metricCard {
-  background: #17191E;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
   border-radius: 14px;
   padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .metricCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 .metricIconBox {
@@ -300,7 +301,7 @@
 }
 
 .iconPurple {
-  background: #6366F1;
+  background: #8b5cf6;
 }
 
 .iconGreen {
@@ -308,11 +309,11 @@
 }
 
 .iconOrange {
-  background: #F59E0B;
+  background: #2563EB;
 }
 
 .iconPink {
-  background: #ED1C24;
+  background: #f59e0b;
 }
 
 .metricInfo {
@@ -323,13 +324,13 @@
 .metricValue {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: #111827;
   line-height: 1.2;
 }
 
 .metricLabel {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #6B7280;
   margin-top: 2px;
 }
 
@@ -396,7 +397,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ED1C24;
+  background: #2563EB;
 }
 
 .dotChallenge {
@@ -485,7 +486,7 @@
 
 .barLearning {
   width: 8px;
-  background: #ED1C24;
+  background: #2563EB;
   border-radius: 4px 4px 0 0;
   transition: height 0.3s ease;
 }
@@ -758,11 +759,11 @@
   top: calc(100% + 8px);
   right: 0;
   width: 220px;
-  background: #181A20;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
   border-radius: 12px;
   padding: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -773,8 +774,8 @@
 .profileMenuEmail {
   padding: 8px 12px;
   font-size: 12px;
-  color: #9CA3AF;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #6B7280;
+  border-bottom: 1px solid #F3F4F6;
   word-break: break-all;
 }
 
@@ -785,7 +786,7 @@
   padding: 9px 12px;
   border-radius: 8px;
   font-size: 13px;
-  color: #E5E7EB;
+  color: #374151;
   background: none;
   border: none;
   width: 100%;
@@ -795,12 +796,12 @@
 }
 
 .profileMenuItem:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: #F3F4F6;
+  color: #111827;
 }
 
 .profileMenuItemDanger {
-  color: #F87171;
+  color: #EF4444;
 }
 
 .profileMenuItemDanger:hover {
