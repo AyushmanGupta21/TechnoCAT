@@ -241,23 +241,7 @@ export default function DashboardPage() {
               <p className={styles.welcomeSubtitle}>Here&apos;s a report on your study progress this week.</p>
             </div>
             <div className={styles.welcomeActions}>
-              <button
-                className={styles.periodDropdown}
-                onClick={() => setSelectedPeriod(selectedPeriod === "Weekly" ? "Monthly" : "Weekly")}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
-                {selectedPeriod}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-
-              <Link href="/topics" className={styles.addCourseBtn}>
+              <Link href="/browse" className={styles.addCourseBtn}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -314,7 +298,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Card 4: Earning Point */}
+            {/* Card 4: Total Points */}
             <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderLeft: '4px solid #f59e0b' }}>
               <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -328,7 +312,7 @@ export default function DashboardPage() {
               </div>
               <div className={styles.metricInfo}>
                 <span className={styles.metricValue}>{metrics.pointsEarned} Points</span>
-                <span className={styles.metricLabel}>Earning Point</span>
+                <span className={styles.metricLabel}>Total Points</span>
               </div>
             </div>
           </div>

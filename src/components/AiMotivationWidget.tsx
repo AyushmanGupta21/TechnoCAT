@@ -47,8 +47,8 @@ export default function AiMotivationWidget({ firstName, streak, points }: AiMoti
       setDisplayedText(""); // reset
       
       const typeTimer = setInterval(() => {
-        setDisplayedText(prev => prev + message.charAt(i));
         i++;
+        setDisplayedText(message.substring(0, i));
         if (i >= message.length) {
           clearInterval(typeTimer);
         }
