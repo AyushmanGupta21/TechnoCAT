@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import PostLoginNavActions from "@/components/PostLoginNavActions";
+import AiMotivationWidget from "@/components/AiMotivationWidget";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
+import ContinueLearningWidget from "@/components/ContinueLearningWidget";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./dashboard.module.css";
 
@@ -227,104 +231,10 @@ export default function DashboardPage() {
             </div>
 
             {/* Right Utilities & Profile */}
-            <div className={styles.navRight}>
-              {/* Search button */}
-              <button className={styles.iconBtn} aria-label="Search">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-
-              {/* Notification button */}
-              <button className={styles.iconBtn} aria-label="Notifications">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-                <span className={styles.notifDot} />
-              </button>
-
-              {/* User Profile Dropdown */}
-              <div className={styles.profileMenuWrapper}>
-                <div
-                  className={styles.userProfile}
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={userAvatar}
-                    alt={displayName}
-                    className={styles.userAvatar}
-                  />
-                  <div className={styles.userInfo}>
-                    <span className={styles.userName}>{displayName}</span>
-                    <span className={styles.userRole}>{userRole}</span>
-                  </div>
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ opacity: 0.6, marginLeft: 2 }}
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </div>
-
-                {showProfileMenu && (
-                  <div className={styles.profileDropdown}>
-                    <div className={styles.profileMenuEmail}>
-                      {user?.email || "student@technocat.edu"}
-                    </div>
-                    <Link
-                      href="/topics"
-                      className={styles.profileMenuItem}
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
-                      My Syllabus Topics
-                    </Link>
-                    {user ? (
-                      <button
-                        className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          logout();
-                        }}
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                          <polyline points="16 17 21 12 16 7" />
-                          <line x1="21" y1="12" x2="9" y2="12" />
-                        </svg>
-                        Sign Out
-                      </button>
-                    ) : (
-                      <button
-                        className={styles.profileMenuItem}
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          openAuthModal("signin");
-                        }}
-                      >
-                        Sign In / Register
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
           {/* Welcome Row */}
           <div className={styles.welcomeRow}>
@@ -358,6 +268,9 @@ export default function DashboardPage() {
               </Link>
             </div>
           </div>
+
+          {/* AI Motivation Widget */}
+          <AiMotivationWidget firstName={firstName} streak={7} points={metrics.pointsEarned} />
 
           {/* 4 Metric Cards Row */}
           <div className={styles.metricCardsRow}>
@@ -424,8 +337,15 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* ===== MAIN CONTENT 2x2 GRID ===== */}
+      {/* ===== MAIN CONTENT ===== */}
       <main className={styles.mainContent}>
+        
+        {/* New Top Widgets Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
+          <ContinueLearningWidget />
+          <LeaderboardWidget />
+        </div>
+
         <div className={styles.dashboardGrid}>
           {/* Top Left: Study Statistic */}
           <div className={styles.cardBox}>

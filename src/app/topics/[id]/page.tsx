@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import PostLoginNavActions from "@/components/PostLoginNavActions";
+import TopicQuizModal from "@/components/TopicQuizModal";
 import { useParams } from "next/navigation";
 import { TOPICS_DATA, getTopicById, Lesson } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
@@ -376,6 +378,7 @@ export default function TopicDetailPage() {
   const [selectedModuleFilter, setSelectedModuleFilter] = useState<string>("All");
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [showFullAbout, setShowFullAbout] = useState<boolean>(false);
+  const [aiQuizOpen, setAiQuizOpen] = useState<boolean>(false);
 
   // Active lesson object
   const activeLesson: Lesson =
@@ -440,7 +443,7 @@ export default function TopicDetailPage() {
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "#", hasDropdown: true },
+                { name: "Browse", href: "/browse", hasDropdown: true },
                 { name: "My Topics", href: "/topics" },
                 { name: "Mock Viva Prep", href: "#" },
               ].map((item) => (
@@ -474,43 +477,7 @@ export default function TopicDetailPage() {
             </div>
 
             {/* Right Utilities & Profile */}
-            <div className={styles.navRight}>
-              <button className={styles.iconBtn} aria-label="Search">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-
-              <button className={styles.iconBtn} aria-label="Notifications">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                </svg>
-              </button>
-
-              <div
-                className={styles.userPill}
-                onClick={() => {
-                  if (confirm("Would you like to log out of TechnoCAT?")) logout();
-                }}
-                title="Click to logout"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=80"}
-                  alt={user?.fullName || "Sabrina Gomez"}
-                  className={styles.userAvatar}
-                />
-                <div className={styles.userInfo}>
-                  <span className={styles.userName}>{user?.fullName || "Sabrina Gomez"}</span>
-                  <span className={styles.userRole}>{user?.role || "Student"}</span>
-                </div>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </div>
-            </div>
+            <PostLoginNavActions />
           </nav>
         </div>
       </header>
@@ -1120,6 +1087,26 @@ export default function TopicDetailPage() {
               })}
             </div>
           </div>
+
+          {/* Card 3: Practice & PYQs */}
+          <div className={styles.practiceCard}>
+            <div className={styles.completionHeader}>
+              <h2 className={styles.completionTitle}>Practice & Tests</h2>
+            </div>
+            <div className={styles.practiceContent}>
+              <button 
+                className={styles.pyqBtn}
+                onClick={() => setAiQuizOpen(true)}
+              >
+                <div className={styles.pyqIcon}>📝</div>
+                <div className={styles.pyqInfo}>
+                  <div className={styles.pyqTitle}>Topic PYQ Practice</div>
+                  <div className={styles.pyqDesc}>AI-generated quiz from RAG course material & PYQs</div>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 
@@ -1132,6 +1119,14 @@ export default function TopicDetailPage() {
           onSubmitQuiz={(score, total) => {
             console.log(`[Quiz Completed] Scored ${score}/${total}`);
           }}
+        />
+      )}
+
+      {aiQuizOpen && (
+        <TopicQuizModal 
+          topicId={topic.id}
+          topicTitle={topic.title}
+          onClose={() => setAiQuizOpen(false)}
         />
       )}
     </div>
