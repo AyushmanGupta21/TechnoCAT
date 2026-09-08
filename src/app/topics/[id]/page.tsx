@@ -433,11 +433,18 @@ export default function TopicDetailPage() {
         <div className={styles.headerInner}>
           {/* Top Navigation Bar */}
           <nav className={styles.topNav} aria-label="Topic Detail Navigation">
-            {/* Brand Logo */}
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <span className={styles.logoTechno}>Techno</span>
-              <span className={styles.logoCAT}>CAT</span>
-            </Link>
+            {/* Brand Logo & Back Button */}
+            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+              <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
+                <span className={styles.logoTechno}>Techno</span>
+                <span className={styles.logoCAT}>CAT</span>
+              </Link>
+              
+              <Link href="/browse" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94a3b8", textDecoration: "none", fontSize: "14px", fontWeight: 500, padding: "6px 12px", background: "rgba(255,255,255,0.05)", borderRadius: "6px", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Browse
+              </Link>
+            </div>
 
             {/* Nav Menu */}
             <div className={styles.navLinks}>

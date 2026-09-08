@@ -389,38 +389,41 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Right Summary Metrics */}
-              <div className={styles.statSummaryCol}>
-                <div className={styles.statItem}>
-                  <div className={styles.statValueRow}>
-                    <span className={styles.statValueNumber}>{summary.totalHoursWeek}</span>
-                    <span className={styles.trendBadgeGreen}>↗ 16%</span>
+              {/* Right Summary Metrics replaced by AI Analytics */}
+              <div className={styles.statSummaryCol} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  </svg>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B', margin: 0 }}>AI Performance Analysis</h3>
+                </div>
+                
+                <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: '1.6' }}>
+                  Your learning hours are <strong>up 16%</strong> this week. However, you're spending disproportionately more time on Quantitative Ability compared to VARC.
+                </p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Quant Progress</span>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#10B981' }}>Good Pace</span>
                   </div>
-                  <span className={styles.statItemLabel}>Total hours in a week</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>VARC Progress</span>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#EF4444' }}>Needs Attention</span>
+                  </div>
                 </div>
 
-                <div className={styles.statItem}>
-                  <div className={styles.statValueRow}>
-                    <span className={styles.statValueNumber}>{summary.avgHoursDay}</span>
-                    <span className={styles.trendBadgeRed}>↘ 2%</span>
+                <div style={{ marginTop: 'auto' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B', marginBottom: '8px' }}>Recommended Next Step</h4>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', background: '#EFF6FF', padding: '16px', borderRadius: '12px', border: '1px solid #BFDBFE' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+                      <polyline points="9 11 12 14 22 4"/>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <div>
+                      <p style={{ fontSize: '13px', color: '#1E3A8A', margin: 0, fontWeight: '500' }}>Take a Reading Comprehension sectional mock today to identify weak spots before proceeding to Advanced VARC.</p>
+                    </div>
                   </div>
-                  <span className={styles.statItemLabel}>Average hours in a day</span>
-                </div>
-
-                <div className={styles.statItem}>
-                  <div className={styles.statValueRow}>
-                    <span className={styles.statValueNumber}>{summary.courseHoursWeek}</span>
-                    <span className={styles.trendBadgeGreen}>↗ 16%</span>
-                  </div>
-                  <span className={styles.statItemLabel}>Course hours in a week</span>
-                </div>
-
-                <div className={styles.statItem}>
-                  <div className={styles.statValueRow}>
-                    <span className={styles.statValueNumber}>{summary.challengeHoursWeek}</span>
-                    <span className={styles.trendBadgeRed}>↘ 4%</span>
-                  </div>
-                  <span className={styles.statItemLabel}>Challenge hours in a week</span>
                 </div>
               </div>
             </div>

@@ -129,7 +129,22 @@ export default function BrowsePage() {
         )}
 
         {/* Course Grid */}
-        <h2 className={styles.sectionTitle}>{searchQuery ? `Search Results for "${searchQuery}"` : 'All Topics'}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Topics'}
+          </h2>
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery("")}
+              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", background: "#f1f5f9", color: "#475569", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#e2e8f0"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#f1f5f9"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Back to Categories
+            </button>
+          )}
+        </div>
         
         {filteredTopics.length === 0 ? (
           <div className={styles.noResults}>No topics found matching your search.</div>
