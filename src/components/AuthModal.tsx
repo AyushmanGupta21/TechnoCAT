@@ -67,11 +67,11 @@ export default function AuthModal() {
   return (
     <div
       className={styles.modalOverlay}
-      onClick={(e) => {
+      onMouseDown={(e) => {
         if (e.target === e.currentTarget) closeAuthModal();
       }}
     >
-      <div className={styles.modalContent} role="dialog" aria-modal="true">
+      <div className={styles.modalContent} role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.modalHeader}>
           <button
