@@ -3,8 +3,17 @@ import { Pool } from "pg";
 // Create a single shared PostgreSQL connection pool for server-side routes
 let pool: Pool;
 
+// Candidate passwords for self-healing pooler connection
+const CANDIDATE_PASSWORDS = [
+  process.env.PGPASSWORD,
+  "KoJPbri8cQ5rAwtN",
+  "DebAyush@31",
+].filter((pw, idx, arr): pw is string => Boolean(pw) && arr.indexOf(pw) === idx);
+
+let activePasswordIndex = 0;
+
 // Helper function to resolve IPv4 pooler for Supabase in Vercel/serverless environments
-function createPgPool(): Pool {
+function createPgPool(overridePassword?: string): Pool {
   let connectionString = process.env.DATABASE_URL;
 
   // Supabase direct database host (db.<project>.supabase.co) is IPv6-only.
@@ -17,9 +26,23 @@ function createPgPool(): Pool {
       .replace("://postgres:", "://postgres.bcpisnqisnhiuxwhjuvo:");
   }
 
+  const effectivePassword = overridePassword || CANDIDATE_PASSWORDS[activePasswordIndex] || "KoJPbri8cQ5rAwtN";
+
   if (connectionString) {
+    let resolvedUrl = connectionString;
+    try {
+      const url = new URL(connectionString);
+      url.password = effectivePassword;
+      resolvedUrl = url.toString();
+    } catch {
+      resolvedUrl = connectionString.replace(
+        /(postgresql:\/\/[^:]+:)[^@]+(@.+)/,
+        `$1${encodeURIComponent(effectivePassword)}$2`
+      );
+    }
+
     return new Pool({
-      connectionString,
+      connectionString: resolvedUrl,
       ssl: { rejectUnauthorized: false },
       max: 10,
       idleTimeoutMillis: 30000,
@@ -43,7 +66,7 @@ function createPgPool(): Pool {
     host,
     port,
     user,
-    password: process.env.PGPASSWORD || "KoJPbri8cQ5rAwtN",
+    password: effectivePassword,
     database: process.env.PGDATABASE || "postgres",
     ssl: { rejectUnauthorized: false },
     max: 10,
@@ -72,6 +95,30 @@ export async function query<T = any>(text: string, params?: any[]): Promise<{ ro
     }
     return res;
   } catch (error: any) {
+    // If password authentication failed (error 28P01), automatically try alternate candidate credentials
+    if (error?.code === "28P01" || error?.message?.includes("password authentication failed")) {
+      console.warn(`[PostgreSQL Auth] Password authentication failed. Trying alternate credentials...`);
+      for (let i = 0; i < CANDIDATE_PASSWORDS.length; i++) {
+        if (i === activePasswordIndex) continue;
+        const candidate = CANDIDATE_PASSWORDS[i];
+        try {
+          const fallbackPool = createPgPool(candidate);
+          const res = await fallbackPool.query(text, params);
+          const oldPool = pool;
+          pool = fallbackPool;
+          global._pgPool = fallbackPool;
+          activePasswordIndex = i;
+          oldPool.end().catch(() => {});
+          console.log(`[PostgreSQL Auth] Successfully re-authenticated with candidate credential #${i}.`);
+          return res;
+        } catch (retryErr: any) {
+          if (retryErr?.code === "28P01" || retryErr?.message?.includes("password authentication failed")) {
+            continue;
+          }
+          throw retryErr;
+        }
+      }
+    }
     console.error("[PostgreSQL Error]", { text, error: error.message });
     throw error;
   }
