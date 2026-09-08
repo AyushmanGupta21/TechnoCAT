@@ -1,0 +1,205 @@
+.section {
+  background: var(--white);
+  padding: 64px 0;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.heading {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 16px;
+}
+@media (min-width: 1024px) {
+  .heading { font-size: 2.6rem; }
+}
+
+.highlight {
+  color: var(--primary);
+}
+
+.subheading {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.loopGrid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+  .loopGrid {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.stepCard {
+  flex: 1;
+  background: var(--bg-soft);
+  border: 1px solid var(--primary-light);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.stepCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.stepNumber {
+  width: 48px;
+  height: 48px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 auto 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stepTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.stepDesc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.arrowWrap {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .arrowWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-light);
+  }
+  .arrow {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* AI Tutor Banner */
+.aiTutorBanner {
+  background: linear-gradient(135deg, var(--secondary-light) 0%, #dbeafe 100%);
+  border-radius: 32px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  border: 1px solid #bfdbfe;
+}
+
+@media (min-width: 768px) {
+  .aiTutorBanner {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 48px;
+  }
+}
+
+.aiTutorContent {
+  flex: 1;
+}
+
+.aiTutorTitle {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+  margin-bottom: 16px;
+}
+
+.aiTutorDesc {
+  font-size: 15px;
+  color: var(--text-main);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.demoBtn {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+.demoBtn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.aiTutorMockup {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-sm);
+}
+
+.chatBubbleUser {
+  align-self: flex-end;
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 16px 16px 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 80%;
+}
+
+.chatBubbleAi {
+  align-self: flex-start;
+  background: var(--white);
+  color: var(--text-main);
+  padding: 12px 16px;
+  border-radius: 16px 16px 16px 0;
+  font-size: 14px;
+  border: 1px solid var(--primary-light);
+  box-shadow: var(--shadow-sm);
+  line-height: 1.5;
+  max-width: 90%;
+}

@@ -7,14 +7,14 @@
 }
 
 :root {
-  --orange: #f59e0b; /* Using pastel orange/yellow to map from existing --orange */
+  --orange: #f59e0b;
   --orange-dark: #d97706;
   --orange-hover: #fbbf24;
-  --primary: #0ea5e9; /* Sky Blue */
+  --primary: #0ea5e9;
   --primary-dark: #0284c7;
   --primary-light: #e0f2fe;
   
-  --secondary: #8b5cf6; /* Pastel Purple */
+  --secondary: #8b5cf6;
   --secondary-light: #ede9fe;
   
   --accent: #f59e0b;
@@ -29,19 +29,21 @@
   --navy-dark: #0f172a;
   --white: #ffffff;
   
-  --bg-main: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --bg-main: #ffffff; /* Clean white background */
   --bg-soft: #f8fafc;
   
-  --hero-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --card-glass: rgba(255, 255, 255, 0.95);
-  --section-radial: radial-gradient(circle at top right, #e0f2fe, #f8fafc);
-  --app-section: linear-gradient(180deg, #f8fafc 0%, #e0f2fe 100%);
+  /* Lighter, softer blue gradient for the Hero section */
+  --hero-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  --card-glass: rgba(255, 255, 255, 0.85);
+  --section-radial: radial-gradient(circle at top right, #f0f9ff, #ffffff);
+  --app-section: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
   --feedback-bg: #f8fafc;
   --comparison-bg: #ffffff;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 html, body {
@@ -49,7 +51,7 @@ html, body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--text-main);
-  background: var(--bg-soft); /* Changed to soft white to make the app clean, sections can have sky blue */
+  background: var(--bg-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
@@ -59,7 +61,7 @@ html, body {
 }
 
 a { text-decoration: none; color: inherit; }
-button { border: none; background: none; cursor: pointer; font-family: inherit; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; transition: all 0.3s ease; }
 img { max-width: 100%; display: block; }
 ul { list-style: none; }
 
@@ -70,14 +72,30 @@ ul { list-style: none; }
 /* Custom scrollbar for carousels */
 .scrollbar-ipmat::-webkit-scrollbar { height: 4px; }
 .scrollbar-ipmat::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-.scrollbar-ipmat::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+.scrollbar-ipmat::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-/* Pulse animation */
+/* Animations */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+/* Global transitions */
+.transition-all { transition: all 0.3s ease; }
 
 /* Bebas Neue for headings */
 .bebas { font-family: 'Bebas Neue', sans-serif; }
@@ -100,7 +118,7 @@ ul { list-style: none; }
 /* Section spacing */
 section { width: 100%; }
 
-/* Mobile nav spacer: visible only on mobile, hidden on desktop */
+/* Mobile nav spacer */
 .mobile-nav-spacer {
   height: 68px;
   display: block;
@@ -110,4 +128,42 @@ section { width: 100%; }
     display: none !important;
     height: 0 !important;
   }
+}
+
+/* Pricing Cards */
+.pricingCard {
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+.pricingCard:hover {
+  transform: scale(1.03) translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+.pricingCard.pro {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+.pricingCard.pro:hover {
+  transform: scale(1.08) translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.pricingBtn {
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+.pricingBtn:not(.pro):hover {
+  transform: scale(1.05);
+  background: var(--primary-light) !important;
+}
+.pricingBtn.pro:hover {
+  transform: scale(1.05);
 }

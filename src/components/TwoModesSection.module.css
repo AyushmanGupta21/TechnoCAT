@@ -59,7 +59,9 @@
 /* Classic Mode card */
 .classicCard {
   flex: 1;
-  background: #f1f5f9;
+  background: var(--white);
+  border: 2px solid #e2e8f0;
+  border-bottom: none;
   border-radius: 32px 32px 0 0;
   padding: 40px;
   display: flex;
@@ -70,18 +72,21 @@
 @media (min-width: 768px) {
   .classicCard {
     border-radius: 32px 0 0 32px;
+    border-bottom: 2px solid #e2e8f0;
+    border-right: none;
   }
 }
 
 /* Modern Mode card */
 .modernCard {
   flex: 1;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   border-radius: 0 0 32px 32px;
   padding: 40px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  box-shadow: 0 10px 40px -10px rgba(2, 132, 199, 0.4);
 }
 
 @media (min-width: 768px) {

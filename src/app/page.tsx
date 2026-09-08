@@ -10,10 +10,13 @@ import ComparisonTable from "@/components/ComparisonTable";
 import FeedbackSection from "@/components/FeedbackSection";
 import FaqSection from "@/components/FaqSection";
 import Footer from "@/components/Footer";
+import FloatingBanner from "@/components/FloatingBanner";
+import AiFeedbackLoop from "@/components/AiFeedbackLoop";
+import IimPredictor from "@/components/IimPredictor";
 
 export default function Home() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", paddingBottom: "80px" }}>
       <Navbar />
 
       {/* Spacer for fixed navbar - mobile only */}
@@ -25,6 +28,12 @@ export default function Home() {
 
         {/* 2. Problem-solving & Key Features carousels */}
         <FeaturesSection />
+
+        {/* NEW: IIM Call Predictor (Interactive Lead Gen) */}
+        <IimPredictor />
+
+        {/* NEW: AI Feedback Loop & Chat Tutor */}
+        <AiFeedbackLoop />
 
         {/* 3. Why TechnoCAT Mocks Stand Out – dark feature cards */}
         <WhyStandOutSection />
@@ -83,17 +92,24 @@ export default function Home() {
               }}
             >
               {["TechnoCAT Basic", "TechnoCAT Pro", "TechnoCAT Premium"].map(
-                (plan, i) => (
+                (plan, i) => {
+                  const cardBg = 
+                    i === 0 ? "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)" :
+                    i === 1 ? "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" :
+                    "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)";
+                  const borderColor = 
+                    i === 0 ? "#bae6fd" :
+                    i === 1 ? "#ddd6fe" :
+                    "#fde68a";
+
+                  return (
                   <div
                     key={i}
+                    className={`pricingCard ${i === 1 ? 'pro' : ''}`}
                     style={{
-                      background: "rgba(255, 255, 255, 0.95)",
-                      borderRadius: "24px",
-                      padding: "32px 24px",
-                      textAlign: "center",
-                      border: "none",
-                      transform: i === 1 ? "scale(1.05)" : "none",
-                      boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-md)",
+                      background: cardBg,
+                      border: `1px solid ${borderColor}`,
+                      boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-sm)",
                     }}
                   >
                     <h3
@@ -130,22 +146,17 @@ export default function Home() {
                       {i === 2 && "₹4,999"}
                     </div>
                     <button
+                      className={`pricingBtn ${i === 1 ? 'pro' : ''}`}
                       style={{
-                        background: i === 1 ? "var(--primary)" : "var(--bg-soft)",
+                        background: i === 1 ? "var(--primary)" : "var(--white)",
                         color: i === 1 ? "#fff" : "var(--primary-dark)",
-                        padding: "12px 24px",
-                        borderRadius: "30px",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                        cursor: "pointer",
-                        width: "100%",
-                        border: i === 1 ? "none" : "1px solid var(--primary)",
+                        border: i === 1 ? "none" : "1px solid var(--primary-light)",
                       }}
                     >
                       {i === 0 ? "Start Free" : "Enroll Now"}
                     </button>
                   </div>
-                )
+                )}
               )}
             </div>
           </div>
@@ -162,6 +173,9 @@ export default function Home() {
 
         {/* 14. Footer */}
         <Footer />
+        
+        {/* NEW: Sticky Floating Banner */}
+        <FloatingBanner />
       </main>
     </div>
   );
