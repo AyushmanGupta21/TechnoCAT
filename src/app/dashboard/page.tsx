@@ -197,7 +197,7 @@ export default function DashboardPage() {
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/topics", hasDropdown: true },
+                { name: "Browse", href: "/browse", hasDropdown: true },
                 { name: "My Topics", href: "/topics" },
                 { name: "Mock Viva Prep", href: "#" },
               ].map((item) => (

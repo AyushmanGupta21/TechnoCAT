@@ -48,7 +48,7 @@ export default function TopicsListPage() {
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "#", hasDropdown: true },
+                { name: "Browse", href: "/browse", hasDropdown: true },
                 { name: "My Topics", href: "/topics" },
                 { name: "Mock Viva Prep", href: "#" },
               ].map((item) => (

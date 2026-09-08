@@ -23,29 +23,54 @@ export default function ContinueLearningWidget() {
         </Link>
       </div>
 
-      <div className={styles.courseCard}>
-        <img 
-          src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=300&auto=format&fit=crop&q=80" 
-          alt="QA" 
-          className={styles.courseThumbnail}
-        />
-        <div className={styles.courseInfo}>
-          <h3 className={styles.courseTitle}>Quantitative Ability</h3>
-          <p className={styles.courseMeta}>Module 1.1: Percentages & Ratios • Lesson 2</p>
-          <div className={styles.progressTrack}>
-            <div className={styles.progressFill} style={{ width: "35%" }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        <div className={styles.courseCard}>
+          <img 
+            src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=300&auto=format&fit=crop&q=80" 
+            alt="QA" 
+            className={styles.courseThumbnail}
+          />
+          <div className={styles.courseInfo}>
+            <h3 className={styles.courseTitle}>Quantitative Ability</h3>
+            <p className={styles.courseMeta}>Module 1.1: Percentages & Ratios • Lesson 2</p>
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: "35%" }} />
+            </div>
+            <span className={styles.progressText}>35% Complete</span>
           </div>
-          <span className={styles.progressText}>35% Complete</span>
+          <button 
+            className={styles.resumeBtn}
+            onClick={() => router.push("/topics/qa-quantitative-ability")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </button>
         </div>
-        <button 
-          className={styles.resumeBtn}
-          onClick={() => router.push("/topics/qa-quantitative-ability")}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          Resume
-        </button>
+
+        <div className={styles.courseCard}>
+          <img 
+            src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&auto=format&fit=crop&q=80" 
+            alt="VARC" 
+            className={styles.courseThumbnail}
+          />
+          <div className={styles.courseInfo}>
+            <h3 className={styles.courseTitle}>Verbal Ability</h3>
+            <p className={styles.courseMeta}>Module 2: Reading Comprehension • Practice 1</p>
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: "62%" }} />
+            </div>
+            <span className={styles.progressText}>62% Complete</span>
+          </div>
+          <button 
+            className={styles.resumeBtn}
+            onClick={() => router.push("/topics/varc-verbal-ability")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
