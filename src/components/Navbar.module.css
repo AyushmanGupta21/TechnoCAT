@@ -140,8 +140,8 @@
 
 /* --- Main Navigation Bar --- */
 .mainNav {
-  background: #000000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--white);
+  border-bottom: 1px solid var(--primary-light);
 }
 
 .mainNavInner {
@@ -186,7 +186,7 @@
 }
 
 .textLogoTechno {
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .textLogoCAT {
@@ -235,20 +235,20 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  color: #000000;
+  background: var(--bg-soft);
+  color: var(--text-main);
   padding: 7px 15px;
   font-size: 13px;
   font-weight: 600;
   border-radius: 9999px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: none;
+  border: 1px solid var(--primary-light);
   font-family: inherit;
 }
 
 .allCoursesBtn:hover {
-  background: #ED1C24;
+  background: var(--primary);
   color: #ffffff;
 }
 
@@ -256,9 +256,9 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #e5e7eb;
+  color: var(--text-muted);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   background: transparent;
@@ -269,8 +269,8 @@
 }
 
 .navLinkBtn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary);
+  background: var(--primary-light);
 }
 
 /* Floating Dropdown Menus */
@@ -278,10 +278,10 @@
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  background: #11131a;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: var(--white);
+  border: 1px solid var(--primary-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
   min-width: 290px;
   max-width: 360px;
   z-index: 100;
@@ -302,7 +302,7 @@
 
 .dropdownHeader {
   padding: 6px 10px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--bg-soft);
   margin-bottom: 6px;
 }
 
@@ -311,7 +311,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #ED1C24;
+  color: var(--primary);
 }
 
 .dropdownGrid {
@@ -325,13 +325,13 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 12px;
   text-decoration: none;
   transition: all 0.15s ease;
 }
 
 .dropdownItem:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--bg-soft);
 }
 
 .dropdownItemHeader {
@@ -344,12 +344,12 @@
 .dropdownItemLabel {
   font-size: 13px;
   font-weight: 600;
-  color: #f3f4f6;
+  color: var(--text-main);
   transition: color 0.15s;
 }
 
 .dropdownItem:hover .dropdownItemLabel {
-  color: #ED1C24;
+  color: var(--primary);
 }
 
 .dropdownBadge {
@@ -357,15 +357,15 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(237, 28, 36, 0.18);
-  color: #ED1C24;
-  border: 1px solid rgba(237, 28, 36, 0.3);
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-light);
   text-transform: uppercase;
 }
 
 .dropdownItemDesc {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   line-height: 1.35;
 }
 
@@ -381,8 +381,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  color: #000000;
+  background: var(--primary);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   padding: 7px 18px;
@@ -392,14 +392,13 @@
   border: none;
   text-decoration: none;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .loginBtn:hover {
-  background: #ED1C24;
-  color: #ffffff;
+  background: var(--primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(237, 28, 36, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 

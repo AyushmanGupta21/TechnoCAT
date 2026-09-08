@@ -1,5 +1,5 @@
 .section {
-  background: #0f172a;
+  background: var(--bg-soft);
   padding: 64px 0;
 }
 
@@ -12,8 +12,8 @@
 .heading {
   text-align: center;
   font-size: 1.8rem;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: var(--text-main);
   margin-bottom: 8px;
   line-height: 1.25;
 }
@@ -25,27 +25,37 @@
 .subheading {
   text-align: center;
   font-size: 15px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 40px;
 }
 
 .carousel {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   overflow-x: auto;
   padding-bottom: 16px;
 }
 .carousel::-webkit-scrollbar { height: 4px; }
-.carousel::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-.carousel::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.carousel::-webkit-scrollbar-track { background: var(--bg-soft); border-radius: 4px; }
+.carousel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
 .videoCard {
   flex-shrink: 0;
   width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
+  background: var(--white);
+  padding: 16px;
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--primary-light);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.videoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 @media (min-width: 640px) {
@@ -54,20 +64,11 @@
 
 .thumbWrap {
   position: relative;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   aspect-ratio: 16/9;
-  background: #1e293b;
+  background: var(--bg-soft);
 }
-
-.thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.3s;
-}
-.videoCard:hover .thumb { transform: scale(1.04); }
 
 .thumbPlaceholder {
   position: absolute;
@@ -75,13 +76,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.3s;
 }
-
-.thumbLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.7);
-}
+.videoCard:hover .thumbPlaceholder { opacity: 1; }
 
 .playBtn {
   position: absolute;
@@ -89,26 +87,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.1);
   transition: background 0.2s;
 }
-.videoCard:hover .playBtn { background: rgba(0,0,0,0.4); }
+.videoCard:hover .playBtn { background: rgba(255,255,255,0.2); }
 
 .playBtn svg {
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
-  width: 48px;
-  height: 48px;
-  background: rgba(237,28,36,0.9);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+  width: 56px;
+  height: 56px;
+  background: var(--white);
   border-radius: 50%;
-  padding: 10px;
+  padding: 16px;
   transition: transform 0.2s;
 }
 .videoCard:hover .playBtn svg { transform: scale(1.1); }
 
 .videoTitle {
   font-size: 14px;
-  font-weight: 500;
-  color: #e2e8f0;
+  font-weight: 600;
+  color: var(--text-main);
   line-height: 1.5;
   padding: 0 4px;
 }
@@ -120,16 +118,18 @@
 }
 
 .ctaBtn {
-  background: #ED1C24;
+  background: var(--primary);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
-  padding: 14px 36px;
-  border-radius: 10px;
+  padding: 16px 36px;
+  border-radius: 9999px;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 .ctaBtn:hover {
-  background: #C81016;
+  background: var(--primary-dark);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }

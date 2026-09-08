@@ -1,5 +1,5 @@
 .section {
-  background: #fff;
+  background: var(--bg-soft);
   padding: 64px 0;
 }
 
@@ -15,10 +15,10 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+  color: var(--primary);
+  background: var(--primary-light);
   display: inline-block;
-  padding: 4px 16px;
+  padding: 6px 16px;
   border-radius: 9999px;
   margin-bottom: 16px;
   display: flex;
@@ -30,8 +30,8 @@
 .heading {
   text-align: center;
   font-size: 1.8rem;
-  font-weight: 600;
-  color: #000;
+  font-weight: 700;
+  color: var(--text-main);
   margin-bottom: 48px;
   line-height: 1.25;
 }
@@ -56,22 +56,24 @@
 
 .card {
   position: relative;
-  background: #0f172a;
-  border-radius: 16px;
+  background: var(--white);
+  border-radius: 24px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--primary-light);
 }
-.card:hover { transform: translateY(-4px); }
+.card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
 
 .cardTopTag {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ED1C24;
+  color: var(--accent);
   margin-bottom: -4px;
 }
 
@@ -85,49 +87,50 @@
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 900;
   color: #fff;
+  background: var(--primary) !important;
 }
 
 .cardTitle {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   line-height: 1.4;
 }
 
 .cardBody {
-  font-size: 12.5px;
-  color: #9ca3af;
+  font-size: 13px;
+  color: var(--text-muted);
   line-height: 1.65;
   flex: 1;
 }
 
 /* Weak topic box */
 .weakTopicBox {
-  background: rgba(255,255,255,0.06);
-  border-radius: 10px;
+  background: var(--bg-soft);
+  border-radius: 16px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--primary-light);
 }
 .weakTopicLabel {
   font-size: 10px;
-  color: #9ca3af;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .weakTopicValue {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
 }
 .accuracyRow {
   display: flex;
@@ -136,12 +139,12 @@
 }
 .accuracyKey {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 .accuracyPct {
   font-size: 20px;
   font-weight: 800;
-  color: #ED1C24;
+  color: var(--accent);
 }
 
 .viewMoreBtn {
@@ -151,19 +154,20 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #d1d5db;
+  color: var(--primary);
   background: transparent;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s;
 }
-.viewMoreBtn:hover { color: #ED1C24; }
+.viewMoreBtn:hover { color: var(--primary-dark); }
 
 .viewMoreIcon {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1px solid #4b5563;
+  border: 1px solid var(--primary-light);
+  background: var(--primary-light);
   display: flex;
   align-items: center;
   justify-content: center;

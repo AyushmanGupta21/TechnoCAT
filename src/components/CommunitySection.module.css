@@ -1,5 +1,5 @@
 .section {
-  background: #F5F7FA;
+  background: transparent;
   padding: 48px 0;
 }
 
@@ -10,14 +10,17 @@
 }
 
 .card {
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  background: var(--white);
+  border-radius: 32px;
+  box-shadow: var(--shadow-md);
   padding: 40px 32px;
   display: flex;
   flex-direction: column;
   gap: 32px;
   align-items: center;
+  border: 1px solid var(--primary-light);
+  overflow: hidden;
+  position: relative;
 }
 
 @media (min-width: 768px) {
@@ -33,12 +36,14 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  position: relative;
+  z-index: 2;
 }
 
 .statsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 .statBox {
@@ -48,20 +53,21 @@
 }
 
 .statNum {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #000;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
   line-height: 1;
 }
 
 @media (min-width: 640px) {
-  .statNum { font-size: 2.2rem; }
+  .statNum { font-size: 2.5rem; }
 }
 
 .statLabel {
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 14px;
+  color: var(--text-muted);
   line-height: 1.35;
+  font-weight: 500;
 }
 
 .shareBtn {
@@ -70,18 +76,20 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
-  background: #ED1C24;
+  background: var(--primary);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 .shareBtn:hover {
-  background: #C81016;
+  background: var(--primary-dark);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .phonesCol {
@@ -89,15 +97,9 @@
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  min-height: 220px;
-}
-
-.phoneImg {
-  width: 100%;
-  max-width: 420px;
-  object-fit: contain;
-  display: block;
+  align-items: center;
+  min-height: 280px;
+  z-index: 1;
 }
 
 /* Fallback phone cards shown when image fails */
@@ -105,29 +107,65 @@
   display: flex;
   position: relative;
   width: 100%;
-  max-width: 340px;
+  max-width: 360px;
+  justify-content: center;
 }
 
 .phoneCard {
-  background: #0f172a;
-  border-radius: 16px;
-  padding: 16px;
-  width: 180px;
+  background: var(--white);
+  border-radius: 24px;
+  padding: 20px;
+  width: 240px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--primary-light);
+  z-index: 2;
 }
 
 .phoneHeader {
-  font-size: 12px;
-  font-weight: 600;
-  color: #ED1C24;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: center;
+  border-bottom: 1px solid var(--bg-soft);
+  padding-bottom: 8px;
 }
 
 .phoneLine {
   height: 8px;
-  background: #1e293b;
+  background: var(--bg-soft);
   border-radius: 4px;
   width: 100%;
+}
+
+.phoneMessage {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.phoneAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.phoneBubble {
+  background: var(--bg-soft);
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  color: var(--text-main);
+  line-height: 1.4;
+  flex: 1;
 }

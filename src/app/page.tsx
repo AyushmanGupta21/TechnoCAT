@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div style={{ minHeight: "100vh", background: "#000" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)" }}>
       <Navbar />
 
       {/* Spacer for fixed navbar - mobile only */}
@@ -45,7 +45,7 @@ export default function Home() {
         <section
           id="courses"
           style={{
-            background: "#0E0F13",
+            background: "transparent",
             padding: "64px 0",
             scrollMarginTop: "32px",
           }}
@@ -67,8 +67,8 @@ export default function Home() {
               <h2
                 style={{
                   fontSize: "clamp(2rem, 4vw, 2.6rem)",
-                  fontWeight: 600,
-                  color: "#fff",
+                  fontWeight: 700,
+                  color: "var(--text-main)",
                   textAlign: "center",
                 }}
               >
@@ -87,23 +87,20 @@ export default function Home() {
                   <div
                     key={i}
                     style={{
-                      background: i === 1 ? "#ED1C24" : "#1a1a2e",
-                      borderRadius: "16px",
+                      background: "rgba(255, 255, 255, 0.95)",
+                      borderRadius: "24px",
                       padding: "32px 24px",
                       textAlign: "center",
-                      border: i === 1 ? "none" : "1px solid #2a2a3e",
+                      border: "none",
                       transform: i === 1 ? "scale(1.05)" : "none",
-                      boxShadow:
-                        i === 1
-                          ? "0 20px 60px rgba(237,28,36,0.35)"
-                          : "none",
+                      boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-md)",
                     }}
                   >
                     <h3
                       style={{
                         fontSize: "1.5rem",
                         fontWeight: 700,
-                        color: "#fff",
+                        color: "var(--text-main)",
                         marginBottom: "8px",
                       }}
                     >
@@ -111,8 +108,7 @@ export default function Home() {
                     </h3>
                     <p
                       style={{
-                        color:
-                          i === 1 ? "rgba(255,255,255,0.9)" : "#9ca3af",
+                        color: "var(--text-muted)",
                         fontSize: "14px",
                         marginBottom: "24px",
                       }}
@@ -125,7 +121,7 @@ export default function Home() {
                       style={{
                         fontSize: "2rem",
                         fontWeight: 800,
-                        color: "#fff",
+                        color: "var(--primary-dark)",
                         marginBottom: "24px",
                       }}
                     >
@@ -135,15 +131,15 @@ export default function Home() {
                     </div>
                     <button
                       style={{
-                        background: i === 1 ? "#fff" : "#ED1C24",
-                        color: i === 1 ? "#ED1C24" : "#fff",
+                        background: i === 1 ? "var(--primary)" : "var(--bg-soft)",
+                        color: i === 1 ? "#fff" : "var(--primary-dark)",
                         padding: "12px 24px",
-                        borderRadius: "8px",
+                        borderRadius: "30px",
                         fontWeight: 700,
                         fontSize: "14px",
                         cursor: "pointer",
                         width: "100%",
-                        border: "none",
+                        border: i === 1 ? "none" : "1px solid var(--primary)",
                       }}
                     >
                       {i === 0 ? "Start Free" : "Enroll Now"}

@@ -98,7 +98,7 @@ export default function Footer() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                   )}
                   {s === "youtube" && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#111"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--white)"/></svg>
                   )}
                   {s === "linkedin" && (
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
@@ -112,7 +112,7 @@ export default function Footer() {
             <div className={styles.storeRow}>
               <a href="#" className={styles.storeBtn}>
                 {/* Apple icon */}
-                <svg viewBox="0 0 24 24" className={styles.storeBtnIcon} fill="white">
+                <svg viewBox="0 0 24 24" className={styles.storeBtnIcon} fill="currentColor">
                   <path d="M16.365 1.43c0 1.14-.415 2.05-1.244 2.73-.842.686-1.822 1.05-2.89.99-.058-1.09.42-2.06 1.24-2.75.83-.69 1.9-1.06 2.894-.97zM20.5 17.2c-.53 1.22-.78 1.76-1.46 2.83-.95 1.5-2.29 3.37-3.95 3.39-1.48.02-1.86-.96-3.87-.95-2.01.01-2.43.97-3.91.95-1.66-.02-2.93-1.71-3.88-3.21-2.66-4.16-2.94-9.04-1.3-11.64 1.16-1.85 2.99-2.93 4.71-2.93 1.75 0 2.85.96 4.3.96 1.4 0 2.26-.96 4.3-.96 1.53 0 3.15.84 4.31 2.28-3.79 2.08-3.18 7.5.7 9.28z"/>
                 </svg>
                 <span className={styles.storeBtnText}>

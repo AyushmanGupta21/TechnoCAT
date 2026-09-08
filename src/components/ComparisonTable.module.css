@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   padding: 64px 16px;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #F8FAFC 100%);
+  background: var(--bg-soft);
 }
 
 .container {
@@ -18,8 +18,8 @@
 
 .heading {
   font-size: 1.7rem;
-  font-weight: 600;
-  color: #000;
+  font-weight: 700;
+  color: var(--text-main);
   line-height: 1.25;
 }
 
@@ -27,14 +27,14 @@
   .heading { font-size: 2.6rem; }
 }
 
-.vs { color: #ED1C24; }
+.vs { color: var(--primary); }
 
 .tableWrapper {
   overflow-x: auto;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  border: 1px solid #f1f5f9;
-  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--primary-light);
+  background: var(--white);
 }
 
 .tableInner {
@@ -44,7 +44,7 @@
 .headerRow {
   display: grid;
   grid-template-columns: 150px 90px 90px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--primary-light);
 }
 
 @media (min-width: 768px) {
@@ -54,10 +54,10 @@
 .featureHeader {
   padding: 12px 12px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 @media (min-width: 768px) {
@@ -67,7 +67,7 @@
 .icatHeader {
   padding: 12px 8px;
   text-align: center;
-  background: #ED1C24;
+  background: var(--primary);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -83,11 +83,11 @@
   padding: 12px 8px;
   text-align: center;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #94a3b8;
-  border-left: 1px solid #f1f5f9;
+  color: var(--text-muted);
+  border-left: 1px solid var(--primary-light);
 }
 
 @media (min-width: 768px) {
@@ -100,11 +100,11 @@
   display: grid;
   grid-template-columns: 150px 90px 90px;
   align-items: center;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--primary-light);
   transition: background 0.15s;
 }
 
-.row:hover { background: #f8fafc; }
+.row:hover { background: var(--bg-soft); }
 
 @media (min-width: 768px) {
   .row { grid-template-columns: 1fr 210px 180px; }
@@ -113,8 +113,8 @@
 .featureCell {
   padding: 16px 12px;
   font-size: 12px;
-  font-weight: 500;
-  color: #1B2559;
+  font-weight: 600;
+  color: var(--text-main);
   line-height: 1.35;
 }
 
@@ -126,9 +126,9 @@
   display: flex;
   justify-content: center;
   padding: 12px;
-  background: rgba(237,28,36,0.03);
-  border-left: 1px solid rgba(237,28,36,0.12);
-  border-right: 1px solid rgba(237,28,36,0.12);
+  background: var(--primary-light);
+  border-left: 1px solid var(--primary-light);
+  border-right: 1px solid var(--primary-light);
 }
 
 .othersCell {
@@ -144,7 +144,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--primary);
 }
 
 @media (min-width: 768px) {
@@ -170,13 +170,14 @@
 .crossSvg { color: #ef4444; }
 
 .tableFooter {
-  background: #0E0F13;
+  background: var(--bg-main);
   padding: 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  border-top: 1px solid var(--primary-light);
 }
 
 @media (min-width: 768px) {
@@ -189,7 +190,7 @@
 
 .footerText {
   font-size: 14px;
-  color: rgba(255,255,255,0.8);
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -197,20 +198,22 @@
   .footerText { text-align: left; }
 }
 
-.footerBold { font-weight: 600; color: #fff; }
+.footerBold { font-weight: 700; color: var(--text-main); }
 
 .tryBtn {
   width: 100%;
-  border-radius: 8px;
-  background: #ED1C24;
-  padding: 12px 20px;
+  border-radius: 9999px;
+  background: var(--primary);
+  padding: 12px 24px;
   font-size: 14px;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  border: none;
 }
-.tryBtn:hover { background: #C81016; }
+.tryBtn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 @media (min-width: 768px) {
   .tryBtn { width: auto; }

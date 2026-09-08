@@ -86,7 +86,7 @@ export default function HeroSection() {
                 <div className={styles.videoThumb}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://media.iquanta.in/ui_images/ICATMOCK.jpg.webp"
+                    src="/dashboard.jpg"
                     alt="CAT mock test"
                     className={styles.videoImg}
                     width={430}

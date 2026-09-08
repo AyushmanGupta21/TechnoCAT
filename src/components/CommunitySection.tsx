@@ -51,25 +51,19 @@ export default function CommunitySection() {
 
           {/* Right: Phone mockups */}
           <div className={styles.phonesCol}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://media.iquanta.in/ui_images/community-phones.webp"
-              alt="TechnoCAT community on phones"
-              className={styles.phoneImg}
-              loading="lazy"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-            {/* Fallback phone illustration */}
             <div className={styles.phoneFallback}>
               <div className={styles.phoneCard}>
-                <div className={styles.phoneHeader}>iQuanta Preparation</div>
-                <div className={styles.phoneLine} />
-                <div className={styles.phoneLine} style={{ width: "60%" }} />
-                <div className={styles.phoneLine} style={{ width: "80%" }} />
+                <div className={styles.phoneHeader}>TechnoCAT Prep Group</div>
+                <div className={styles.phoneMessage}>
+                  <div className={styles.phoneAvatar}>A</div>
+                  <div className={styles.phoneBubble}>Hey, how do I solve this geometry problem?</div>
+                </div>
+                <div className={styles.phoneMessage} style={{ alignSelf: 'flex-end', flexDirection: 'row-reverse' }}>
+                  <div className={styles.phoneAvatar} style={{ background: 'var(--secondary)'}}>M</div>
+                  <div className={styles.phoneBubble} style={{ background: 'var(--primary)', color: 'white' }}>Use the tangent-secant theorem!</div>
+                </div>
               </div>
-              <div className={styles.phoneCard} style={{ transform: "translateX(40px) scale(0.9)", opacity: 0.7 }}>
+              <div className={styles.phoneCard} style={{ transform: "translateX(40px) scale(0.9)", opacity: 0.8, position: 'absolute', top: '20px', zIndex: -1 }}>
                 <div className={styles.phoneHeader}>CAT Mock Analysis</div>
                 <div className={styles.phoneLine} />
                 <div className={styles.phoneLine} style={{ width: "70%" }} />

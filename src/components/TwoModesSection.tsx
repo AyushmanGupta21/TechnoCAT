@@ -37,16 +37,6 @@ export default function TwoModesSection() {
               </div>
             </div>
             <div className={styles.modeImgWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://media.iquanta.in/ui_images/classic-mode-mock.webp"
-                alt="Classic CAT Mock Mode Interface"
-                className={styles.modeImg}
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
               <div className={styles.modePlaceholder}>
                 <div className={styles.mockInterface}>
                   <div className={styles.mockHeader}>CAT Mock — Classic Mode</div>
@@ -98,16 +88,6 @@ export default function TwoModesSection() {
               </div>
             </div>
             <div className={styles.modeImgWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://media.iquanta.in/ui_images/modern-mode-mock.webp"
-                alt="Modern CAT Mock Mode Interface"
-                className={styles.modeImg}
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
               <div className={styles.modePlaceholderModern}>
                 <div className={styles.mockInterface}>
                   <div className={styles.mockHeaderModern}>CAT Mock — Modern Mode</div>

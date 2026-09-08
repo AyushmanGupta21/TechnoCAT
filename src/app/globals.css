@@ -7,33 +7,49 @@
 }
 
 :root {
-  --orange: #ED1C24;
-  --orange-dark: #C81016;
-  --orange-hover: #D32F2F;
-  --primary: #ED1C24;
-  --primary-dark: #C81016;
-  --primary-light: #FEE2E2;
-  --whatsapp: #075e54;
-  --black: #000000;
-  --navy: #0E0F13;
-  --navy-dark: #13225B;
+  --orange: #f59e0b; /* Using pastel orange/yellow to map from existing --orange */
+  --orange-dark: #d97706;
+  --orange-hover: #fbbf24;
+  --primary: #0ea5e9; /* Sky Blue */
+  --primary-dark: #0284c7;
+  --primary-light: #e0f2fe;
+  
+  --secondary: #8b5cf6; /* Pastel Purple */
+  --secondary-light: #ede9fe;
+  
+  --accent: #f59e0b;
+  --accent-light: #fef3c7;
+
+  --whatsapp: #25D366;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+
+  --black: #0f172a;
+  --navy: #1e293b;
+  --navy-dark: #0f172a;
   --white: #ffffff;
-  --yellow: #f6b200;
-  --yellow-light: #FFFCA3;
-  --hero-bg: linear-gradient(180deg, #FFFFFF 0%, #F4F6F9 100%);
-  --card-glass: linear-gradient(134deg, rgba(255,255,255,0.85) 11.27%, rgba(245,246,248,0.85) 85.1%);
-  --section-radial: radial-gradient(49.23% 49.23% at 41.96% 55.22%, #FFFFFF 0%, #E2E8F0 100%);
-  --app-section: linear-gradient(180deg, #FFF5F5 0%, #F1F5F9 100%);
-  --feedback-bg: #F1F5F9;
-  --comparison-bg: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #FFFFFF 100%);
+  
+  --bg-main: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --bg-soft: #f8fafc;
+  
+  --hero-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --card-glass: rgba(255, 255, 255, 0.95);
+  --section-radial: radial-gradient(circle at top right, #e0f2fe, #f8fafc);
+  --app-section: linear-gradient(180deg, #f8fafc 0%, #e0f2fe 100%);
+  --feedback-bg: #f8fafc;
+  --comparison-bg: #ffffff;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 html, body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #000;
-  background: #000;
+  color: var(--text-main);
+  background: var(--bg-soft); /* Changed to soft white to make the app clean, sections can have sky blue */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
