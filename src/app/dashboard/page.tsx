@@ -6,6 +6,7 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import AiMotivationWidget from "@/components/AiMotivationWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import ContinueLearningWidget from "@/components/ContinueLearningWidget";
+import StudyPerformanceChart from "@/components/StudyPerformanceChart";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./dashboard.module.css";
 
@@ -355,47 +356,8 @@ export default function DashboardPage() {
             </div>
 
             <div className={styles.studyStatBody}>
-              {/* Dual Bar Chart */}
-              <div className={styles.chartContainer}>
-                <div className={styles.chartInner}>
-                  {/* Y Axis */}
-                  <div className={styles.yAxis}>
-                    <span>10h</span>
-                    <span>6h</span>
-                    <span>4h</span>
-                    <span>2h</span>
-                    <span>0h</span>
-                  </div>
-
-                  {/* Grid Lines & Bars */}
-                  <div className={styles.chartGrid}>
-                    <div className={styles.gridLine} />
-                    <div className={styles.gridLine} />
-                    <div className={styles.gridLine} />
-                    <div className={styles.gridLine} />
-                    <div className={styles.gridLine} />
-
-                    <div className={styles.barsArea}>
-                      {currentWeeklyStats.map((item) => (
-                        <div key={item.day} className={styles.barGroup}>
-                          <div className={styles.barsPair}>
-                            <div
-                              className={styles.barLearning}
-                              style={{ height: `${item.learning}%` }}
-                              title={`Learning: ${item.rawLearning !== undefined ? item.rawLearning : (item.learning / 10).toFixed(1)}h`}
-                            />
-                            <div
-                              className={styles.barChallenge}
-                              style={{ height: `${item.challenge}%` }}
-                              title={`Challenge: ${item.rawChallenge !== undefined ? item.rawChallenge : (item.challenge / 10).toFixed(1)}h`}
-                            />
-                          </div>
-                          <span className={styles.xAxisLabel}>{item.day}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              <div style={{ flex: 1.4, minWidth: 0, width: '100%' }}>
+                <StudyPerformanceChart data={currentWeeklyStats} />
               </div>
 
               {/* Right Summary Metrics replaced by AI Analytics */}
