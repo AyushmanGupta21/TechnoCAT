@@ -31,13 +31,14 @@
 }
 
 .brandLogo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-flex;
+  align-items: baseline;
   text-decoration: none;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  user-select: none;
+  line-height: 1;
 }
 
 .logoTechno {
@@ -282,6 +283,7 @@
   align-items: center;
   gap: 16px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
 .metricCard:hover {

@@ -39,6 +39,12 @@ interface DashboardData {
     challengeHoursWeek: number;
   };
   tasks: StudyTask[];
+  detailed?: {
+    inProgressTopics: any[];
+    completedTopics: any[];
+    watchingHistory: any[];
+    pointsHistory: any[];
+  };
 }
 
 // Fallback weekly stats
@@ -107,6 +113,9 @@ export default function DashboardPage() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDate, setTaskDate] = useState(new Date().toISOString().split("T")[0]);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+
+  // Detailed Metric Modal State
+  const [activeModal, setActiveModal] = useState<"inProgress" | "completed" | "watching" | "points" | null>(null);
 
   // Fetch live dashboard analytics from Supabase
   const fetchDashboard = async () => {
@@ -257,7 +266,7 @@ export default function DashboardPage() {
           {/* 4 Metric Cards Row */}
           <div className={styles.metricCardsRow}>
             {/* Card 1: In Progress */}
-            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }} onClick={() => setActiveModal("inProgress")}>
               <div className={`${styles.metricIconBox} ${styles.iconPurple}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
@@ -271,7 +280,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 2: Completed */}
-            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', borderLeft: '4px solid #10b981' }}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', borderLeft: '4px solid #10b981' }} onClick={() => setActiveModal("completed")}>
               <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -285,7 +294,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 3: Watching Time */}
-            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }} onClick={() => setActiveModal("watching")}>
               <div className={`${styles.metricIconBox} ${styles.iconOrange}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m22 8-6 4 6 4V8Z" />
@@ -299,7 +308,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card 4: Total Points */}
-            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderLeft: '4px solid #f59e0b' }}>
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderLeft: '4px solid #f59e0b' }} onClick={() => setActiveModal("points")}>
               <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -609,6 +618,134 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* ===== DETAILED METRIC MODAL ===== */}
+      {activeModal && (
+        <div className={styles.modalBackdrop} onClick={() => setActiveModal(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px', width: '90%' }}>
+            <div className={styles.modalHeader} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #E5E7EB' }}>
+              <div>
+                <h3 className={styles.modalTitle} style={{ fontSize: '20px', fontWeight: '700' }}>
+                  {activeModal === "inProgress" && "Topics In Progress"}
+                  {activeModal === "completed" && "Completed Topics"}
+                  {activeModal === "watching" && "Watching Time"}
+                  {activeModal === "points" && "Total Points"}
+                </h3>
+                <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>
+                  {activeModal === "inProgress" && `You have ${metrics.inProgressCourses} topics currently in progress.`}
+                  {activeModal === "completed" && `You have completed ${metrics.completedCourses} topics so far.`}
+                  {activeModal === "watching" && `You have spent ${metrics.watchingTime} watching video lessons.`}
+                  {activeModal === "points" && `You have earned ${metrics.pointsEarned} points across all activities.`}
+                </p>
+              </div>
+              <button
+                className={styles.modalCloseBtn}
+                onClick={() => setActiveModal(null)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* In Progress */}
+              {activeModal === "inProgress" && (!dashboardData?.detailed?.inProgressTopics || dashboardData.detailed.inProgressTopics.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
+                  No topics currently in progress. Browse topics and start learning.
+                </div>
+              )}
+              {activeModal === "inProgress" && dashboardData?.detailed?.inProgressTopics?.map((topic: any) => (
+                <div key={topic.topic_id} style={{ padding: '16px', borderRadius: '12px', border: '1px solid #E5E7EB', background: '#F9FAFB' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
+                      {topic.topic_id.replace(/-/g, ' ')}
+                    </h4>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#8b5cf6' }}>{topic.progress_percent}%</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                      Lessons: {topic.completed_lessons?.length || 0} completed<br/>
+                      Last accessed: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
+                    </div>
+                    <Link href="/browse" onClick={() => setActiveModal(null)} style={{ background: '#2563EB', color: '#fff', fontSize: '12px', fontWeight: '600', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none' }}>
+                      Continue Learning
+                    </Link>
+                  </div>
+                </div>
+              ))}
+
+              {/* Completed Topics */}
+              {activeModal === "completed" && (!dashboardData?.detailed?.completedTopics || dashboardData.detailed.completedTopics.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
+                  You haven&apos;t completed any topics yet.
+                </div>
+              )}
+              {activeModal === "completed" && dashboardData?.detailed?.completedTopics?.map((topic: any) => (
+                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #D1FAE5', background: '#F0FDF4' }}>
+                  <div>
+                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
+                      {topic.topic_id.replace(/-/g, ' ')}
+                    </h4>
+                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                      Completed on: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#10B981' }}>+{topic.points_earned || 0} pts</span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Watching Time */}
+              {activeModal === "watching" && (!dashboardData?.detailed?.watchingHistory || dashboardData.detailed.watchingHistory.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
+                  No watching activity yet.
+                </div>
+              )}
+              {activeModal === "watching" && dashboardData?.detailed?.watchingHistory?.map((topic: any) => (
+                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #DBEAFE', background: '#EFF6FF' }}>
+                  <div>
+                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
+                      {topic.topic_id.replace(/-/g, ' ')}
+                    </h4>
+                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                      Last watched: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#2563EB' }}>
+                      {Math.floor(topic.watching_time_minutes / 60) > 0 && `${Math.floor(topic.watching_time_minutes / 60)}h `}
+                      {topic.watching_time_minutes % 60}m
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Total Points */}
+              {activeModal === "points" && (!dashboardData?.detailed?.pointsHistory || dashboardData.detailed.pointsHistory.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
+                  Start learning and completing activities to earn points.
+                </div>
+              )}
+              {activeModal === "points" && dashboardData?.detailed?.pointsHistory?.map((topic: any) => (
+                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #FEF3C7', background: '#FFFBEB' }}>
+                  <div>
+                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
+                      {topic.topic_id.replace(/-/g, ' ')}
+                    </h4>
+                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                      Earned on: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '15px', fontWeight: '700', color: '#F59E0B' }}>+{topic.points_earned || 0} pts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== ADD STUDY TASK MODAL ===== */}
       {isTaskModalOpen && (

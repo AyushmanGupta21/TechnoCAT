@@ -206,10 +206,13 @@ export async function getDashboardData(userId: string) {
   );
 
   const rows = progressRes.rows;
-  const inProgressCount = rows.filter((r) => r.progress_percent > 0 && r.progress_percent < 100).length;
-  const completedCount = rows.filter((r) => r.progress_percent === 100).length + 23; // including completed foundation topics
-  const totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0) + 730; // 12h 10m baseline
-  const totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0) + 40;
+  const inProgressTopics = rows.filter((r) => r.progress_percent >= 0 && r.progress_percent < 100);
+  const completedTopics = rows.filter((r) => r.progress_percent === 100);
+  
+  const inProgressCount = inProgressTopics.length;
+  const completedCount = completedTopics.length;
+  const totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0);
+  const totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0);
 
   const hours = Math.floor(totalWatchingMinutes / 60);
   const mins = totalWatchingMinutes % 60;
@@ -255,10 +258,21 @@ export async function getDashboardData(userId: string) {
 
   return {
     metrics: {
-      inProgressCourses: inProgressCount || 4,
+      inProgressCourses: inProgressCount,
       completedCourses: completedCount,
       watchingTime: watchingTimeString,
+      watchingTimeMinutes: totalWatchingMinutes,
       pointsEarned: totalPointsEarned,
+    },
+    detailed: {
+      inProgressTopics: inProgressTopics,
+      completedTopics: completedTopics,
+      watchingHistory: inProgressTopics.concat(completedTopics)
+        .filter(t => t.watching_time_minutes > 0)
+        .sort((a, b) => b.watching_time_minutes - a.watching_time_minutes),
+      pointsHistory: inProgressTopics.concat(completedTopics)
+        .filter(t => t.points_earned > 0)
+        .sort((a, b) => b.points_earned - a.points_earned)
     },
     weeklyStats: weeklyStats.length === 7 ? weeklyStats : [
       { day: "Sun", learning: 50, challenge: 40 },
