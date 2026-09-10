@@ -38,9 +38,14 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topicId, topicTitle })
         });
-        const data = await res.json();
-        if (data.questions) {
-          setQuestions(data.questions);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim().length > 0) {
+            const data = JSON.parse(text);
+            if (data?.questions) {
+              setQuestions(data.questions);
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to fetch quiz", err);

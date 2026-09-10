@@ -825,11 +825,14 @@ export default function DashboardPage() {
     try {
       const res = await fetch("/api/dashboard");
       if (res.ok) {
-        const data = await res.json();
-        setDashboardData(data);
+        const text = await res.text();
+        if (text && text.trim().length > 0) {
+          const data = JSON.parse(text);
+          setDashboardData(data);
+        }
       }
     } catch (err) {
-      console.error("Failed to fetch dashboard data:", err);
+      console.warn("Failed to fetch dashboard data:", err);
     } finally {
       setIsLoading(false);
     }

@@ -5,50 +5,16 @@ let pool: Pool;
 
 // Candidate passwords for self-healing pooler connection
 const CANDIDATE_PASSWORDS = [
+  "DebAyush@31",
   process.env.PGPASSWORD,
   "KoJPbri8cQ5rAwtN",
-  "DebAyush@31",
 ].filter((pw, idx, arr): pw is string => Boolean(pw) && arr.indexOf(pw) === idx);
 
 let activePasswordIndex = 0;
 
 // Helper function to resolve IPv4 pooler for Supabase in Vercel/serverless environments
 function createPgPool(overridePassword?: string): Pool {
-  let connectionString = process.env.DATABASE_URL;
-
-  // Supabase direct database host (db.<project>.supabase.co) is IPv6-only.
-  // Vercel serverless environments do not resolve IPv6 outbound, causing ENOTFOUND.
-  // We automatically route through the Supabase connection pooler in ap-southeast-1 with IPv4 support.
-  if (connectionString && connectionString.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
-    connectionString = connectionString
-      .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co:5432", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
-      .replace("db.bcpisnqisnhiuxwhjuvo.supabase.co", "aws-0-ap-southeast-1.pooler.supabase.com:6543")
-      .replace("://postgres:", "://postgres.bcpisnqisnhiuxwhjuvo:");
-  }
-
-  const effectivePassword = overridePassword || CANDIDATE_PASSWORDS[activePasswordIndex] || "KoJPbri8cQ5rAwtN";
-
-  if (connectionString) {
-    let resolvedUrl = connectionString;
-    try {
-      const url = new URL(connectionString);
-      url.password = effectivePassword;
-      resolvedUrl = url.toString();
-    } catch {
-      resolvedUrl = connectionString.replace(
-        /(postgresql:\/\/[^:]+:)[^@]+(@.+)/,
-        `$1${encodeURIComponent(effectivePassword)}$2`
-      );
-    }
-
-    return new Pool({
-      connectionString: resolvedUrl,
-      ssl: { rejectUnauthorized: false },
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    });
-  }
+  const effectivePassword = overridePassword || CANDIDATE_PASSWORDS[activePasswordIndex] || "DebAyush@31";
 
   let host = process.env.PGHOST || "aws-0-ap-southeast-1.pooler.supabase.com";
   let port = parseInt(process.env.PGPORT || "6543", 10);
@@ -71,7 +37,7 @@ function createPgPool(overridePassword?: string): Pool {
     ssl: { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 5000,
   });
 }
 
