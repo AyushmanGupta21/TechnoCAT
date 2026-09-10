@@ -127,7 +127,7 @@ export default function TopicsListPage() {
       </header>
 
       {/* ===== MAIN TOPICS GRID SECTION ===== */}
-      <main className={styles.mainContent}>
+      <main className={styles.mainContent} style={{ paddingTop: "36px", paddingBottom: "80px" }}>
         <div className={styles.topicsGrid}>
           {filteredTopics.map((topic) => (
             <Link

@@ -270,8 +270,8 @@
 /* ===== MAIN CONTENT: TOPICS GRID ===== */
 .mainContent {
   max-width: 1320px;
-  margin: -10px auto 60px;
-  padding: 0 24px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
 }
 
 .topicsGrid {
