@@ -7,9 +7,11 @@
 }
 
 :root {
-  --orange: #f59e0b;
-  --orange-dark: #d97706;
-  --orange-hover: #fbbf24;
+  --orange: #f97316;
+  --orange-dark: #ea580c;
+  --orange-hover: #fb923c;
+  
+  /* Premium Light Blue */
   --primary: #0ea5e9;
   --primary-dark: #0284c7;
   --primary-light: #e0f2fe;
@@ -17,8 +19,10 @@
   --secondary: #8b5cf6;
   --secondary-light: #ede9fe;
   
-  --accent: #f59e0b;
-  --accent-light: #fef3c7;
+  /* Vibrant Contrast Accent */
+  --accent: #ff6b2b;
+  --accent-dark: #e65a20;
+  --accent-light: #ffe8e0;
 
   --whatsapp: #25D366;
   --text-main: #1e293b;
@@ -29,11 +33,11 @@
   --navy-dark: #0f172a;
   --white: #ffffff;
   
-  --bg-main: #ffffff; /* Clean white background */
+  --bg-main: #ffffff;
   --bg-soft: #f8fafc;
   
-  /* Lighter, softer blue gradient for the Hero section */
-  --hero-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  /* Softer, more elegant light blue hero gradient */
+  --hero-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   --card-glass: rgba(255, 255, 255, 0.85);
   --section-radial: radial-gradient(circle at top right, #f0f9ff, #ffffff);
   --app-section: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);

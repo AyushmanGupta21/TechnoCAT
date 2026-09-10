@@ -102,7 +102,7 @@
 
 .enrollBtn {
   width: 100%;
-  background: var(--primary);
+  background: var(--accent);
   color: var(--white);
   font-size: 0.83rem;
   font-weight: 700;
@@ -112,7 +112,7 @@
   transition: all 0.3s ease;
   box-shadow: var(--shadow-md);
 }
-.enrollBtn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.enrollBtn:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .enrollBtn:active { transform: scale(0.95); }
 
 @media (min-width: 640px) {
@@ -273,7 +273,7 @@
   justify-content: center;
   width: 160px;
   border-radius: 20px;
-  background: var(--primary);
+  background: var(--accent);
   padding: 12px;
   font-size: 12px;
   font-weight: 600;
@@ -281,7 +281,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-.attemptNowBtn:hover { transform: scale(1.05) translateY(-2px); box-shadow: var(--shadow-md); background: var(--primary-dark); }
+.attemptNowBtn:hover { transform: scale(1.05) translateY(-2px); box-shadow: var(--shadow-md); background: var(--accent-dark); }
 
 /* Right column */
 .rightCol {
