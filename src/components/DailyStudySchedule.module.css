@@ -1,0 +1,391 @@
+.scheduleBox {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid #F1F5F9;
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dateTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendarIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+}
+
+.dateHeading {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.actionsArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.addTaskBtn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.addTaskBtn:hover {
+  background: #1D4ED8;
+  transform: translateY(-1px);
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.filterRow::-webkit-scrollbar {
+  display: none;
+}
+
+.filterChip {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.filterChip:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.filterChipActive {
+  background: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+}
+
+.filterChipActive:hover {
+  background: #1E293B;
+  color: #FFFFFF;
+}
+
+.aiNotice {
+  background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
+  border: 1px solid #BFDBFE;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.aiIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
+
+.aiContent {
+  flex: 1;
+}
+
+.aiTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #2563EB;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
+}
+
+.aiText {
+  font-size: 13px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.taskCard {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left-width: 4px;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.2s;
+}
+
+.taskCard:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+.taskCardCompleted {
+  opacity: 0.65;
+  background: #F8FAFC;
+}
+
+.taskCardQA {
+  border-left-color: #2563EB;
+}
+
+.taskCardDILR {
+  border-left-color: #8B5CF6;
+}
+
+.taskCardVARC {
+  border-left-color: #EC4899;
+}
+
+.taskCardMock {
+  border-left-color: #F59E0B;
+}
+
+.leftDetails {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.timeCol {
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeVal {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.timeDuration {
+  font-size: 11.5px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.infoCol {
+  flex: 1;
+}
+
+.pillRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.categoryPill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pillQA {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.pillDILR {
+  background: #F5F3FF;
+  color: #8B5CF6;
+}
+
+.pillVARC {
+  background: #FDF2F8;
+  color: #DB2777;
+}
+
+.pillMock {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.codeBadge {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+.taskTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 3px 0;
+  line-height: 1.3;
+}
+
+.taskSubtitle {
+  font-size: 12.5px;
+  color: #64748B;
+  margin: 0;
+}
+
+.checkboxBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 2px solid #CBD5E1;
+  background: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.checkboxBtn:hover {
+  border-color: #2563EB;
+}
+
+.checkboxBtnActive {
+  background: #10B981;
+  border-color: #10B981;
+  color: #FFFFFF;
+}
+
+.emptyTasks {
+  text-align: center;
+  padding: 32px 16px;
+  color: #94A3B8;
+  font-size: 14px;
+}
+
+.sectionSubheading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 12px 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rescheduledBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.autoPlanBox {
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 14px;
+  padding: 24px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.autoPlanTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.autoPlanDesc {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+.autoPlanBtn {
+  background: #0F172A;
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.autoPlanBtn:hover {
+  background: #2563EB;
+}
+

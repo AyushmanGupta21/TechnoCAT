@@ -308,7 +308,7 @@
 }
 
 .iconGreen {
-  background: #10B981;
+  background: #8B5CF6; /* Matched to chart */
 }
 
 .iconOrange {
@@ -352,7 +352,8 @@
 
 @media (min-width: 1024px) {
   .dashboardGrid {
-    grid-template-columns: 1.25fr 1fr;
+    grid-template-columns: 1.75fr 1fr;
+    align-items: start;
   }
 }
 
@@ -407,7 +408,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10B981;
+  background: #8B5CF6; /* Matched to chart */
 }
 
 .studyStatBody {
