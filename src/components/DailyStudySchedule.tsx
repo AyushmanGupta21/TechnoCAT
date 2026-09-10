@@ -235,15 +235,40 @@ export default function DailyStudySchedule({
 
               <button
                 type="button"
-                className={`${styles.checkboxBtn} ${task.isCompleted ? styles.checkboxBtnActive : ""}`}
-                onClick={() => onToggleTask(task.id)}
-                aria-label={task.isCompleted ? "Mark incomplete" : "Mark complete"}
+                className={`${styles.checkboxBtn} ${task.isCompleted ? styles.checkboxBtnActive : ""} ${!isToday ? styles.checkboxBtnLocked : ""}`}
+                onClick={() => {
+                  if (isToday) {
+                    onToggleTask(task.id);
+                  }
+                }}
+                disabled={!isToday}
+                title={
+                  !isToday
+                    ? isPast
+                      ? "Historical archive: Completed sessions cannot be modified."
+                      : `Locked: Tasks for ${monthName} ${selectedDay} will unlock on that date.`
+                    : task.isCompleted
+                    ? "Mark as incomplete"
+                    : "Mark as complete"
+                }
+                aria-label={
+                  !isToday
+                    ? "Task locked"
+                    : task.isCompleted
+                    ? "Mark incomplete"
+                    : "Mark complete"
+                }
               >
-                {task.isCompleted && (
+                {task.isCompleted ? (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                )}
+                ) : !isToday ? (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                ) : null}
               </button>
             </div>
           ))

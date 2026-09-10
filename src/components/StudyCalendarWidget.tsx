@@ -47,6 +47,19 @@ const defaultSeptemberDots: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock"
   30: ["Mock"],
 };
 
+const defaultOctoberDots: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock">> = {
+  1: ["QA", "DILR"],
+  2: ["VARC", "QA"],
+  3: ["DILR", "Mock"],
+  4: ["QA", "VARC"],
+  5: ["QA", "DILR"],
+  6: ["QA", "VARC"],
+  7: ["Mock"],
+  8: ["DILR", "VARC"],
+  9: ["QA", "DILR"],
+  10: ["QA", "VARC"],
+};
+
 export default function StudyCalendarWidget({
   selectedMonthIndex,
   onSelectMonthIndex,
@@ -62,6 +75,7 @@ export default function StudyCalendarWidget({
 
   const year = selectedYear || 2026;
   const isSeptember = selectedMonthIndex === 8 && year === 2026;
+  const isOctober = selectedMonthIndex === 9 && year === 2026;
 
   const handlePrevMonth = () => {
     onSelectMonthIndex(selectedMonthIndex === 0 ? 11 : selectedMonthIndex - 1);
@@ -88,9 +102,13 @@ export default function StudyCalendarWidget({
 
   // 2. Current month days
   for (let d = 1; d <= daysInMonth; d++) {
-    const dots = isSeptember
-      ? (taskCategoryMap && taskCategoryMap[d] ? taskCategoryMap[d] : defaultSeptemberDots[d])
-      : (taskCategoryMap && taskCategoryMap[d] ? taskCategoryMap[d] : undefined);
+    const dots = taskCategoryMap && taskCategoryMap[d]
+      ? taskCategoryMap[d]
+      : isSeptember
+      ? defaultSeptemberDots[d]
+      : isOctober
+      ? defaultOctoberDots[d]
+      : undefined;
 
     calendarDays.push({
       day: d,
@@ -161,9 +179,8 @@ export default function StudyCalendarWidget({
 
         {calendarDays.map((item, idx) => {
           const isActive = item.isCurrentMonth && item.day === selectedDay;
-          // Only show dots if we are in the active curriculum month (September)
-          const dots = isSeptember
-            ? ((item.isCurrentMonth && taskCategoryMap && taskCategoryMap[item.day])
+          const dots = item.isCurrentMonth
+            ? ((taskCategoryMap && taskCategoryMap[item.day])
                 ? taskCategoryMap[item.day]
                 : item.dots)
             : undefined;

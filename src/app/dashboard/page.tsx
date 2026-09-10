@@ -770,6 +770,10 @@ export default function DashboardPage() {
   }, [scheduleTasks, selectedMonthIndex, selectedYear]);
 
   const handleToggleTask = (id: string) => {
+    // Only allow toggling tasks for today (September 10, 2026)
+    if (selectedMonthIndex !== 8 || selectedYear !== 2026 || selectedDay !== 10) {
+      return;
+    }
     setScheduleTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, isCompleted: !t.isCompleted } : t))
     );

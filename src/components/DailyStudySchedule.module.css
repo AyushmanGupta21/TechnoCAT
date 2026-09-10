@@ -315,6 +315,18 @@
   color: #FFFFFF;
 }
 
+.checkboxBtnLocked {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+.checkboxBtnLocked:hover {
+  border-color: #CBD5E1 !important;
+  transform: none !important;
+}
+
 .emptyTasks {
   text-align: center;
   padding: 32px 16px;
