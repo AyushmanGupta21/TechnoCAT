@@ -156,9 +156,13 @@ export default function BrowsePage() {
               return (
                 <div key={topic.id} className={styles.topicCard}>
                   {/* Banner */}
-                  <div className={styles.cardBanner} style={{ background: topic.bannerGradient }}>
+                  <div className={styles.cardBanner} style={{ background: topic.bannerGradient || "#1F2937" }}>
                     {topic.bannerImage && (
-                      <div className={styles.cardBannerBg} style={{ backgroundImage: `url(${topic.bannerImage})` }} />
+                      <img 
+                        src={topic.bannerImage} 
+                        alt={topic.title}
+                        className={styles.cardBannerBg}
+                      />
                     )}
                     <div className={styles.topicBadge}>{topic.category}</div>
                   </div>
@@ -183,6 +187,10 @@ export default function BrowsePage() {
                           onClick={() => router.push(`/topics/${topic.id}`)}
                         >
                           Go to Course
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
                         </button>
                       ) : (
                         <button 
@@ -193,6 +201,10 @@ export default function BrowsePage() {
                           }}
                         >
                           Enroll Now
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
                         </button>
                       )}
                     </div>

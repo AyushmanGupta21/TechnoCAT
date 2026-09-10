@@ -1,6 +1,6 @@
 .browseWrapper {
   min-height: 100vh;
-  background-color: #F9FAFB;
+  background-color: #F3F4F6;
   display: flex;
   flex-direction: column;
 }
@@ -80,28 +80,33 @@
 
 /* Hero Section */
 .heroSection {
-  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
   padding: 60px 24px;
   text-align: center;
-  color: #fff;
+  color: #0F172A;
+  border-bottom: 1px solid #BAE6FD;
 }
 
 .heroTitle {
   font-size: 32px;
   font-weight: 800;
   margin-bottom: 16px;
+  color: #111827;
 }
 
 .heroSubtitle {
   font-size: 16px;
-  color: #BFDBFE;
+  color: #6B7280;
   margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .searchBox {
+  position: relative;
   max-width: 600px;
   margin: 0 auto;
-  position: relative;
 }
 
 .searchInput {
@@ -147,7 +152,7 @@
 }
 
 .categoryCard {
-  background: #FFF;
+  background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   padding: 20px;
@@ -156,6 +161,7 @@
   gap: 16px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .categoryCard:hover {
@@ -205,6 +211,7 @@
   flex-direction: column;
   transition: all 0.2s ease;
   text-decoration: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .topicCard:hover {
@@ -214,20 +221,20 @@
 }
 
 .cardBanner {
-  height: 120px;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 170px;
   overflow: hidden;
 }
 
 .cardBannerBg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.15;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.topicCard:hover .cardBannerBg {
+  transform: scale(1.05);
 }
 
 .topicBadge {
@@ -306,9 +313,13 @@
 }
 
 .enrollBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   text-align: center;
@@ -319,7 +330,7 @@
 
 .btnPrimary {
   background: #2563EB;
-  color: #fff;
+  color: #ffffff;
 }
 
 .btnPrimary:hover {
@@ -332,8 +343,10 @@
   border: 1px solid #BFDBFE;
 }
 
-.btnSecondary:hover {
-  background: #DBEAFE;
+.topicCard:hover .btnSecondary {
+  background: #2563EB;
+  color: #ffffff;
+  border-color: #2563EB;
 }
 
 .noResults {
