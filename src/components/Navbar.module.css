@@ -36,67 +36,6 @@
   gap: 12px;
 }
 
-.topBarLeft {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.whatsappBtn {
-  display: inline-flex;
-  padding: 4px 9px;
-  align-items: center;
-  border-radius: 5px;
-  gap: 5px;
-  cursor: pointer;
-  color: #ffffff;
-  font-size: 11px;
-  text-align: left;
-  background-color: #075e54;
-  transition: opacity 0.2s;
-  line-height: 1.1;
-  text-decoration: none;
-}
-
-.whatsappBtn:hover {
-  opacity: 0.92;
-}
-
-.whatsappIcon {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
-
-.whatsappSub {
-  font-size: 9px;
-  font-weight: 400;
-  opacity: 0.85;
-}
-
-.downloadAppBtn {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 5px;
-  gap: 5px;
-  cursor: pointer;
-  padding: 4px 9px;
-  color: #ffffff;
-  background: #000000;
-  text-align: left;
-  transition: background 0.2s;
-  text-decoration: none;
-}
-
-.downloadAppBtn:hover {
-  background: #222222;
-}
-
-.downloadAppTitle {
-  font-size: 13px;
-  font-weight: 600;
-}
 
 .utilityLinks {
   display: flex;
@@ -193,32 +132,7 @@
   color: #ED1C24;
 }
 
-.startupBadge {
-  font-size: 10px;
-  line-height: 1.2;
-  color: #9ca3af;
-  flex-shrink: 0;
-  cursor: pointer;
-  user-select: none;
-}
 
-.recognisedBy {
-  display: block;
-  font-size: 9px;
-  letter-spacing: 0.02em;
-}
-
-.startupIndia {
-  color: #f6b200;
-  font-weight: 700;
-}
-
-/* Hide startup badge if screen reduces by a little to prevent cramped menu */
-@media (max-width: 1180px) {
-  .startupBadge {
-    display: none;
-  }
-}
 
 /* Nav links list */
 .navLinks {
@@ -424,50 +338,6 @@
   }
 }
 
-.mobileTopBar {
-  background: #075e54;
-  padding: 5px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  pointer-events: auto;
-}
-
-.mobileWhatsappBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: opacity 0.2s;
-  pointer-events: auto;
-}
-
-.mobileWhatsappBtn:hover {
-  opacity: 0.9;
-}
-
-.mobileGetPdfsBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 3px 9px;
-  border-radius: 4px;
-  text-decoration: none;
-  transition: background 0.2s;
-  pointer-events: auto;
-}
-
-.mobileGetPdfsBtn:hover {
-  background: rgba(0, 0, 0, 0.4);
-}
 
 .mobileMainBar {
   background: #000000;
@@ -649,15 +519,7 @@
   gap: 8px;
 }
 
-.drawerBadge {
-  font-size: 10px;
-  font-weight: 700;
-  color: #f6b200;
-  background: rgba(246, 178, 0, 0.12);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(246, 178, 0, 0.25);
-}
+
 
 .drawerCloseBtn {
   background: rgba(255, 255, 255, 0.08);
