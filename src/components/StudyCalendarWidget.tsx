@@ -58,6 +58,16 @@ const defaultOctoberDots: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock">>
   8: ["DILR", "VARC"],
   9: ["QA", "DILR"],
   10: ["QA", "VARC"],
+  11: ["QA", "DILR"],
+  12: ["Mock"],
+  13: ["VARC", "QA"],
+  14: ["DILR"],
+  15: ["QA", "VARC"],
+  16: ["DILR"],
+  17: ["QA"],
+  18: ["Mock"],
+  19: ["VARC"],
+  20: ["QA", "DILR"],
 };
 
 export default function StudyCalendarWidget({
@@ -160,8 +170,9 @@ export default function StudyCalendarWidget({
           type="button"
           className={styles.todayBtn}
           onClick={() => {
-            onSelectMonthIndex(8); // Jump to September
-            onSelectDay(10); // Jump to Today: 10
+            const now = new Date();
+            onSelectMonthIndex(now.getMonth());
+            onSelectDay(now.getDate());
           }}
         >
           Today

@@ -239,6 +239,17 @@ const initialCurriculumTasks: ScheduleItem[] = [
     isCompleted: false,
   },
   {
+    id: "d11-2",
+    day: 11,
+    timeRange: "03:30 PM",
+    duration: "60 min",
+    category: "QA",
+    code: "CAT-QA-07",
+    title: "Linear Equations & Special Word Problems",
+    subtitle: "Module 1.7 • Advanced Variables & Integer Solutions",
+    isCompleted: false,
+  },
+  {
     id: "d12-1",
     day: 12,
     timeRange: "10:00 AM",
@@ -739,17 +750,206 @@ const initialCurriculumTasks: ScheduleItem[] = [
     subtitle: "Module 3.10 • Speed Reading & Coherence Matching",
     isCompleted: false,
   },
+  {
+    id: "oct11-1",
+    day: 11,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "10:00 AM",
+    duration: "60 min",
+    category: "QA",
+    code: "CAT-QA-22",
+    title: "Higher Degree Polynomials & Roots Theorem",
+    subtitle: "Module 5.4 • Remainder Theorem & Descarte's Rule",
+    isCompleted: false,
+  },
+  {
+    id: "oct11-2",
+    day: 11,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "02:30 PM",
+    duration: "60 min",
+    category: "DILR",
+    code: "CAT-DILR-15",
+    title: "Venn Diagrams: 4-Set Overlaps & Bound Conditions",
+    subtitle: "Module 2.15 • Complex Inclusion-Exclusion",
+    isCompleted: false,
+  },
+  {
+    id: "oct12-1",
+    day: 12,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "09:00 AM",
+    duration: "120 min",
+    category: "Mock",
+    code: "MOCK-07",
+    title: "All-India Proctored CAT Full Mock 07",
+    subtitle: "Timed National Simulation • In-depth Analysis",
+    isCompleted: false,
+  },
+  {
+    id: "oct13-1",
+    day: 13,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "10:30 AM",
+    duration: "60 min",
+    category: "VARC",
+    code: "CAT-VARC-14",
+    title: "Critical Reasoning: Fallacies & Parallel Reasoning",
+    subtitle: "Module 3.11 • Logical Fallacy Identification",
+    isCompleted: false,
+  },
+  {
+    id: "oct13-2",
+    day: 13,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "03:30 PM",
+    duration: "60 min",
+    category: "QA",
+    code: "CAT-QA-23",
+    title: "Sequence & Series: AP, GP, HP & Special Series",
+    subtitle: "Module 5.5 • Telescoping Sums & Sigma Operations",
+    isCompleted: false,
+  },
+  {
+    id: "oct14-1",
+    day: 14,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "11:00 AM",
+    duration: "75 min",
+    category: "DILR",
+    code: "CAT-DILR-16",
+    title: "Scheduling & Resource Allocation Caselets",
+    subtitle: "Module 2.16 • Project Timelines & Critical Paths",
+    isCompleted: false,
+  },
+  {
+    id: "oct15-1",
+    day: 15,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "09:30 AM",
+    duration: "60 min",
+    category: "QA",
+    code: "CAT-QA-24",
+    title: "Functions & Graphs: Transformations & Max/Min",
+    subtitle: "Module 5.6 • Even/Odd Functions & Symmetry",
+    isCompleted: false,
+  },
+  {
+    id: "oct15-2",
+    day: 15,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "04:00 PM",
+    duration: "60 min",
+    category: "VARC",
+    code: "CAT-VARC-15",
+    title: "Advanced RC: Sociology & Anthropology Passages",
+    subtitle: "Module 3.12 • Structural Mapping & Inference Drills",
+    isCompleted: false,
+  },
+  {
+    id: "oct16-1",
+    day: 16,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "02:00 PM",
+    duration: "60 min",
+    category: "DILR",
+    code: "CAT-DILR-17",
+    title: "Scatter Plots & Bubble Charts Interpretation",
+    subtitle: "Module 2.17 • Multi-variate Trend Analysis",
+    isCompleted: false,
+  },
+  {
+    id: "oct17-1",
+    day: 17,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "10:00 AM",
+    duration: "75 min",
+    category: "QA",
+    code: "CAT-QA-25",
+    title: "Coordinate Geometry: Lines, Slopes & Distances",
+    subtitle: "Module 4.4 • Area of Triangles & Collinearity",
+    isCompleted: false,
+  },
+  {
+    id: "oct18-1",
+    day: 18,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "09:00 AM",
+    duration: "120 min",
+    category: "Mock",
+    code: "MOCK-08",
+    title: "TechnoCAT National Benchmark Mock 08",
+    subtitle: "Full-Length 3-Section Simulated Exam",
+    isCompleted: false,
+  },
+  {
+    id: "oct19-1",
+    day: 19,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "03:00 PM",
+    duration: "60 min",
+    category: "VARC",
+    code: "CAT-VARC-16",
+    title: "Para Completion & Paragraph Jumbles Mastery",
+    subtitle: "Module 3.13 • 25 High-Accuracy Benchmark Drills",
+    isCompleted: false,
+  },
+  {
+    id: "oct20-1",
+    day: 20,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "09:30 AM",
+    duration: "60 min",
+    category: "QA",
+    code: "CAT-QA-26",
+    title: "Trigonometry & Heights and Distances",
+    subtitle: "Module 4.5 • Standard Angles & Elevation Problems",
+    isCompleted: false,
+  },
+  {
+    id: "oct20-2",
+    day: 20,
+    monthIndex: 9,
+    year: 2026,
+    timeRange: "02:30 PM",
+    duration: "60 min",
+    category: "DILR",
+    code: "CAT-DILR-18",
+    title: "Spider Charts & Radar Graphs Interpretation",
+    subtitle: "Module 2.18 • High Density Data Comparison",
+    isCompleted: false,
+  },
 ];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [activeNav, setActiveNav] = useState("Dashboard");
 
-  // Dynamic Planner & Calendar State
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(8); // September (8)
-  const [selectedYear, setSelectedYear] = useState(2026);
-  const [selectedDay, setSelectedDay] = useState(10); // Default to Today
+  // Dynamic Planner & Calendar State - automatically derived from current date
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(() => new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
   const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>(initialCurriculumTasks);
+
+  useEffect(() => {
+    const now = new Date();
+    setSelectedMonthIndex(now.getMonth());
+    setSelectedYear(now.getFullYear());
+    setSelectedDay(now.getDate());
+  }, []);
 
   // Dynamic taskCategoryMap for the calendar indicator dots
   const taskCategoryMap = useMemo(() => {
@@ -770,8 +970,13 @@ export default function DashboardPage() {
   }, [scheduleTasks, selectedMonthIndex, selectedYear]);
 
   const handleToggleTask = (id: string) => {
-    // Only allow toggling tasks for today (September 10, 2026)
-    if (selectedMonthIndex !== 8 || selectedYear !== 2026 || selectedDay !== 10) {
+    // Only allow toggling tasks for today
+    const now = new Date();
+    const isToday =
+      selectedMonthIndex === now.getMonth() &&
+      selectedYear === now.getFullYear() &&
+      selectedDay === now.getDate();
+    if (!isToday) {
       return;
     }
     setScheduleTasks((prev) =>
@@ -818,7 +1023,13 @@ export default function DashboardPage() {
   // Add Task Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
-  const [taskDate, setTaskDate] = useState("2026-09-10");
+  const [taskDate, setTaskDate] = useState(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  });
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   // Detailed Metric Modal State

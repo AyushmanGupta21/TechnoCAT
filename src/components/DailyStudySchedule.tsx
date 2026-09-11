@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./DailyStudySchedule.module.css";
 
 export interface ScheduleItem {
@@ -46,16 +46,39 @@ export default function DailyStudySchedule({
 
   const monthName = months[selectedMonthIndex] || "September";
 
-  // Today is fixed at September 10, 2026
-  const TODAY_YEAR = 2026;
-  const TODAY_MONTH_INDEX = 8; // September
-  const TODAY_DAY = 10;
+  // Today is automatically derived from the system/browser date
+  const [todayState, setTodayState] = useState(() => {
+    const now = new Date();
+    return {
+      year: now.getFullYear(),
+      monthIndex: now.getMonth(),
+      day: now.getDate(),
+    };
+  });
 
-  // Selected date numeric comparison (e.g. 20260910)
+  useEffect(() => {
+    const now = new Date();
+    setTodayState({
+      year: now.getFullYear(),
+      monthIndex: now.getMonth(),
+      day: now.getDate(),
+    });
+  }, []);
+
+  const TODAY_YEAR = todayState.year;
+  const TODAY_MONTH_INDEX = todayState.monthIndex;
+  const TODAY_DAY = todayState.day;
+
+  // Selected date numeric comparison (e.g. 20260911)
   const selectedDateVal = selectedYear * 10000 + (selectedMonthIndex + 1) * 100 + selectedDay;
-  const todayDateVal = TODAY_YEAR * 10000 + (TODAY_MONTH_INDEX + 1) * 100 + TODAY_DAY; // 20260910
-  // Rolling 30-day window from today reaches through October 10, 2026
-  const maxRollingDateVal = TODAY_YEAR * 10000 + (TODAY_MONTH_INDEX + 2) * 100 + TODAY_DAY; // 20261010
+  const todayDateVal = TODAY_YEAR * 10000 + (TODAY_MONTH_INDEX + 1) * 100 + TODAY_DAY;
+  
+  // Rolling 30-day window from today reaches 30 days into the future
+  const maxRollingDate = new Date(TODAY_YEAR, TODAY_MONTH_INDEX, TODAY_DAY + 30);
+  const maxRollingDateVal =
+    maxRollingDate.getFullYear() * 10000 +
+    (maxRollingDate.getMonth() + 1) * 100 +
+    maxRollingDate.getDate();
 
   const isToday = selectedDateVal === todayDateVal;
   const isPast = selectedDateVal < todayDateVal;
@@ -69,18 +92,19 @@ export default function DailyStudySchedule({
     return taskMonth === selectedMonthIndex && taskYear === selectedYear && t.day === selectedDay;
   });
 
-  // Overdue tasks from previous days in current month rolled over to today
+  // Overdue tasks from previous days rolled over to today
   const overdueTasks = isToday
     ? tasks.filter((t) => {
         const taskMonth = t.monthIndex !== undefined ? t.monthIndex : 8;
         const taskYear = t.year !== undefined ? t.year : 2026;
-        return taskMonth === 8 && taskYear === 2026 && t.day < 10 && !t.isCompleted;
+        const taskDateVal = taskYear * 10000 + (taskMonth + 1) * 100 + t.day;
+        return taskDateVal < todayDateVal && !t.isCompleted;
       })
     : [];
 
   const allVisibleTasks = isToday
     ? [
-        ...overdueTasks.map((t) => ({ ...t, originalDay: t.day })),
+        ...overdueTasks.map((t) => ({ ...t, originalDay: t.day, originalMonthIndex: t.monthIndex })),
         ...currentDayTasks,
       ]
     : currentDayTasks;
@@ -214,9 +238,9 @@ export default function DailyStudySchedule({
                       {task.category}
                     </span>
                     <span className={styles.codeBadge}>{task.code}</span>
-                    {task.originalDay && task.originalDay < selectedDay && (
+                    {task.originalDay && (
                       <span className={styles.rescheduledBadge}>
-                        ⚠️ Rolled Over from Sep {task.originalDay}
+                        ⚠️ Rolled Over from {months[task.monthIndex ?? 8]?.slice(0, 3)} {task.originalDay}
                       </span>
                     )}
                   </div>
