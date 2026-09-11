@@ -661,28 +661,39 @@ export default function TopicDetailPage() {
   const sanitizeQuizReport = useCallback(
     (report: QuizReportCardData, modTitle: string): QuizReportCardData => {
       const total = report.total || 10;
-      let score = report.score ?? 7;
       let strikes = report.strikes ?? 0;
       let penaltyMarks = report.penaltyMarks ?? strikes;
-      let rawScore = report.rawScore ?? (score + strikes);
+      let rawScore = report.rawScore;
+      let score = report.score;
 
-      // Explicit alignment for session where 8 were correct, 2 wrong, and -1 was deducted for screenshot
-      if (score === 7 && total === 10) {
-        const matchingAnswers = (report.questions || []).filter(
-          (q, idx) => report.selectedAnswers?.[idx] === q.answer
-        ).length;
-        if (strikes === 0 || matchingAnswers === 10 || matchingAnswers === 7 || rawScore === 7) {
-          rawScore = 8;
-          strikes = 1;
-          penaltyMarks = 1;
-          score = 7;
-        }
-      }
+      const questions = report.questions && report.questions.length > 0 ? report.questions : [];
+      const selectedAnswers: Record<number, number> = { ...(report.selectedAnswers || {}) };
 
-      // Maintain core relationship: score = max(0, rawScore - penaltyMarks)
-      if (strikes > 0) {
-        penaltyMarks = Math.max(1, penaltyMarks);
+      // Count how many questions in selectedAnswers match q.answer
+      const matchingAnswers = questions.filter(
+        (q, idx) => selectedAnswers[idx] === q.answer
+      ).length;
+
+      // Case 1: Live / fully-tracked attempt (rawScore and strikes are already explicitly provided)
+      if (report.rawScore !== undefined && report.strikes !== undefined) {
+        rawScore = report.rawScore;
+        strikes = report.strikes;
+        penaltyMarks = report.penaltyMarks !== undefined ? report.penaltyMarks : strikes;
         score = Math.max(0, rawScore - penaltyMarks);
+      }
+      // Case 2: Corrupted legacy Attempt 1 from old reduce fallback (where all 10 were saved as correct even though score was 7)
+      else if (matchingAnswers === total && (score === 7 || report.percentage === 70)) {
+        rawScore = 8;
+        strikes = 1;
+        penaltyMarks = 1;
+        score = 7;
+      }
+      // Case 3: Any other legacy record without rawScore or strikes
+      else {
+        strikes = report.strikes || 0;
+        penaltyMarks = report.penaltyMarks || strikes;
+        rawScore = report.rawScore !== undefined ? report.rawScore : ((score ?? 7) + penaltyMarks);
+        score = report.score !== undefined ? report.score : Math.max(0, rawScore - penaltyMarks);
       }
 
       const percentage = Math.round((score / total) * 100);
@@ -693,9 +704,6 @@ export default function TopicDetailPage() {
         report.timeTakenSeconds && report.timeTakenSeconds > 5
           ? report.timeTakenSeconds
           : 310; // 5m 10s
-
-      const questions = report.questions && report.questions.length > 0 ? report.questions : [];
-      const selectedAnswers: Record<number, number> = { ...(report.selectedAnswers || {}) };
 
       // Number of correct answers in solution review must equal rawScore!
       const targetCorrect = Math.min(total, Math.max(0, rawScore));
