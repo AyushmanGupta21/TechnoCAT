@@ -15,7 +15,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconAi}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="12" y="12" width="40" height="40" rx="8" fill="url(#paint0_linear)" />
           <path d="M24 12V8M40 12V8M24 56V52M40 56V52M12 24H8M12 40H8M56 24H52M56 40H52" stroke="#60A5FA" strokeWidth="4" strokeLinecap="round"/>
           <text x="32" y="38" fill="white" fontSize="18" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">AI</text>
@@ -41,7 +41,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconDart}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="32" cy="32" r="24" fill="#E0F2FE"/>
           <circle cx="32" cy="32" r="16" fill="#BAE6FD"/>
           <circle cx="32" cy="32" r="8" fill="#3B82F6"/>
@@ -64,7 +64,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconSchool}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M32 12L12 24V52H52V24L32 12Z" fill="#CCFBF1"/>
           <rect x="24" y="36" width="16" height="16" fill="#0D9488"/>
           <circle cx="32" cy="24" r="4" fill="#0D9488"/>
@@ -85,7 +85,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconMock}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="16" y="8" width="32" height="48" rx="4" fill="#E0F2FE"/>
           <path d="M24 20H40M24 32H40M24 44H32" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round"/>
           <circle cx="40" cy="44" r="4" fill="#F59E0B"/>
@@ -106,7 +106,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconChart}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="12" y="36" width="8" height="20" rx="2" fill="#C7D2FE"/>
           <rect x="28" y="24" width="8" height="32" rx="2" fill="#818CF8"/>
           <rect x="44" y="12" width="8" height="44" rx="2" fill="#4F46E5"/>
@@ -127,7 +127,7 @@ const features = [
     ),
     icon: (
       <div className={styles.iconCommunity}>
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="32" cy="20" r="10" fill="#38BDF8"/>
           <path d="M12 52C12 40.9543 20.9543 32 32 32C43.0457 32 52 40.9543 52 52" fill="#0EA5E9"/>
           <circle cx="16" cy="28" r="6" fill="#7DD3FC"/>
