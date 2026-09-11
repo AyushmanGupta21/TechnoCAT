@@ -71,7 +71,16 @@ export default function FaqSection() {
   return (
     <section className={styles.section}>
       <div className={styles.container}>
-        <h2 className={styles.heading}>FAQs: TechnoCAT Mock Test</h2>
+        <div className={styles.titleGroup}>
+          <h2 className={styles.heading}>
+            FAQs: <span className={styles.headingHighlight}>TechnoCAT Mock Test</span>
+          </h2>
+          <p className={styles.subHeading}>
+            Find answers to the most common questions about our CAT mock tests.<br/>
+            Get clarity and prepare with confidence.
+          </p>
+        </div>
+        
         <div className={styles.list}>
           {faqs.map((faq, i) => {
             const isOpen = openIndex === i;
@@ -82,9 +91,12 @@ export default function FaqSection() {
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                   aria-expanded={isOpen}
                 >
-                  <span>{faq.q}</span>
-                  <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div className={styles.questionLeft}>
+                    <div className={styles.iconBox}>?</div>
+                    <span className={styles.questionText}>{faq.q}</span>
+                  </div>
+                  <span className={styles.chevron}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="m6 9 6 6 6-6" />
                     </svg>
                   </span>
