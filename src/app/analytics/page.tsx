@@ -67,8 +67,7 @@ function AnalyticsPageContent() {
           <nav className={styles.topNav} aria-label="Analytics Navigation">
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
               <Link href="/dashboard" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <span className={styles.logoTechno}>Techno</span>
-                <span className={styles.logoCAT}>CAT</span>
+                <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
               </Link>
               <Link href="/dashboard" className={styles.backDashboardBtn}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

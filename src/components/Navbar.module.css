@@ -84,9 +84,10 @@
 }
 
 .mainNavInner {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 6px 1rem;
+  padding: 0 24px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -122,14 +123,21 @@
   letter-spacing: -0.03em;
   user-select: none;
   line-height: 1;
+  gap: 0;
 }
 
 .textLogoTechno {
   color: var(--text-main);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .textLogoCAT {
   color: #2563EB;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 
@@ -341,7 +349,8 @@
 
 .mobileMainBar {
   background: var(--white);
-  padding: 8px 16px;
+  padding: 0 16px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -397,7 +406,7 @@
 }
 
 .mobileLogoLink .textLogo {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .mobileNavRight {

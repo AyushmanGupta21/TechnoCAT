@@ -34,9 +34,8 @@ export default function BrowsePage() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav}>
             {/* Brand Logo */}
-            <Link href="/" className={styles.brandLogo}>
-              <span className={styles.logoTechno}>Techno</span>
-              <span className={styles.logoCAT}>CAT</span>
+            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
+              <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
             </Link>
 
             {/* Nav Menu */}

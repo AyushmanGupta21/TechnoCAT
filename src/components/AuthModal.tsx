@@ -82,8 +82,7 @@ export default function AuthModal() {
             ✕
           </button>
           <div className={styles.brandLogo}>
-            <span className={styles.logoTechno}>Techno</span>
-            <span className={styles.logoCAT}>CAT</span>
+            <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
           </div>
           <p className={styles.modalSubtitle}>
             {authModalTab === "signin"

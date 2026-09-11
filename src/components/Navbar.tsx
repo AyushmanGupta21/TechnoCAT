@@ -227,8 +227,7 @@ export default function Navbar() {
               {/* Logo */}
               <Link href="/" className={styles.logoLink}>
                 <span className={styles.textLogo}>
-                  <span className={styles.textLogoTechno}>Techno</span>
-                  <span className={styles.textLogoCAT}>CAT</span>
+                  <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
                 </span>
               </Link>
 
@@ -411,8 +410,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className={styles.mobileLogoLink}>
               <span className={styles.textLogo}>
-                <span className={styles.textLogoTechno}>Techno</span>
-                <span className={styles.textLogoCAT}>CAT</span>
+                <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
               </span>
             </Link>
           </div>
@@ -491,8 +489,7 @@ export default function Navbar() {
           <div className={styles.drawerBrand}>
             <Link href="/" onClick={closeDrawer} className={styles.mobileLogoLink}>
               <span className={styles.textLogo}>
-                <span className={styles.textLogoTechno}>Techno</span>
-                <span className={styles.textLogoCAT}>CAT</span>
+                <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
               </span>
             </Link>
 

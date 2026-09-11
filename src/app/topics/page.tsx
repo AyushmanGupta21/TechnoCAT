@@ -40,8 +40,7 @@ export default function TopicsListPage() {
           <nav className={styles.topNav} aria-label="Topics Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <span className={styles.logoTechno}>Techno</span>
-              <span className={styles.logoCAT}>CAT</span>
+              <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
             </Link>
 
             {/* Nav Menu */}

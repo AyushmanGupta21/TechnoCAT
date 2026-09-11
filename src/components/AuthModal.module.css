@@ -66,17 +66,25 @@
 .brandLogo {
   font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin-bottom: 8px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
 }
 
 .logoTechno {
-  color: var(--navy-dark);
+  color: #0F172A;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .logoCAT {
-  color: var(--primary);
+  color: #2563EB;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .modalSubtitle {
