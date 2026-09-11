@@ -120,9 +120,9 @@
 }
 
 /* Specific card colors based on pastel theme */
-.card1 .iconBox { background: var(--primary-light); color: var(--primary); }
-.card2 .iconBox { background: var(--secondary-light); color: var(--secondary); }
-.card3 .iconBox { background: var(--accent-light); color: var(--accent); }
-.card4 .iconBox { background: #fee2e2; color: #ef4444; }
-.card5 .iconBox { background: #dcfce7; color: #22c55e; }
-.card6 .iconBox { background: #f3e8ff; color: #a855f7; }
+.card1 .iconBox { background: var(--indigo-light); color: var(--indigo); } /* AI */
+.card2 .iconBox { background: var(--primary-light); color: var(--deep-blue); }
+.card3 .iconBox { background: var(--teal-light); color: var(--teal); }
+.card4 .iconBox { background: var(--primary-light); color: var(--primary); }
+.card5 .iconBox { background: var(--accent-light); color: var(--accent); }
+.card6 .iconBox { background: var(--teal-light); color: var(--teal-hover); }

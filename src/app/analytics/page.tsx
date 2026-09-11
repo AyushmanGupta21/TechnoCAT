@@ -344,7 +344,7 @@ function AnalyticsPageContent() {
                   className={styles.habitCard}
                   onClick={() => setInspectingMetricId("streak")}
                 >
-                  <div className={styles.habitIconBox} style={{ background: "#FFF7ED", color: "#EA580C" }}>🔥</div>
+                  <div className={styles.habitIconBox} style={{ background: "#FFF7ED", color: "#1D4ED8" }}>🔥</div>
                   <div className={styles.habitInfo}>
                     <div className={styles.habitTitle}>Active Study Streak</div>
                     <div className={styles.habitValue}>{METRIC_DETAILS.streak.currentValue[timeframe]}</div>
@@ -455,7 +455,7 @@ function AnalyticsPageContent() {
 
                 <div className={styles.difficultyLegends}>
                   <div className={styles.diffLegendTag}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#10B981" }}></span>
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#0D9488" }}></span>
                     Easy Questions (&gt;85%)
                   </div>
                   <div className={styles.diffLegendTag}>
@@ -463,7 +463,7 @@ function AnalyticsPageContent() {
                     Moderate Questions (70-85%)
                   </div>
                   <div className={styles.diffLegendTag}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#F59E0B" }}></span>
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#6366F1" }}></span>
                     Difficult Questions (&lt;70%)
                   </div>
                 </div>
@@ -559,7 +559,7 @@ function AnalyticsPageContent() {
                               className={styles.accuracyBarFill}
                               style={{
                                 width: `${t.accuracy}%`,
-                                background: t.accuracy >= 80 ? "#10B981" : t.accuracy >= 70 ? "#F59E0B" : "#EF4444",
+                                background: t.accuracy >= 80 ? "#0D9488" : t.accuracy >= 70 ? "#6366F1" : "#EF4444",
                               }}
                             />
                           </div>

@@ -195,7 +195,7 @@ function InteractiveQuizBlock({
               title="Launch full-screen TechnoEEE Quiz Viewer"
               style={{
                 padding: "3px 8px",
-                background: "linear-gradient(135deg, #10b981, #059669)",
+                background: "linear-gradient(135deg, #0D9488, #059669)",
                 color: "#ffffff",
                 border: "none",
                 borderRadius: "6px",

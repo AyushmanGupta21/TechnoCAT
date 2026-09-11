@@ -1229,7 +1229,7 @@ export default function DashboardPage() {
             {/* Card 2: Completed */}
             <div
               className={styles.metricCard}
-              style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', borderLeft: '4px solid #10b981' }}
+              style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', borderLeft: '4px solid #0D9488' }}
               onClick={() => setActiveModal("completed")}
             >
               <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
@@ -1265,7 +1265,7 @@ export default function DashboardPage() {
             {/* Card 4: Total Points */}
             <div
               className={styles.metricCard}
-              style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderLeft: '4px solid #f59e0b' }}
+              style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderLeft: '4px solid #6366F1' }}
               onClick={() => setActiveModal("points")}
             >
               <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
@@ -1348,7 +1348,7 @@ export default function DashboardPage() {
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>Quant Progress</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#10B981", background: "#D1FAE5", padding: "2px 8px", borderRadius: "6px" }}>Good Pace</span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#0D9488", background: "#F0FDFA", padding: "2px 8px", borderRadius: "6px" }}>Good Pace</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>VARC Progress</span>
@@ -1393,7 +1393,7 @@ export default function DashboardPage() {
                 </div>
                 <div className={styles.agendaItem}>
                   <div className={styles.agendaLeft}>
-                    <div className={styles.agendaIconBox} style={{ background: "#10B981" }}>
+                    <div className={styles.agendaIconBox} style={{ background: "#0D9488" }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg>
                     </div>
                     <div>
@@ -1524,7 +1524,7 @@ export default function DashboardPage() {
                 </div>
               )}
               {activeModal === "completed" && dashboardData?.detailed?.completedTopics?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #D1FAE5', background: '#F0FDF4' }}>
+                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #F0FDFA', background: '#f0fdfa' }}>
                   <div>
                     <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
                       {topic.topic_id.replace(/-/g, ' ')}
@@ -1534,7 +1534,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#10B981' }}>+{topic.points_earned || 0} pts</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#0D9488' }}>+{topic.points_earned || 0} pts</span>
                   </div>
                 </div>
               ))}
@@ -1571,7 +1571,7 @@ export default function DashboardPage() {
                 </div>
               )}
               {activeModal === "points" && dashboardData?.detailed?.pointsHistory?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #FEF3C7', background: '#FFFBEB' }}>
+                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #eef2ff', background: '#f8fafc' }}>
                   <div>
                     <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
                       {topic.topic_id.replace(/-/g, ' ')}
@@ -1581,7 +1581,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '15px', fontWeight: '700', color: '#F59E0B' }}>+{topic.points_earned || 0} pts</span>
+                    <span style={{ fontSize: '15px', fontWeight: '700', color: '#6366F1' }}>+{topic.points_earned || 0} pts</span>
                   </div>
                 </div>
               ))}

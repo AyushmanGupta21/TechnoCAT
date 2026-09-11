@@ -117,7 +117,7 @@
 }
 
 /* Card color variations */
-.cardOrange .avatar { background: #f97316; }
-.cardGreen .avatar { background: #22c55e; }
+.cardOrange .avatar { background: #2563EB; }
+.cardGreen .avatar { background: #0D9488; }
 .cardBlue .avatar { background: var(--primary); }
 .cardPurple .avatar { background: #a855f7; }

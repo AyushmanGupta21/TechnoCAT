@@ -134,7 +134,7 @@ export default function DailyStudySchedule({
               {monthName} {selectedDay}, {selectedYear} Schedule
             </h2>
             {isToday && (
-              <span style={{ fontSize: "12px", color: "#10B981", fontWeight: "600" }}>
+              <span style={{ fontSize: "12px", color: "#0D9488", fontWeight: "600" }}>
                 ● Today&apos;s Active Planner
               </span>
             )}

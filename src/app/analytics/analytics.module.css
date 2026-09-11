@@ -441,7 +441,7 @@
 }
 
 .dotSuccess {
-  background: #10B981;
+  background: #0D9488;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
@@ -678,7 +678,7 @@
 }
 
 .barEasy {
-  background: #10B981;
+  background: #0D9488;
 }
 
 .barMedium {
@@ -686,7 +686,7 @@
 }
 
 .barHard {
-  background: #F59E0B;
+  background: #6366F1;
 }
 
 .difficultyLegends {
@@ -819,7 +819,7 @@
 }
 
 .levelModerate {
-  background: #FFFBEB;
+  background: #f8fafc;
   color: #D97706;
   border: 1px solid #FDE68A;
 }

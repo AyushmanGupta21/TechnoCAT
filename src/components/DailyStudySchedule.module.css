@@ -201,7 +201,7 @@
 }
 
 .taskCardMock {
-  border-left-color: #F59E0B;
+  border-left-color: #6366F1;
 }
 
 .leftDetails {
@@ -266,7 +266,7 @@
 }
 
 .pillMock {
-  background: #FEF3C7;
+  background: #eef2ff;
   color: #D97706;
 }
 
@@ -310,8 +310,8 @@
 }
 
 .checkboxBtnActive {
-  background: #10B981;
-  border-color: #10B981;
+  background: #0D9488;
+  border-color: #0D9488;
   color: #FFFFFF;
 }
 

@@ -7,24 +7,31 @@
 }
 
 :root {
-  --orange: #f97316;
-  --orange-dark: #ea580c;
-  --orange-hover: #fb923c;
-  
-  /* Premium Light Blue */
+  /* Primary Blue */
   --primary: #0ea5e9;
   --primary-dark: #0284c7;
   --primary-light: #e0f2fe;
   
-  --secondary: #8b5cf6;
-  --secondary-light: #ede9fe;
+  /* Deep Blue */
+  --deep-blue: #2563eb;
+  --deep-blue-hover: #1d4ed8;
   
-  /* Vibrant Contrast Accent */
-  --accent: #ff6b2b;
-  --accent-dark: #e65a20;
-  --accent-light: #ffe8e0;
+  /* Teal-Blue */
+  --teal: #0d9488;
+  --teal-hover: #0f766e;
+  --teal-light: #f0fdfa;
+  
+  /* Indigo */
+  --indigo: #6366f1;
+  --indigo-hover: #4f46e5;
+  --indigo-light: #eef2ff;
+  
+  /* Map accent to deep blue for general CTA */
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-light: #eff6ff;
 
-  --whatsapp: #25D366;
+  --whatsapp: var(--teal);
   --text-main: #1e293b;
   --text-muted: #64748b;
 

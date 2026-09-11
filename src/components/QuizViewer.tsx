@@ -286,7 +286,7 @@ export default function QuizViewer({
                 onClick={handleSubmit}
                 style={{
                   padding: "10px 28px",
-                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  background: "linear-gradient(135deg, #0D9488 0%, #059669 100%)",
                   color: "white", border: "none", borderRadius: "10px",
                   cursor: "pointer", fontWeight: "700", fontSize: "0.95rem",
                   boxShadow: "0 4px 14px rgba(16, 185, 129, 0.35)",
@@ -331,7 +331,7 @@ export default function QuizViewer({
                   const ans = selectedAnswers[idx];
                   const isCorrect = ans === questions[idx].correctAnswer;
                   bg = isCorrect ? "#ecfdf5" : "#fef2f2";
-                  border = isCorrect ? "2px solid #10b981" : "2px solid #ef4444";
+                  border = isCorrect ? "2px solid #0D9488" : "2px solid #ef4444";
                   color = isCorrect ? "#059669" : "#dc2626";
                 } else if (isCurrent) {
                   bg = "#ED1C24"; color = "white"; border = "2px solid #ED1C24";
@@ -436,10 +436,10 @@ export default function QuizViewer({
                     const isCorrect = opt.id === q.correctAnswer;
                     if (isCorrect) {
                       bg = "#ecfdf5";
-                      border = "2px solid #10b981";
+                      border = "2px solid #0D9488";
                       textColor = "#064e3b";
                       icon = (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" style={{ marginLeft: "auto" }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D9488" strokeWidth="3" style={{ marginLeft: "auto" }}>
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       );

@@ -96,11 +96,11 @@ export default function Home() {
                   const cardBg = 
                     i === 0 ? "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)" :
                     i === 1 ? "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" :
-                    "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)";
+                    "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)";
                   const borderColor = 
                     i === 0 ? "#bae6fd" :
                     i === 1 ? "#ddd6fe" :
-                    "#fde68a";
+                    "#99f6e4";
 
                   return (
                   <div
