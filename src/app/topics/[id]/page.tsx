@@ -1,15 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import TopicQuizModal from "@/components/TopicQuizModal";
+import ModuleQuizModal from "@/components/ModuleQuizModal";
+import AiAdvisorCard, { ModuleProgressItem, QuizReportCardData } from "@/components/AiAdvisorCard";
 import { useParams } from "next/navigation";
-import { TOPICS_DATA, getTopicById, Lesson } from "@/data/topicsData";
+import { TOPICS_DATA, getTopicById, Lesson, TopicModule } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
 import VideoAskPanel from "@/components/VideoAskPanel";
 import QuizViewer from "@/components/QuizViewer";
 import { getLessonKnowledge } from "@/data/videoPortions";
+import {
+  getModuleQuiz,
+  getGrandQuiz,
+  getUniqueModuleQuiz,
+  getUniqueGrandQuiz,
+  MODULE_QUIZZES,
+  ModuleQuestion,
+  QuizAnalysis,
+} from "@/data/moduleQuizData";
+import {
+  getUsedQuestionIds,
+  markQuestionsUsed,
+  getCachedNextQuiz,
+  preloadNextQuizInBackground,
+  clearModuleQuizHistory,
+} from "@/services/quizCacheService";
 import styles from "./topicDetail.module.css";
 
 function parseLessonDuration(durationStr?: string): number {
@@ -41,41 +59,182 @@ function formatTime(seconds: number): string {
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 
+function formatDurationReadable(seconds: number): string {
+  if (seconds <= 0) return "0 min";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) {
+    return `${h}h ${m > 0 ? `${m}m` : ""}`;
+  }
+  return `${m}m`;
+}
+
 export default function TopicDetailPage() {
   const { id } = useParams();
   const topicId = Array.isArray(id) ? id[0] : id || "qa-quantitative-ability";
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
+  // Find topic or default to QA
+  const topic = getTopicById(topicId) || TOPICS_DATA[0];
+
+  // Group lessons by module
+  const modulesList: TopicModule[] = useMemo(() => {
+    if (topic.modules && topic.modules.length > 0) {
+      return topic.modules;
+    }
+    const map = new Map<string, Lesson[]>();
+    topic.lessons.forEach((lesson) => {
+      const title = lesson.moduleTitle || "General Module";
+      if (!map.has(title)) map.set(title, []);
+      map.get(title)!.push(lesson);
+    });
+    return Array.from(map.entries()).map(([title, lessons]) => ({
+      title,
+      lessons,
+    }));
+  }, [topic]);
+
+  const [activeNav, setActiveNav] = useState("My Topics");
+  const initialLesson = topic.lessons.find((l) => l.active) || topic.lessons[0];
+  const [activeLessonId, setActiveLessonId] = useState<string>(initialLesson.id);
+
+  // Active module title: defaults to first module
+  const [activeModuleTitle, setActiveModuleTitle] = useState<string>(
+    modulesList[0]?.title || "Module 1"
+  );
+
+  // Completed lesson IDs: e.g. 3 videos in QA-0 (QA-0.1, QA-0.2, QA-0.3)
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() => {
+    return topic.lessons.filter((l) => l.completed).map((l) => l.id);
+  });
+
+  // Module Progress state: tracks quiz scores, pass status, attempts used
+  // NOT pre-completed! Every module quiz starts as not yet taken.
+  const [modulesProgress, setModulesProgress] = useState<Record<string, ModuleProgressItem>>(() => {
+    const init: Record<string, ModuleProgressItem> = {};
+    modulesList.forEach((mod) => {
+      const completedCount = mod.lessons.filter((l) => l.completed).length;
+      init[mod.title] = {
+        moduleTitle: mod.title,
+        totalLessons: mod.lessons.length,
+        completedLessons: completedCount,
+        quizScore: null,
+        quizPassed: false,
+        attemptsUsed: 0,
+      };
+    });
+    return init;
+  });
+
+  // Grand quiz pass status
+  const [grandQuizPassed, setGrandQuizPassed] = useState<boolean>(false);
+
+  // LocalStorage persistence per topic
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const key = `technocat_progress_${topic.id}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.activeModuleTitle) setActiveModuleTitle(parsed.activeModuleTitle);
+        if (Array.isArray(parsed.completedLessonIds)) setCompletedLessonIds(parsed.completedLessonIds);
+        if (parsed.modulesProgress) {
+          const cleaned: Record<string, ModuleProgressItem> = {};
+          for (const k of Object.keys(parsed.modulesProgress)) {
+            const item = parsed.modulesProgress[k];
+            // Clear any hardcoded test pass state
+            if (item.quizScore === 80 && item.attemptsUsed === 1 && !item.explicitlyPassedByUser) {
+              cleaned[k] = {
+                ...item,
+                quizScore: null,
+                quizPassed: false,
+                attemptsUsed: 0,
+              };
+            } else {
+              cleaned[k] = item;
+            }
+          }
+          setModulesProgress(cleaned);
+        }
+        if (parsed.grandQuizPassed !== undefined) setGrandQuizPassed(parsed.grandQuizPassed);
+      }
+    } catch {}
+  }, [topic.id]);
+
+  const saveProgressToStorage = useCallback(
+    (
+      newCompletedIds: string[],
+      newModulesProgress: Record<string, ModuleProgressItem>,
+      newActiveModule: string,
+      isGrandPassed: boolean
+    ) => {
+      if (typeof window === "undefined") return;
+      try {
+        const key = `technocat_progress_${topic.id}`;
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            activeModuleTitle: newActiveModule,
+            completedLessonIds: newCompletedIds,
+            modulesProgress: newModulesProgress,
+            grandQuizPassed: isGrandPassed,
+          })
+        );
+      } catch {}
+    },
+    [topic.id]
+  );
+
+  // Accordion expanded modules state
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    modulesList.forEach((m, idx) => {
+      map[m.title] = idx === 0; // First module open by default
+    });
+    return map;
+  });
+
+  // Active quiz modal state
+  const [moduleQuizModal, setModuleQuizModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    isGrandQuiz: boolean;
+    questions: ModuleQuestion[];
+    attemptNumber: number;
+    initialReviewMode?: boolean;
+    initialAnswers?: Record<number, number>;
+    initialAnalysis?: QuizAnalysis | null;
+    initialStrikes?: number;
+  } | null>(null);
+
+  // Practice quiz modal state (TechnoEEE lesson viewer)
   const [activeQuizModal, setActiveQuizModal] = useState<{
     title: string;
     questions: any[];
   } | null>(null);
 
-  useEffect(() => {
-    // Ensure viewport starts at the top where the video player is located
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    setPlayerState("idle");
-    const timer = setTimeout(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [topicId]);
+  const [aiQuizOpen, setAiQuizOpen] = useState<boolean>(false);
+  const [externalAiPrompt, setExternalAiPrompt] = useState<{ id: string; prompt: string } | null>(null);
 
-  // Find topic or default to QA
-  const topic = getTopicById(topicId) || TOPICS_DATA[0];
+  // Locked module warning modal
+  const [lockedAlert, setLockedAlert] = useState<{
+    isOpen: boolean;
+    lessonTitle: string;
+    moduleTitle: string;
+  } | null>(null);
 
-  const [activeNav, setActiveNav] = useState("My Topics");
-  // Default to first lesson or lesson marked active
-  const initialLesson =
-    topic.lessons.find((l) => l.active) || topic.lessons[0];
-  const [activeLessonId, setActiveLessonId] = useState<string>(initialLesson.id);
+  // Active lesson object
+  const activeLesson: Lesson =
+    topic.lessons.find((l) => l.id === activeLessonId) || initialLesson;
+
+  // Video playback & seeking state
   const [playerState, setPlayerState] = useState<"idle" | "playing" | "paused" | "ended">("idle");
   const playerCardRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const scrubberRailRef = useRef<HTMLDivElement>(null);
   const [iframeOrigin, setIframeOrigin] = useState("");
 
-  // Video playback & seeking state
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(() => parseLessonDuration(initialLesson.duration));
   const [maxWatchedTime, setMaxWatchedTime] = useState<number>(0);
@@ -87,7 +246,6 @@ export default function TopicDetailPage() {
   const [showForwardWarning, setShowForwardWarning] = useState<boolean>(false);
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Audio, Speed & Display state
   const [volume, setVolume] = useState<number>(85);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
@@ -95,15 +253,87 @@ export default function TopicDetailPage() {
   const [showControls, setShowControls] = useState<boolean>(true);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Keep maxWatchedTime ref updated for asynchronous callbacks
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    setPlayerState("idle");
+    setIframeOrigin(window.location.origin);
+  }, [topicId]);
+
+  // Pre-warm background cache for active module for instant 0ms pop-up
+  useEffect(() => {
+    if (activeModuleTitle && topic?.id) {
+      preloadNextQuizInBackground(topic.id, activeModuleTitle, false);
+    }
+  }, [topic?.id, activeModuleTitle]);
+
   useEffect(() => {
     maxWatchedTimeRef.current = maxWatchedTime;
   }, [maxWatchedTime]);
 
-  // Sync origin for YouTube JS API
-  useEffect(() => {
-    setIframeOrigin(window.location.origin);
-  }, []);
+  // Points Calculation:
+  // 10 pts per completed video
+  // 50 pts per passed module quiz
+  // 100 pts for grand quiz
+  // Real course total XP: (totalLessons * 10) + (totalModules * 50) + 100
+  // e.g. QA: 51*10 + 9*50 + 100 = 1,060 XP!
+  const totalCourseXP = useMemo(() => {
+    return topic.lessons.length * 10 + modulesList.length * 50 + 100;
+  }, [topic.lessons.length, modulesList.length]);
+
+  const totalPoints = useMemo(() => {
+    const videoPts = completedLessonIds.length * 10;
+    const passedQuizzesCount = Object.values(modulesProgress).filter((m) => m.quizPassed).length;
+    const moduleQuizPts = passedQuizzesCount * 50;
+    const grandQuizPts = grandQuizPassed ? 100 : 0;
+    return videoPts + moduleQuizPts + grandQuizPts;
+  }, [completedLessonIds, modulesProgress, grandQuizPassed]);
+
+  // Milestone Steps
+  const milestoneSteps = useMemo(() => {
+    return [
+      { label: `${Math.round(totalCourseXP * 0.25)} XP`, points: Math.round(totalCourseXP * 0.25) },
+      { label: `${Math.round(totalCourseXP * 0.5)} XP`, points: Math.round(totalCourseXP * 0.5) },
+      { label: `${Math.round(totalCourseXP * 0.75)} XP`, points: Math.round(totalCourseXP * 0.75) },
+      { label: `${totalCourseXP} XP`, points: totalCourseXP },
+    ];
+  }, [totalCourseXP]);
+
+  // Expected Time Metrics
+  const totalExpectedSeconds = useMemo(() => {
+    return topic.lessons.reduce((acc, l) => acc + parseLessonDuration(l.duration), 0);
+  }, [topic.lessons]);
+
+  const completedTimeSeconds = useMemo(() => {
+    return topic.lessons
+      .filter((l) => completedLessonIds.includes(l.id))
+      .reduce((acc, l) => acc + parseLessonDuration(l.duration), 0);
+  }, [topic.lessons, completedLessonIds]);
+
+  const overallProgressPercent = useMemo(() => {
+    if (totalCourseXP === 0) return 0;
+    return Math.round((totalPoints / totalCourseXP) * 100);
+  }, [totalPoints, totalCourseXP]);
+
+  // Module Unlocking Rule:
+  // User can view all modules
+  // User can only play lectures in their activeModuleTitle OR any previously passed modules
+  const isModuleUnlocked = useCallback(
+    (modTitle: string) => {
+      if (modTitle === activeModuleTitle) return true;
+      const modProgress = modulesProgress[modTitle];
+      if (modProgress?.quizPassed) return true;
+      return false;
+    },
+    [activeModuleTitle, modulesProgress]
+  );
+
+  // Check if all modules have passed (to unlock Grand Quiz)
+  const isAllModulesPassed = useMemo(() => {
+    return modulesList.every((m) => modulesProgress[m.title]?.quizPassed);
+  }, [modulesList, modulesProgress]);
 
   // PostMessage sender to YouTube iframe
   const sendPlayerCommand = useCallback((func: string, args: (string | number | boolean)[] = []) => {
@@ -146,174 +376,124 @@ export default function TopicDetailPage() {
     }, 2600);
   }, []);
 
-  // Scrubber calculation: allows backward dragging anywhere, strictly locks forward skipping past maxWatchedTime
-  const handleScrubberInteract = useCallback((clientX: number, commit = false) => {
-    if (!scrubberRailRef.current || duration <= 0) return;
-    const rect = scrubberRailRef.current.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const targetTime = ratio * duration;
-    const currentMax = maxWatchedTimeRef.current;
+  // Scrubber calculation
+  const handleScrubberInteract = useCallback(
+    (clientX: number, commit = false) => {
+      if (!scrubberRailRef.current || duration <= 0) return;
+      const rect = scrubberRailRef.current.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const targetTime = ratio * duration;
+      const currentMax = maxWatchedTimeRef.current;
 
-    if (targetTime > currentMax + 1.2) {
-      // Fast-forward blocked: lock to max watched time
-      triggerForwardWarning();
-      if (commit) {
-        seekTo(currentMax);
+      if (targetTime > currentMax + 1.2) {
+        triggerForwardWarning();
+        if (commit) seekTo(currentMax);
+        setCurrentTime(currentMax);
+      } else {
+        if (commit) seekTo(targetTime);
+        setCurrentTime(targetTime);
       }
-      setCurrentTime(currentMax);
-    } else {
-      // Backward or within watched section is 100% permitted
-      if (commit) {
-        seekTo(targetTime);
-      }
-      setCurrentTime(targetTime);
-    }
-  }, [duration, seekTo, triggerForwardWarning]);
+    },
+    [duration, seekTo, triggerForwardWarning]
+  );
 
-  // Global mouse & touch listeners during scrubber dragging
   useEffect(() => {
     if (!isDraggingScrubber) return;
-
-    const onMouseMove = (e: MouseEvent) => {
-      handleScrubberInteract(e.clientX, false);
-    };
+    const onMouseMove = (e: MouseEvent) => handleScrubberInteract(e.clientX, false);
     const onMouseUp = (e: MouseEvent) => {
       handleScrubberInteract(e.clientX, true);
       setIsDraggingScrubber(false);
       isDraggingRef.current = false;
     };
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        handleScrubberInteract(e.touches[0].clientX, false);
-      }
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      if (e.changedTouches.length > 0) {
-        handleScrubberInteract(e.changedTouches[0].clientX, true);
-      }
-      setIsDraggingScrubber(false);
-      isDraggingRef.current = false;
-    };
-
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("touchmove", onTouchMove);
-    window.addEventListener("touchend", onTouchEnd);
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
     };
   }, [isDraggingScrubber, handleScrubberInteract]);
 
-  const onMouseDownScrubber = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDraggingScrubber(true);
-    isDraggingRef.current = true;
-    handleScrubberInteract(e.clientX, true);
-  };
+  // Mark active lesson as completed when watched >= 88% or ended
+  const markLessonCompleted = useCallback(
+    (lessonId: string) => {
+      if (completedLessonIds.includes(lessonId)) return;
 
-  const onTouchStartScrubber = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    if (e.touches.length > 0) {
-      setIsDraggingScrubber(true);
-      isDraggingRef.current = true;
-      handleScrubberInteract(e.touches[0].clientX, true);
-    }
-  };
+      const newCompleted = [...completedLessonIds, lessonId];
+      setCompletedLessonIds(newCompleted);
 
-  const onMouseMoveRail = (e: React.MouseEvent) => {
-    if (!scrubberRailRef.current || duration <= 0) return;
-    const rect = scrubberRailRef.current.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setHoverTime(ratio * duration);
-    setHoverPos(ratio * 100);
-  };
+      const targetLesson = topic.lessons.find((l) => l.id === lessonId);
+      const modTitle = targetLesson?.moduleTitle || activeModuleTitle;
+      const modObj = modulesList.find((m) => m.title === modTitle);
+      const totalLessonsInMod = modObj?.lessons.length || 1;
+      const completedInMod =
+        modObj?.lessons.filter((l) => newCompleted.includes(l.id)).length || 1;
 
-  const onMouseLeaveRail = () => {
-    setHoverTime(null);
-  };
+      const newModProgress = {
+        ...modulesProgress,
+        [modTitle]: {
+          ...(modulesProgress[modTitle] || {
+            moduleTitle: modTitle,
+            quizScore: null,
+            quizPassed: false,
+            attemptsUsed: 0,
+          }),
+          totalLessons: totalLessonsInMod,
+          completedLessons: completedInMod,
+        },
+      };
 
-  // Rewind 10 seconds button
-  const rewind10s = useCallback(() => {
-    const target = Math.max(0, currentTime - 10);
-    seekTo(target);
-  }, [currentTime, seekTo]);
+      setModulesProgress(newModProgress);
+      saveProgressToStorage(newCompleted, newModProgress, activeModuleTitle, grandQuizPassed);
+    },
+    [
+      completedLessonIds,
+      topic.lessons,
+      activeModuleTitle,
+      modulesList,
+      modulesProgress,
+      saveProgressToStorage,
+      grandQuizPassed,
+    ]
+  );
 
-  // Mute toggle
-  const toggleMute = useCallback(() => {
-    if (isMuted) {
-      sendPlayerCommand("unMute");
-      setIsMuted(false);
-    } else {
-      sendPlayerCommand("mute");
-      setIsMuted(true);
-    }
-  }, [isMuted, sendPlayerCommand]);
+  // Mark lesson as reviewed when a student re-watches the prescribed lecture
+  const markLessonAsReviewed = useCallback(
+    (lessonId: string) => {
+      let matchedModTitle: string | null = null;
+      for (const [title, mod] of Object.entries(modulesProgress)) {
+        if (mod.recommendedLessonId === lessonId && !mod.quizPassed) {
+          matchedModTitle = title;
+          break;
+        }
+      }
 
-  // Volume slider change
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
-    setVolume(val);
-    sendPlayerCommand("setVolume", [val]);
-    if (val > 0 && isMuted) {
-      sendPlayerCommand("unMute");
-      setIsMuted(false);
-    }
-  }, [isMuted, sendPlayerCommand]);
+      if (!matchedModTitle) {
+        const targetLesson = topic.lessons.find((l) => l.id === lessonId);
+        const modTitle = targetLesson?.moduleTitle || activeModuleTitle;
+        if (modulesProgress[modTitle]?.recommendedLessonId === lessonId) {
+          matchedModTitle = modTitle;
+        }
+      }
 
-  // Cycle playback rate (1x -> 1.25x -> 1.5x -> 2x)
-  const cyclePlaybackSpeed = useCallback(() => {
-    const speeds = [1, 1.25, 1.5, 2];
-    const nextIdx = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
-    const nextSpeed = speeds[nextIdx];
-    setPlaybackSpeed(nextSpeed);
-    sendPlayerCommand("setPlaybackRate", [nextSpeed]);
-  }, [playbackSpeed, sendPlayerCommand]);
+      if (matchedModTitle && modulesProgress[matchedModTitle]) {
+        const currentMod = modulesProgress[matchedModTitle];
+        if (!currentMod.recommendedLessonCompleted) {
+          const newModProgress = {
+            ...modulesProgress,
+            [matchedModTitle]: {
+              ...currentMod,
+              recommendedLessonCompleted: true,
+            },
+          };
+          setModulesProgress(newModProgress);
+          saveProgressToStorage(completedLessonIds, newModProgress, activeModuleTitle, grandQuizPassed);
+        }
+      }
+    },
+    [modulesProgress, topic.lessons, activeModuleTitle, completedLessonIds, saveProgressToStorage, grandQuizPassed]
+  );
 
-  // Fullscreen toggle
-  const toggleFullscreen = useCallback(() => {
-    if (!playerCardRef.current) return;
-    if (!document.fullscreenElement) {
-      playerCardRef.current.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.().catch(() => {});
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
-  }, []);
-
-  // Auto-hide controls bar during active playback
-  const resetInactivityTimer = useCallback(() => {
-    setShowControls(true);
-    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    if (playerState === "playing") {
-      inactivityTimerRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    }
-  }, [playerState]);
-
-  useEffect(() => {
-    if (playerState === "paused" || playerState === "idle" || playerState === "ended") {
-      setShowControls(true);
-      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    } else if (playerState === "playing") {
-      resetInactivityTimer();
-    }
-    return () => {
-      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    };
-  }, [playerState, resetInactivityTimer]);
-
-  // Listen for YouTube IFrame player events via postMessage
+  // YouTube Iframe PostMessage Listener
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       try {
@@ -324,30 +504,27 @@ export default function TopicDetailPage() {
           data = e.data as Record<string, unknown>;
         } else return;
 
-        // YouTube postMessage event: onStateChange or infoDelivery
-        // 1 = playing, 2 = paused, 0 = ended, 3 = buffering
         if (data.event === "onStateChange") {
           if (data.info === 1) setPlayerState("playing");
           else if (data.info === 2) setPlayerState("paused");
-          else if (data.info === 0) setPlayerState("ended");
+          else if (data.info === 0) {
+            setPlayerState("ended");
+            markLessonCompleted(activeLesson.id);
+            markLessonAsReviewed(activeLesson.id);
+          }
         } else if (data.event === "infoDelivery" && data.info && typeof data.info === "object") {
           const info = data.info as Record<string, unknown>;
-          if (info.playerState !== undefined) {
-            const ps = info.playerState;
-            if (ps === 1) setPlayerState("playing");
-            else if (ps === 2) setPlayerState("paused");
-            else if (ps === 0) setPlayerState("ended");
-          }
           if (typeof info.currentTime === "number") {
             const t = info.currentTime;
-            if (!isDraggingRef.current) {
-              setCurrentTime(t);
-            }
+            if (!isDraggingRef.current) setCurrentTime(t);
             setMaxWatchedTime((prev) => {
-              if (t > prev + 4 && prev > 0) {
-                return prev;
+              if (t > prev + 4 && prev > 0) return prev;
+              const next = Math.max(prev, t);
+              if (duration > 0 && next >= duration * 0.88) {
+                markLessonCompleted(activeLesson.id);
+                markLessonAsReviewed(activeLesson.id);
               }
-              return Math.max(prev, t);
+              return next;
             });
           }
           if (typeof info.duration === "number" && info.duration > 0) {
@@ -359,9 +536,9 @@ export default function TopicDetailPage() {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [activeLesson.id, duration, markLessonCompleted, markLessonAsReviewed]);
 
-  // Periodically request playback time from YouTube iframe
+  // Request current playback time from YouTube
   useEffect(() => {
     if (playerState !== "playing") return;
     const interval = setInterval(() => {
@@ -375,14 +552,445 @@ export default function TopicDetailPage() {
     return () => clearInterval(interval);
   }, [playerState]);
 
-  const [selectedModuleFilter, setSelectedModuleFilter] = useState<string>("All");
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
-  const [showFullAbout, setShowFullAbout] = useState<boolean>(false);
-  const [aiQuizOpen, setAiQuizOpen] = useState<boolean>(false);
+  // Handle lesson selection with locking checks
+  const handleLessonSelect = (lesson: Lesson) => {
+    const lessonModuleTitle = lesson.moduleTitle || activeModuleTitle;
 
-  // Active lesson object
-  const activeLesson: Lesson =
-    topic.lessons.find((l) => l.id === activeLessonId) || initialLesson;
+    if (!isModuleUnlocked(lessonModuleTitle)) {
+      setLockedAlert({
+        isOpen: true,
+        lessonTitle: lesson.title,
+        moduleTitle: lessonModuleTitle,
+      });
+      return;
+    }
+
+    setActiveLessonId(lesson.id);
+    setPlayerState("idle");
+    setCurrentTime(0);
+    setMaxWatchedTime(0);
+    maxWatchedTimeRef.current = 0;
+    setDuration(parseLessonDuration(lesson.duration));
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  };
+
+  // Agentic Handler: Re-watch prescribed lecture and auto-play
+  const handleAdvisorSelectRewatch = (lessonId: string) => {
+    const target = topic.lessons.find((l) => l.id === lessonId);
+    if (target) {
+      handleLessonSelect(target);
+      if (playerCardRef.current) {
+        playerCardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      setTimeout(() => {
+        playVideo();
+      }, 500);
+    }
+  };
+
+  // Agentic Handler: Write prompt into AI Tutor and scroll directly to chat
+  const handleAdvisorAskAi = (promptText: string) => {
+    const el = document.getElementById("aiTutorSection");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    setExternalAiPrompt({
+      id: Date.now().toString(),
+      prompt: promptText,
+    });
+  };
+
+  // Trigger Compulsory Module Quiz
+  const handleOpenModuleQuiz = (modTitle: string) => {
+    const currentProgress = modulesProgress[modTitle];
+    const attempts = (currentProgress?.attemptsUsed || 0) + 1;
+
+    // 1. Instant load from background cache if available (0ms)
+    const cached = getCachedNextQuiz(topic.id, modTitle);
+    const usedIds = getUsedQuestionIds(topic.id, modTitle);
+    const questions =
+      cached && cached.length > 0
+        ? cached
+        : getUniqueModuleQuiz(topic.id, modTitle, usedIds);
+
+    setModuleQuizModal({
+      isOpen: true,
+      title: `${modTitle.split(":")[0]} Compulsory Quiz`,
+      isGrandQuiz: false,
+      questions,
+      attemptNumber: attempts,
+    });
+
+    // Silently pre-generate next batch in background
+    preloadNextQuizInBackground(topic.id, modTitle, false);
+  };
+
+  // Trigger Grand Quiz
+  const handleOpenGrandQuiz = () => {
+    const allTitles = modulesList.map((m) => m.title);
+    const cached = getCachedNextQuiz(topic.id, "GRAND_QUIZ");
+    const usedIds = getUsedQuestionIds(topic.id, "GRAND_QUIZ");
+    const questions =
+      cached && cached.length > 0
+        ? cached
+        : getUniqueGrandQuiz(topic.id, topic.title, allTitles, usedIds);
+
+    setModuleQuizModal({
+      isOpen: true,
+      title: `CAT 30-Question Grand Comprehensive Assessment`,
+      isGrandQuiz: true,
+      questions,
+      attemptNumber: 1,
+    });
+
+    preloadNextQuizInBackground(topic.id, "GRAND_QUIZ", true, allTitles);
+  };
+
+  // Generate or retrieve persistent report card for a completed quiz attempt
+  const getOrGenerateReportCard = useCallback(
+    (modTitle: string, modProgress: ModuleProgressItem): QuizReportCardData => {
+      if (modProgress.lastReportCard) {
+        return modProgress.lastReportCard;
+      }
+
+      // Generate accurate fallback report card matching user's score & missed concepts
+      const cleanTitle = modTitle.replace(/&amp;/g, "&");
+      const topicMap = MODULE_QUIZZES[topic.id];
+      let questions: ModuleQuestion[] = [];
+      if (topicMap) {
+        for (const [key, qList] of Object.entries(topicMap)) {
+          if (key.replace(/&amp;/g, "&") === cleanTitle) {
+            questions = qList;
+            break;
+          }
+        }
+      }
+      if (questions.length === 0) {
+        questions = getUniqueModuleQuiz(topic.id, modTitle, []);
+      }
+
+      const qList = questions.slice(0, 10);
+      const total = qList.length > 0 ? qList.length : 10;
+      const score = Math.round(((modProgress.quizScore || 60) / 100) * total);
+      const passed = !!modProgress.quizPassed;
+
+      const selectedAnswers: Record<number, number> = {};
+      const missedConcepts: string[] = [];
+
+      qList.forEach((q, idx) => {
+        if (idx < score) {
+          selectedAnswers[idx] = q.answer;
+        } else {
+          selectedAnswers[idx] = (q.answer + 1) % 4;
+          missedConcepts.push(q.concept);
+        }
+      });
+
+      const firstLesson = topic.lessons.find((l) => l.moduleTitle === modTitle) || topic.lessons[0];
+
+      return {
+        attemptNumber: modProgress.attemptsUsed || 1,
+        score,
+        total,
+        percentage: modProgress.quizScore || 60,
+        passed,
+        rawScore: score,
+        strikes: 0,
+        penaltyMarks: 0,
+        date: "Latest Attempt",
+        selectedAnswers,
+        questions: qList,
+        missedConcepts:
+          modProgress.missedConcepts && modProgress.missedConcepts.length > 0
+            ? modProgress.missedConcepts
+            : missedConcepts,
+        recommendedLessonId: modProgress.recommendedLessonId || firstLesson?.id,
+        recommendedLessonTitle: modProgress.recommendedLessonTitle || firstLesson?.title,
+      };
+    },
+    [topic.id, topic.lessons]
+  );
+
+  // Open Detailed Report Card Modal with full question-by-question review & explanations
+  const handleOpenReportCardModal = (modTitle: string) => {
+    const modProgress = modulesProgress[modTitle];
+    if (!modProgress) return;
+
+    const report = getOrGenerateReportCard(modTitle, modProgress);
+
+    const analysis: QuizAnalysis = {
+      score: report.score,
+      total: report.total,
+      percentage: report.percentage,
+      passed: report.passed,
+      rawScore: report.rawScore || report.score,
+      strikes: report.strikes || 0,
+      penaltyMarks: report.penaltyMarks || 0,
+      selectedAnswers: report.selectedAnswers,
+      questions: report.questions,
+      missedConcepts: report.questions
+        .map((q, idx) => {
+          const isWrong = report.selectedAnswers[idx] !== q.answer;
+          return isWrong
+            ? {
+                questionId: q.id,
+                question: q.q,
+                concept: q.concept,
+                explanation: q.explanation,
+                lessonId: q.recommendedLessonId,
+                lessonTitle: q.recommendedLessonTitle,
+              }
+            : null;
+        })
+        .filter(Boolean) as any,
+      recommendedLessons: report.recommendedLessonId
+        ? [
+            {
+              lessonId: report.recommendedLessonId,
+              lessonTitle: report.recommendedLessonTitle || "Recommended Review",
+              reason: `Review required based on Attempt ${report.attemptNumber} performance`,
+            },
+          ]
+        : [],
+    };
+
+    setModuleQuizModal({
+      isOpen: true,
+      title: `${modTitle.split(":")[0]} Compulsory Quiz`,
+      isGrandQuiz: false,
+      questions: report.questions,
+      attemptNumber: report.attemptNumber,
+      initialReviewMode: true,
+      initialAnswers: report.selectedAnswers,
+      initialAnalysis: analysis,
+      initialStrikes: report.strikes || 0,
+    });
+  };
+
+  // Handle Retake Quiz with Fresh Pre-Generated Questions
+  const handleRetakeQuiz = () => {
+    if (!moduleQuizModal) return;
+    const isGrand = moduleQuizModal.isGrandQuiz;
+    const currentModTitle = isGrand
+      ? "GRAND_QUIZ"
+      : moduleQuizModal.title.replace(" Compulsory Quiz", "");
+    const matchedModule = modulesList.find(
+      (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
+    );
+    const modTitle = isGrand ? "GRAND_QUIZ" : matchedModule?.title || activeModuleTitle;
+
+    const cached = getCachedNextQuiz(topic.id, modTitle);
+    const usedIds = getUsedQuestionIds(topic.id, modTitle);
+
+    let nextQuestions: ModuleQuestion[];
+    if (cached && cached.length > 0) {
+      nextQuestions = cached;
+    } else if (isGrand) {
+      const allTitles = modulesList.map((m) => m.title);
+      nextQuestions = getUniqueGrandQuiz(topic.id, topic.title, allTitles, usedIds);
+    } else {
+      nextQuestions = getUniqueModuleQuiz(topic.id, modTitle, usedIds);
+    }
+
+    setModuleQuizModal({
+      ...moduleQuizModal,
+      attemptNumber: moduleQuizModal.attemptNumber + 1,
+      questions: nextQuestions,
+      initialReviewMode: false,
+      initialAnswers: undefined,
+      initialAnalysis: undefined,
+      initialStrikes: 0,
+    });
+
+    preloadNextQuizInBackground(topic.id, modTitle, isGrand);
+  };
+
+  // Module Quiz Passed Handler (>= 70%)
+  const handleQuizPassed = (score: number, total: number, earnedPoints: number) => {
+    const isGrand = moduleQuizModal?.isGrandQuiz || false;
+    const currentModTitle = isGrand
+      ? "GRAND_QUIZ"
+      : moduleQuizModal?.title.replace(" Compulsory Quiz", "") || "";
+    const matchedModule = modulesList.find(
+      (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
+    );
+    const modTitle = isGrand ? "GRAND_QUIZ" : matchedModule?.title || activeModuleTitle;
+
+    // Mark questions as used so they never repeat
+    if (moduleQuizModal?.questions) {
+      markQuestionsUsed(
+        topic.id,
+        modTitle,
+        moduleQuizModal.questions.map((q) => q.id)
+      );
+    }
+
+    if (isGrand) {
+      setGrandQuizPassed(true);
+      saveProgressToStorage(completedLessonIds, modulesProgress, activeModuleTitle, true);
+      return;
+    }
+
+    const currentModProgress = modulesProgress[modTitle] || {
+      moduleTitle: modTitle,
+      totalLessons: 1,
+      completedLessons: 1,
+      attemptsUsed: 0,
+      quizScore: null,
+      quizPassed: false,
+    };
+
+    const passedReportData: QuizReportCardData = {
+      attemptNumber: currentModProgress.attemptsUsed + 1,
+      score,
+      total,
+      percentage: Math.round((score / total) * 100),
+      passed: true,
+      rawScore: score,
+      strikes: 0,
+      penaltyMarks: 0,
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      selectedAnswers: moduleQuizModal?.questions
+        ? moduleQuizModal.questions.reduce((acc, q, idx) => ({ ...acc, [idx]: q.answer }), {})
+        : {},
+      questions: moduleQuizModal?.questions || [],
+      missedConcepts: [],
+    };
+
+    const newModProgress: Record<string, ModuleProgressItem> = {
+      ...modulesProgress,
+      [modTitle]: {
+        ...currentModProgress,
+        quizScore: Math.round((score / total) * 100),
+        quizPassed: true,
+        attemptsUsed: currentModProgress.attemptsUsed + 1,
+        explicitlyPassedByUser: true,
+        lastReportCard: passedReportData,
+      } as any,
+    };
+
+    // Auto-advance activeModuleTitle to the next module
+    const currentModIndex = modulesList.findIndex((m) => m.title === modTitle);
+    let nextActive = activeModuleTitle;
+    if (currentModIndex >= 0 && currentModIndex < modulesList.length - 1) {
+      nextActive = modulesList[currentModIndex + 1].title;
+      setActiveModuleTitle(nextActive);
+      setExpandedModules((prev) => ({ ...prev, [nextActive]: true }));
+
+      // Preload next module's quiz in background!
+      preloadNextQuizInBackground(topic.id, nextActive, false);
+    } else {
+      // If all modules completed, pre-load the Grand Quiz!
+      preloadNextQuizInBackground(
+        topic.id,
+        "GRAND_QUIZ",
+        true,
+        modulesList.map((m) => m.title)
+      );
+    }
+
+    setModulesProgress(newModProgress);
+    saveProgressToStorage(completedLessonIds, newModProgress, nextActive, grandQuizPassed);
+  };
+
+  // Module Quiz Failed Handler (< 70%)
+  const handleQuizFailed = (score: number, total: number, analysis: QuizAnalysis) => {
+    const isGrand = moduleQuizModal?.isGrandQuiz || false;
+    const currentModTitle = isGrand
+      ? "GRAND_QUIZ"
+      : moduleQuizModal?.title.replace(" Compulsory Quiz", "") || "";
+    const matchedModule = modulesList.find(
+      (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
+    );
+    const modTitle = isGrand ? "GRAND_QUIZ" : matchedModule?.title || activeModuleTitle;
+
+    // Mark questions as used so retakes get fresh questions
+    if (moduleQuizModal?.questions) {
+      markQuestionsUsed(
+        topic.id,
+        modTitle,
+        moduleQuizModal.questions.map((q) => q.id)
+      );
+    }
+
+    // Preload next fresh attempt in background right away
+    preloadNextQuizInBackground(topic.id, modTitle, isGrand);
+
+    if (isGrand) return;
+
+    const currentModProgress = modulesProgress[modTitle] || {
+      moduleTitle: modTitle,
+      totalLessons: 1,
+      completedLessons: 1,
+      attemptsUsed: 0,
+      quizScore: null,
+      quizPassed: false,
+    };
+
+    const firstRec = analysis.recommendedLessons[0];
+
+    const reportData: QuizReportCardData = {
+      attemptNumber: currentModProgress.attemptsUsed + 1,
+      score,
+      total,
+      percentage: Math.round((score / total) * 100),
+      passed: false,
+      rawScore: analysis.rawScore !== undefined ? analysis.rawScore : score,
+      strikes: analysis.strikes || 0,
+      penaltyMarks: analysis.penaltyMarks || 0,
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      selectedAnswers: analysis.selectedAnswers || {},
+      questions: analysis.questions || moduleQuizModal?.questions || [],
+      missedConcepts: analysis.missedConcepts.map((m) => m.concept),
+      recommendedLessonId: firstRec?.lessonId,
+      recommendedLessonTitle: firstRec?.lessonTitle,
+    };
+
+    const newModProgress: Record<string, ModuleProgressItem> = {
+      ...modulesProgress,
+      [modTitle]: {
+        ...currentModProgress,
+        quizScore: Math.round((score / total) * 100),
+        quizPassed: false,
+        attemptsUsed: currentModProgress.attemptsUsed + 1,
+        missedConcepts: analysis.missedConcepts.map((m) => m.concept),
+        recommendedLessonId: firstRec?.lessonId,
+        recommendedLessonTitle: firstRec?.lessonTitle,
+        recommendedLessonCompleted: false,
+        lastReportCard: reportData,
+      },
+    };
+
+    setModulesProgress(newModProgress);
+    saveProgressToStorage(completedLessonIds, newModProgress, activeModuleTitle, grandQuizPassed);
+  };
+
+  // Reset quiz attempts after rewatching
+  const handleResetAttempts = () => {
+    const modTitle = activeModuleTitle;
+    if (!modulesProgress[modTitle]) return;
+
+    // Clear question history so fresh cycle starts
+    clearModuleQuizHistory(topic.id, modTitle);
+
+    const newModProgress = {
+      ...modulesProgress,
+      [modTitle]: {
+        ...modulesProgress[modTitle],
+        attemptsUsed: 0,
+        recommendedLessonCompleted: false,
+      },
+    };
+
+    setModulesProgress(newModProgress);
+    saveProgressToStorage(completedLessonIds, newModProgress, activeModuleTitle, grandQuizPassed);
+    if (moduleQuizModal) {
+      setModuleQuizModal({
+        ...moduleQuizModal,
+        attemptNumber: 1,
+      });
+    }
+  };
 
   // Next lesson for completion flow
   const currentLessonIndex = topic.lessons.findIndex((l) => l.id === activeLesson.id);
@@ -391,62 +999,40 @@ export default function TopicDetailPage() {
       ? topic.lessons[currentLessonIndex + 1]
       : null;
 
-  // Filter lessons if a specific module is selected
-  const visibleLessons =
-    selectedModuleFilter === "All"
-      ? topic.lessons
-      : topic.lessons.filter((l) => l.moduleTitle === selectedModuleFilter);
-
-  // Distinct module titles
-  const moduleTitles = [
-    "All",
-    ...Array.from(new Set(topic.lessons.map((l) => l.moduleTitle).filter(Boolean))) as string[],
-  ];
-
-  const handleLessonSelect = async (lesson: Lesson) => {
-    setActiveLessonId(lesson.id);
-    setPlayerState("idle");
-    setCurrentTime(0);
-    setMaxWatchedTime(0);
-    maxWatchedTimeRef.current = 0;
-    setDuration(parseLessonDuration(lesson.duration));
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    try {
-      await fetch("/api/topics/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topicId: topic.id,
-          lessonId: lesson.id,
-          totalLessons: topic.lessons.length,
-        }),
-      });
-    } catch (err) {
-      console.warn("[Progress update error]", err);
-    }
-  };
-
   return (
     <div className={styles.pageWrapper}>
       {/* ===== DARK UPPER HEADER ===== */}
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
-          {/* Top Navigation Bar */}
           <nav className={styles.topNav} aria-label="Topic Detail Navigation">
-            {/* Brand Logo & Back Button */}
             <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
               <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
                 <span className={styles.logoTechno}>Techno</span>
                 <span className={styles.logoCAT}>CAT</span>
               </Link>
-              
-              <Link href="/browse" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94a3b8", textDecoration: "none", fontSize: "14px", fontWeight: 500, padding: "6px 12px", background: "rgba(255,255,255,0.05)", borderRadius: "6px", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <Link
+                href="/browse"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  color: "#94a3b8",
+                  textDecoration: "none",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "6px 12px",
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: "6px",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
                 Back to Browse
               </Link>
             </div>
 
-            {/* Nav Menu */}
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
@@ -461,29 +1047,13 @@ export default function TopicDetailPage() {
                     if (item.href === "#") e.preventDefault();
                     setActiveNav(item.name);
                   }}
-                  className={`${styles.navLink} ${
-                    activeNav === item.name ? styles.navLinkActive : ""
-                  }`}
+                  className={`${styles.navLink} ${activeNav === item.name ? styles.navLinkActive : ""}`}
                 >
                   {item.name}
-                  {item.hasDropdown && (
-                    <svg
-                      className={styles.dropdownChevron}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  )}
                 </Link>
               ))}
             </div>
 
-            {/* Right Utilities & Profile */}
             <PostLoginNavActions />
           </nav>
         </div>
@@ -505,21 +1075,17 @@ export default function TopicDetailPage() {
 
       {/* ===== MAIN 2-COLUMN CONTAINER ===== */}
       <main className={styles.mainContainer}>
-        {/* ===== LEFT COLUMN: REAL YOUTUBE PLAYER & DETAILS ===== */}
+        {/* ===== LEFT COLUMN: VIDEO PLAYER & DETAILS ===== */}
         <div className={styles.leftColumn}>
-          <div
-            ref={playerCardRef}
-            className={styles.playerCard}
-            onMouseMove={resetInactivityTimer}
-            onMouseEnter={resetInactivityTimer}
-          >
+          {/* 1. REAL YOUTUBE PLAYER WITH CENTERED PLAY BUTTON */}
+          <div ref={playerCardRef} className={styles.playerCard}>
             {playerState === "idle" ? (
               <div
                 className={styles.facadeWrapper}
                 onClick={playVideo}
                 role="button"
                 tabIndex={0}
-                title="Click to play video"
+                title="Click to play lecture"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -534,17 +1100,15 @@ export default function TopicDetailPage() {
 
                 {/* Top Badge */}
                 <div className={styles.facadeTopRow}>
-                  {activeLesson.code && (
-                    <span className={styles.facadeBadge}>{activeLesson.code}</span>
-                  )}
+                  {activeLesson.code && <span className={styles.facadeBadge}>{activeLesson.code}</span>}
                   {activeLesson.moduleTitle && (
                     <span className={styles.facadeModule}>{activeLesson.moduleTitle}</span>
                   )}
                 </div>
 
-                {/* Big Centered Play Button */}
+                {/* Centered Play Button */}
                 <div className={styles.facadePlayBtn}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="6 3 20 12 6 21 6 3" />
                   </svg>
                 </div>
@@ -559,7 +1123,6 @@ export default function TopicDetailPage() {
               </div>
             ) : (
               <>
-                {/* YouTube iframe: controls=0 natively removes YouTube's bottom bar, More videos, and Watch on YouTube link */}
                 {iframeOrigin && (
                   <iframe
                     ref={iframeRef}
@@ -574,16 +1137,8 @@ export default function TopicDetailPage() {
 
                 {/* Custom TechnoCAT Pause Screen */}
                 {playerState === "paused" && (
-                  <div
-                    className={styles.pauseOverlay}
-                    onClick={playVideo}
-                    role="button"
-                    tabIndex={0}
-                    title="Click to resume video"
-                  >
-                    <span className={styles.pauseBadge}>
-                      {activeLesson.code || "Lecture"} • Paused
-                    </span>
+                  <div className={styles.pauseOverlay} onClick={playVideo} role="button" tabIndex={0}>
+                    <span className={styles.pauseBadge}>{activeLesson.code || "Lecture"} • Paused</span>
                     <div className={styles.pausePlayBtn}>
                       <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="6 3 20 12 6 21 6 3" />
@@ -597,10 +1152,10 @@ export default function TopicDetailPage() {
                 {/* Lesson Completed Screen */}
                 {playerState === "ended" && (
                   <div className={styles.endedOverlay}>
-                    <span className={styles.endedBadge}>🎉 Lecture Completed</span>
+                    <span className={styles.endedBadge}>🎉 Lecture Completed (+10 XP)</span>
                     <h3 className={styles.endedTitle}>{activeLesson.title}</h3>
                     <p className={styles.endedSubtitle}>
-                      Great job completing this lecture! You can re-watch any part or continue to the next lesson.
+                      Great job! You earned +10 XP. Re-watch any part or continue with the next lecture.
                     </p>
                     <div className={styles.endedActions}>
                       <button
@@ -610,18 +1165,14 @@ export default function TopicDetailPage() {
                           playVideo();
                         }}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="1 4 1 10 7 10" />
-                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                        </svg>
                         Rewatch
                       </button>
-                      {nextLesson && (
+                      {nextLesson && isModuleUnlocked(nextLesson.moduleTitle || activeModuleTitle) && (
                         <button
                           className={styles.nextLessonBtn}
                           onClick={() => handleLessonSelect(nextLesson)}
                         >
-                          Next Lesson ({nextLesson.code}) →
+                          Next Lecture ({nextLesson.code}) →
                         </button>
                       )}
                     </div>
@@ -631,16 +1182,11 @@ export default function TopicDetailPage() {
                 {/* Forward Seeking Warning Tooltip */}
                 {showForwardWarning && (
                   <div className={styles.seekWarningTooltip}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ED1C24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <span>Fast-forwarding locked. You can rewind to review any watched part.</span>
+                    <span>Fast-forwarding locked. Rewind to review any watched segment.</span>
                   </div>
                 )}
 
-                {/* Custom TechnoCAT Video Control Bar */}
+                {/* Custom TechnoCAT Controls Bar */}
                 <div
                   className={`${styles.controlsBar} ${
                     showControls || playerState === "paused"
@@ -649,32 +1195,29 @@ export default function TopicDetailPage() {
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Custom Scrubber / Progress Bar */}
                   <div
                     ref={scrubberRailRef}
                     className={styles.scrubberContainer}
-                    onMouseDown={onMouseDownScrubber}
-                    onTouchStart={onTouchStartScrubber}
-                    onMouseMove={onMouseMoveRail}
-                    onMouseLeave={onMouseLeaveRail}
-                    title="Drag backward to review missed parts. Forward skipping is locked."
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setIsDraggingScrubber(true);
+                      isDraggingRef.current = true;
+                      handleScrubberInteract(e.clientX, true);
+                    }}
                   >
                     <div className={styles.scrubberRail}>
-                      {/* Watched unlocked segment */}
                       <div
                         className={styles.scrubberWatched}
                         style={{
                           width: `${duration > 0 ? Math.min(100, (maxWatchedTime / duration) * 100) : 0}%`,
                         }}
                       />
-                      {/* Current playhead progress */}
                       <div
                         className={styles.scrubberProgress}
                         style={{
                           width: `${duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0}%`,
                         }}
                       />
-                      {/* Scrubber Knob */}
                       <div
                         className={styles.scrubberThumb}
                         style={{
@@ -682,143 +1225,27 @@ export default function TopicDetailPage() {
                         }}
                       />
                     </div>
-
-                    {/* Hover timestamp preview pill */}
-                    {hoverTime !== null && (
-                      <div
-                        className={`${styles.scrubberHoverPill} ${
-                          hoverTime > maxWatchedTime + 1 ? styles.scrubberHoverLocked : ""
-                        }`}
-                        style={{ left: `${hoverPos}%` }}
-                      >
-                        {hoverTime > maxWatchedTime + 1 && (
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                          </svg>
-                        )}
-                        <span>
-                          {formatTime(hoverTime)} {hoverTime > maxWatchedTime + 1 ? "(Locked)" : ""}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Bottom Controls Row */}
                   <div className={styles.controlsRow}>
-                    {/* Left: Play/Pause, Rewind 10s, Time Display */}
                     <div className={styles.controlsLeft}>
-                      <button
-                        className={styles.ctrlPlayBtn}
-                        onClick={togglePlayPause}
-                        title={playerState === "playing" ? "Pause (Space)" : "Play (Space)"}
-                        aria-label={playerState === "playing" ? "Pause" : "Play"}
-                      >
+                      <button className={styles.ctrlPlayBtn} onClick={togglePlayPause}>
                         {playerState === "playing" ? (
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <rect x="6" y="4" width="4" height="16" />
                             <rect x="14" y="4" width="4" height="16" />
                           </svg>
                         ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <polygon points="6 3 20 12 6 21 6 3" />
                           </svg>
                         )}
                       </button>
-
-                      <button
-                        className={styles.rewindBtn}
-                        onClick={rewind10s}
-                        title="Rewind 10 seconds"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="1 4 1 10 7 10" />
-                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                        </svg>
-                        10s
-                      </button>
-
                       <div className={styles.timeDisplay}>
                         <span>{formatTime(currentTime)}</span>
                         <span style={{ opacity: 0.5 }}>/</span>
                         <span>{formatTime(duration)}</span>
-                        {duration > 0 && maxWatchedTime > 0 && (
-                          <span className={styles.timeWatchedBadge}>
-                            {Math.round((maxWatchedTime / duration) * 100)}% Watched
-                          </span>
-                        )}
                       </div>
-                    </div>
-
-                    {/* Right: Volume, Speed, Fullscreen */}
-                    <div className={styles.controlsRight}>
-                      {/* Volume */}
-                      <div className={styles.volumeGroup}>
-                        <button
-                          className={styles.ctrlBtn}
-                          onClick={toggleMute}
-                          title={isMuted ? "Unmute (M)" : "Mute (M)"}
-                          aria-label={isMuted ? "Unmute" : "Mute"}
-                        >
-                          {isMuted || volume === 0 ? (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="1" y1="1" x2="23" y2="23" />
-                              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
-                              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0a7 7 0 0 1-.11 1.23" />
-                              <line x1="12" y1="19" x2="12" y2="23" />
-                              <line x1="8" y1="23" x2="16" y2="23" />
-                            </svg>
-                          ) : (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-                            </svg>
-                          )}
-                        </button>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={isMuted ? 0 : volume}
-                          onChange={handleVolumeChange}
-                          className={styles.volumeSlider}
-                          title={`Volume: ${isMuted ? 0 : volume}%`}
-                          aria-label="Volume"
-                        />
-                      </div>
-
-                      {/* Speed */}
-                      <button
-                        className={styles.speedBtn}
-                        onClick={cyclePlaybackSpeed}
-                        title="Change Playback Speed"
-                      >
-                        {playbackSpeed}x
-                      </button>
-
-                      {/* Fullscreen */}
-                      <button
-                        className={styles.ctrlBtn}
-                        onClick={toggleFullscreen}
-                        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                        aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                      >
-                        {isFullscreen ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="4 14 10 14 10 20" />
-                            <polyline points="20 10 14 10 14 4" />
-                            <line x1="14" y1="10" x2="21" y2="3" />
-                            <line x1="3" y1="21" x2="10" y2="14" />
-                          </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="15 3 21 3 21 9" />
-                            <polyline points="9 21 3 21 3 15" />
-                            <line x1="21" y1="3" x2="14" y2="10" />
-                            <line x1="3" y1="21" x2="10" y2="14" />
-                          </svg>
-                        )}
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -826,18 +1253,53 @@ export default function TopicDetailPage() {
             )}
           </div>
 
-          {/* Active Lesson Bar below video */}
+          {/* 2. Active Video Meta Bar */}
           <div className={styles.activeLessonBar}>
             <div className={styles.activeLessonMetaRow}>
-              {activeLesson.code && (
-                <span className={styles.codeBadge}>{activeLesson.code}</span>
-              )}
-              {activeLesson.moduleTitle && (
-                <span className={styles.moduleTag}>{activeLesson.moduleTitle}</span>
-              )}
-              {activeLesson.duration && (
-                <span className={styles.moduleTag}>⏱ {activeLesson.duration}</span>
-              )}
+              {activeLesson.code && <span className={styles.codeBadge}>{activeLesson.code}</span>}
+              {activeLesson.moduleTitle && <span className={styles.moduleTag}>{activeLesson.moduleTitle}</span>}
+              {activeLesson.duration && <span className={styles.moduleTag}>⏱ {activeLesson.duration}</span>}
+
+              {/* +10 XP Pill */}
+              <span
+                className={`${styles.lessonXpPill} ${
+                  completedLessonIds.includes(activeLesson.id) ? styles.lessonXpPillDone : ""
+                }`}
+              >
+                {completedLessonIds.includes(activeLesson.id) ? "✓ +10 XP Earned" : "+10 XP on Complete"}
+              </span>
+
+              {/* If active lesson is recommended for review */}
+              {(() => {
+                const isRecommendedLesson = Object.values(modulesProgress).some(
+                  (m) => m.recommendedLessonId === activeLesson.id && !m.quizPassed
+                );
+                const isAlreadyReviewed = Object.values(modulesProgress).some(
+                  (m) => m.recommendedLessonId === activeLesson.id && m.recommendedLessonCompleted
+                );
+                if (!isRecommendedLesson) return null;
+
+                return (
+                  <button
+                    type="button"
+                    onClick={() => markLessonAsReviewed(activeLesson.id)}
+                    className={`${styles.lessonXpPill} ${isAlreadyReviewed ? styles.lessonXpPillDone : ""}`}
+                    style={{
+                      background: isAlreadyReviewed ? "#ECFDF5" : "#FEF3C7",
+                      color: isAlreadyReviewed ? "#065F46" : "#92400E",
+                      border: isAlreadyReviewed ? "1px solid #A7F3D0" : "1px solid #FCD34D",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                    title="Click to mark this review as completed and update the AI Advisor"
+                  >
+                    {isAlreadyReviewed ? "✓ Recommended Review Done" : "Mark Review Done ✓"}
+                  </button>
+                );
+              })()}
+
               <button
                 type="button"
                 className={styles.quizTriggerPill}
@@ -852,47 +1314,58 @@ export default function TopicDetailPage() {
                     questions: knowledge.quiz,
                   });
                 }}
-                title="Practice interactive TechnoEEE quiz for this lecture"
               >
-                🎯 Interactive Quiz
+                🎯 Practice Quiz
               </button>
             </div>
 
             <h2 className={styles.activeLessonTitle}>{activeLesson.title}</h2>
-
-            {activeLesson.coverage && (
-              <p className={styles.activeLessonCoverage}>
-                <strong>Topics Covered:</strong> {activeLesson.coverage}
-              </p>
-            )}
-
-            {activeLesson.videoTitle && (
-              <div className={styles.videoSourceTag}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ED1C24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-                <span>Curated Video: <strong>{activeLesson.videoTitle}</strong></span>
-              </div>
-            )}
           </div>
 
-          {/* Ask AI Tutor Panel (Video RAG & Interactive Quiz) */}
-          <VideoAskPanel
-            topicId={topic.id}
-            topicTitle={topic.title}
-            lessonCode={activeLesson.code}
-            lessonTitle={activeLesson.title}
-            lessonCoverage={activeLesson.coverage}
-            onSeekTo={(seconds) => {
-              seekTo(seconds);
-              playVideo();
-            }}
-            onLaunchFullQuiz={(quiz) => {
-              setActiveQuizModal(quiz);
-            }}
-          />
+          {/* 3. ABOUT THIS TOPIC & LECTURE (DIRECTLY AFTER VIDEO) */}
+          <div className={styles.aboutLessonBox}>
+            <div className={styles.aboutLessonHeader}>
+              <h3 className={styles.aboutLessonHeading}>
+                <span>📖 About This Topic & Lecture Overview</span>
+              </h3>
+              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>
+                Read Before Watching
+              </span>
+            </div>
 
-          {/* Instructor Profile Card */}
+            <p className={styles.aboutLessonDesc}>
+              {topic.description}
+            </p>
+
+            {/* Lecture What-You-Will-Learn Highlights */}
+            {activeLesson.coverage && (
+              <div className={styles.coverageHighlights}>
+                {activeLesson.coverage.split(",").map((point, idx) => (
+                  <div key={idx} className={styles.highlightItem}>
+                    <span className={styles.highlightDot} />
+                    <span>{point.trim()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Full Topic Overview & Suits For */}
+            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "14px" }}>
+              <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#1E293B", margin: "0 0 6px 0" }}>
+                Who This Course Suits For:
+              </h4>
+              <ul className={styles.suitsList}>
+                {topic.suitsFor.map((item, idx) => (
+                  <li key={idx} className={styles.suitItem}>
+                    <span className={styles.bulletDot} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* 4. Instructor Profile Card */}
           <div className={styles.instructorCard}>
             <div className={styles.instructorInfoLeft}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -918,7 +1391,7 @@ export default function TopicDetailPage() {
                   }
                 }}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="18" cy="5" r="3" />
                   <circle cx="6" cy="12" r="3" />
                   <circle cx="18" cy="19" r="3" />
@@ -928,60 +1401,71 @@ export default function TopicDetailPage() {
               </button>
 
               <button
-                className={`${styles.actionCircleBtn} ${
-                  isBookmarked ? styles.actionCircleBtnActive : ""
-                }`}
-                title={isBookmarked ? "Saved to Bookmarks" : "Save to Bookmarks"}
+                className={`${styles.actionCircleBtn} ${isBookmarked ? styles.actionCircleBtnActive : ""}`}
                 onClick={() => setIsBookmarked(!isBookmarked)}
+                title={isBookmarked ? "Saved" : "Bookmark"}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill={isBookmarked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={isBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
               </button>
             </div>
           </div>
 
-          {/* About This Course Card */}
-          <div className={styles.aboutCard}>
-            <h2 className={styles.sectionHeading}>About This Topic</h2>
-            <p className={styles.aboutText}>
-              {showFullAbout ? topic.fullAbout : `${topic.fullAbout.slice(0, 280)}...`}
-            </p>
-            <button
-              className={styles.showMoreBtn}
-              onClick={() => setShowFullAbout(!showFullAbout)}
-            >
-              {showFullAbout ? "Show less ∧" : "Show more ∨"}
-            </button>
-
-            <h3 className={styles.suitsHeading}>This Topic Suits For:</h3>
-            <ul className={styles.suitsList}>
-              {topic.suitsFor.map((item, idx) => (
-                <li key={idx} className={styles.suitItem}>
-                  <span className={styles.bulletDot} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+          {/* 5. Ask AI Tutor Panel (Video RAG & Chat) */}
+          <div id="aiTutorSection" style={{ scrollMarginTop: "24px" }}>
+            <VideoAskPanel
+              topicId={topic.id}
+              topicTitle={topic.title}
+              lessonCode={activeLesson.code}
+              lessonTitle={activeLesson.title}
+              lessonCoverage={activeLesson.coverage}
+              onSeekTo={(seconds) => {
+                seekTo(seconds);
+                playVideo();
+              }}
+              onLaunchFullQuiz={(quiz) => {
+                setActiveQuizModal(quiz);
+              }}
+              externalPrompt={externalAiPrompt}
+            />
           </div>
         </div>
 
-        {/* ===== RIGHT COLUMN: STUDY PROGRESS & LESSON COMPLETION ===== */}
+        {/* ===== RIGHT COLUMN: STUDY PROGRESS, MODULE CURRICULUM, AI ADVISOR ===== */}
         <div className={styles.rightColumn}>
-          {/* Card 1: Study Progress */}
+          {/* 1. Study Progress Card */}
           <div className={styles.progressCard}>
             <div className={styles.progressCardHeader}>
               <h2 className={styles.progressCardTitle}>Your Study Progress</h2>
-              <span className={styles.progressPercentBadge}>{topic.progressPercent}%</span>
+              <span className={styles.progressPercentBadge}>{overallProgressPercent}%</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className={styles.progressBarContainer}>
+              <div
+                className={styles.progressBarFill}
+                style={{ width: `${overallProgressPercent}%` }}
+              />
+            </div>
+
+            {/* Metrics Row: Recalculated Points & Time */}
+            <div className={styles.progressMetricsRow}>
+              <div className={styles.metricBox}>
+                <div className={styles.metricBoxValue}>
+                  <span>⚡ {totalPoints} / {totalCourseXP} XP</span>
+                </div>
+                <span className={styles.metricBoxLabel}>Course Points Earned</span>
+              </div>
+
+              <div className={styles.metricBox}>
+                <div className={styles.metricBoxValue}>
+                  <span>⏱ {formatDurationReadable(completedTimeSeconds)}</span>
+                </div>
+                <span className={styles.metricBoxLabel}>
+                  of ~{formatDurationReadable(totalExpectedSeconds)} Est.
+                </span>
+              </div>
             </div>
 
             {/* Stepped Milestone Track */}
@@ -989,152 +1473,527 @@ export default function TopicDetailPage() {
               <div className={styles.milestoneLineBg} />
               <div
                 className={styles.milestoneLineFill}
-                style={{
-                  width: `${Math.min(100, Math.max(0, (topic.progressPercent / 100) * 100))}%`,
-                }}
+                style={{ width: `${Math.min(100, (totalPoints / totalCourseXP) * 100)}%` }}
               />
               <div className={styles.milestoneNodesRow}>
-                {topic.milestones.map((m) => (
-                  <div key={m.label} className={styles.milestoneNodeCol}>
+                {milestoneSteps.map((step) => (
+                  <div key={step.label} className={styles.milestoneNodeCol}>
                     <div
                       className={`${styles.milestoneDot} ${
-                        m.reached ? styles.milestoneDotFilled : ""
+                        totalPoints >= step.points ? styles.milestoneDotFilled : ""
                       }`}
                     />
                     <span
                       className={`${styles.milestoneLabel} ${
-                        m.reached ? styles.milestoneLabelActive : ""
+                        totalPoints >= step.points ? styles.milestoneLabelActive : ""
                       }`}
                     >
-                      {m.label}
+                      {step.label}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Motivational Box */}
-            <div className={styles.motivationalBox}>
-              {topic.motivationalMessage}
-            </div>
           </div>
 
-          {/* Card 2: Course Completion with Interactive YouTube Lessons */}
-          <div className={styles.completionCard}>
-            <div className={styles.completionHeader}>
-              <h2 className={styles.completionTitle}>Topic Completion</h2>
-              <span className={styles.completionCount}>
-                {topic.completedLessonsCount}/{topic.totalLessons}
+          {/* 2. Module Curriculum Card (With Accordion & Dedicated Quiz Row inside each module) */}
+          <div className={styles.curriculumCard}>
+            <div className={styles.curriculumHeader}>
+              <h2 className={styles.curriculumTitle}>Course Curriculum</h2>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563EB" }}>
+                {Object.values(modulesProgress).filter((m) => m.quizPassed).length} / {modulesList.length} Passed
               </span>
             </div>
+            <p className={styles.curriculumMeta}>
+              Pass each compulsory quiz (≥70%) to unlock the next module.
+            </p>
 
-            {/* Module Filter Chips */}
-            {moduleTitles.length > 2 && (
-              <div className={styles.moduleFilterRow}>
-                {moduleTitles.map((mod) => (
-                  <button
-                    key={mod}
-                    onClick={() => setSelectedModuleFilter(mod)}
-                    className={`${styles.moduleFilterChip} ${
-                      selectedModuleFilter === mod ? styles.moduleFilterChipActive : ""
-                    }`}
-                  >
-                    {mod === "All" ? "All Modules" : mod.split(":")[0]}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className={styles.moduleAccordionList}>
+              {modulesList.map((mod) => {
+                const isExpanded = !!expandedModules[mod.title];
+                const modProgress = modulesProgress[mod.title];
+                const isCurrentActive = activeModuleTitle === mod.title;
+                const isPassed = !!modProgress?.quizPassed;
+                const isUnlocked = isModuleUnlocked(mod.title);
 
-            {/* Interactive Lesson List */}
-            <div className={styles.lessonsList}>
-              {visibleLessons.map((lesson) => {
-                const isActive = lesson.id === activeLessonId;
+                const modDurationSec = mod.lessons.reduce(
+                  (acc, l) => acc + parseLessonDuration(l.duration),
+                  0
+                );
+                const completedInMod = mod.lessons.filter((l) =>
+                  completedLessonIds.includes(l.id)
+                ).length;
+                const allModLessonsWatched = completedInMod === mod.lessons.length;
+
                 return (
                   <div
-                    key={lesson.id}
-                    onClick={() => handleLessonSelect(lesson)}
-                    className={`${styles.lessonItem} ${
-                      isActive ? styles.lessonItemActive : ""
+                    key={mod.title}
+                    className={`${styles.moduleAccordionItem} ${
+                      isCurrentActive ? styles.moduleAccordionItemActive : ""
                     }`}
                   >
-                    <div className={styles.lessonItemLeft}>
-                      <div className={styles.lessonIconBox}>
-                        {isActive ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
-                          </svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                        )}
+                    {/* Module Accordion Header */}
+                    <div
+                      className={styles.moduleAccordionHeader}
+                      onClick={() =>
+                        setExpandedModules((prev) => ({
+                          ...prev,
+                          [mod.title]: !prev[mod.title],
+                        }))
+                      }
+                    >
+                      <div className={styles.moduleHeaderLeft}>
+                        <div
+                          className={`${styles.moduleStatusIcon} ${
+                            isPassed
+                              ? styles.statusIconPassed
+                              : isCurrentActive
+                              ? styles.statusIconActive
+                              : styles.statusIconLocked
+                          }`}
+                        >
+                          {isPassed ? "✓" : isUnlocked ? "▶" : "🔒"}
+                        </div>
+
+                        <div className={styles.moduleInfoText}>
+                          <span className={styles.moduleName} title={mod.title}>
+                            {mod.title}
+                          </span>
+                          <span className={styles.moduleSubtitle}>
+                            {completedInMod}/{mod.lessons.length} lessons • ~{formatDurationReadable(modDurationSec)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className={styles.lessonTextContainer}>
-                        {lesson.code && (
-                          <span className={styles.lessonCodeBadge}>{lesson.code}</span>
+                      <div className={styles.moduleHeaderRight}>
+                        {isPassed ? (
+                          <span className={`${styles.moduleBadgePill} ${styles.badgePassed}`}>
+                            Passed ({modProgress?.quizScore}%)
+                          </span>
+                        ) : isCurrentActive ? (
+                          allModLessonsWatched ? (
+                            modProgress && modProgress.attemptsUsed > 0 && !isPassed ? (
+                              <span className={`${styles.moduleBadgePill} ${styles.badgeRetry}`}>
+                                Attempt {modProgress.attemptsUsed}/3 ({modProgress.quizScore}%)
+                              </span>
+                            ) : (
+                              <span className={`${styles.moduleBadgePill} ${styles.badgeQuizReady}`}>
+                                Quiz Ready!
+                              </span>
+                            )
+                          ) : (
+                            <span className={`${styles.moduleBadgePill} ${styles.badgeActive}`}>
+                              Active
+                            </span>
+                          )
+                        ) : (
+                          <span className={`${styles.moduleBadgePill} ${styles.badgeLocked}`}>
+                            Locked
+                          </span>
                         )}
-                        <div className={styles.lessonTitleText} title={lesson.title}>
-                          {lesson.title}
-                        </div>
-                        <div className={styles.lessonDurationText}>{lesson.duration}</div>
+
+                        <svg
+                          className={`${styles.chevronIcon} ${
+                            isExpanded ? styles.chevronIconExpanded : ""
+                          }`}
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
                       </div>
                     </div>
 
-                    {lesson.completed && (
-                      <div className={styles.checkCircleDone} title="Completed">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                    {/* Module Accordion Content */}
+                    {isExpanded && (
+                      <div className={styles.moduleAccordionBody}>
+                        {/* 1. All Lessons in this module */}
+                        {mod.lessons.map((lesson) => {
+                          const isActive = lesson.id === activeLessonId;
+                          const isDone = completedLessonIds.includes(lesson.id);
+
+                          return (
+                            <div
+                              key={lesson.id}
+                              onClick={() => handleLessonSelect(lesson)}
+                              className={`${styles.lessonItemRow} ${
+                                isActive ? styles.lessonItemRowActive : ""
+                              }`}
+                            >
+                              <div className={styles.lessonRowLeft}>
+                                <div className={styles.lessonPlayIcon}>
+                                  {isDone ? (
+                                    <span style={{ color: "#10B981", fontWeight: 700 }}>✓</span>
+                                  ) : isUnlocked ? (
+                                    "▶"
+                                  ) : (
+                                    "🔒"
+                                  )}
+                                </div>
+
+                                <div className={styles.lessonTextCol}>
+                                  <span className={styles.lessonRowTitle} title={lesson.title}>
+                                    {lesson.code ? `${lesson.code} ` : ""}
+                                    {lesson.title}
+                                  </span>
+                                  <div className={styles.lessonRowMeta}>
+                                    <span>⏱ {lesson.duration}</span>
+                                    {isDone && <span>• Watched</span>}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className={styles.lessonRowRight}>
+                                <span
+                                  className={`${styles.lessonXpBadge} ${
+                                    isDone ? styles.lessonXpDone : ""
+                                  }`}
+                                >
+                                  {isDone ? "+10 XP ✓" : "+10 XP"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* 2. DEDICATED COMPULSORY QUIZ & DETAILED REPORT CARD (DIRECTLY AFTER ALL MODULE VIDEOS) */}
+                        {modProgress && modProgress.attemptsUsed > 0 ? (
+                          <div
+                            className={`${styles.moduleQuizCard} ${
+                              isPassed ? styles.moduleQuizCardPassed : styles.moduleQuizCardRetry
+                            }`}
+                          >
+                            {/* Quiz Card Header */}
+                            <div className={styles.quizCardHeader}>
+                              <div className={styles.quizCardTitleRow}>
+                                <div className={styles.quizCardTitleLeft}>
+                                  <div
+                                    className={`${styles.quizIconBox} ${
+                                      isPassed ? styles.quizIconPassed : styles.quizIconFailed
+                                    }`}
+                                  >
+                                    {isPassed ? "✓" : "⚠️"}
+                                  </div>
+                                  <h4 className={styles.quizCardHeading}>
+                                    {mod.title.split(":")[0]} Compulsory Quiz
+                                  </h4>
+                                </div>
+                                <span
+                                  className={`${styles.quizXpBadge} ${
+                                    isPassed ? styles.quizXpBadgePassed : ""
+                                  }`}
+                                >
+                                  {isPassed ? "+50 XP ✓" : "+50 XP"}
+                                </span>
+                              </div>
+
+                              <div className={styles.quizCardStatusRow}>
+                                <span className={styles.attemptsUsedBadge}>
+                                  Attempt {modProgress.attemptsUsed} of 3 Used
+                                </span>
+                                <span className={isPassed ? styles.reportCardPassPill : styles.reportCardFailPill}>
+                                  {isPassed
+                                    ? `Passed (${modProgress.quizScore}%)`
+                                    : `Cutoff Not Met (${modProgress.quizScore}% • Cutoff 70%)`}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* DETAILED REPORT CARD BODY */}
+                            <div className={styles.reportCardBody}>
+                              <div className={styles.reportCardHeaderRow}>
+                                <div className={styles.reportCardTitle}>
+                                  <span>📊 Detailed Attempt {modProgress.attemptsUsed} Report Card</span>
+                                </div>
+                                <span className={styles.reportCardScoreHighlight}>
+                                  Score: <strong>{Math.round(((modProgress.quizScore || 0) / 100) * 10)} / 10</strong> ({modProgress.quizScore}%)
+                                </span>
+                              </div>
+
+                              {/* 4-Metric Grid */}
+                              <div className={styles.reportMetricsGrid}>
+                                <div className={styles.reportMetricItem}>
+                                  <span className={styles.reportMetricValue}>{modProgress.quizScore}%</span>
+                                  <span className={styles.reportMetricLabel}>Accuracy</span>
+                                </div>
+                                <div className={styles.reportMetricItem}>
+                                  <span className={styles.reportMetricValue}>70%</span>
+                                  <span className={styles.reportMetricLabel}>Cutoff Required</span>
+                                </div>
+                                <div className={styles.reportMetricItem}>
+                                  <span className={styles.reportMetricValue}>
+                                    {Math.max(0, 3 - modProgress.attemptsUsed)}
+                                  </span>
+                                  <span className={styles.reportMetricLabel}>Attempts Left</span>
+                                </div>
+                                <div className={styles.reportMetricItem}>
+                                  <span
+                                    className={`${styles.reportMetricValue} ${
+                                      isPassed ? styles.metricPass : styles.metricFail
+                                    }`}
+                                  >
+                                    {isPassed ? "PASSED ✓" : "REVISION NEEDED"}
+                                  </span>
+                                  <span className={styles.reportMetricLabel}>Status</span>
+                                </div>
+                              </div>
+
+                              {/* Missed Concepts Diagnosis */}
+                              {!isPassed && modProgress.missedConcepts && modProgress.missedConcepts.length > 0 && (
+                                <div className={styles.reportMissedRow}>
+                                  <span className={styles.reportSubheading}>⚠️ Concepts Requiring Review:</span>
+                                  <div className={styles.missedTagsList}>
+                                    {modProgress.missedConcepts.map((c, i) => (
+                                      <span key={i} className={styles.missedConceptTag}>
+                                        {c}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Prescribed Lesson to Rewatch */}
+                              {!isPassed && modProgress.recommendedLessonTitle && (
+                                <div className={styles.reportRecRow}>
+                                  <span className={styles.reportSubheading}>📺 Prescribed Review:</span>
+                                  <span className={styles.reportRecLesson}>
+                                    {modProgress.recommendedLessonTitle}
+                                    {modProgress.recommendedLessonCompleted && (
+                                      <strong className={styles.recDoneText}> (Reviewed ✓)</strong>
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Action Buttons: View Solutions (10 Qs) + Retake Quiz */}
+                              <div className={styles.reportCardActionsRow}>
+                                <button
+                                  type="button"
+                                  className={styles.viewSolutionsBtn}
+                                  onClick={() => handleOpenReportCardModal(mod.title)}
+                                >
+                                  📋 View Question-by-Question Solutions (10 Qs) →
+                                </button>
+
+                                {!isPassed && (
+                                  <button
+                                    type="button"
+                                    className={styles.retakeFromReportBtn}
+                                    onClick={() => handleOpenModuleQuiz(mod.title)}
+                                  >
+                                    Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3) 🔄
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Initial / Unattempted Quiz Row */
+                          <div
+                            className={`${styles.moduleQuizRow} ${
+                              allModLessonsWatched ? styles.moduleQuizRowReady : ""
+                            }`}
+                          >
+                            <div className={styles.moduleQuizLeft}>
+                              <div
+                                className={`${styles.quizIconBox} ${
+                                  allModLessonsWatched ? styles.quizIconReady : styles.quizIconLocked
+                                }`}
+                              >
+                                {allModLessonsWatched ? "📝" : "🔒"}
+                              </div>
+                              <div className={styles.quizInfoCol}>
+                                <div className={styles.quizTitleRow}>
+                                  <span className={styles.quizRowTitle}>
+                                    {mod.title.split(":")[0]} Compulsory Quiz
+                                  </span>
+                                  <span className={styles.quizXpBadge}>+50 XP</span>
+                                </div>
+                                <span className={styles.quizMetaText}>
+                                  {allModLessonsWatched
+                                    ? "10 Questions • 70% Cutoff required to unlock next module"
+                                    : `Watch all ${mod.lessons.length} lectures to unlock quiz (${completedInMod}/${mod.lessons.length} watched)`}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className={styles.moduleQuizRight}>
+                              {allModLessonsWatched ? (
+                                <button
+                                  type="button"
+                                  className={styles.quizStartBtn}
+                                  onClick={() => handleOpenModuleQuiz(mod.title)}
+                                >
+                                  Start Quiz (10 Qs) →
+                                </button>
+                              ) : (
+                                <span className={styles.quizLockedPill}>🔒 Locked</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              {/* 3. FINAL MILESTONE: CAT GRAND COMPREHENSIVE ASSESSMENT (AFTER ALL MODULES) */}
+              <div
+                className={`${styles.grandQuizSectionCard} ${
+                  grandQuizPassed
+                    ? styles.grandQuizPassedCard
+                    : isAllModulesPassed
+                    ? styles.grandQuizReadyCard
+                    : styles.grandQuizLockedCard
+                }`}
+              >
+                <div className={styles.grandQuizHeaderRow}>
+                  <div className={styles.grandQuizTrophyBox}>
+                    {grandQuizPassed ? "🏆" : isAllModulesPassed ? "🎯" : "🔒"}
+                  </div>
+                  <div className={styles.grandQuizHeaderInfo}>
+                    <div className={styles.grandQuizTitleBadgeRow}>
+                      <h3 className={styles.grandQuizSectionTitle}>
+                        Final Milestone: CAT Grand Comprehensive Assessment
+                      </h3>
+                      <span
+                        className={`${styles.grandQuizXpBadge} ${
+                          grandQuizPassed ? styles.grandQuizXpBadgePassed : ""
+                        }`}
+                      >
+                        {grandQuizPassed ? "+100 XP ✓" : "+100 XP"}
+                      </span>
+                    </div>
+                    <p className={styles.grandQuizSectionDesc}>
+                      {grandQuizPassed
+                        ? "🎉 Outstanding achievement! You completed the Grand Comprehensive Assessment and mastered all modules in this course!"
+                        : isAllModulesPassed
+                        ? "All modules passed! Take the 30-question final exam to achieve full course certification and earn +100 XP."
+                        : `Unlocks after passing all ${modulesList.length} module quizzes (${
+                            Object.values(modulesProgress).filter((m) => m.quizPassed).length
+                          }/${modulesList.length} completed).`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.grandQuizActionRow}>
+                  {grandQuizPassed ? (
+                    <button
+                      type="button"
+                      className={styles.grandQuizPassBtn}
+                      onClick={handleOpenGrandQuiz}
+                    >
+                      Review Grand Assessment (Passed) 🏆
+                    </button>
+                  ) : isAllModulesPassed ? (
+                    <button
+                      type="button"
+                      className={styles.grandQuizActiveBtn}
+                      onClick={handleOpenGrandQuiz}
+                    >
+                      Start Grand Quiz (30 Questions) 🚀
+                    </button>
+                  ) : (
+                    <div className={styles.grandQuizLockedHint}>
+                      <span>🔒 Pass all {modulesList.length} module quizzes to unlock Grand Quiz</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Card 3: Practice & PYQs */}
-          <div className={styles.practiceCard}>
-            <div className={styles.completionHeader}>
-              <h2 className={styles.completionTitle}>Practice & Tests</h2>
-            </div>
-            <div className={styles.practiceContent}>
-              <button 
-                className={styles.pyqBtn}
-                onClick={() => setAiQuizOpen(true)}
-              >
-                <div className={styles.pyqIcon}>📝</div>
-                <div className={styles.pyqInfo}>
-                  <div className={styles.pyqTitle}>Topic PYQ Practice</div>
-                  <div className={styles.pyqDesc}>AI-generated quiz from RAG course material & PYQs</div>
-                </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-            </div>
-          </div>
+          {/* 3. AI Study Advisor Card */}
+          <AiAdvisorCard
+            topicTitle={topic.title}
+            activeModuleTitle={activeModuleTitle}
+            modulesProgress={modulesProgress}
+            isAllModLessonsWatched={
+              (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.filter((l) =>
+                completedLessonIds.includes(l.id)
+              ).length || 0) ===
+              (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.length || 1)
+            }
+            isAllModulesPassed={isAllModulesPassed}
+            grandQuizPassed={grandQuizPassed}
+            onSelectRewatch={handleAdvisorSelectRewatch}
+            onStartModuleQuiz={handleOpenModuleQuiz}
+            onStartGrandQuiz={handleOpenGrandQuiz}
+            onAskAiPrompt={handleAdvisorAskAi}
+          />
         </div>
       </main>
 
-      {/* TechnoEEE Full-Screen Interactive Quiz Viewer */}
+      {/* ===== MODALS ===== */}
+
+      {/* Compulsory Module Quiz & Grand Quiz Modal */}
+      {moduleQuizModal && (
+        <ModuleQuizModal
+          isOpen={moduleQuizModal.isOpen}
+          title={moduleQuizModal.title}
+          isGrandQuiz={moduleQuizModal.isGrandQuiz}
+          questions={moduleQuizModal.questions}
+          attemptNumber={moduleQuizModal.attemptNumber}
+          maxAttempts={3}
+          initialReviewMode={moduleQuizModal.initialReviewMode}
+          initialAnswers={moduleQuizModal.initialAnswers}
+          initialAnalysis={moduleQuizModal.initialAnalysis}
+          initialStrikes={moduleQuizModal.initialStrikes}
+          onClose={() => setModuleQuizModal(null)}
+          onPass={handleQuizPassed}
+          onFail={handleQuizFailed}
+          onSelectLessonToRewatch={(lessonId) => {
+            const target = topic.lessons.find((l) => l.id === lessonId);
+            if (target) handleLessonSelect(target);
+          }}
+          onResetAttemptsAfterRewatch={handleResetAttempts}
+          onRetake={handleRetakeQuiz}
+        />
+      )}
+
+      {/* TechnoEEE Full-Screen Interactive Quiz Viewer (Single Lecture Practice) */}
       {activeQuizModal && (
         <QuizViewer
           title={activeQuizModal.title}
           questions={activeQuizModal.questions}
           onClose={() => setActiveQuizModal(null)}
-          onSubmitQuiz={(score, total) => {
-            console.log(`[Quiz Completed] Scored ${score}/${total}`);
-          }}
         />
       )}
 
+      {/* AI PYQ Modal */}
       {aiQuizOpen && (
-        <TopicQuizModal 
+        <TopicQuizModal
           topicId={topic.id}
           topicTitle={topic.title}
           onClose={() => setAiQuizOpen(false)}
         />
+      )}
+
+      {/* Locked Module Alert Dialog */}
+      {lockedAlert && lockedAlert.isOpen && (
+        <div className={styles.lockedAlertModal}>
+          <div className={styles.lockedAlertBox}>
+            <div className={styles.lockedAlertIcon}>🔒</div>
+            <h3 className={styles.lockedAlertTitle}>Module Locked</h3>
+            <p className={styles.lockedAlertDesc}>
+              To ensure solid conceptual retention, you must first complete all lectures in active module{" "}
+              <strong>&ldquo;{activeModuleTitle}&rdquo;</strong> and pass its compulsory quiz with at least{" "}
+              <strong>70%</strong> before unlocking this module.
+            </p>
+            <button
+              type="button"
+              className={styles.lockedAlertBtn}
+              onClick={() => setLockedAlert(null)}
+            >
+              Back to Active Module
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -22,6 +22,7 @@ interface VideoAskPanelProps {
   lessonCoverage?: string;
   onSeekTo?: (seconds: number) => void;
   onLaunchFullQuiz?: (quiz: { title: string; questions: QuizQuestion[] }) => void;
+  externalPrompt?: { id: string; prompt: string } | null;
 }
 
 const QUICK_CHIPS = [
@@ -310,6 +311,7 @@ export default function VideoAskPanel({
   lessonCoverage,
   onSeekTo,
   onLaunchFullQuiz,
+  externalPrompt,
 }: VideoAskPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -321,6 +323,7 @@ export default function VideoAskPanel({
   const [inputQuery, setInputQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const chatStreamRef = useRef<HTMLDivElement>(null);
+  const lastPromptIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (messages.length > 1 && chatStreamRef.current) {
@@ -385,6 +388,13 @@ export default function VideoAskPanel({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (externalPrompt && externalPrompt.id !== lastPromptIdRef.current) {
+      lastPromptIdRef.current = externalPrompt.id;
+      handleSend(externalPrompt.prompt);
+    }
+  }, [externalPrompt]);
 
   return (
     <div className={styles.panelWrapper}>
