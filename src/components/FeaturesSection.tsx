@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./FeaturesSection.module.css";
 
 const features = [
@@ -16,15 +19,18 @@ const features = [
     icon: (
       <div className={styles.iconAi}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="12" y="12" width="40" height="40" rx="8" fill="url(#paint0_linear)" />
-          <path d="M24 12V8M40 12V8M24 56V52M40 56V52M12 24H8M12 40H8M56 24H52M56 40H52" stroke="#60A5FA" strokeWidth="4" strokeLinecap="round"/>
-          <text x="32" y="38" fill="white" fontSize="18" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">AI</text>
           <defs>
-            <linearGradient id="paint0_linear" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#3B82F6"/>
+            <linearGradient id="aiGrad" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#60A5FA"/>
               <stop offset="1" stopColor="#1D4ED8"/>
             </linearGradient>
+            <filter id="shadowAi" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#000000" floodOpacity="0.25"/>
+            </filter>
           </defs>
+          <rect x="12" y="12" width="40" height="40" rx="10" fill="url(#aiGrad)" filter="url(#shadowAi)" />
+          <path d="M24 12V6M40 12V6M24 58V52M40 58V52M12 24H6M12 40H6M58 24H52M58 40H52" stroke="#93C5FD" strokeWidth="6" strokeLinecap="round" filter="url(#shadowAi)"/>
+          <text x="32" y="39" fill="white" fontSize="22" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">AI</text>
         </svg>
       </div>
     )
@@ -42,11 +48,16 @@ const features = [
     icon: (
       <div className={styles.iconDart}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="32" cy="32" r="24" fill="#E0F2FE"/>
-          <circle cx="32" cy="32" r="16" fill="#BAE6FD"/>
-          <circle cx="32" cy="32" r="8" fill="#3B82F6"/>
-          <path d="M48 16L34 30" stroke="#1D4ED8" strokeWidth="4" strokeLinecap="round"/>
-          <path d="M48 16L48 24M48 16L40 16" stroke="#1D4ED8" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+          <defs>
+            <filter id="shadowDart" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.15"/>
+            </filter>
+          </defs>
+          <circle cx="32" cy="32" r="24" fill="#E0F2FE" filter="url(#shadowDart)"/>
+          <circle cx="32" cy="32" r="16" fill="#BAE6FD" filter="url(#shadowDart)"/>
+          <circle cx="32" cy="32" r="8" fill="#3B82F6" filter="url(#shadowDart)"/>
+          <path d="M50 14L34 30" stroke="#1D4ED8" strokeWidth="6" strokeLinecap="round" filter="url(#shadowDart)"/>
+          <path d="M50 14L50 24M50 14L40 14" stroke="#1D4ED8" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" filter="url(#shadowDart)"/>
         </svg>
       </div>
     )
@@ -65,10 +76,15 @@ const features = [
     icon: (
       <div className={styles.iconSchool}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M32 12L12 24V52H52V24L32 12Z" fill="#CCFBF1"/>
-          <rect x="24" y="36" width="16" height="16" fill="#0D9488"/>
-          <circle cx="32" cy="24" r="4" fill="#0D9488"/>
-          <path d="M24 24V28M40 24V28" stroke="#0D9488" strokeWidth="2" strokeLinecap="round"/>
+          <defs>
+            <filter id="shadowSchool" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.15"/>
+            </filter>
+          </defs>
+          <path d="M32 10L10 24V54H54V24L32 10Z" fill="#CCFBF1" filter="url(#shadowSchool)"/>
+          <rect x="24" y="38" width="16" height="16" fill="#0D9488" filter="url(#shadowSchool)"/>
+          <circle cx="32" cy="24" r="5" fill="#0D9488"/>
+          <path d="M24 24V28M40 24V28" stroke="#0D9488" strokeWidth="4" strokeLinecap="round"/>
         </svg>
       </div>
     )
@@ -86,9 +102,14 @@ const features = [
     icon: (
       <div className={styles.iconMock}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="16" y="8" width="32" height="48" rx="4" fill="#E0F2FE"/>
-          <path d="M24 20H40M24 32H40M24 44H32" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round"/>
-          <circle cx="40" cy="44" r="4" fill="#F59E0B"/>
+          <defs>
+            <filter id="shadowMock" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.15"/>
+            </filter>
+          </defs>
+          <rect x="14" y="6" width="36" height="52" rx="6" fill="#E0F2FE" filter="url(#shadowMock)"/>
+          <path d="M24 20H40M24 32H40M24 44H30" stroke="#3B82F6" strokeWidth="6" strokeLinecap="round"/>
+          <circle cx="40" cy="44" r="5" fill="#F59E0B" filter="url(#shadowMock)"/>
         </svg>
       </div>
     )
@@ -107,10 +128,15 @@ const features = [
     icon: (
       <div className={styles.iconChart}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="12" y="36" width="8" height="20" rx="2" fill="#C7D2FE"/>
-          <rect x="28" y="24" width="8" height="32" rx="2" fill="#818CF8"/>
-          <rect x="44" y="12" width="8" height="44" rx="2" fill="#4F46E5"/>
-          <path d="M8 44L28 28L44 16L56 8" stroke="#4F46E5" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+          <defs>
+            <filter id="shadowChart" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.15"/>
+            </filter>
+          </defs>
+          <rect x="12" y="36" width="10" height="22" rx="3" fill="#C7D2FE" filter="url(#shadowChart)"/>
+          <rect x="27" y="24" width="10" height="34" rx="3" fill="#818CF8" filter="url(#shadowChart)"/>
+          <rect x="42" y="10" width="10" height="48" rx="3" fill="#4F46E5" filter="url(#shadowChart)"/>
+          <path d="M8 44L28 28L44 14L58 4" stroke="#4F46E5" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" filter="url(#shadowChart)"/>
         </svg>
       </div>
     )
@@ -128,12 +154,17 @@ const features = [
     icon: (
       <div className={styles.iconCommunity}>
         <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="32" cy="20" r="10" fill="#38BDF8"/>
-          <path d="M12 52C12 40.9543 20.9543 32 32 32C43.0457 32 52 40.9543 52 52" fill="#0EA5E9"/>
-          <circle cx="16" cy="28" r="6" fill="#7DD3FC"/>
-          <path d="M4 52C4 45.3726 9.37258 40 16 40C20.6122 40 24.6166 42.6041 26.5401 46.5401" stroke="#BAE6FD" strokeWidth="4" strokeLinecap="round"/>
-          <circle cx="48" cy="28" r="6" fill="#7DD3FC"/>
-          <path d="M60 52C60 45.3726 54.6274 40 48 40C43.3878 40 39.3834 42.6041 37.4599 46.5401" stroke="#BAE6FD" strokeWidth="4" strokeLinecap="round"/>
+          <defs>
+            <filter id="shadowCom" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.15"/>
+            </filter>
+          </defs>
+          <circle cx="32" cy="20" r="12" fill="#38BDF8" filter="url(#shadowCom)"/>
+          <path d="M10 54C10 41.8497 19.8497 32 32 32C44.1503 32 54 41.8497 54 54" fill="#0EA5E9" filter="url(#shadowCom)"/>
+          <circle cx="16" cy="30" r="7" fill="#7DD3FC" filter="url(#shadowCom)"/>
+          <path d="M4 54C4 46.268 10.268 40 18 40C23.3619 40 27.9942 43.0125 30.2223 47.5583" stroke="#BAE6FD" strokeWidth="5" strokeLinecap="round" filter="url(#shadowCom)"/>
+          <circle cx="48" cy="30" r="7" fill="#7DD3FC" filter="url(#shadowCom)"/>
+          <path d="M60 54C60 46.268 53.732 40 46 40C40.6381 40 36.0058 43.0125 33.7777 47.5583" stroke="#BAE6FD" strokeWidth="5" strokeLinecap="round" filter="url(#shadowCom)"/>
         </svg>
       </div>
     )
@@ -141,6 +172,15 @@ const features = [
 ];
 
 export default function FeaturesSection() {
+  const { user, openAuthModal } = useAuth();
+
+  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!user || user.isGuest) {
+      e.preventDefault();
+      openAuthModal("signin");
+    }
+  };
+
   return (
     <section className={styles.keyFeaturesSection} id="features">
       <div className={styles.container}>
@@ -177,7 +217,12 @@ export default function FeaturesSection() {
         {/* Grid Area */}
         <div className={styles.grid}>
           {features.map((feature, index) => (
-            <Link href="/dashboard" key={index} className={`${styles.featureCard} ${feature.colorClass} ${feature.isRow ? styles.cardRow : ''}`}>
+            <Link 
+              href="/dashboard" 
+              key={index} 
+              onClick={handleCardClick}
+              className={`${styles.featureCard} ${feature.colorClass} ${feature.isRow ? styles.cardRow : ''}`}
+            >
               <div className={styles.cardBgShape}></div>
               <div className={styles.dotGrid}>
                 {Array.from({ length: 15 }).map((_, i) => (
