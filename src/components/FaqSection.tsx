@@ -92,7 +92,7 @@ export default function FaqSection() {
                   aria-expanded={isOpen}
                 >
                   <div className={styles.questionLeft}>
-                    <div className={styles.iconBox}>?</div>
+                    <div className={styles.iconBox}></div>
                     <span className={styles.questionText}>{faq.q}</span>
                   </div>
                   <span className={styles.chevron}>
