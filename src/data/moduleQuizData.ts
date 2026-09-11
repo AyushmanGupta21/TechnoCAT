@@ -22,6 +22,7 @@ export interface QuizAnalysis {
   rawScore?: number;
   strikes?: number;
   penaltyMarks?: number;
+  timeTakenSeconds?: number;
   selectedAnswers?: Record<number, number>;
   questions?: ModuleQuestion[];
   missedConcepts: Array<{

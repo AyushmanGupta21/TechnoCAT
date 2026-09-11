@@ -224,6 +224,12 @@ export default function TopicDetailPage() {
     moduleTitle: string;
   } | null>(null);
 
+  // View All Attempts History Modal
+  const [historyModal, setHistoryModal] = useState<{
+    isOpen: boolean;
+    moduleTitle: string;
+  } | null>(null);
+
   // Active lesson object
   const activeLesson: Lesson =
     topic.lessons.find((l) => l.id === activeLessonId) || initialLesson;
@@ -578,13 +584,18 @@ export default function TopicDetailPage() {
   const handleAdvisorSelectRewatch = (lessonId: string) => {
     const target = topic.lessons.find((l) => l.id === lessonId);
     if (target) {
+      const targetModTitle = target.moduleTitle || activeModuleTitle;
+      setActiveModuleTitle(targetModTitle);
+      setExpandedModules((prev) => ({ ...prev, [targetModTitle]: true }));
       handleLessonSelect(target);
       if (playerCardRef.current) {
         playerCardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
       }
       setTimeout(() => {
         playVideo();
-      }, 500);
+      }, 600);
     }
   };
 
@@ -697,6 +708,7 @@ export default function TopicDetailPage() {
         rawScore: score,
         strikes: 0,
         penaltyMarks: 0,
+        timeTakenSeconds: 310,
         date: "Latest Attempt",
         selectedAnswers,
         questions: qList,
@@ -726,6 +738,7 @@ export default function TopicDetailPage() {
       rawScore: report.rawScore || report.score,
       strikes: report.strikes || 0,
       penaltyMarks: report.penaltyMarks || 0,
+      timeTakenSeconds: report.timeTakenSeconds,
       selectedAnswers: report.selectedAnswers,
       questions: report.questions,
       missedConcepts: report.questions
@@ -764,6 +777,86 @@ export default function TopicDetailPage() {
       initialAnswers: report.selectedAnswers,
       initialAnalysis: analysis,
       initialStrikes: report.strikes || 0,
+    });
+  };
+
+  // Open History Modal containing all past quiz attempts for a module
+  const handleOpenAttemptsHistoryModal = (modTitle: string) => {
+    setHistoryModal({
+      isOpen: true,
+      moduleTitle: modTitle,
+    });
+  };
+
+  // Inspect a specific past attempt from the history modal in full detail
+  const handleInspectAttempt = (modTitle: string, report: QuizReportCardData) => {
+    setHistoryModal(null);
+
+    const analysis: QuizAnalysis = {
+      score: report.score,
+      total: report.total,
+      percentage: report.percentage,
+      passed: report.passed,
+      rawScore: report.rawScore || report.score,
+      strikes: report.strikes || 0,
+      penaltyMarks: report.penaltyMarks || 0,
+      timeTakenSeconds: report.timeTakenSeconds,
+      selectedAnswers: report.selectedAnswers,
+      questions: report.questions,
+      missedConcepts: (report.questions || [])
+        .map((q, idx) => {
+          const isWrong = report.selectedAnswers?.[idx] !== q.answer;
+          return isWrong
+            ? {
+                questionId: q.id,
+                question: q.q,
+                concept: q.concept,
+                explanation: q.explanation,
+                lessonId: q.recommendedLessonId,
+                lessonTitle: q.recommendedLessonTitle,
+              }
+            : null;
+        })
+        .filter(Boolean) as any,
+      recommendedLessons: report.recommendedLessonId
+        ? [
+            {
+              lessonId: report.recommendedLessonId,
+              lessonTitle: report.recommendedLessonTitle || "Recommended Review",
+              reason: `Review required based on Attempt ${report.attemptNumber} performance`,
+            },
+          ]
+        : [],
+    };
+
+    setModuleQuizModal({
+      isOpen: true,
+      title: `${modTitle.split(":")[0]} Compulsory Quiz`,
+      isGrandQuiz: false,
+      questions: report.questions,
+      attemptNumber: report.attemptNumber,
+      initialReviewMode: true,
+      initialAnswers: report.selectedAnswers,
+      initialAnalysis: analysis,
+      initialStrikes: report.strikes || 0,
+    });
+  };
+
+  // Return to All Attempts History Modal from Detailed Report Card
+  const handleBackToAttempts = () => {
+    if (!moduleQuizModal) return;
+    const currentModTitle = moduleQuizModal.isGrandQuiz
+      ? "GRAND_QUIZ"
+      : moduleQuizModal.title.replace(" Compulsory Quiz", "");
+    const matchedModule = modulesList.find(
+      (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
+    );
+    const modTitle = matchedModule?.title || activeModuleTitle;
+
+    setModuleQuizModal(null);
+    setHistoryModal({
+      isOpen: true,
+      moduleTitle: modTitle,
     });
   };
 
@@ -806,7 +899,7 @@ export default function TopicDetailPage() {
   };
 
   // Module Quiz Passed Handler (>= 70%)
-  const handleQuizPassed = (score: number, total: number, earnedPoints: number) => {
+  const handleQuizPassed = (score: number, total: number, earnedPoints: number, analysis?: QuizAnalysis) => {
     const isGrand = moduleQuizModal?.isGrandQuiz || false;
     const currentModTitle = isGrand
       ? "GRAND_QUIZ"
@@ -837,35 +930,70 @@ export default function TopicDetailPage() {
       completedLessons: 1,
       attemptsUsed: 0,
       quizScore: null,
+      highestScore: null,
       quizPassed: false,
     };
 
+    const newPercentage = Math.round((score / total) * 100);
+    const highestScore = Math.max(
+      currentModProgress.highestScore || currentModProgress.quizScore || 0,
+      newPercentage
+    );
+
+    const firstRec = analysis?.recommendedLessons?.[0];
+    const modObj = modulesList.find((m) => m.title === modTitle);
+    const fallbackLesson = modObj?.lessons?.[0];
+
     const passedReportData: QuizReportCardData = {
-      attemptNumber: currentModProgress.attemptsUsed + 1,
+      attemptNumber: (currentModProgress.attemptsUsed || 0) + 1,
       score,
       total,
-      percentage: Math.round((score / total) * 100),
+      percentage: newPercentage,
       passed: true,
-      rawScore: score,
-      strikes: 0,
-      penaltyMarks: 0,
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
-      selectedAnswers: moduleQuizModal?.questions
-        ? moduleQuizModal.questions.reduce((acc, q, idx) => ({ ...acc, [idx]: q.answer }), {})
-        : {},
-      questions: moduleQuizModal?.questions || [],
-      missedConcepts: [],
+      rawScore: analysis?.rawScore !== undefined ? analysis.rawScore : score,
+      strikes: analysis?.strikes || 0,
+      penaltyMarks: analysis?.penaltyMarks || 0,
+      timeTakenSeconds: analysis?.timeTakenSeconds,
+      date: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      selectedAnswers:
+        analysis?.selectedAnswers ||
+        (moduleQuizModal?.questions
+          ? moduleQuizModal.questions.reduce((acc, q, idx) => ({ ...acc, [idx]: q.answer }), {})
+          : {}),
+      questions: analysis?.questions || moduleQuizModal?.questions || [],
+      missedConcepts: analysis?.missedConcepts ? analysis.missedConcepts.map((m) => m.concept) : [],
+      recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+      recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
     };
+
+    const prevHistory =
+      currentModProgress.attemptsHistory ||
+      (currentModProgress.lastReportCard ? [currentModProgress.lastReportCard] : []);
+    const updatedHistory = [
+      ...prevHistory.filter((h) => h.attemptNumber !== passedReportData.attemptNumber),
+      passedReportData,
+    ];
 
     const newModProgress: Record<string, ModuleProgressItem> = {
       ...modulesProgress,
       [modTitle]: {
         ...currentModProgress,
-        quizScore: Math.round((score / total) * 100),
+        quizScore: highestScore, // Always retain personal best / highest marks!
+        highestScore: highestScore,
         quizPassed: true,
-        attemptsUsed: currentModProgress.attemptsUsed + 1,
+        attemptsUsed: (currentModProgress.attemptsUsed || 0) + 1,
+        consecutiveFailures: 0, // Reset continuous failure counter upon passing!
         explicitlyPassedByUser: true,
+        missedConcepts: analysis?.missedConcepts ? analysis.missedConcepts.map((m) => m.concept) : [],
+        recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+        recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
         lastReportCard: passedReportData,
+        attemptsHistory: updatedHistory,
       } as any,
     };
 
@@ -924,40 +1052,172 @@ export default function TopicDetailPage() {
       completedLessons: 1,
       attemptsUsed: 0,
       quizScore: null,
+      highestScore: null,
       quizPassed: false,
     };
 
+    const newPercentage = Math.round((score / total) * 100);
+    const wasAlreadyPassed = !!currentModProgress.quizPassed;
+    const newConsecutiveFails = (currentModProgress.consecutiveFailures || 0) + 1;
+    const newAttemptsUsed = (currentModProgress.attemptsUsed || 0) + 1;
+    const highestScore = currentModProgress.highestScore || currentModProgress.quizScore || newPercentage;
+
     const firstRec = analysis.recommendedLessons[0];
+    const modObj = modulesList.find((m) => m.title === modTitle);
+    const fallbackLesson = modObj?.lessons?.[0];
 
     const reportData: QuizReportCardData = {
-      attemptNumber: currentModProgress.attemptsUsed + 1,
+      attemptNumber: newAttemptsUsed,
       score,
       total,
-      percentage: Math.round((score / total) * 100),
+      percentage: newPercentage,
       passed: false,
       rawScore: analysis.rawScore !== undefined ? analysis.rawScore : score,
       strikes: analysis.strikes || 0,
       penaltyMarks: analysis.penaltyMarks || 0,
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      timeTakenSeconds: analysis.timeTakenSeconds,
+      date: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       selectedAnswers: analysis.selectedAnswers || {},
       questions: analysis.questions || moduleQuizModal?.questions || [],
       missedConcepts: analysis.missedConcepts.map((m) => m.concept),
-      recommendedLessonId: firstRec?.lessonId,
-      recommendedLessonTitle: firstRec?.lessonTitle,
+      recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+      recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
     };
 
+    const modLessons = topic.lessons.filter((l) => (l.moduleTitle || activeModuleTitle) === modTitle);
+    const modLessonIds = modLessons.map((l) => l.id);
+
+    const prevHistory =
+      currentModProgress.attemptsHistory ||
+      (currentModProgress.lastReportCard ? [currentModProgress.lastReportCard] : []);
+    const updatedHistory = [
+      ...prevHistory.filter((h) => h.attemptNumber !== reportData.attemptNumber),
+      reportData,
+    ];
+
+    // CASE 1: Student ALREADY PASSED, but failed 3 consecutive times in a row (< 70%)
+    if (wasAlreadyPassed && newConsecutiveFails >= 3) {
+      // Mastery Decay Triggered! Lock next ongoing module and reset this module
+      const resetCompletedLessonIds = completedLessonIds.filter((id) => !modLessonIds.includes(id));
+      setCompletedLessonIds(resetCompletedLessonIds);
+
+      // Deduct XP (-10 per lesson, -50 for quiz)
+      const currentXp = parseInt(localStorage.getItem("technocat_user_xp") || "0", 10);
+      const deductedXp = Math.max(0, currentXp - (modLessons.length * 10 + 50));
+      localStorage.setItem("technocat_user_xp", deductedXp.toString());
+
+      const newModProgress: Record<string, ModuleProgressItem> = {
+        ...modulesProgress,
+        [modTitle]: {
+          ...currentModProgress,
+          quizScore: highestScore, // Retain recorded personal best
+          highestScore: highestScore,
+          quizPassed: false, // Revoke pass status
+          attemptsUsed: 3, // Lock until rewatched
+          consecutiveFailures: 0,
+          completedLessons: 0,
+          recommendedLessonCompleted: false,
+          recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+          recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
+          lastReportCard: reportData,
+          attemptsHistory: updatedHistory,
+        },
+      };
+
+      setActiveModuleTitle(modTitle);
+      setModulesProgress(newModProgress);
+      saveProgressToStorage(resetCompletedLessonIds, newModProgress, modTitle, grandQuizPassed);
+
+      setLockedAlert({
+        isOpen: true,
+        lessonTitle: `${modTitle.split(":")[0]} Mastery Decay`,
+        moduleTitle: `⚠️ 3 Consecutive Scores Below 70% Cutoff: Module clearance has been revoked and subsequent modules are locked! You must rewatch the lectures in ${modTitle.split(":")[0]} and reclear the quiz.`,
+      });
+      return;
+    }
+
+    // CASE 2: Student ALREADY PASSED, but this re-quiz attempt was below 70% (less than 3 in a row)
+    if (wasAlreadyPassed) {
+      const newModProgress: Record<string, ModuleProgressItem> = {
+        ...modulesProgress,
+        [modTitle]: {
+          ...currentModProgress,
+          quizScore: highestScore, // Keep highest score!
+          highestScore: highestScore,
+          quizPassed: true, // Remains passed
+          attemptsUsed: newAttemptsUsed,
+          consecutiveFailures: newConsecutiveFails, // Increment streak
+          recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+          recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
+          lastReportCard: reportData,
+          attemptsHistory: updatedHistory,
+        },
+      };
+
+      setModulesProgress(newModProgress);
+      saveProgressToStorage(completedLessonIds, newModProgress, activeModuleTitle, grandQuizPassed);
+      return;
+    }
+
+    // CASE 3: Student has NOT yet passed, and exhausted all 3 initial attempts
+    if (newAttemptsUsed >= 3) {
+      // Reset module lectures so user must rewatch
+      const resetCompletedLessonIds = completedLessonIds.filter((id) => !modLessonIds.includes(id));
+      setCompletedLessonIds(resetCompletedLessonIds);
+
+      // Deduct XP for reset lessons
+      const currentXp = parseInt(localStorage.getItem("technocat_user_xp") || "0", 10);
+      const deductedXp = Math.max(0, currentXp - modLessons.length * 10);
+      localStorage.setItem("technocat_user_xp", deductedXp.toString());
+
+      const newModProgress: Record<string, ModuleProgressItem> = {
+        ...modulesProgress,
+        [modTitle]: {
+          ...currentModProgress,
+          quizScore: newPercentage,
+          highestScore: highestScore,
+          quizPassed: false,
+          attemptsUsed: 3,
+          completedLessons: 0,
+          recommendedLessonCompleted: false,
+          recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+          recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
+          lastReportCard: reportData,
+          attemptsHistory: updatedHistory,
+        },
+      };
+
+      setModulesProgress(newModProgress);
+      saveProgressToStorage(resetCompletedLessonIds, newModProgress, activeModuleTitle, grandQuizPassed);
+
+      setLockedAlert({
+        isOpen: true,
+        lessonTitle: `${modTitle.split(":")[0]} Attempt Limit Reached`,
+        moduleTitle: `You have used 3 attempts without meeting the 70% cutoff. Please rewatch the module lectures to unlock 3 fresh quiz attempts!`,
+      });
+      return;
+    }
+
+    // CASE 4: Student has NOT yet passed, attemptsUsed < 3 (regular attempt)
     const newModProgress: Record<string, ModuleProgressItem> = {
       ...modulesProgress,
       [modTitle]: {
         ...currentModProgress,
-        quizScore: Math.round((score / total) * 100),
+        quizScore: newPercentage,
+        highestScore: highestScore,
         quizPassed: false,
-        attemptsUsed: currentModProgress.attemptsUsed + 1,
+        attemptsUsed: newAttemptsUsed,
         missedConcepts: analysis.missedConcepts.map((m) => m.concept),
-        recommendedLessonId: firstRec?.lessonId,
-        recommendedLessonTitle: firstRec?.lessonTitle,
+        recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
+        recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
         recommendedLessonCompleted: false,
         lastReportCard: reportData,
+        attemptsHistory: updatedHistory,
       },
     };
 
@@ -1678,9 +1938,14 @@ export default function TopicDetailPage() {
                                   >
                                     {isPassed ? "✓" : "⚠️"}
                                   </div>
-                                  <h4 className={styles.quizCardHeading}>
-                                    {mod.title.split(":")[0]} Compulsory Quiz
-                                  </h4>
+                                  <div>
+                                    <h4 className={styles.quizCardHeading}>
+                                      {mod.title.split(":")[0]} Compulsory Quiz
+                                    </h4>
+                                    <span style={{ fontSize: "11px", color: "#64748b", display: "block", marginTop: "2px" }}>
+                                      Best: <strong>{modProgress.highestScore || modProgress.quizScore}%</strong> • Latest: <strong>{modProgress.lastReportCard?.percentage ?? modProgress.quizScore}%</strong>
+                                    </span>
+                                  </div>
                                 </div>
                                 <span
                                   className={`${styles.quizXpBadge} ${
@@ -1697,98 +1962,52 @@ export default function TopicDetailPage() {
                                 </span>
                                 <span className={isPassed ? styles.reportCardPassPill : styles.reportCardFailPill}>
                                   {isPassed
-                                    ? `Passed (${modProgress.quizScore}%)`
-                                    : `Cutoff Not Met (${modProgress.quizScore}% • Cutoff 70%)`}
+                                    ? `Passed (${modProgress.highestScore || modProgress.quizScore}%)`
+                                    : `Cutoff Not Met (${modProgress.lastReportCard?.percentage ?? modProgress.quizScore}% • Cutoff 70%)`}
                                 </span>
                               </div>
                             </div>
 
-                            {/* DETAILED REPORT CARD BODY */}
-                            <div className={styles.reportCardBody}>
-                              <div className={styles.reportCardHeaderRow}>
-                                <div className={styles.reportCardTitle}>
-                                  <span>📊 Detailed Attempt {modProgress.attemptsUsed} Report Card</span>
-                                </div>
-                                <span className={styles.reportCardScoreHighlight}>
-                                  Score: <strong>{Math.round(((modProgress.quizScore || 0) / 100) * 10)} / 10</strong> ({modProgress.quizScore}%)
-                                </span>
-                              </div>
+                            {/* Compact Action Buttons & View All Attempts Trigger */}
+                            <div className={styles.reportCardActionsRow} style={{ marginTop: "10px", gap: "8px", flexWrap: "wrap" }}>
+                              <button
+                                type="button"
+                                className={styles.viewSolutionsBtn}
+                                onClick={() => handleOpenAttemptsHistoryModal(mod.title)}
+                                title="Open history popup to inspect all past attempts & detailed solutions"
+                              >
+                                📜 View All Attempts ({(modProgress.attemptsHistory?.length || modProgress.attemptsUsed || 1)}) →
+                              </button>
 
-                              {/* 4-Metric Grid */}
-                              <div className={styles.reportMetricsGrid}>
-                                <div className={styles.reportMetricItem}>
-                                  <span className={styles.reportMetricValue}>{modProgress.quizScore}%</span>
-                                  <span className={styles.reportMetricLabel}>Accuracy</span>
-                                </div>
-                                <div className={styles.reportMetricItem}>
-                                  <span className={styles.reportMetricValue}>70%</span>
-                                  <span className={styles.reportMetricLabel}>Cutoff Required</span>
-                                </div>
-                                <div className={styles.reportMetricItem}>
-                                  <span className={styles.reportMetricValue}>
-                                    {Math.max(0, 3 - modProgress.attemptsUsed)}
-                                  </span>
-                                  <span className={styles.reportMetricLabel}>Attempts Left</span>
-                                </div>
-                                <div className={styles.reportMetricItem}>
-                                  <span
-                                    className={`${styles.reportMetricValue} ${
-                                      isPassed ? styles.metricPass : styles.metricFail
-                                    }`}
-                                  >
-                                    {isPassed ? "PASSED ✓" : "REVISION NEEDED"}
-                                  </span>
-                                  <span className={styles.reportMetricLabel}>Status</span>
-                                </div>
-                              </div>
-
-                              {/* Missed Concepts Diagnosis */}
-                              {!isPassed && modProgress.missedConcepts && modProgress.missedConcepts.length > 0 && (
-                                <div className={styles.reportMissedRow}>
-                                  <span className={styles.reportSubheading}>⚠️ Concepts Requiring Review:</span>
-                                  <div className={styles.missedTagsList}>
-                                    {modProgress.missedConcepts.map((c, i) => (
-                                      <span key={i} className={styles.missedConceptTag}>
-                                        {c}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Prescribed Lesson to Rewatch */}
-                              {!isPassed && modProgress.recommendedLessonTitle && (
-                                <div className={styles.reportRecRow}>
-                                  <span className={styles.reportSubheading}>📺 Prescribed Review:</span>
-                                  <span className={styles.reportRecLesson}>
-                                    {modProgress.recommendedLessonTitle}
-                                    {modProgress.recommendedLessonCompleted && (
-                                      <strong className={styles.recDoneText}> (Reviewed ✓)</strong>
-                                    )}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Action Buttons: View Solutions (10 Qs) + Retake Quiz */}
-                              <div className={styles.reportCardActionsRow}>
+                              {isPassed ? (
                                 <button
                                   type="button"
-                                  className={styles.viewSolutionsBtn}
-                                  onClick={() => handleOpenReportCardModal(mod.title)}
+                                  className={styles.retakeImproveBtn}
+                                  onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  📋 View Question-by-Question Solutions (10 Qs) →
+                                  🔄 Retake Quiz
                                 </button>
-
-                                {!isPassed && (
-                                  <button
-                                    type="button"
-                                    className={styles.retakeFromReportBtn}
-                                    onClick={() => handleOpenModuleQuiz(mod.title)}
-                                  >
-                                    Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3) 🔄
-                                  </button>
-                                )}
-                              </div>
+                              ) : modProgress.attemptsUsed < 3 ? (
+                                <button
+                                  type="button"
+                                  className={styles.retakeFromReportBtn}
+                                  onClick={() => handleOpenModuleQuiz(mod.title)}
+                                >
+                                  Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3) 🔄
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={styles.rewatchRequiredBtn}
+                                  onClick={() =>
+                                    handleAdvisorSelectRewatch(
+                                      modProgress.recommendedLessonId || mod.lessons[0]?.id
+                                    )
+                                  }
+                                >
+                                  📺 Rewatch Lectures
+                                </button>
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -1913,6 +2132,7 @@ export default function TopicDetailPage() {
             topicTitle={topic.title}
             activeModuleTitle={activeModuleTitle}
             modulesProgress={modulesProgress}
+            modulesList={modulesList}
             isAllModLessonsWatched={
               (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.filter((l) =>
                 completedLessonIds.includes(l.id)
@@ -1953,6 +2173,7 @@ export default function TopicDetailPage() {
           }}
           onResetAttemptsAfterRewatch={handleResetAttempts}
           onRetake={handleRetakeQuiz}
+          onBackToAttempts={!moduleQuizModal.isGrandQuiz ? handleBackToAttempts : undefined}
         />
       )}
 
@@ -1995,6 +2216,138 @@ export default function TopicDetailPage() {
           </div>
         </div>
       )}
+
+      {/* All Quiz Attempts History Modal */}
+      {historyModal && historyModal.isOpen && (() => {
+        const modProgress = modulesProgress[historyModal.moduleTitle];
+        const attempts: QuizReportCardData[] =
+          modProgress?.attemptsHistory && modProgress.attemptsHistory.length > 0
+            ? modProgress.attemptsHistory
+            : modProgress?.lastReportCard
+            ? [modProgress.lastReportCard]
+            : [getOrGenerateReportCard(historyModal.moduleTitle, modProgress || ({} as any))];
+
+        const shortName = historyModal.moduleTitle.split(":")[0];
+        const isPassed = !!modProgress?.quizPassed;
+
+        return (
+          <div className={styles.historyOverlay} onClick={() => setHistoryModal(null)}>
+            <div className={styles.historyModalBox} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.historyModalHeader}>
+                <div className={styles.historyModalHeaderLeft}>
+                  <span className={styles.historyModalBadge}>Attempt History Log</span>
+                  <h3 className={styles.historyModalTitle}>{shortName} Compulsory Quiz</h3>
+                </div>
+                <button
+                  type="button"
+                  className={styles.historyModalCloseBtn}
+                  onClick={() => setHistoryModal(null)}
+                  title="Close History"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className={styles.historyModalBody}>
+                {attempts.slice().reverse().map((att, idx) => {
+                  const isAttPass = !!att.passed;
+                  return (
+                    <div
+                      key={idx}
+                      className={`${styles.attemptHistoryCard} ${
+                        isAttPass ? styles.attemptHistoryCardPassed : styles.attemptHistoryCardFailed
+                      }`}
+                    >
+                      <div className={styles.attemptCardTop}>
+                        <div>
+                          <span className={styles.attemptNumberLabel}>
+                            Attempt {att.attemptNumber}
+                          </span>
+                          <span className={styles.attemptDateLabel}>{att.date || "Completed"}</span>
+                        </div>
+                        <span
+                          className={isAttPass ? styles.metricChipPass : styles.metricChipFail}
+                          style={{ fontWeight: 700, fontSize: "12px", padding: "3px 8px", borderRadius: "6px" }}
+                        >
+                          {isAttPass ? `Passed (${att.percentage}%)` : `Failed (${att.percentage}%)`}
+                        </span>
+                      </div>
+
+                      <div className={styles.attemptCardMetrics}>
+                        <span className={styles.metricChip}>
+                          Score: <strong>{att.score}/{att.total}</strong>
+                        </span>
+                        <span className={styles.metricChip}>
+                          Accuracy: <strong>{att.percentage}%</strong>
+                        </span>
+                        <span className={styles.metricChip}>
+                          ⏱️ {att.timeTakenSeconds ? `${Math.floor(att.timeTakenSeconds / 60)}m ${att.timeTakenSeconds % 60}s` : "Normal Pace"}
+                        </span>
+                        <span
+                          className={`${styles.metricChip} ${
+                            att.strikes && att.strikes > 0 ? styles.metricChipStrike : ""
+                          }`}
+                        >
+                          {att.strikes && att.strikes > 0
+                            ? `⚠️ -${att.strikes} Mark Penalty`
+                            : "🛡️ Clean Attempt"}
+                        </span>
+                        {att.missedConcepts && att.missedConcepts.length > 0 && (
+                          <span className={styles.metricChip} style={{ color: "#b91c1c" }}>
+                            {att.missedConcepts.length} Missed Concept{att.missedConcepts.length > 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        className={styles.attemptInspectBtn}
+                        onClick={() => handleInspectAttempt(historyModal.moduleTitle, att)}
+                      >
+                        📋 Inspect Detailed Results & Solutions (10 Qs) →
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className={styles.historyModalFooter}>
+                <button
+                  type="button"
+                  className={styles.quizReviewBtn}
+                  onClick={() => setHistoryModal(null)}
+                >
+                  Close ✕
+                </button>
+
+                {isPassed ? (
+                  <button
+                    type="button"
+                    className={styles.retakeImproveBtn}
+                    onClick={() => {
+                      setHistoryModal(null);
+                      handleOpenModuleQuiz(historyModal.moduleTitle);
+                    }}
+                  >
+                    🔄 Retake Quiz (Improve Score)
+                  </button>
+                ) : (modProgress?.attemptsUsed || 0) < 3 ? (
+                  <button
+                    type="button"
+                    className={styles.retakeFromReportBtn}
+                    onClick={() => {
+                      setHistoryModal(null);
+                      handleOpenModuleQuiz(historyModal.moduleTitle);
+                    }}
+                  >
+                    Retake Quiz (Attempt {(modProgress?.attemptsUsed || 0) + 1}/3) 🔄
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

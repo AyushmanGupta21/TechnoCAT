@@ -16,11 +16,12 @@ interface ModuleQuizModalProps {
   initialAnalysis?: QuizAnalysis | null;
   initialStrikes?: number;
   onClose: () => void;
-  onPass: (score: number, total: number, earnedPoints: number) => void;
+  onPass: (score: number, total: number, earnedPoints: number, analysis: QuizAnalysis) => void;
   onFail: (score: number, total: number, analysis: QuizAnalysis) => void;
   onSelectLessonToRewatch?: (lessonId: string) => void;
   onResetAttemptsAfterRewatch?: () => void;
   onRetake?: () => void;
+  onBackToAttempts?: () => void;
 }
 
 const OPTION_LETTERS = ["A", "B", "C", "D"];
@@ -42,6 +43,7 @@ export default function ModuleQuizModal({
   onSelectLessonToRewatch,
   onResetAttemptsAfterRewatch,
   onRetake,
+  onBackToAttempts,
 }: ModuleQuizModalProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(initialAnswers || {});
@@ -71,6 +73,7 @@ export default function ModuleQuizModal({
     const penalizedScore = Math.max(0, rawResult.score - penaltyMarks);
     const penalizedPercentage = Math.round((penalizedScore / rawResult.total) * 100);
     const penalizedPassed = penalizedPercentage >= 70;
+    const timeTakenSeconds = Math.max(1, initialDuration - timeLeft);
 
     setRawScore(rawResult.score);
 
@@ -82,6 +85,7 @@ export default function ModuleQuizModal({
       rawScore: rawResult.score,
       strikes: penaltyMarks,
       penaltyMarks,
+      timeTakenSeconds,
       selectedAnswers,
       questions,
     };
@@ -92,11 +96,11 @@ export default function ModuleQuizModal({
     const points = isGrandQuiz ? 100 : 50;
 
     if (finalResult.passed) {
-      onPass(finalResult.score, finalResult.total, points);
+      onPass(finalResult.score, finalResult.total, points, finalResult);
     } else {
       onFail(finalResult.score, finalResult.total, finalResult);
     }
-  }, [questions, selectedAnswers, isGrandQuiz, onPass, onFail]);
+  }, [questions, selectedAnswers, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
 
   const handleSubmitRef = useRef(handleSubmit);
   useEffect(() => {
@@ -298,6 +302,20 @@ export default function ModuleQuizModal({
           </div>
 
           <div className={styles.headerRight}>
+            {onBackToAttempts && isSubmitted && (
+              <button
+                type="button"
+                className={styles.backToAttemptsBtn}
+                onClick={onBackToAttempts}
+                title="Back to All Attempts List"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+                <span>Back to Attempts</span>
+              </button>
+            )}
             {!isSubmitted && (
               <div
                 className={`${styles.timerBadge} ${timeLeft < 120 ? styles.timerDanger : ""}`}
@@ -507,6 +525,48 @@ export default function ModuleQuizModal({
               )}
             </div>
 
+            {/* Time & Proctoring Analytics Bar */}
+            <div className={styles.analyticsGrid}>
+              <div className={styles.analyticsCard}>
+                <span className={styles.analyticsVal}>
+                  {formatTimer(analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft))}
+                </span>
+                <span className={styles.analyticsLbl}>⏱️ Time Taken</span>
+              </div>
+              <div className={styles.analyticsCard}>
+                <span className={styles.analyticsVal}>
+                  {Math.max(
+                    1,
+                    Math.round(
+                      (analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft)) /
+                        (questions.length || 1)
+                    )
+                  )}s / Q
+                </span>
+                <span className={styles.analyticsLbl}>⚡ Avg Speed</span>
+              </div>
+              <div className={styles.analyticsCard}>
+                <span
+                  className={`${styles.analyticsVal} ${
+                    strikes > 0 ? styles.analyticsStrike : styles.analyticsPass
+                  }`}
+                >
+                  {strikes > 0 ? `-${strikes} Mark${strikes > 1 ? "s" : ""}` : "Clean (0)"}
+                </span>
+                <span className={styles.analyticsLbl}>🛡️ Proctoring</span>
+              </div>
+              <div className={styles.analyticsCard}>
+                <span
+                  className={`${styles.analyticsVal} ${
+                    analysis?.passed ? styles.analyticsPass : styles.analyticsStrike
+                  }`}
+                >
+                  {analysis?.passed ? "Passed ✓" : "Cutoff 70%"}
+                </span>
+                <span className={styles.analyticsLbl}>🎯 Benchmark</span>
+              </div>
+            </div>
+
             {/* AI Diagnosis & Prescribed Rewatches (If Failed) */}
             {!analysis?.passed && analysis && (
               <>
@@ -615,14 +675,14 @@ export default function ModuleQuizModal({
                     className={`${styles.filterTabBtn} ${reviewFilter === "wrong" ? styles.filterTabBtnActive : ""}`}
                     onClick={() => setReviewFilter("wrong")}
                   >
-                    Incorrect ({(analysis?.total || questions.length) - (analysis?.score || 0)})
+                    Incorrect ({questions.filter((q, idx) => selectedAnswers[idx] !== q.answer).length})
                   </button>
                   <button
                     type="button"
                     className={`${styles.filterTabBtn} ${reviewFilter === "correct" ? styles.filterTabBtnActive : ""}`}
                     onClick={() => setReviewFilter("correct")}
                   >
-                    Correct ({analysis?.score || 0})
+                    Correct ({questions.filter((q, idx) => selectedAnswers[idx] === q.answer).length})
                   </button>
                 </div>
               </div>
@@ -668,7 +728,7 @@ export default function ModuleQuizModal({
                             tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Your Answer (Correct)</span>;
                           } else if (isSelectedByUser && !isActualCorrect) {
                             rowClass += ` ${styles.reviewOptSelectedWrong}`;
-                            tag = <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>✗ Your Answer</span>;
+                            tag = <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>✗ Your Answer (Incorrect)</span>;
                           } else if (isActualCorrect) {
                             rowClass += ` ${styles.reviewOptCorrectAnswer}`;
                             tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Correct Answer</span>;
@@ -702,15 +762,43 @@ export default function ModuleQuizModal({
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-              {analysis?.passed ? (
+            <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap", alignItems: "center" }}>
+              {onBackToAttempts && (
                 <button
                   type="button"
-                  className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                  onClick={onClose}
+                  className={`${styles.navActionBtn} ${styles.btnBackToAttempts}`}
+                  onClick={onBackToAttempts}
+                  title="Return to the list of all past attempts"
                 >
-                  Continue Learning 🚀
+                  ← Back to All Attempts
                 </button>
+              )}
+              {analysis?.passed ? (
+                <>
+                  <button
+                    type="button"
+                    className={`${styles.navActionBtn} ${styles.btnRetakeScore}`}
+                    onClick={() => {
+                      if (onRetake) {
+                        onRetake();
+                      } else {
+                        setIsSubmitted(false);
+                        setSelectedAnswers({});
+                        setTimeLeft(initialDuration);
+                        setCurrentIdx(0);
+                      }
+                    }}
+                  >
+                    🔄 Retake Quiz with Fresh Questions (Improve Score)
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.navActionBtn} ${styles.btnPrimary}`}
+                    onClick={onClose}
+                  >
+                    Continue Learning 🚀
+                  </button>
+                </>
               ) : attemptNumber < maxAttempts ? (
                 <button
                   type="button"

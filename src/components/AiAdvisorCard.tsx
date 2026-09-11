@@ -12,6 +12,7 @@ export interface QuizReportCardData {
   rawScore?: number;
   strikes?: number;
   penaltyMarks?: number;
+  timeTakenSeconds?: number;
   date: string;
   selectedAnswers: Record<number, number>;
   questions: any[];
@@ -25,19 +26,23 @@ export interface ModuleProgressItem {
   totalLessons: number;
   completedLessons: number;
   quizScore: number | null;
+  highestScore?: number;
   quizPassed: boolean;
   attemptsUsed: number;
+  consecutiveFailures?: number;
   missedConcepts?: string[];
   recommendedLessonId?: string;
   recommendedLessonTitle?: string;
   recommendedLessonCompleted?: boolean;
   lastReportCard?: QuizReportCardData;
+  attemptsHistory?: QuizReportCardData[];
 }
 
 interface AiAdvisorCardProps {
   topicTitle: string;
   activeModuleTitle: string;
   modulesProgress: Record<string, ModuleProgressItem>;
+  modulesList?: Array<{ title: string; lessons: Array<{ id: string; title: string }> }>;
   isAllModLessonsWatched?: boolean;
   isAllModulesPassed?: boolean;
   grandQuizPassed?: boolean;
@@ -51,6 +56,7 @@ export default function AiAdvisorCard({
   topicTitle,
   activeModuleTitle,
   modulesProgress,
+  modulesList,
   isAllModLessonsWatched = false,
   isAllModulesPassed = false,
   grandQuizPassed = false,
@@ -78,9 +84,39 @@ export default function AiAdvisorCard({
     // Priority 1: User failed a quiz or needs conceptual review
     if (reviewModules.length > 0) {
       const firstReview = reviewModules[0];
-      const recId = firstReview.recommendedLessonId;
-      const recTitle = firstReview.recommendedLessonTitle || "recommended lecture";
       const shortName = firstReview.moduleTitle.split(":")[0];
+
+      // Robust fallback for lesson ID and Title
+      const modObj = modulesList?.find((m) => m.title === firstReview.moduleTitle);
+      const fallbackLesson = modObj?.lessons?.[0];
+
+      const recId = firstReview.recommendedLessonId || fallbackLesson?.id;
+      const recTitle =
+        firstReview.recommendedLessonTitle &&
+        firstReview.recommendedLessonTitle !== "recommended lecture"
+          ? firstReview.recommendedLessonTitle
+          : fallbackLesson?.title || `${shortName} Foundation Lecture`;
+
+      // If already passed with 70-79%: give score improvement recommendation
+      if (firstReview.quizPassed) {
+        return {
+          type: "rewatch" as const,
+          heading: `Target 90%+ Mastery: ${shortName}`,
+          text: `You passed ${shortName} with ${firstReview.quizScore}%. Review "${recTitle}" to solidify missed concepts and aim for 90%+ on your next retake!`,
+          buttonLabel: `📺 Watch "${recTitle}" Now →`,
+          buttonClass: styles.btnRewatch,
+          icon: (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          ),
+          execute: () => {
+            if (recId && onSelectRewatch) {
+              onSelectRewatch(recId);
+            }
+          },
+        };
+      }
 
       // If user has already reviewed the recommended lecture:
       if (firstReview.recommendedLessonCompleted) {
