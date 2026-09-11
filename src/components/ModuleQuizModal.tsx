@@ -129,13 +129,17 @@ export default function ModuleQuizModal({
         const computed =
           initialAnalysis || evaluateQuiz(questions, initialAnswers || {});
         setAnalysis(computed);
-        setRawScore(
+        const resolvedStrikes =
+          computed.strikes !== undefined && computed.strikes > 0
+            ? computed.strikes
+            : (initialStrikes || 0);
+        const resolvedRaw =
           computed.rawScore !== undefined
             ? computed.rawScore
-            : computed.score + (initialStrikes || 0)
-        );
-        setStrikes(initialStrikes || 0);
-        strikesRef.current = initialStrikes || 0;
+            : computed.score + resolvedStrikes;
+        setRawScore(resolvedRaw);
+        setStrikes(resolvedStrikes);
+        strikesRef.current = resolvedStrikes;
       } else {
         setAnalysis(null);
         setRawScore(null);
@@ -189,19 +193,31 @@ export default function ModuleQuizModal({
 
     // 2. Keyboard Shortcut Interception (Screenshots, DevTools, Copy, Print)
     const handleKeyDown = (e: KeyboardEvent) => {
-      // PrintScreen key intercept
+      // 1. Direct PrintScreen key intercept
       if (e.key === "PrintScreen") {
+        e.preventDefault();
         if (navigator.clipboard) {
           navigator.clipboard.writeText("").catch(() => {});
         }
-        setProctorAlert("⚠️ Screenshots are strictly prohibited during CAT examinations!");
-        if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
-        proctorTimerRef.current = setTimeout(() => setProctorAlert(null), 4000);
-        e.preventDefault();
+        handleViolation("Taking screenshots is strictly prohibited! (-1 mark penalty)");
         return;
       }
 
-      // Block Ctrl/Cmd + C, U, S, P
+      // 2. Windows Snipping Tool (Win+Shift+S) or Mac Screenshot (Cmd+Shift+3/4/5)
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        ["s", "S", "3", "4", "5", "x", "X"].includes(e.key)
+      ) {
+        e.preventDefault();
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText("").catch(() => {});
+        }
+        handleViolation("Screen capture attempt detected! (-1 mark penalty)");
+        return;
+      }
+
+      // 3. Block Ctrl/Cmd + C, U, S, P
       if (
         (e.ctrlKey || e.metaKey) &&
         ["c", "C", "u", "U", "s", "S", "p", "P"].includes(e.key)
@@ -210,7 +226,7 @@ export default function ModuleQuizModal({
         return;
       }
 
-      // Block F12 and DevTools (Ctrl+Shift+I / J / C)
+      // 4. Block F12 and DevTools (Ctrl+Shift+I / J / C)
       if (
         e.key === "F12" ||
         ((e.ctrlKey || e.metaKey) &&
@@ -222,14 +238,26 @@ export default function ModuleQuizModal({
       }
     };
 
+    // Handle keyup specifically for PrintScreen which triggers on release in many Windows browsers
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "PrintScreen") {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText("").catch(() => {});
+        }
+        handleViolation("Taking screenshots is strictly prohibited! (-1 mark penalty)");
+      }
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
     };
   }, [isOpen, isSubmitted]);
@@ -471,7 +499,7 @@ export default function ModuleQuizModal({
                   <span>⚠️ Proctoring Strike Penalty Applied (-{strikes} Mark{strikes > 1 ? "s" : ""})</span>
                 </div>
                 <div className={styles.penaltyNoticeDesc}>
-                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for tab switching or security violations.
+                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for security policy violations (screenshot or tab switching detected).
                   A penalty of <strong>-{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
                 </div>
               </div>
