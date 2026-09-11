@@ -88,7 +88,10 @@ export default function TopicsListPage() {
           {/* Header Title and Search Bar */}
           <div className={styles.headerContent}>
             <div>
-              <h1 className={styles.pageTitle}>My Topics</h1>
+              <div className={styles.pillBadge}>★ Comprehensive CAT Curriculum</div>
+              <h1 className={styles.pageTitle}>
+                My <span className={styles.headingHighlight}>Topics</span>
+              </h1>
               <p className={styles.pageSubtitle}>
                 Explore your enrolled learning topics, watch video modules, and track your milestone progress.
               </p>

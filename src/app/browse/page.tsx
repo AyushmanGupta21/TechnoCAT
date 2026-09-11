@@ -73,7 +73,10 @@ export default function BrowsePage() {
 
       {/* ===== HERO SEARCH ===== */}
       <section className={styles.heroSection}>
-        <h1 className={styles.heroTitle}>What do you want to learn today?</h1>
+        <div className={styles.pillBadge}>★ Explore CAT Syllabus</div>
+        <h1 className={styles.heroTitle}>
+          What do you want to <span className={styles.headingHighlight}>learn today?</span>
+        </h1>
         <p className={styles.heroSubtitle}>Explore the complete CAT curriculum, from Quant to VARC.</p>
         <div className={styles.searchBox}>
           <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

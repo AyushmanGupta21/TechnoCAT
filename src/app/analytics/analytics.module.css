@@ -1,7 +1,7 @@
 /* ===== ANALYTICS PAGE STYLES ===== */
 .analyticsWrapper {
   min-height: 100vh;
-  background: #F4F6F9;
+  background: #F8FCFF;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #0F172A;
   display: flex;
@@ -10,11 +10,11 @@
 
 /* ===== HEADER SECTION ===== */
 .darkHeader {
-  background: #ffffff;
+  background: #FFFFFF;
   color: #111827;
   padding-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.04);
+  border-bottom: 1px solid #E0F2FE;
 }
 
 .headerInner {
@@ -29,7 +29,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #F0F9FF;
 }
 
 .brandLogo {
@@ -43,32 +43,32 @@
 }
 
 .logoTechno {
-  color: #111827;
+  color: #0F172A;
 }
 
 .logoCAT {
-  color: #ED1C24;
+  color: #2563EB;
 }
 
 .backDashboardBtn {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #475569;
+  color: #2563EB;
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
   padding: 6px 14px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .backDashboardBtn:hover {
-  background: #EFF6FF;
-  color: #2563EB;
-  border-color: #BFDBFE;
+  background: #E0F2FE;
+  color: #1D4ED8;
+  border-color: #BAE6FD;
 }
 
 /* Header Content */
@@ -163,11 +163,11 @@
 }
 
 .viewTab {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #475569;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
+  color: #0284C7;
   padding: 8px 18px;
-  border-radius: 20px;
+  border-radius: 9999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -179,14 +179,15 @@
 }
 
 .viewTab:hover {
-  background: #E2E8F0;
-  color: #0F172A;
+  background: #E0F2FE;
+  color: #0369A1;
 }
 
 .viewTabActive {
-  background: #0F172A;
-  border-color: #0F172A;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  border-color: transparent;
   color: #ffffff;
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.28);
 }
 
 /* ===== MAIN CONTENT AREA ===== */
@@ -306,14 +307,14 @@
 
 .metricCard {
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 22px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid #E0F2FE;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.05);
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
   text-decoration: none;
@@ -332,8 +333,30 @@
 
 .metricCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12);
-  border-color: #BFDBFE;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.12);
+  border-color: #BAE6FD;
+}
+
+.pillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  color: #0284C7;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  width: fit-content;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+}
+
+.headingHighlight {
+  background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .metricCardPercentile:hover::before {

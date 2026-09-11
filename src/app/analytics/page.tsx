@@ -85,7 +85,10 @@ function AnalyticsPageContent() {
           {/* Header Title & Quick Actions */}
           <div className={styles.headerContent}>
             <div>
-              <h1 className={styles.pageTitle}>My Performance & Analytics</h1>
+              <div className={styles.pillBadge}>★ AI-Powered Diagnostics</div>
+              <h1 className={styles.pageTitle}>
+                My Performance & <span className={styles.headingHighlight}>Analytics</span>
+              </h1>
               <p className={styles.pageSubtitle}>
                 Deep diagnostic insights, projected CAT percentile, pacing index, and habit consistency. Click any card to inspect its exact calculation formula.
               </p>

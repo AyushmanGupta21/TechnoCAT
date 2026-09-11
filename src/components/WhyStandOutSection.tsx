@@ -4,7 +4,7 @@ const features = [
   {
     id: "ai",
     badge: "AI",
-    badgeColor: "#ED1C24",
+    badgeColor: "#2563EB",
     title: "Detailed CAT Mock Video Solutions",
     body: "TechnoCAT provides detailed video solutions for both full length and sectional CAT mock tests.",
     extra: (
@@ -35,7 +35,7 @@ const features = [
   {
     id: "best",
     badge: "★",
-    badgeColor: "#ED1C24",
+    badgeColor: "#2563EB",
     title: "Best CAT Mock Test",
     body: "TechnoCAT's CAT mock test interface is really flexible to use. Even if power input gets cut, your mock will automatically get resumed.",
     tag: "BEST CAT MOCK TEST.",

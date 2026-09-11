@@ -1,18 +1,18 @@
 /* ===== TOPICS LISTING PAGE STYLES ===== */
 .topicsWrapper {
   min-height: 100vh;
-  background: #F4F6F9;
+  background: #F8FCFF;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #111827;
 }
 
-/* ===== DARK HEADER SECTION ===== */
+/* ===== HEADER SECTION ===== */
 .darkHeader {
-  background: #ffffff;
+  background: #FFFFFF;
   color: #111827;
   padding-bottom: 36px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.04);
+  border-bottom: 1px solid #E0F2FE;
 }
 
 .headerInner {
@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 0;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #F0F9FF;
 }
 
 .brandLogo {
@@ -41,11 +41,11 @@
 }
 
 .logoTechno {
-  color: #111827;
+  color: #0F172A;
 }
 
 .logoCAT {
-  color: #ED1C24;
+  color: #2563EB;
 }
 
 .navLinks {
@@ -61,7 +61,7 @@
 }
 
 .navLink {
-  color: #6B7280;
+  color: #64748B;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -74,11 +74,11 @@
 }
 
 .navLink:hover {
-  color: #111827;
+  color: #2563EB;
 }
 
 .navLinkActive {
-  color: #111827;
+  color: #2563EB;
   font-weight: 600;
 }
 
@@ -89,7 +89,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background-color: #ED1C24;
+  background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
   border-radius: 3px 3px 0 0;
 }
 
@@ -111,9 +111,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
-  color: #6B7280;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
+  color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,8 +122,9 @@
 }
 
 .iconBtn:hover {
-  background: #E5E7EB;
-  color: #111827;
+  background: #E0F2FE;
+  color: #1D4ED8;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.12);
 }
 
 .userPill {
@@ -131,10 +132,16 @@
   align-items: center;
   gap: 10px;
   padding: 4px 12px 4px 4px;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
   border-radius: 30px;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.userPill:hover {
+  background: #E0F2FE;
+  border-color: #BAE6FD;
 }
 
 .userAvatar {
@@ -142,6 +149,7 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #BAE6FD;
 }
 
 .userInfo {
@@ -214,13 +222,14 @@
 .searchInput {
   width: 100%;
   padding: 11px 16px 11px 42px;
-  background: #ffffff;
-  border: 1px solid #D1D5DB;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E0F2FE;
+  border-radius: 14px;
   color: #111827;
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.04);
 }
 
 .searchInput:focus {
@@ -230,7 +239,7 @@
 }
 
 .searchInput::placeholder {
-  color: #6B7280;
+  color: #94A3B8;
 }
 
 /* Category Filter Tabs */
@@ -243,28 +252,29 @@
 }
 
 .categoryTab {
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
-  color: #4B5563;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
+  color: #0284C7;
   padding: 8px 18px;
-  border-radius: 20px;
+  border-radius: 9999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s;
 }
 
 .categoryTab:hover {
-  background: #E5E7EB;
-  color: #111827;
+  background: #E0F2FE;
+  color: #0369A1;
 }
 
 .categoryTabActive {
-  background: #2563EB;
-  border-color: #2563EB;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  border-color: transparent;
   color: #fff;
   font-weight: 600;
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.28);
 }
 
 /* ===== MAIN CONTENT: TOPICS GRID ===== */
@@ -295,21 +305,21 @@
 /* Topic Card */
 .topicCard {
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid #E0F2FE;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.05);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
   color: inherit;
 }
 
 .topicCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  border-color: #BFDBFE;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.1);
+  border-color: #BAE6FD;
 }
 
 .cardBanner {
@@ -432,7 +442,7 @@
 
 .progressBarFill {
   height: 100%;
-  background: #2563EB;
+  background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
   border-radius: 4px;
   transition: width 0.3s;
 }
@@ -443,10 +453,10 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: #EFF6FF;
+  background: #F0F9FF;
   color: #2563EB;
-  border: 1px solid #BFDBFE;
-  border-radius: 10px;
+  border: 1px solid #E0F2FE;
+  border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
@@ -455,7 +465,30 @@
 }
 
 .topicCard:hover .cardActionBtn {
-  background: #2563EB;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
   color: #ffffff;
-  border-color: #2563EB;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.pillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  color: #0284C7;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  width: fit-content;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+}
+
+.headingHighlight {
+  background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

@@ -1189,7 +1189,10 @@ export default function DashboardPage() {
           {/* Welcome Row */}
           <div className={styles.welcomeRow}>
             <div>
-              <h1 className={styles.welcomeHeading}>Welcome back, {firstName}</h1>
+              <div className={styles.pillBadge}>★ Welcome Back, Aspirant</div>
+              <h1 className={styles.welcomeHeading}>
+                Welcome back, <span className={styles.headingHighlight}>{firstName}</span>
+              </h1>
               <p className={styles.welcomeSubtitle}>Here&apos;s a report on your study progress this week.</p>
             </div>
             <div className={styles.welcomeActions}>

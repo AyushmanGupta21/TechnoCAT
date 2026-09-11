@@ -1377,13 +1377,15 @@ export default function TopicDetailPage() {
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  color: "#94a3b8",
+                  color: "#2563EB",
                   textDecoration: "none",
-                  fontSize: "14px",
-                  fontWeight: 500,
+                  fontSize: "13px",
+                  fontWeight: 600,
                   padding: "6px 12px",
-                  background: "rgba(255,255,255,0.05)",
-                  borderRadius: "6px",
+                  background: "#F0F9FF",
+                  border: "1px solid #E0F2FE",
+                  borderRadius: "8px",
+                  transition: "all 0.2s",
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -1422,6 +1424,7 @@ export default function TopicDetailPage() {
 
       {/* ===== SUBHEADER: BREADCRUMBS & MAIN TOPIC TITLE ===== */}
       <section className={styles.subHeader}>
+        <div className={styles.pillBadge}>★ {topic.category || "CAT Preparation"} • Curriculum</div>
         <div className={styles.breadcrumb}>
           <Link href="/topics" className={styles.breadcrumbLink}>
             My Topics
@@ -1431,7 +1434,9 @@ export default function TopicDetailPage() {
           <span className={styles.breadcrumbSep}>›</span>
           <span className={styles.breadcrumbCurrent}>{activeLesson.code || "Video Lesson"}</span>
         </div>
-        <h1 className={styles.topicMainTitle}>{topic.title}</h1>
+        <h1 className={styles.topicMainTitle}>
+          <span className={styles.headingHighlight}>{topic.title}</span>
+        </h1>
       </section>
 
       {/* ===== MAIN 2-COLUMN CONTAINER ===== */}

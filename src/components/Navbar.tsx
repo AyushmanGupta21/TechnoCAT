@@ -682,7 +682,7 @@ export default function Navbar() {
                     height="15"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#ED1C24"
+                    stroke="#2563EB"
                     strokeWidth="2.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"

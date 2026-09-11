@@ -24,8 +24,8 @@ export default function SettingsPage() {
                 <span className={styles.logoCAT}>CAT</span>
               </Link>
               
-              <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94a3b8", textDecoration: "none", fontSize: "14px", fontWeight: 500, padding: "6px 12px", background: "rgba(255,255,255,0.05)", borderRadius: "6px", transition: "all 0.2s" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#2563EB", textDecoration: "none", fontSize: "13px", fontWeight: 600, padding: "6px 12px", background: "#F0F9FF", border: "1px solid #E0F2FE", borderRadius: "8px", transition: "all 0.2s" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Back to Dashboard
               </Link>
             </div>

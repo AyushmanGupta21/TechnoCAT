@@ -66,7 +66,7 @@
 }
 
 .utilityLinks li a:hover {
-  color: #ED1C24;
+  color: #2563EB;
   text-decoration: underline;
 }
 
@@ -129,7 +129,7 @@
 }
 
 .textLogoCAT {
-  color: #ED1C24;
+  color: #2563EB;
 }
 
 
@@ -327,8 +327,8 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: #000000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: var(--white);
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
   pointer-events: auto;
 }
 
@@ -340,12 +340,12 @@
 
 
 .mobileMainBar {
-  background: #000000;
-  padding: 7px 14px;
+  background: var(--white);
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-cyan);
   position: relative;
   z-index: 1001;
   pointer-events: auto;
@@ -361,7 +361,7 @@
 }
 
 .mobileMenuBtn {
-  color: #ffffff;
+  color: var(--text-main);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -380,11 +380,12 @@
 }
 
 .mobileMenuBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #F0F9FF;
+  color: #2563EB;
 }
 
 .mobileMenuBtn:active {
-  background: rgba(255, 255, 255, 0.2);
+  background: #E0F2FE;
   transform: scale(0.96);
 }
 
@@ -413,17 +414,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  color: #000000;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  color: #ffffff;
   font-size: 13px;
-  font-weight: 700;
-  padding: 7px 16px;
+  font-weight: 600;
+  padding: 7px 18px;
   border-radius: 9999px;
   cursor: pointer;
   border: none;
   text-decoration: none;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
   transition: all 0.2s ease;
   position: relative;
   z-index: 1003;
@@ -434,9 +435,9 @@
 
 .mobileLoginBtn:hover,
 .mobileLoginBtn:active {
-  background: #ED1C24;
-  color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  opacity: 0.95;
 }
 
 
@@ -471,8 +472,8 @@
   bottom: 0;
   width: 320px;
   max-width: 86vw;
-  background: #0d0f15;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--white);
+  border-right: 1px solid var(--border-cyan);
   z-index: 10020;
   transform: translateX(-110%);
   visibility: hidden;
@@ -500,7 +501,7 @@
   visibility: visible !important;
   pointer-events: auto !important;
   opacity: 1 !important;
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.85) !important;
+  box-shadow: 10px 0 40px rgba(14, 165, 233, 0.15) !important;
 }
 
 /* Drawer Header */
@@ -509,8 +510,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #090a0f;
+  border-bottom: 1px solid var(--border-cyan);
+  background: #F8FCFF;
 }
 
 .drawerBrand {
@@ -519,12 +520,10 @@
   gap: 8px;
 }
 
-
-
 .drawerCloseBtn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: #9ca3af;
+  background: #F0F9FF;
+  border: 1px solid var(--border-cyan);
+  color: var(--text-muted);
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -538,8 +537,8 @@
 }
 
 .drawerCloseBtn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: #E0F2FE;
+  color: var(--text-main);
 }
 
 /* Drawer Content Scroll */
@@ -551,13 +550,14 @@
   flex-direction: column;
   gap: 20px;
   -webkit-overflow-scrolling: touch;
+  background: var(--white);
 }
 
 /* Drawer User / Guest Card */
 .drawerAuthBox {
-  background: #151821;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: #F8FCFF;
+  border: 1px solid var(--border-cyan);
+  border-radius: 16px;
   padding: 14px;
 }
 
@@ -571,12 +571,12 @@
 .drawerGuestTitle {
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .drawerGuestSub {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   line-height: 1.35;
 }
 
@@ -587,7 +587,7 @@
 
 .drawerLoginBtn {
   flex: 1;
-  background: #ED1C24;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -595,19 +595,20 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: opacity 0.2s;
   touch-action: manipulation;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
 }
 
 .drawerLoginBtn:hover {
-  background: #d1181f;
+  opacity: 0.92;
 }
 
 .drawerSignupBtn {
   flex: 1;
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #F0F9FF;
+  color: #2563EB;
+  border: 1px solid #BAE6FD;
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 12px;
@@ -618,7 +619,7 @@
 }
 
 .drawerSignupBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: #E0F2FE;
 }
 
 /* Logged-In User Card */
@@ -638,7 +639,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #ED1C24;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -656,7 +657,7 @@
 .drawerUserName {
   font-size: 13px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -664,7 +665,7 @@
 
 .drawerUserEmail {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -677,7 +678,7 @@
 
 .drawerDashboardBtn {
   flex: 2;
-  background: #ED1C24;
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
   color: #ffffff;
   text-align: center;
   padding: 8px 12px;
@@ -685,18 +686,19 @@
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
 }
 
 .drawerDashboardBtn:hover {
-  background: #d1181f;
+  opacity: 0.92;
 }
 
 .drawerLogoutBtn {
   flex: 1;
-  background: rgba(255, 255, 255, 0.08);
-  color: #9ca3af;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #FEF2F2;
+  color: #EF4444;
+  border: 1px solid #FECACA;
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 12px;
@@ -706,9 +708,7 @@
 }
 
 .drawerLogoutBtn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.3);
+  background: #FEE2E2;
 }
 
 /* Sections in Drawer */
@@ -723,7 +723,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #6b7280;
+  color: #0284c7;
   padding: 0 4px;
 }
 
@@ -731,14 +731,19 @@
 .accordionGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .accordionItem {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  background: #F8FCFF;
+  border: 1px solid var(--border-cyan);
+  border-radius: 12px;
   overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.accordionItem:hover {
+  border-color: #BAE6FD;
 }
 
 .accordionHeader {
@@ -749,7 +754,7 @@
   padding: 12px 14px;
   background: transparent;
   border: none;
-  color: #f3f4f6;
+  color: var(--text-main);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -759,11 +764,11 @@
 }
 
 .accordionHeader:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: #F0F9FF;
 }
 
 .accordionTitle {
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .accordionBody {
@@ -771,7 +776,7 @@
   flex-direction: column;
   padding: 4px 10px 10px;
   gap: 2px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--border-cyan);
 }
 
 .accordionLink {
@@ -786,7 +791,7 @@
 }
 
 .accordionLink:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #F0F9FF;
 }
 
 .accordionLinkText {
@@ -797,28 +802,28 @@
 
 .accordionLinkText span:first-child {
   font-size: 12.5px;
-  font-weight: 500;
-  color: #e5e7eb;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .accordionLink:hover .accordionLinkText span:first-child {
-  color: #ED1C24;
+  color: #2563EB;
 }
 
 .accordionLinkDesc {
   font-size: 10.5px;
-  color: #9ca3af;
+  color: var(--text-muted);
   line-height: 1.3;
 }
 
 .accordionBadge {
   font-size: 9px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(237, 28, 36, 0.16);
-  color: #ED1C24;
-  border: 1px solid rgba(237, 28, 36, 0.3);
+  background: #E0F2FE;
+  color: #0284c7;
+  border: 1px solid #BAE6FD;
   text-transform: uppercase;
   flex-shrink: 0;
 }
@@ -827,7 +832,7 @@
 .toolsList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .toolItem {
@@ -836,19 +841,19 @@
   gap: 8px;
   padding: 9px 12px;
   border-radius: 8px;
-  color: #d1d5db;
+  color: var(--text-main);
   font-size: 12.5px;
   font-weight: 500;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #F8FCFF;
+  border: 1px solid var(--border-cyan);
   transition: all 0.15s;
 }
 
 .toolItem:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
-  border-color: rgba(237, 28, 36, 0.3);
+  background: #F0F9FF;
+  color: #2563EB;
+  border-color: #BAE6FD;
 }
 
 /* Drawer Footer */
@@ -858,7 +863,7 @@
   gap: 8px;
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-cyan);
 }
 
 .drawerWhatsappBtn {
@@ -866,7 +871,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #075e54;
+  background: #059669;
   color: #ffffff;
   padding: 10px;
   border-radius: 8px;
@@ -885,9 +890,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #151821;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #F0F9FF;
+  color: #2563EB;
+  border: 1px solid #BAE6FD;
   padding: 10px;
   border-radius: 8px;
   font-size: 12px;
@@ -897,6 +902,5 @@
 }
 
 .drawerDownloadBtn:hover {
-  background: #1c212d;
-  border-color: rgba(255, 255, 255, 0.22);
+  background: #E0F2FE;
 }

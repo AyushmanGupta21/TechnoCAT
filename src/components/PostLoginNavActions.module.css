@@ -20,8 +20,8 @@
 }
 
 .iconBtn:hover {
-  background: #F3F4F6;
-  color: #111827;
+  background: #F0F9FF;
+  color: #2563EB;
 }
 
 .unreadDot {
@@ -40,17 +40,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #F3F4F6;
+  background: #F0F9FF;
   padding: 4px 14px 4px 4px;
   border-radius: 20px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #E0F2FE;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .userPill:hover {
-  background: #E5E7EB;
-  border-color: #D1D5DB;
+  background: #E0F2FE;
+  border-color: #BAE6FD;
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.15);
 }
 
 .userAvatar {
@@ -58,7 +59,7 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid #E5E7EB;
+  border: 2px solid #BAE6FD;
 }
 
 .userInfo {
@@ -95,9 +96,9 @@
   margin-top: 8px;
   width: 220px;
   background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E0F2FE;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.12);
   overflow: hidden;
   z-index: 50;
   animation: slideDown 0.2s ease-out;
@@ -105,7 +106,7 @@
 
 .dropdownHeader {
   padding: 16px;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #F0F9FF;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -156,8 +157,8 @@
 }
 
 .dropdownItem:hover {
-  background: #F9FAFB;
-  color: #111827;
+  background: #F0F9FF;
+  color: #2563EB;
 }
 
 .dropdownItemIcon {
