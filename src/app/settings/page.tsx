@@ -20,7 +20,7 @@ export default function SettingsPage() {
             {/* Brand Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
               <Link href="/dashboard" className={styles.brandLogo} title="Back to Dashboard">
-                <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
+                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
               </Link>
               
               <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#2563EB", textDecoration: "none", fontSize: "13px", fontWeight: 600, padding: "6px 12px", background: "#F0F9FF", border: "1px solid #E0F2FE", borderRadius: "8px", transition: "all 0.2s" }}>

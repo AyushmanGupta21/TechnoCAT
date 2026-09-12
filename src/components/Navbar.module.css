@@ -116,14 +116,14 @@
 }
 
 .logoImage {
-  height: 56px; /* Larger size to make text legible since logo is tall */
+  height: 75px; /* Significantly larger to make the text legible */
   width: auto;
   display: block;
 }
 
 @media (max-width: 1150px) {
   .logoImage {
-    height: 48px;
+    height: 65px;
   }
 }
 
@@ -335,8 +335,8 @@
 
 .mobileMainBar {
   background: var(--white);
-  padding: 0 16px;
-  height: 64px;
+  padding: 4px 16px;
+  min-height: 75px;
   display: flex;
   align-items: center;
   justify-content: space-between;

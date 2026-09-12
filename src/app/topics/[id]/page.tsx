@@ -1368,7 +1368,7 @@ export default function TopicDetailPage() {
           <nav className={styles.topNav} aria-label="Topic Detail Navigation">
             <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
               <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
+                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
               </Link>
               <Link
                 href="/browse"

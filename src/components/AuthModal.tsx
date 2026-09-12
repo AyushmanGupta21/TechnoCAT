@@ -82,12 +82,10 @@ export default function AuthModal() {
             ✕
           </button>
           <div className={styles.brandLogo}>
-            <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
+            <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
           </div>
           <p className={styles.modalSubtitle}>
-            {authModalTab === "signin"
-              ? "Sign in to access your dashboard, study stats, and RAG tutor"
-              : "Create an account to start your structured CAT preparation"}
+            Your CAT preparation journey starts here.
           </p>
         </div>
 

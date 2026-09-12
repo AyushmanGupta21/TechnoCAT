@@ -1,58 +1,32 @@
 import styles from "./Footer.module.css";
+import Link from "next/link";
 
 const footerLinks = [
   {
-    heading: "CAT COURSES",
+    heading: "Platform",
     links: [
-      { label: "CAT Online Course", href: "#" },
-      { label: "CAT 2026 Course", href: "#" },
-      { label: "CAT 2027 Course", href: "#" },
-      { label: "CAT Mock Test", href: "#" },
-      { label: "Best CAT Books", href: "#" },
-      { label: "Free CAT Study Material", href: "#" },
-      { label: "IIM ABC", href: "#" },
-      { label: "CAT Previous Paper", href: "#" },
+      { label: "Mock Tests", href: "#" },
+      { label: "Sectional Tests", href: "#" },
+      { label: "AI Analysis", href: "#" },
+      { label: "Performance", href: "#" },
     ],
   },
   {
-    heading: "OTHER MBA COURSES",
+    heading: "Resources",
     links: [
-      { label: "XAI Course", href: "#" },
-      { label: "SNAP Course", href: "#" },
-      { label: "NMAT Course", href: "#" },
-      { label: "XAI Previous Paper", href: "#" },
-      { label: "SNAP Previous Paper", href: "#" },
-      { label: "GMAT Online Course", href: "#" },
+      { label: "Courses", href: "#" },
+      { label: "Video Solutions", href: "#" },
+      { label: "Preparation Guide", href: "#" },
+      { label: "FAQs", href: "#" },
     ],
   },
   {
-    heading: "AFTER 12TH COURSES",
+    heading: "Company",
     links: [
-      { label: "IPMAT Online Course", href: "#" },
-      { label: "IPMAT Mock Test", href: "#" },
-      { label: "Best IPMAT Books", href: "#" },
-      { label: "IPMAT Previous Paper", href: "#" },
-      { label: "IPMAT Study Material", href: "#" },
-    ],
-  },
-  {
-    heading: "POPULAR TOOLS",
-    links: [
-      { label: "IIM Call Predictor", href: "#" },
-      { label: "CAT Score Calculator", href: "#" },
-      { label: "XAT Score Calculator", href: "#" },
-    ],
-  },
-  {
-    heading: "KNOW US",
-    links: [
-      { label: "About Us", href: "#" },
-      { label: "Contact Us", href: "#" },
-      { label: "Terms and Conditions", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Refund Policy", href: "#" },
-      { label: "Results", href: "#" },
-      { label: "Sitemap", href: "#" },
+      { label: "About", href: "#" },
+      { label: "Contact", href: "#" },
+      { label: "Privacy", href: "#" },
+      { label: "Terms", href: "#" },
     ],
   },
 ];
@@ -61,32 +35,18 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        {/* Link columns */}
-        <div className={styles.grid}>
-          {footerLinks.map((col) => (
-            <div key={col.heading} className={styles.col}>
-              <h4 className={styles.colHeading}>{col.heading}</h4>
-              <ul className={styles.linkList}>
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className={styles.link}>{link.label}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {/* Contact column */}
-          <div className={styles.col}>
-            <h4 className={styles.colHeading}>CONTACT</h4>
-            <div className={styles.contactBlock}>
-              <p>Call: <a href="tel:8130900243" className={styles.contactLink}>8130900243</a></p>
-              <p>Franchise: <a href="tel:9717125983" className={styles.contactLink}>9717125983</a></p>
-              <p>For any Partnership: <a href="tel:9717125983" className={styles.contactLink}>9717125983</a></p>
-              <p><a href="mailto:info@technocat.in" className={styles.contactLink}>info@technocat.in</a></p>
-              <p className={styles.address}>Plot No 126, Udyog Vihar Phase 4, Gurugram, Haryana 122015</p>
-            </div>
-
+        <div className={styles.topSection}>
+          
+          {/* Brand Column */}
+          <div className={styles.brandCol}>
+            <Link href="/" className={styles.logoLink}>
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+            </Link>
+            <p className={styles.brandTagline}>Practice | Analyze | Improve</p>
+            <p className={styles.brandDesc}>
+              An intelligent CAT preparation platform designed to help you practice smarter, analyze better, and improve continuously.
+            </p>
+            
             {/* Social icons */}
             <div className={styles.socialRow}>
               {["facebook", "instagram", "youtube", "linkedin"].map((s) => (
@@ -106,35 +66,24 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-
-            {/* App store buttons */}
-            <p className={styles.downloadLabel}>Download TechnoCAT App</p>
-            <div className={styles.storeRow}>
-              <a href="#" className={styles.storeBtn}>
-                {/* Apple icon */}
-                <svg viewBox="0 0 24 24" className={styles.storeBtnIcon} fill="currentColor">
-                  <path d="M16.365 1.43c0 1.14-.415 2.05-1.244 2.73-.842.686-1.822 1.05-2.89.99-.058-1.09.42-2.06 1.24-2.75.83-.69 1.9-1.06 2.894-.97zM20.5 17.2c-.53 1.22-.78 1.76-1.46 2.83-.95 1.5-2.29 3.37-3.95 3.39-1.48.02-1.86-.96-3.87-.95-2.01.01-2.43.97-3.91.95-1.66-.02-2.93-1.71-3.88-3.21-2.66-4.16-2.94-9.04-1.3-11.64 1.16-1.85 2.99-2.93 4.71-2.93 1.75 0 2.85.96 4.3.96 1.4 0 2.26-.96 4.3-.96 1.53 0 3.15.84 4.31 2.28-3.79 2.08-3.18 7.5.7 9.28z"/>
-                </svg>
-                <span className={styles.storeBtnText}>
-                  <span className={styles.storeBtnSub}>Download on the</span>
-                  <span className={styles.storeBtnMain}>App Store</span>
-                </span>
-              </a>
-              <a href="#" className={styles.storeBtn}>
-                {/* Play store icon */}
-                <svg viewBox="0 0 24 24" className={styles.storeBtnIcon}>
-                  <path d="M3 2.5c0-.4.2-.7.5-.9L14 12 3.5 22.4c-.3-.2-.5-.5-.5-.9V2.5z" fill="#00C2FF"/>
-                  <path d="M14 12 17.6 8.4 4.9 1.4c-.6-.3-1.2-.2-1.7.1L14 12z" fill="#00E676"/>
-                  <path d="M14 12l3.6 3.6 2.7-1.5c.6-.3 1-1 1-1.6s-.4-1.3-1-1.6L17.6 8.4 14 12z" fill="#FFC400"/>
-                  <path d="M14 12 3.2 22.6c.5.3 1.1.4 1.7.1l12.7-7L14 12z" fill="#FF3D00"/>
-                </svg>
-                <span className={styles.storeBtnText}>
-                  <span className={styles.storeBtnSub}>ANDROID APP ON</span>
-                  <span className={styles.storeBtnMain}>Google Play</span>
-                </span>
-              </a>
-            </div>
           </div>
+
+          {/* Links Columns */}
+          <div className={styles.linksGrid}>
+            {footerLinks.map((col) => (
+              <div key={col.heading} className={styles.col}>
+                <h4 className={styles.colHeading}>{col.heading}</h4>
+                <ul className={styles.linkList}>
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <a href={link.href} className={styles.link}>{link.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
         </div>
 
         {/* Bottom bar */}

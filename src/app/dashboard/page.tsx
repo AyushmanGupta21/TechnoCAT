@@ -1141,7 +1141,7 @@ export default function DashboardPage() {
           <nav className={styles.topNav} aria-label="Dashboard Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <span className={styles.logoTechno}>Techno</span><span className={styles.logoCAT}>CAT</span>
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
             </Link>
 
             {/* Nav Menu */}

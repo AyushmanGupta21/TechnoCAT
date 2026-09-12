@@ -414,3 +414,4 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+.logoImage { height: 75px; width: auto; display: block; }
