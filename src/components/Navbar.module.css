@@ -115,31 +115,17 @@
   flex-shrink: 0;
 }
 
-.textLogo {
-  display: inline-flex;
-  align-items: baseline;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  user-select: none;
-  line-height: 1;
-  gap: 0;
+.logoImage {
+  height: 56px; /* Larger size to make text legible since logo is tall */
+  width: auto;
+  display: block;
 }
 
-.textLogoTechno {
-  color: var(--text-main);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+@media (max-width: 1150px) {
+  .logoImage {
+    height: 48px;
+  }
 }
-
-.textLogoCAT {
-  color: #2563EB;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
 
 
 /* Nav links list */
@@ -405,9 +391,7 @@
   pointer-events: auto;
 }
 
-.mobileLogoLink .textLogo {
-  font-size: 22px;
-}
+
 
 .mobileNavRight {
   display: flex;

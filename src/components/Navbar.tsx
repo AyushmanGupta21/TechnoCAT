@@ -226,9 +226,7 @@ export default function Navbar() {
             <div className={styles.navLeft}>
               {/* Logo */}
               <Link href="/" className={styles.logoLink}>
-                <span className={styles.textLogo}>
-                  <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
-                </span>
+                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
               </Link>
 
 
@@ -409,9 +407,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className={styles.mobileLogoLink}>
-              <span className={styles.textLogo}>
-                <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
-              </span>
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
             </Link>
           </div>
 
@@ -488,9 +484,7 @@ export default function Navbar() {
         <div className={styles.drawerHeader}>
           <div className={styles.drawerBrand}>
             <Link href="/" onClick={closeDrawer} className={styles.mobileLogoLink}>
-              <span className={styles.textLogo}>
-                <span className={styles.textLogoTechno}>Techno</span><span className={styles.textLogoCAT}>CAT</span>
-              </span>
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
             </Link>
 
           </div>
