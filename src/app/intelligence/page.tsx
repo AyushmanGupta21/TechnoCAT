@@ -1,10 +1,43 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./intelligence.module.css";
 import Image from "next/image";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 
+interface DashboardData {
+  metrics: {
+    inProgressCourses: number;
+    completedCourses: number;
+    watchingTime: string;
+    pointsEarned: number;
+  };
+}
+
 export default function IntelligenceHubPage() {
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch("/api/dashboard");
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim().length > 0) {
+            setDashboardData(JSON.parse(text));
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
   return (
     <div className={styles.dashboardWrapper}>
       {/* ===== HEADER SECTION (Mirrored from Dashboard) ===== */}
@@ -67,23 +100,66 @@ export default function IntelligenceHubPage() {
       <main className={styles.mainContent}>
         
         {/* STUDENT SNAPSHOT */}
+        {/* STUDENT SNAPSHOT (Original Dashboard Style) */}
         <section className={styles.snapshotSection}>
-          <div className={styles.snapshotGrid}>
-            <div className={styles.snapshotCard}>
-              <span className={styles.snapLabel}>Current Percentile</span>
-              <span className={styles.snapValue}>92.4</span>
+          <div className={styles.metricCardsRow}>
+            {/* Card 1: In Progress */}
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }}>
+              <div className={`${styles.metricIconBox} ${styles.iconPurple}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                <span className={styles.metricValue}>{isLoading ? "—" : dashboardData?.metrics?.inProgressCourses || 0} Topics</span>
+                <span className={styles.metricLabel}>In Progress</span>
+              </div>
             </div>
-            <div className={styles.snapshotCard}>
-              <span className={styles.snapLabel}>Mocks Completed</span>
-              <span className={styles.snapValue}>18</span>
+
+            {/* Card 2: Completed */}
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', borderLeft: '4px solid #0D9488' }}>
+              <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                <span className={styles.metricValue}>{isLoading ? "—" : dashboardData?.metrics?.completedCourses || 0} Topics</span>
+                <span className={styles.metricLabel}>Completed</span>
+              </div>
             </div>
-            <div className={styles.snapshotCard}>
-              <span className={styles.snapLabel}>Accuracy</span>
-              <span className={styles.snapValue}>81%</span>
+
+            {/* Card 3: Watching Time */}
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }}>
+              <div className={`${styles.metricIconBox} ${styles.iconOrange}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m22 8-6 4 6 4V8Z" />
+                  <rect width="14" height="12" x="2" y="6" rx="2" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                <span className={styles.metricValue}>{isLoading ? "—" : dashboardData?.metrics?.watchingTime || "0h 0m"}</span>
+                <span className={styles.metricLabel}>Watching Time</span>
+              </div>
             </div>
-            <div className={styles.snapshotCard}>
-              <span className={styles.snapLabel}>Study Streak</span>
-              <span className={styles.snapValue}>12 Days</span>
+
+            {/* Card 4: Total Points */}
+            <div className={styles.metricCard} style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderLeft: '4px solid #6366F1' }}>
+              <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                <span className={styles.metricValue}>{isLoading ? "—" : dashboardData?.metrics?.pointsEarned || 0}</span>
+                <span className={styles.metricLabel}>Total Points</span>
+              </div>
             </div>
           </div>
         </section>

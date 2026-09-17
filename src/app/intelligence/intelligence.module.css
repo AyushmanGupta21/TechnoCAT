@@ -934,3 +934,69 @@
   color: #2563EB;
   font-weight: 700;
 }
+
+
+/* Original Dashboard Metric Cards */
+.metricCardsRow {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+  animation: slideUp 0.4s ease-out;
+}
+@media (min-width: 640px) {
+  .metricCardsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .metricCardsRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metricCard {
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.metricCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.metricIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.iconPurple { background: #FFFFFF; color: #8B5CF6; }
+.iconGreen { background: #FFFFFF; color: #0D9488; }
+.iconOrange { background: #FFFFFF; color: #2563EB; }
+.iconPink { background: #FFFFFF; color: #6366F1; }
+
+.metricInfo {
+  display: flex;
+  flex-direction: column;
+}
+.metricValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+.metricLabel {
+  font-size: 13px;
+  color: #4B5563;
+  margin-top: 2px;
+  font-weight: 500;
+}
