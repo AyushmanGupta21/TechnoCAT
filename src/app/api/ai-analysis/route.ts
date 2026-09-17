@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       }, {}),
       trend: history.reverse().map((h: any, i: number) => ({
         mockId: h.id,
-        name: \`Mock \${i + 1}\`,
+        name: `Mock ${i + 1}`,
         score: h.score,
         accuracy: h.accuracy_percent,
         speed: Math.round((h.attempted_questions / (h.time_used_seconds / 60)) * 10) // arbitrary speed proxy
