@@ -13,6 +13,12 @@ interface DashboardData {
     watchingTime: string;
     pointsEarned: number;
   };
+  summary: {
+    totalHoursWeek: number;
+    avgHoursDay: number;
+    courseHoursWeek: number;
+    challengeHoursWeek: number;
+  };
 }
 
 export default function IntelligenceHubPage() {
@@ -37,6 +43,40 @@ export default function IntelligenceHubPage() {
     };
     fetchDashboard();
   }, []);
+
+
+  const calcConcepts = () => {
+    if (!dashboardData) return 85;
+    const completed = dashboardData.metrics.completedCourses || 0;
+    const inProgress = dashboardData.metrics.inProgressCourses || 0;
+    return Math.min(100, Math.max(10, Math.floor(((completed * 2 + inProgress) / 10) * 100)));
+  };
+
+  const calcSpeed = () => {
+    if (!dashboardData) return 64;
+    const challenge = dashboardData.summary.challengeHoursWeek || 0;
+    return Math.min(100, Math.max(10, Math.floor((challenge / 30) * 100)));
+  };
+
+  const calcConsistency = () => {
+    if (!dashboardData) return 90;
+    const avg = dashboardData.summary.avgHoursDay || 0;
+    return Math.min(100, Math.max(10, Math.floor((avg / 6) * 100)));
+  };
+
+  const calcAccuracy = () => {
+    if (!dashboardData) return 72;
+    const points = dashboardData.metrics.pointsEarned || 0;
+    return Math.min(100, Math.max(10, Math.floor((points / 1200) * 100)));
+  };
+
+  const concepts = isLoading ? 0 : calcConcepts();
+  const speed = isLoading ? 0 : calcSpeed();
+  const consistency = isLoading ? 0 : calcConsistency();
+  const accuracy = isLoading ? 0 : calcAccuracy();
+  const readiness = isLoading ? 0 : Math.floor((concepts + speed + consistency + accuracy) / 4);
+  
+  const strokeOffset = 264 - (264 * readiness) / 100;
 
   return (
     <div className={styles.dashboardWrapper}>
@@ -304,10 +344,10 @@ export default function IntelligenceHubPage() {
                 <div className={styles.circularProgress}>
                   <svg viewBox="0 0 100 100" className={styles.progressSvg}>
                     <circle cx="50" cy="50" r="42" className={styles.progressBg}></circle>
-                    <circle cx="50" cy="50" r="42" className={styles.progressValue} style={{ strokeDashoffset: 'calc(264 - (264 * 78) / 100)' }}></circle>
+                    <circle cx="50" cy="50" r="42" className={styles.progressValue} style={{ strokeDashoffset: strokeOffset }}></circle>
                   </svg>
                   <div className={styles.scoreText}>
-                    <span className={styles.scoreNumber}>78<span className={styles.scorePercent}>%</span></span>
+                    <span className={styles.scoreNumber}>{readiness}<span className={styles.scorePercent}>%</span></span>
                     <span className={styles.scoreLabel}>Readiness</span>
                   </div>
                 </div>
@@ -318,30 +358,30 @@ export default function IntelligenceHubPage() {
                 <div className={styles.metricItem}>
                   <div className={styles.metricTop}>
                     <span className={styles.metricLabel}>Concepts</span>
-                    <span className={styles.metricVal}>85%</span>
+                    <span className={styles.metricVal}>{concepts}%</span>
                   </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '85%', background: '#0EA5E9'}}></div></div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${concepts}%`, background: '#0EA5E9'}}></div></div>
                 </div>
                 <div className={styles.metricItem}>
                   <div className={styles.metricTop}>
                     <span className={styles.metricLabel}>Accuracy</span>
-                    <span className={styles.metricVal}>72%</span>
+                    <span className={styles.metricVal}>{accuracy}%</span>
                   </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '72%', background: '#2DD4BF'}}></div></div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${accuracy}%`, background: '#2DD4BF'}}></div></div>
                 </div>
                 <div className={styles.metricItem}>
                   <div className={styles.metricTop}>
                     <span className={styles.metricLabel}>Speed</span>
-                    <span className={styles.metricVal}>64%</span>
+                    <span className={styles.metricVal}>{speed}%</span>
                   </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '64%', background: '#F59E0B'}}></div></div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${speed}%`, background: '#F59E0B'}}></div></div>
                 </div>
                 <div className={styles.metricItem}>
                   <div className={styles.metricTop}>
                     <span className={styles.metricLabel}>Consistency</span>
-                    <span className={styles.metricVal}>90%</span>
+                    <span className={styles.metricVal}>{consistency}%</span>
                   </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '90%', background: '#8B5CF6'}}></div></div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${consistency}%`, background: '#8B5CF6'}}></div></div>
                 </div>
               </div>
             </div>
