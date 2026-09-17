@@ -49,6 +49,7 @@ export default function TopicsListPage() {
                 { name: "Dashboard", href: "/dashboard" },
                 { name: "Browse", href: "/browse", hasDropdown: true },
                 { name: "My Topics", href: "/topics" },
+                { name: "Intelligence Hub", href: "/intelligence" },
                 { name: "Mock Viva Prep", href: "#" },
               ].map((item) => (
                 <Link
