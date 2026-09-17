@@ -215,26 +215,119 @@ export default function IntelligenceHubPage() {
         </section>
 
         <div className={styles.bottomGrid}>
-          {/* RECOMMENDATIONS */}
-          <section className={styles.recommendationSection}>
-            <h2 className={styles.sectionTitleSmall}>Recommended For You</h2>
-            <div className={styles.recList}>
-              <Link href="/dashboard" className={styles.recItem}>
-                <span className={styles.recNumber}>1</span>
-                Practice 2 DILR sets
-              </Link>
-              <Link href="/intelligence/error-tracking" className={styles.recItem}>
-                <span className={styles.recNumber}>2</span>
-                Review your Algebra mistakes
-              </Link>
-              <Link href="/dashboard" className={styles.recItem}>
-                <span className={styles.recNumber}>3</span>
-                Attempt CAT Full Mock #19
-              </Link>
-              <Link href="/intelligence/ai-analysis" className={styles.recItem}>
-                <span className={styles.recNumber}>4</span>
-                Analyze your last mock
-              </Link>
+          {/* CAT READINESS METER */}
+          <section className={styles.readinessSection}>
+            <div className={styles.readinessHeader}>
+              <h2 className={styles.sectionTitleSmall}>CAT Readiness Meter</h2>
+              <span className={styles.readinessBadge}>Updated Today</span>
+            </div>
+
+            <div className={styles.readinessMain}>
+              {/* Circular Score */}
+              <div className={styles.readinessScoreBox}>
+                <div className={styles.circularProgress}>
+                  <svg viewBox="0 0 100 100" className={styles.progressSvg}>
+                    <circle cx="50" cy="50" r="42" className={styles.progressBg}></circle>
+                    <circle cx="50" cy="50" r="42" className={styles.progressValue} style={{ strokeDashoffset: 'calc(264 - (264 * 78) / 100)' }}></circle>
+                  </svg>
+                  <div className={styles.scoreText}>
+                    <span className={styles.scoreNumber}>78<span className={styles.scorePercent}>%</span></span>
+                    <span className={styles.scoreLabel}>Readiness</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Metrics */}
+              <div className={styles.readinessMetrics}>
+                <div className={styles.metricItem}>
+                  <div className={styles.metricTop}>
+                    <span className={styles.metricLabel}>Concepts</span>
+                    <span className={styles.metricVal}>85%</span>
+                  </div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '85%', background: '#0EA5E9'}}></div></div>
+                </div>
+                <div className={styles.metricItem}>
+                  <div className={styles.metricTop}>
+                    <span className={styles.metricLabel}>Accuracy</span>
+                    <span className={styles.metricVal}>72%</span>
+                  </div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '72%', background: '#2DD4BF'}}></div></div>
+                </div>
+                <div className={styles.metricItem}>
+                  <div className={styles.metricTop}>
+                    <span className={styles.metricLabel}>Speed</span>
+                    <span className={styles.metricVal}>64%</span>
+                  </div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '64%', background: '#F59E0B'}}></div></div>
+                </div>
+                <div className={styles.metricItem}>
+                  <div className={styles.metricTop}>
+                    <span className={styles.metricLabel}>Consistency</span>
+                    <span className={styles.metricVal}>90%</span>
+                  </div>
+                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: '90%', background: '#8B5CF6'}}></div></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Affecting Readiness */}
+            <div className={styles.affectingSection}>
+              <h3 className={styles.affectingTitle}>What is affecting your readiness?</h3>
+              <div className={styles.insightCards}>
+                <div className={styles.insightCard}>
+                  <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                  <div className={styles.insightContent}>
+                    <span className={styles.insightName}>Speed Under Pressure</span>
+                    <span className={styles.insightDesc}>Taking too long on tricky QA questions.</span>
+                  </div>
+                </div>
+                <div className={styles.insightCard}>
+                  <div className={`${styles.insightIconBox} ${styles.iconGood}`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  </div>
+                  <div className={styles.insightContent}>
+                    <span className={styles.insightName}>DILR Set Selection</span>
+                    <span className={styles.insightDesc}>Excellent accuracy in choosing the right sets.</span>
+                  </div>
+                </div>
+                <div className={styles.insightCard}>
+                  <div className={`${styles.insightIconBox} ${styles.iconNeutral}`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  </div>
+                  <div className={styles.insightContent}>
+                    <span className={styles.insightName}>Mock Consistency</span>
+                    <span className={styles.insightDesc}>Consistent scores, but lacking breakthroughs.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 7-Day Challenge */}
+            <div className={styles.challengeSection}>
+              <div className={styles.challengeHeaderRow}>
+                <h3 className={styles.challengeTitle}>Your 7-Day CAT Challenge</h3>
+                <Link href="/dashboard" className={styles.challengeCta}>
+                  Start Today's Challenge &rarr;
+                </Link>
+              </div>
+              <div className={styles.timeline}>
+                {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                  <div key={day} className={`${styles.timelineDay} ${day < 5 ? styles.dayCompleted : day === 5 ? styles.dayToday : styles.dayUpcoming}`}>
+                    <div className={styles.dayCircle}>
+                      {day < 5 ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      ) : day === 5 ? (
+                        <span className={styles.dayDot}></span>
+                      ) : null}
+                    </div>
+                    <span className={styles.dayLabel}>
+                      {day === 5 ? "Today" : `Day ${day}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 

@@ -620,3 +620,317 @@
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===== CAT READINESS METER ===== */
+.readinessSection {
+  background: #FFFFFF;
+  border: 1px solid #E0F2FE;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.03);
+}
+
+.readinessHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.readinessBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284C7;
+  background: #F0F9FF;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.readinessMain {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 640px) {
+  .readinessMain {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.readinessScoreBox {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.circularProgress {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.progressSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progressBg {
+  fill: none;
+  stroke: #F1F5F9;
+  stroke-width: 8;
+}
+
+.progressValue {
+  fill: none;
+  stroke: #2563EB;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 264;
+  transition: stroke-dashoffset 1.5s ease-out;
+}
+
+.scoreText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.scoreNumber {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.scorePercent {
+  font-size: 16px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.readinessMetrics {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.metricTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 6px;
+}
+
+.metricLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.metricVal {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.metricBar {
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metricFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-out;
+}
+
+/* Affecting Section */
+.affectingSection {
+  margin-bottom: 40px;
+}
+
+.affectingTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 16px;
+}
+
+.insightCards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insightCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  border-radius: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.insightCard:hover {
+  transform: translateY(-2px);
+  border-color: #E2E8F0;
+}
+
+.insightIconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconWarn { background: #FEF2F2; color: #EF4444; }
+.iconGood { background: #ECFDF5; color: #10B981; }
+.iconNeutral { background: #EEF2FF; color: #6366F1; }
+
+.insightContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.insightName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.insightDesc {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+/* Challenge Section */
+.challengeSection {
+  background: linear-gradient(to right, #F8FAFC, #FFFFFF);
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.challengeHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.challengeTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.challengeCta {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563EB;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.challengeCta:hover {
+  color: #1D4ED8;
+}
+
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: #E2E8F0;
+  z-index: 0;
+}
+
+.timelineDay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dayCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  transition: all 0.3s ease;
+}
+
+.dayLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.dayCompleted .dayCircle {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+}
+
+.dayToday .dayCircle {
+  border-color: #2563EB;
+}
+
+.dayDot {
+  width: 8px;
+  height: 8px;
+  background: #2563EB;
+  border-radius: 50%;
+}
+
+.dayToday .dayLabel {
+  color: #2563EB;
+  font-weight: 700;
+}
