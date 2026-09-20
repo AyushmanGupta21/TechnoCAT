@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./WhyStandOutSection.module.css";
 
 const features = [
@@ -5,6 +9,7 @@ const features = [
     id: "ai",
     badge: "AI",
     badgeColor: "#2563EB",
+    href: "/topics",
     title: "Detailed CAT Mock Video Solutions",
     body: "TechnoCAT provides detailed video solutions for both full length and sectional CAT mock tests.",
     extra: (
@@ -22,6 +27,7 @@ const features = [
     id: "error",
     badge: "▶",
     badgeColor: "#111827",
+    href: "/intelligence",
     title: "Error Tracker (AI-Based CAT Mock Analysis)",
     body: "This feature tracks all your errors after completing the CAT mock test and provides analysis. Manually analyzing any mock requires a lot of time.",
   },
@@ -29,6 +35,7 @@ const features = [
     id: "analysis",
     badge: "▶",
     badgeColor: "#111827",
+    href: "/intelligence",
     title: "Analysis Across All CAT Mocks",
     body: "Keep a track of your skill level across all CAT mocks: Attempted, Time Taken, Correct, and Incorrect across all the CAT mock.",
   },
@@ -36,6 +43,7 @@ const features = [
     id: "best",
     badge: "★",
     badgeColor: "#2563EB",
+    href: "/dashboard",
     title: "Best CAT Mock Test",
     body: "TechnoCAT's CAT mock test interface is really flexible to use. Even if power input gets cut, your mock will automatically get resumed.",
     tag: "BEST CAT MOCK TEST.",
@@ -43,6 +51,17 @@ const features = [
 ];
 
 export default function WhyStandOutSection() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+
+  const handleCardClick = (href: string) => {
+    if (!user || user.isGuest) {
+      openAuthModal("signup");
+    } else {
+      router.push(href);
+    }
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -53,7 +72,12 @@ export default function WhyStandOutSection() {
 
         <div className={styles.grid}>
           {features.map((f) => (
-            <div key={f.id} className={styles.card}>
+            <div
+              key={f.id}
+              className={styles.card}
+              onClick={() => handleCardClick(f.href)}
+              title={`Click to explore ${f.title}`}
+            >
               {f.tag && <div className={styles.cardTopTag}>{f.tag}</div>}
               <div className={styles.cardHeader}>
                 <span
@@ -75,7 +99,13 @@ export default function WhyStandOutSection() {
                   </div>
                 </div>
               )}
-              <button className={styles.viewMoreBtn}>
+              <button
+                className={styles.viewMoreBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(f.href);
+                }}
+              >
                 View More
                 <span className={styles.viewMoreIcon}>+</span>
               </button>
@@ -86,3 +116,4 @@ export default function WhyStandOutSection() {
     </section>
   );
 }
+

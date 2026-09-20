@@ -1,6 +1,21 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./AiFeedbackLoop.module.css";
 
 export default function AiFeedbackLoop() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+
+  const handleCardClick = (destination: string) => {
+    if (!user || user.isGuest) {
+      openAuthModal("signup");
+    } else {
+      router.push(destination);
+    }
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -13,7 +28,11 @@ export default function AiFeedbackLoop() {
 
         <div className={styles.loopGrid}>
           {/* Step 1 */}
-          <div className={styles.stepCard}>
+          <div
+            className={styles.stepCard}
+            onClick={() => handleCardClick("/browse")}
+            title="Click to explore mock tests"
+          >
             <div className={styles.stepNumber}>1</div>
             <h3 className={styles.stepTitle}>Take a Mock</h3>
             <p className={styles.stepDesc}>Attempt CAT-level questions in a highly accurate simulation environment.</p>
@@ -27,7 +46,11 @@ export default function AiFeedbackLoop() {
           </div>
 
           {/* Step 2 */}
-          <div className={styles.stepCard}>
+          <div
+            className={styles.stepCard}
+            onClick={() => handleCardClick("/intelligence")}
+            title="Click to view AI Analysis"
+          >
             <div className={styles.stepNumber}>2</div>
             <h3 className={styles.stepTitle}>AI Analysis</h3>
             <p className={styles.stepDesc}>Our engine detects your weakest topics and tracks time-wasting patterns.</p>
@@ -41,7 +64,11 @@ export default function AiFeedbackLoop() {
           </div>
 
           {/* Step 3 */}
-          <div className={styles.stepCard}>
+          <div
+            className={styles.stepCard}
+            onClick={() => handleCardClick("/topics")}
+            title="Click to start targeted practice"
+          >
             <div className={styles.stepNumber}>3</div>
             <h3 className={styles.stepTitle}>Targeted Improvement</h3>
             <p className={styles.stepDesc}>Get customized sectional drills focused purely on your weak areas.</p>
@@ -55,9 +82,19 @@ export default function AiFeedbackLoop() {
             <p className={styles.aiTutorDesc}>
               Stuck on a tricky DILR set or a tough Quant question? Our Chat Tutor breaks down any problem step-by-step, anytime.
             </p>
-            <button className={styles.demoBtn}>Try Chat Tutor Demo</button>
+            <button
+              className={styles.demoBtn}
+              onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
+            >
+              Try Chat Tutor Demo
+            </button>
           </div>
-          <div className={styles.aiTutorMockup}>
+          <div
+            className={styles.aiTutorMockup}
+            onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
+            style={{ cursor: "pointer" }}
+            title="Click to open AI Doubt Tutor"
+          >
             <div className={styles.chatBubbleUser}>How to solve Q.4 efficiently?</div>
             <div className={styles.chatBubbleAi}>
               <strong>Chat Tutor:</strong> Notice that (x+2) and (x-3) are inversely proportional...

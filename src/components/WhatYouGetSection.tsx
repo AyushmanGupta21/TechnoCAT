@@ -1,35 +1,53 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import CardInfoModal, { CardInfoData } from "./CardInfoModal";
 import styles from "./WhatYouGetSection.module.css";
 
 const stats = [
   {
+    id: "full_mocks",
     number: "35",
     title: "Full-length CAT Mocks",
     details: ["20 Proctored Full Mocks", "15 Unproctored Full Mocks"],
+    route: "/dashboard",
   },
   {
+    id: "sectionals",
     number: "45",
     title: "Sectional CAT Mock Tests",
     details: ["15 CAT Mocks Each for VARC, LRDI & QA"],
+    route: "/topics",
   },
   {
+    id: "pyqs",
     number: "24",
     title: "PYQs as Mocks",
     details: ["Attempt Actual exam-level Papers as CAT Mocks"],
+    route: "/browse",
   },
   {
+    id: "omet",
     number: "15",
     title: "OMET Mocks",
     details: ["XAT, NMAT, SNAP, MAHCET, & Other MBA Exams"],
+    isModal: true,
   },
   {
+    id: "solutions",
     number: "100%",
     title: "Detailed Solutions",
     details: ["Textual + Video Solutions of CAT Mocks"],
+    route: "/topics",
   },
   {
+    id: "ai_analysis",
     number: "AI",
     title: "AI-Powered Mock Analysis",
     details: ["Save 3x Time in CAT Mocks Analysis"],
+    route: "/intelligence",
   },
 ];
 
@@ -42,6 +60,7 @@ const featureIcons = [
       </svg>
     ),
     label: "Personalized Study Plan",
+    route: "/dashboard",
   },
   {
     icon: (
@@ -52,6 +71,7 @@ const featureIcons = [
       </svg>
     ),
     label: "Strategy Builder",
+    route: "/intelligence",
   },
   {
     icon: (
@@ -61,6 +81,7 @@ const featureIcons = [
       </svg>
     ),
     label: "Weak Topic Recommendations",
+    route: "/intelligence",
   },
   {
     icon: (
@@ -71,6 +92,7 @@ const featureIcons = [
       </svg>
     ),
     label: "Progress Reports",
+    route: "/analytics",
   },
   {
     icon: (
@@ -81,42 +103,104 @@ const featureIcons = [
       </svg>
     ),
     label: "Mobile Friendly Platform",
+    route: "/dashboard",
   },
 ];
 
 export default function WhatYouGetSection() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+  const [modalData, setModalData] = useState<CardInfoData | null>(null);
+
+  const handleRouteClick = (route: string) => {
+    if (!user || user.isGuest) {
+      openAuthModal("signup");
+    } else {
+      router.push(route);
+    }
+  };
+
+  const handleStatClick = (stat: typeof stats[0]) => {
+    if (stat.isModal) {
+      setModalData({
+        badge: "OMET PREPARATION",
+        title: "15 Other Management Entrance Tests (OMETs)",
+        description:
+          "Targeting XLRI, NMIMS, SIBM, or SNAP/MICAT colleges? Practice with dedicated mock tests matching the exact question pattern, speed requirements, and scoring algorithms of each OMET.",
+        highlights: [
+          "XAT Decision Making & Verbal Ability sectional mock drills",
+          "SNAP 60-minute speed tests with negative marking analytics",
+          "NMAT adaptive mock simulator & score range forecaster",
+          "CMAT & MICAT full-length papers with video explanations"
+        ],
+        primaryBtnText: "Explore OMET Test Series",
+        onPrimaryClick: () => {
+          if (!user || user.isGuest) {
+            openAuthModal("signup");
+          } else {
+            router.push("/dashboard");
+          }
+        }
+      });
+      return;
+    }
+
+    if (stat.route) {
+      handleRouteClick(stat.route);
+    }
+  };
+
   return (
-    <section className={styles.section}>
-      <div className={styles.container}>
-        <h2 className={styles.heading}>
-          What You Get in TechnoCAT Mocks
-        </h2>
+    <>
+      <section className={styles.section}>
+        <div className={styles.container}>
+          <h2 className={styles.heading}>
+            What You Get in TechnoCAT Mocks
+          </h2>
 
-        {/* Stats grid */}
-        <div className={styles.statsGrid}>
-          {stats.map((s, i) => (
-            <div key={i} className={styles.statCard}>
-              <div className={styles.statNumber}>{s.number}</div>
-              <div className={styles.statTitle}>{s.title}</div>
-              <div className={styles.statDetails}>
-                {s.details.map((d, j) => (
-                  <p key={j} className={styles.statDetail}>{d}</p>
-                ))}
+          {/* Stats grid */}
+          <div className={styles.statsGrid}>
+            {stats.map((s, i) => (
+              <div
+                key={i}
+                className={styles.statCard}
+                onClick={() => handleStatClick(s)}
+                title={`Click to view ${s.title}`}
+              >
+                <div className={styles.statNumber}>{s.number}</div>
+                <div className={styles.statTitle}>{s.title}</div>
+                <div className={styles.statDetails}>
+                  {s.details.map((d, j) => (
+                    <p key={j} className={styles.statDetail}>{d}</p>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Feature icon row */}
-        <div className={styles.featureRow}>
-          {featureIcons.map((f, i) => (
-            <div key={i} className={styles.featureItem}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <span className={styles.featureLabel}>{f.label}</span>
-            </div>
-          ))}
+          {/* Feature icon row */}
+          <div className={styles.featureRow}>
+            {featureIcons.map((f, i) => (
+              <div
+                key={i}
+                className={styles.featureItem}
+                onClick={() => handleRouteClick(f.route)}
+                title={`Click to explore ${f.label}`}
+              >
+                <span className={styles.featureIcon}>{f.icon}</span>
+                <span className={styles.featureLabel}>{f.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <CardInfoModal
+        isOpen={!!modalData}
+        onClose={() => setModalData(null)}
+        data={modalData}
+      />
+    </>
   );
 }
+

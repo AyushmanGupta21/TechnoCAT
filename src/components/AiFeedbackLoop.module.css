@@ -59,6 +59,7 @@
   text-align: center;
   position: relative;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .stepCard:hover {

@@ -1,9 +1,21 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./IimPredictor.module.css";
 
 export default function IimPredictor() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
   const [predicted, setPredicted] = useState(false);
+
+  const handleUnlockReport = () => {
+    if (!user || user.isGuest) {
+      openAuthModal("signup");
+    } else {
+      router.push("/intelligence");
+    }
+  };
 
   return (
     <section className={styles.section}>
@@ -54,7 +66,7 @@ export default function IimPredictor() {
                   <div className={styles.blurRow}>IIM Bangalore - <span>High Chance</span></div>
                   <div className={styles.blurRow}>FMS Delhi - <span>High Chance</span></div>
                 </div>
-                <button className={styles.signUpBtn} onClick={() => alert("Redirect to Signup")}>Sign Up Free to Unlock Full Report</button>
+                <button className={styles.signUpBtn} onClick={handleUnlockReport}>Sign Up Free to Unlock Full Report</button>
                 <button className={styles.resetBtn} onClick={() => setPredicted(false)}>Recalculate</button>
               </div>
             )}

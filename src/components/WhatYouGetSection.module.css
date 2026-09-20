@@ -52,6 +52,7 @@
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--primary-light);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .statCard:hover {
@@ -112,10 +113,12 @@
   border-radius: 20px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--primary-light);
-  transition: box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .featureItem:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 

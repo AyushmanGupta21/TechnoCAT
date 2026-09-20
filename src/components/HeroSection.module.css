@@ -379,6 +379,7 @@
   transition: all 0.3s ease;
   border: 1px solid var(--primary-light);
   animation: float 4s ease-in-out infinite;
+  cursor: pointer;
 }
 .statCard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
@@ -419,6 +420,7 @@
   gap: 8px;
   transition: all 0.3s ease;
   animation: float 4s ease-in-out infinite 2s; /* delay to alternate floating */
+  cursor: pointer;
 }
 .statCardOrange:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
 

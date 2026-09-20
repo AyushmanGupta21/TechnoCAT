@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./ComparisonTable.module.css";
 
 const features = [
@@ -173,6 +177,9 @@ function CrossIcon() {
 }
 
 export default function ComparisonTable() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+
   return (
     <div className={styles.wrapper}>
       {/* Decorative Backgrounds */}
@@ -256,7 +263,18 @@ export default function ComparisonTable() {
               <p className={styles.footerText}>
                 <span className={styles.footerBold}>TechnoCAT Mocks give you everything you need</span> to crack the CAT exam.
               </p>
-              <button className={styles.tryBtn}>Try TechnoCAT Mocks →</button>
+              <button
+                className={styles.tryBtn}
+                onClick={() => {
+                  if (!user || user.isGuest) {
+                    openAuthModal("signup");
+                  } else {
+                    router.push("/dashboard");
+                  }
+                }}
+              >
+                Try TechnoCAT Mocks →
+              </button>
             </div>
           </div>
         </div>

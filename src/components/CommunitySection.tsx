@@ -1,7 +1,21 @@
 "use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./CommunitySection.module.css";
 
 export default function CommunitySection() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+
+  const handleCommunityAction = () => {
+    if (!user || user.isGuest) {
+      openAuthModal("signup");
+    } else {
+      router.push("/intelligence");
+    }
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -27,7 +41,7 @@ export default function CommunitySection() {
               </div>
             </div>
 
-            <button className={styles.shareBtn}>
+            <button className={styles.shareBtn} onClick={handleCommunityAction}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"

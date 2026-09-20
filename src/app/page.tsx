@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 import FloatingBanner from "@/components/FloatingBanner";
 import AiFeedbackLoop from "@/components/AiFeedbackLoop";
 import IimPredictor from "@/components/IimPredictor";
+import PricingSection from "@/components/PricingSection";
 
 export default function Home() {
   return (
@@ -51,116 +52,7 @@ export default function Home() {
         <VideoReviewsSection />
 
         {/* 8. Pricing packages */}
-        <section
-          id="courses"
-          style={{
-            background: "transparent",
-            padding: "64px 0",
-            scrollMarginTop: "32px",
-          }}
-        >
-          <div
-            style={{
-              maxWidth: "1280px",
-              margin: "0 auto",
-              padding: "0 1rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: "30px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 2.6rem)",
-                  fontWeight: 700,
-                  color: "var(--text-main)",
-                  textAlign: "center",
-                }}
-              >
-                TechnoCAT Mocks Packages
-              </h2>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: "24px",
-              }}
-            >
-              {["TechnoCAT Basic", "TechnoCAT Pro", "TechnoCAT Premium"].map(
-                (plan, i) => {
-                  const cardBg = 
-                    i === 0 ? "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)" :
-                    i === 1 ? "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" :
-                    "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)";
-                  const borderColor = 
-                    i === 0 ? "#bae6fd" :
-                    i === 1 ? "#ddd6fe" :
-                    "#99f6e4";
-
-                  return (
-                  <div
-                    key={i}
-                    className={`pricingCard ${i === 1 ? 'pro' : ''}`}
-                    style={{
-                      background: cardBg,
-                      border: `1px solid ${borderColor}`,
-                      boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-sm)",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: "1.5rem",
-                        fontWeight: 700,
-                        color: "var(--text-main)",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {plan}
-                    </h3>
-                    <p
-                      style={{
-                        color: "var(--text-muted)",
-                        fontSize: "14px",
-                        marginBottom: "24px",
-                      }}
-                    >
-                      {i === 0 && "5 Full Mocks + Analysis"}
-                      {i === 1 && "35 Full Mocks + 45 Sectionals"}
-                      {i === 2 && "All Mocks + Mentorship + PYQs"}
-                    </p>
-                    <div
-                      style={{
-                        fontSize: "2rem",
-                        fontWeight: 800,
-                        color: "var(--primary-dark)",
-                        marginBottom: "24px",
-                      }}
-                    >
-                      {i === 0 && "FREE"}
-                      {i === 1 && "₹2,499"}
-                      {i === 2 && "₹4,999"}
-                    </div>
-                    <button
-                      className={`pricingBtn ${i === 1 ? 'pro' : ''}`}
-                      style={{
-                        background: i === 1 ? "var(--primary)" : "var(--white)",
-                        color: i === 1 ? "#fff" : "var(--primary-dark)",
-                        border: i === 1 ? "none" : "1px solid var(--primary-light)",
-                      }}
-                    >
-                      {i === 0 ? "Start Free" : "Enroll Now"}
-                    </button>
-                  </div>
-                )}
-              )}
-            </div>
-          </div>
-        </section>
+        <PricingSection />
 
         {/* 11. Comparison table */}
         <ComparisonTable />

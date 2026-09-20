@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import CardInfoModal, { CardInfoData } from "./CardInfoModal";
 import styles from "./Navbar.module.css";
 
 interface SubLink {
@@ -58,20 +60,20 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "CAT 2024 Actual Papers (All Slots)",
-        href: "/#icat-mock",
+        href: "/browse",
         badge: "Latest",
       },
       {
         label: "CAT 2023 Slot 1, 2, 3 with Solutions",
-        href: "/#icat-mock",
+        href: "/browse",
       },
       {
         label: "CAT 2022 Slot 1, 2, 3 with Solutions",
-        href: "/#icat-mock",
+        href: "/browse",
       },
       {
         label: "Attempt Past Year Paper as Mock",
-        href: "/#icat-mock",
+        href: "/browse",
         badge: "Free",
       },
     ],
@@ -82,7 +84,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "TechnoCAT 6.0 Full Mock",
-        href: "/#icat-mock",
+        href: "/dashboard",
         badge: "Free",
       },
       {
@@ -91,11 +93,11 @@ const NAV_CATEGORIES: NavCategory[] = [
       },
       {
         label: "45 Sectional Tests (QA, DILR, VARC)",
-        href: "/#courses",
+        href: "/topics",
       },
       {
         label: "AI Mock Analysis & Benchmark",
-        href: "/#why-stand-out",
+        href: "/intelligence",
         badge: "AI",
       },
     ],
@@ -106,19 +108,19 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "Why TechnoCAT Mocks Stand Out",
-        href: "/#why-stand-out",
+        href: "/#features",
       },
       {
         label: "Two Exam Modes (Classic vs Modern)",
-        href: "/#exam-modes",
+        href: "/#features",
       },
       {
         label: "What You Get in TechnoCAT",
-        href: "/#what-you-get",
+        href: "/#features",
       },
       {
         label: "580+ 99+%ilers Community",
-        href: "/#community",
+        href: "/intelligence",
         badge: "580+",
       },
       {
@@ -134,15 +136,17 @@ const NAV_CATEGORIES: NavCategory[] = [
 ];
 
 const UTILITY_LINKS = [
-  { label: "Predict your BSchool", href: "/#features" },
-  { label: "Free CAT Daily Target", href: "/#features" },
-  { label: "Free CAT Study Material!", href: "/#features" },
-  { label: "SOP Generator", href: "/#features" },
-  { label: "CAT Score Calculator", href: "/#features" },
+  { label: "Predict your BSchool", href: "/intelligence" },
+  { label: "Free CAT Daily Target", href: "/dashboard", requiresAuth: true },
+  { label: "Free CAT Study Material!", href: "/browse", requiresAuth: true },
+  { label: "SOP Generator", href: "#", isModal: true },
+  { label: "CAT Score Calculator", href: "/intelligence" },
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const { user, openAuthModal, logout } = useAuth();
+  const [modalData, setModalData] = useState<CardInfoData | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({
@@ -150,6 +154,39 @@ export default function Navbar() {
   });
 
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleUtilityClick = (e: React.MouseEvent, link: typeof UTILITY_LINKS[0]) => {
+    if (link.isModal) {
+      e.preventDefault();
+      setModalData({
+        badge: "AI ADMISSIONS ENGINE",
+        title: "AI Statement of Purpose (SOP) & Interview Studio",
+        description:
+          "Craft winning SOPs and practice AI-guided mock interviews tailored to each IIM shortlist and top MBA program criteria.",
+        highlights: [
+          "Profile-tailored SOP drafts aligned with IIM Ahmedabad, Bangalore, Calcutta specs",
+          "Real-time interview simulator scoring your answers on clarity and structure",
+          "Extensive archive of previous GD-PI questions and alumni transcripts",
+          "Automated suggestions for highlighting academic and work experience achievements"
+        ],
+        primaryBtnText: "Unlock SOP Studio with Sign Up",
+        onPrimaryClick: () => {
+          if (!user || user.isGuest) {
+            openAuthModal("signup");
+          } else {
+            router.push("/intelligence");
+          }
+        }
+      });
+      return;
+    }
+
+    if (link.requiresAuth && (!user || user.isGuest)) {
+      e.preventDefault();
+      openAuthModal("signup");
+      return;
+    }
+  };
 
   // Lock body scrolling when mobile drawer is open
   useEffect(() => {
@@ -213,7 +250,7 @@ export default function Navbar() {
             <ul className={styles.utilityLinks}>
               {UTILITY_LINKS.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href}>{link.label}</Link>
+                  <Link href={link.href} onClick={(e) => handleUtilityClick(e, link)}>{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -282,10 +319,11 @@ export default function Navbar() {
                                 key={link.label}
                                 href={link.href}
                                 onClick={(e) => {
-                                  if (cat.id === "courses" && (!user || user.isGuest)) {
+                                  const needsAuth = (cat.id === "courses" || cat.id === "mocks" || cat.id === "past-papers") && !link.href.startsWith("/#");
+                                  if (needsAuth && (!user || user.isGuest)) {
                                     e.preventDefault();
                                     setActiveDropdown(null);
-                                    openAuthModal("signin");
+                                    openAuthModal("signup");
                                   } else {
                                     setActiveDropdown(null);
                                   }
@@ -623,10 +661,11 @@ export default function Navbar() {
                             key={link.label}
                             href={link.href}
                             onClick={(e) => {
-                              if (cat.id === "courses" && (!user || user.isGuest)) {
+                              const needsAuth = (cat.id === "courses" || cat.id === "mocks" || cat.id === "past-papers") && !link.href.startsWith("/#");
+                              if (needsAuth && (!user || user.isGuest)) {
                                 e.preventDefault();
                                 closeDrawer();
-                                openAuthModal("signin");
+                                openAuthModal("signup");
                               } else {
                                 closeDrawer();
                               }
@@ -664,7 +703,10 @@ export default function Navbar() {
                 <Link
                   key={tool.label}
                   href={tool.href}
-                  onClick={closeDrawer}
+                  onClick={(e) => {
+                    closeDrawer();
+                    handleUtilityClick(e, tool);
+                  }}
                   className={styles.toolItem}
                 >
                   <svg
@@ -733,6 +775,12 @@ export default function Navbar() {
           </div>
         </div>
       </aside>
+
+      <CardInfoModal
+        isOpen={!!modalData}
+        onClose={() => setModalData(null)}
+        data={modalData}
+      />
     </>
   );
 }

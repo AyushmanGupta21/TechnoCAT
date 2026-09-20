@@ -10,7 +10,7 @@ export default function TwoModesSection() {
   const handleModeClick = (e: React.MouseEvent) => {
     if (!user || user.isGuest) {
       e.preventDefault();
-      openAuthModal("signin");
+      openAuthModal("signup");
     }
   };
 
@@ -54,7 +54,7 @@ export default function TwoModesSection() {
                   <p className={styles.classicSubtitle}>Real CAT Experience</p>
                 </div>
               </div>
-              <Link href="/dashboard" onClick={handleModeClick} className={styles.classicBtn}>
+              <Link href="/browse" onClick={handleModeClick} className={styles.classicBtn}>
                 Try Now
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -155,7 +155,7 @@ export default function TwoModesSection() {
                   <p className={styles.modernSubtitle}>TechnoCAT Mock UI</p>
                 </div>
               </div>
-              <Link href="/dashboard" onClick={handleModeClick} className={styles.modernBtn}>
+              <Link href="/intelligence" onClick={handleModeClick} className={styles.modernBtn}>
                 Try Now
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
