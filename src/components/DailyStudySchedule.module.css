@@ -401,3 +401,359 @@
   background: #2563EB;
 }
 
+/* ===== INTELLIGENT SCHEDULER & BACKLOG PACER ===== */
+.schedulerCard {
+  background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
+  border: 1px solid #BFDBFE;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.05);
+}
+
+.schedulerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.schedulerHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.schedulerIconBox {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.schedulerTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.schedulerBadge {
+  font-size: 11px;
+  font-weight: 700;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.schedulerLoadBadge {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1E293B;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.schedulerDesc {
+  font-size: 13px;
+  color: #334155;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.schedulerControlsRow {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stepperWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepperLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.stepperBox {
+  display: inline-flex;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.stepperBtn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.stepperBtn:hover:not(:disabled) {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.stepperBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stepperValue {
+  min-width: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.presetChips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.presetChip {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.presetChip:hover {
+  background: #EFF6FF;
+  border-color: #93C5FD;
+  color: #1D4ED8;
+}
+
+.presetChipActive {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+}
+
+.presetChipActive:hover {
+  background: #1D4ED8;
+  color: #FFFFFF;
+}
+
+/* Section Dividers in Timeline */
+.sectionDivider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0 6px 0;
+  margin-top: 6px;
+  border-bottom: 1.5px dashed #E2E8F0;
+}
+
+.sectionDividerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionBadgeOverdue {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  padding: 3px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sectionBadgeToday {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+  padding: 3px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sectionSubtitle {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.sectionHint {
+  font-size: 11.5px;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* Smart Backlog Drawer */
+.backlogDrawer {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-top: 14px;
+  transition: all 0.2s;
+}
+
+.backlogDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.backlogDrawerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backlogDrawerDesc {
+  font-size: 12px;
+  color: #64748B;
+  margin: 4px 0 0 0;
+}
+
+.backlogToggleBtn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.backlogToggleBtn:hover {
+  background: #EFF6FF;
+  border-color: #93C5FD;
+}
+
+.backlogList {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 12px;
+}
+
+.backlogItem {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.backlogItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.backlogItemTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.backlogItemMeta {
+  font-size: 11px;
+  color: #64748B;
+}
+
+.pullTaskBtn {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #1D4ED8;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.pullTaskBtn:hover {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #2563EB;
+}
+
+

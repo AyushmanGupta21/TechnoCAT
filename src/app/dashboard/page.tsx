@@ -360,6 +360,17 @@ const initialCurriculumTasks: ScheduleItem[] = [
     isCompleted: false,
   },
   {
+    id: "d20-2",
+    day: 20,
+    timeRange: "11:30 AM",
+    duration: "60 min",
+    category: "DILR",
+    code: "CAT-DILR-07",
+    title: "Logical Deductions & Syllogisms in DILR",
+    subtitle: "Module 2.7 • Venn & Matrix Verification Drills",
+    isCompleted: false,
+  },
+  {
     id: "d20-1",
     day: 20,
     timeRange: "04:30 PM",
