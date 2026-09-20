@@ -5,28 +5,28 @@ const footerLinks = [
   {
     heading: "Platform",
     links: [
-      { label: "Mock Tests", href: "#" },
-      { label: "Sectional Tests", href: "#" },
-      { label: "AI Analysis", href: "#" },
-      { label: "Performance", href: "#" },
+      { label: "Mock Tests", href: "/browse" },
+      { label: "Sectional Tests", href: "/topics" },
+      { label: "AI Analysis", href: "/intelligence/ai-analysis" },
+      { label: "Performance", href: "/dashboard" },
     ],
   },
   {
     heading: "Resources",
     links: [
-      { label: "Courses", href: "#" },
-      { label: "Video Solutions", href: "#" },
-      { label: "Preparation Guide", href: "#" },
-      { label: "FAQs", href: "#" },
+      { label: "Courses", href: "/topics" },
+      { label: "Video Solutions", href: "/#why-stand-out" },
+      { label: "Preparation Guide", href: "/#what-you-get" },
+      { label: "FAQs", href: "/#faq" },
     ],
   },
   {
     heading: "Company",
     links: [
-      { label: "About", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "About", href: "/#why-stand-out" },
+      { label: "Community", href: "/#community" },
+      { label: "Reviews", href: "/#reviews" },
+      { label: "Exam Modes", href: "/#two-modes" },
     ],
   },
 ];

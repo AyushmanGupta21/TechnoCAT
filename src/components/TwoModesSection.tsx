@@ -15,7 +15,7 @@ export default function TwoModesSection() {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="two-modes">
       <div className={styles.container}>
 
         <div className={styles.modesGrid}>

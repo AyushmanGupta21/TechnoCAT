@@ -108,19 +108,19 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "Why TechnoCAT Mocks Stand Out",
-        href: "/#features",
+        href: "/#why-stand-out",
       },
       {
         label: "Two Exam Modes (Classic vs Modern)",
-        href: "/#features",
+        href: "/#two-modes",
       },
       {
         label: "What You Get in TechnoCAT",
-        href: "/#features",
+        href: "/#what-you-get",
       },
       {
         label: "580+ 99+%ilers Community",
-        href: "/intelligence/community",
+        href: "/#community",
         badge: "580+",
       },
       {
@@ -212,6 +212,57 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Smooth scroll if URL has a hash or when hash changes
+  useEffect(() => {
+    const handleHashScroll = () => {
+      if (typeof window !== "undefined" && window.location.hash) {
+        const hash = window.location.hash.replace("#", "");
+        const timer = setTimeout(() => {
+          const el = document.getElementById(hash);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 120);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    handleHashScroll();
+    window.addEventListener("hashchange", handleHashScroll);
+    return () => window.removeEventListener("hashchange", handleHashScroll);
+  }, []);
+
+  const handleNavLinkClick = (
+    e: React.MouseEvent,
+    link: SubLink,
+    catId: string,
+    onClose: () => void
+  ) => {
+    const isHash = link.href.startsWith("/#") || link.href.startsWith("#");
+    const needsAuth = (catId === "courses" || catId === "mocks" || catId === "past-papers") && !isHash;
+
+    if (needsAuth && (!user || user.isGuest)) {
+      e.preventDefault();
+      onClose();
+      openAuthModal("signup");
+      return;
+    }
+
+    onClose();
+
+    if (isHash) {
+      const hash = link.href.replace(/^\/?#/, "");
+      if (typeof window !== "undefined" && window.location.pathname === "/") {
+        e.preventDefault();
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+          window.history.pushState(null, "", `#${hash}`);
+        }
+      }
+    }
+  };
+
   const handleMouseEnter = (catId: string) => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
@@ -242,21 +293,6 @@ export default function Navbar() {
       {/* 1. DESKTOP NAVBAR (Visible >= 1024px)                                     */}
       {/* ========================================================================= */}
       <header className={styles.header}>
-        {/* Top utility strip */}
-        <div className={styles.topBar}>
-          <div className={styles.topBarInner}>
-
-
-            <ul className={styles.utilityLinks}>
-              {UTILITY_LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} onClick={(e) => handleUtilityClick(e, link)}>{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
         {/* Main Navigation Row */}
         <div className={styles.mainNav}>
           <div className={styles.mainNavInner}>
@@ -318,16 +354,7 @@ export default function Navbar() {
                               <Link
                                 key={link.label}
                                 href={link.href}
-                                onClick={(e) => {
-                                  const needsAuth = (cat.id === "courses" || cat.id === "mocks" || cat.id === "past-papers") && !link.href.startsWith("/#");
-                                  if (needsAuth && (!user || user.isGuest)) {
-                                    e.preventDefault();
-                                    setActiveDropdown(null);
-                                    openAuthModal("signup");
-                                  } else {
-                                    setActiveDropdown(null);
-                                  }
-                                }}
+                                onClick={(e) => handleNavLinkClick(e, link, cat.id, () => setActiveDropdown(null))}
                                 className={styles.dropdownItem}
                               >
                                 <div className={styles.dropdownItemHeader}>
@@ -660,16 +687,7 @@ export default function Navbar() {
                           <Link
                             key={link.label}
                             href={link.href}
-                            onClick={(e) => {
-                              const needsAuth = (cat.id === "courses" || cat.id === "mocks" || cat.id === "past-papers") && !link.href.startsWith("/#");
-                              if (needsAuth && (!user || user.isGuest)) {
-                                e.preventDefault();
-                                closeDrawer();
-                                openAuthModal("signup");
-                              } else {
-                                closeDrawer();
-                              }
-                            }}
+                            onClick={(e) => handleNavLinkClick(e, link, cat.id, closeDrawer)}
                             className={styles.accordionLink}
                           >
                             <div className={styles.accordionLinkText}>

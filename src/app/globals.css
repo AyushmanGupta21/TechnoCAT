@@ -61,6 +61,10 @@
   --shadow-cyan: 0 4px 20px rgba(14, 165, 233, 0.08);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
@@ -73,6 +77,10 @@ html, body {
   max-width: 100%;
   overflow-x: hidden;
   position: relative;
+}
+
+section[id] {
+  scroll-margin-top: 85px;
 }
 
 a { text-decoration: none; color: inherit; }

@@ -17,7 +17,7 @@ export default function CommunitySection() {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="community">
       <div className={styles.container}>
         <div className={styles.card}>
           {/* Left: Stats */}

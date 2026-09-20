@@ -152,7 +152,7 @@ export default function WhatYouGetSection() {
 
   return (
     <>
-      <section className={styles.section}>
+      <section className={styles.section} id="what-you-get">
         <div className={styles.container}>
           <h2 className={styles.heading}>
             What You Get in TechnoCAT Mocks

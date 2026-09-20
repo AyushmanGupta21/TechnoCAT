@@ -95,7 +95,7 @@ export default function VideoReviewsSection() {
 
   return (
     <>
-      <section className={styles.section}>
+      <section className={styles.section} id="reviews">
         <div className={styles.container}>
           <h2 className={styles.heading}>TechnoCAT Mock Video Reviews</h2>
           <p className={styles.subheading}>

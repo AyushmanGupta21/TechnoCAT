@@ -63,7 +63,7 @@ export default function WhyStandOutSection() {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="why-stand-out">
       <div className={styles.container}>
         <div className={styles.conceptTag}>CONCEPTUALISED BY INDRAJEET SINGH</div>
         <h2 className={styles.heading}>

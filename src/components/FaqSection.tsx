@@ -69,7 +69,7 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="faq">
       <div className={styles.container}>
         <div className={styles.titleGroup}>
           <h2 className={styles.heading}>
