@@ -1,4 +1,7 @@
-"use client";
+const fs = require('fs');
+const path = require('path');
+
+const pageContent = `"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -315,3 +318,7 @@ export default function AiAnalysisPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync(path.join(__dirname, 'src/app/intelligence/ai-analysis/page.tsx'), pageContent);
+console.log('Written page.tsx');
