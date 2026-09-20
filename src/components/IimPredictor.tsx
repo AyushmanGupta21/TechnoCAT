@@ -13,7 +13,7 @@ export default function IimPredictor() {
     if (!user || user.isGuest) {
       openAuthModal("signup");
     } else {
-      router.push("/intelligence");
+      router.push("/intelligence/b-school-predictor");
     }
   };
 

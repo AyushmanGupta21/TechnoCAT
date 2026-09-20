@@ -97,7 +97,7 @@ const NAV_CATEGORIES: NavCategory[] = [
       },
       {
         label: "AI Mock Analysis & Benchmark",
-        href: "/intelligence",
+        href: "/intelligence/ai-analysis",
         badge: "AI",
       },
     ],
@@ -120,7 +120,7 @@ const NAV_CATEGORIES: NavCategory[] = [
       },
       {
         label: "580+ 99+%ilers Community",
-        href: "/intelligence",
+        href: "/intelligence/community",
         badge: "580+",
       },
       {
@@ -136,11 +136,11 @@ const NAV_CATEGORIES: NavCategory[] = [
 ];
 
 const UTILITY_LINKS = [
-  { label: "Predict your BSchool", href: "/intelligence" },
+  { label: "Predict your BSchool", href: "/intelligence/b-school-predictor" },
   { label: "Free CAT Daily Target", href: "/dashboard", requiresAuth: true },
   { label: "Free CAT Study Material!", href: "/browse", requiresAuth: true },
   { label: "SOP Generator", href: "#", isModal: true },
-  { label: "CAT Score Calculator", href: "/intelligence" },
+  { label: "CAT Score Calculator", href: "/intelligence/ai-analysis" },
 ];
 
 export default function Navbar() {

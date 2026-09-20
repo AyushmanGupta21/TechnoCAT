@@ -48,7 +48,7 @@ export default function AiFeedbackLoop() {
           {/* Step 2 */}
           <div
             className={styles.stepCard}
-            onClick={() => handleCardClick("/intelligence")}
+            onClick={() => handleCardClick("/intelligence/ai-analysis")}
             title="Click to view AI Analysis"
           >
             <div className={styles.stepNumber}>2</div>

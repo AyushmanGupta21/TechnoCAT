@@ -10,7 +10,7 @@ const features = [
     desc: "Get deep insights into your mock tests with our personalized AI mentor. Discover your strengths and weak areas instantly.",
     pillText: "Smarter Analysis, Better Scores",
     colorClass: styles.cardPrimary,
-    href: "/intelligence",
+    href: "/intelligence/ai-analysis",
     isRow: true,
     pillIcon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,7 +41,7 @@ const features = [
     desc: "Automatically categorize and track your mistakes. Stop repeating errors and improve your accuracy systematically.",
     pillText: "Learn from Mistakes",
     colorClass: styles.cardBlue,
-    href: "/intelligence",
+    href: "/intelligence/error-tracking",
     pillIcon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -69,7 +69,7 @@ const features = [
     desc: "Know exactly where you stand. Predict your chances of converting top IIMs based on your mock percentile and profile.",
     pillText: "Plan Your Dream",
     colorClass: styles.cardTeal,
-    href: "/intelligence",
+    href: "/intelligence/b-school-predictor",
     pillIcon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -151,7 +151,7 @@ const features = [
     desc: "Connect with fellow aspirants, share strategies and stay motivated throughout your CAT journey.",
     pillText: "Together We Grow",
     colorClass: styles.cardCyan,
-    href: "/intelligence",
+    href: "/intelligence/community",
     pillIcon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>

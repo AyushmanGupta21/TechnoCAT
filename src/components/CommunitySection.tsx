@@ -12,7 +12,7 @@ export default function CommunitySection() {
     if (!user || user.isGuest) {
       openAuthModal("signup");
     } else {
-      router.push("/intelligence");
+      router.push("/intelligence/community");
     }
   };
 

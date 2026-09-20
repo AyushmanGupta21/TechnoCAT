@@ -127,7 +127,7 @@ export default function VideoReviewsSection() {
           <div className={styles.cta}>
             <button
               className={styles.ctaBtn}
-              onClick={() => handleAuthAction("/intelligence")}
+              onClick={() => handleAuthAction("/intelligence/community")}
             >
               Watch All Reviews &amp; Join Community →
             </button>

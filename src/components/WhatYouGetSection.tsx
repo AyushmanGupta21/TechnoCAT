@@ -47,7 +47,7 @@ const stats = [
     number: "AI",
     title: "AI-Powered Mock Analysis",
     details: ["Save 3x Time in CAT Mocks Analysis"],
-    route: "/intelligence",
+    route: "/intelligence/ai-analysis",
   },
 ];
 
@@ -81,7 +81,7 @@ const featureIcons = [
       </svg>
     ),
     label: "Weak Topic Recommendations",
-    route: "/intelligence",
+    route: "/intelligence/ai-analysis",
   },
   {
     icon: (
