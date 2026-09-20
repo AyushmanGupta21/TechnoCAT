@@ -15,6 +15,7 @@ interface ModuleQuizModalProps {
   initialAnswers?: Record<number, number>;
   initialAnalysis?: QuizAnalysis | null;
   initialStrikes?: number;
+  customDurationSeconds?: number;
   onClose: () => void;
   onPass: (score: number, total: number, earnedPoints: number, analysis: QuizAnalysis) => void;
   onFail: (score: number, total: number, analysis: QuizAnalysis) => void;
@@ -37,6 +38,7 @@ export default function ModuleQuizModal({
   initialAnswers,
   initialAnalysis,
   initialStrikes = 0,
+  customDurationSeconds,
   onClose,
   onPass,
   onFail,
@@ -48,24 +50,49 @@ export default function ModuleQuizModal({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(initialAnswers || {});
   // Timer: 12 minutes (720s) for module quiz (10 questions), 35 minutes (2100s) for grand quiz (30 questions)
-  const initialDuration = isGrandQuiz ? 35 * 60 : 12 * 60;
+  const initialDuration = customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60);
   const [timeLeft, setTimeLeft] = useState(initialDuration);
   const [isSubmitted, setIsSubmitted] = useState(initialReviewMode);
   const [analysis, setAnalysis] = useState<QuizAnalysis | null>(initialAnalysis || null);
 
   // Post-submission solutions filter: "all" | "wrong" | "correct"
   const [reviewFilter, setReviewFilter] = useState<"all" | "wrong" | "correct">("all");
+  // Confirmation modal before finalizing manual submission
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  // Auto submission notification modal (timeout or cheat strikes)
+  const [autoSubmitNotice, setAutoSubmitNotice] = useState<{
+    type: "timeout" | "cheat";
+    title: string;
+    description: string;
+    strikesCount?: number;
+  } | null>(null);
+
+  const handleSafeClose = useCallback(() => {
+    if (!isSubmitted) {
+      setProctorAlert("🔒 Exam in progress! The quiz interface can only be closed once it is ended.");
+      return;
+    }
+    onClose();
+  }, [isSubmitted, onClose]);
 
   // Proctoring Security State
   const [strikes, setStrikes] = useState<number>(initialStrikes);
   const [rawScore, setRawScore] = useState<number | null>(null);
-  const strikesRef = useRef(strikes);
+  const strikesRef = useRef<number>(initialStrikes);
+  const lastViolationTimeRef = useRef<number>(0);
+
   useEffect(() => {
     strikesRef.current = strikes;
   }, [strikes]);
 
   const [proctorAlert, setProctorAlert] = useState<string | null>(null);
   const proctorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const sessionRef = useRef({
+    isOpen: false,
+    attemptNumber: attemptNumber,
+    initialReviewMode: initialReviewMode,
+    questionsKey: "",
+  });
 
   const handleSubmit = useCallback(() => {
     const rawResult = evaluateQuiz(questions, selectedAnswers);
@@ -95,10 +122,14 @@ export default function ModuleQuizModal({
 
     const points = isGrandQuiz ? 100 : 50;
 
-    if (finalResult.passed) {
-      onPass(finalResult.score, finalResult.total, points, finalResult);
-    } else {
-      onFail(finalResult.score, finalResult.total, finalResult);
+    try {
+      if (finalResult.passed) {
+        onPass?.(finalResult.score, finalResult.total, points, finalResult);
+      } else {
+        onFail?.(finalResult.score, finalResult.total, finalResult);
+      }
+    } catch (err) {
+      console.error("Quiz submission callback error:", err);
     }
   }, [questions, selectedAnswers, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
 
@@ -111,6 +142,12 @@ export default function ModuleQuizModal({
   useEffect(() => {
     if (!isOpen || isSubmitted) return;
     if (timeLeft <= 0) {
+      setShowSubmitConfirm(false);
+      setAutoSubmitNotice({
+        type: "timeout",
+        title: "Time's Up! Exam Auto-Submitted",
+        description: "The allocated time for this assessment has expired. Your recorded answers have been automatically evaluated and submitted.",
+      });
       handleSubmitRef.current();
       return;
     }
@@ -118,43 +155,114 @@ export default function ModuleQuizModal({
     return () => clearInterval(timer);
   }, [isOpen, isSubmitted, timeLeft]);
 
-  // Reset when re-opened or when questions change
+  // Reset when modal is OPENED, RETAKEN, or viewing a different session
   useEffect(() => {
-    if (isOpen) {
-      setCurrentIdx(0);
-      setSelectedAnswers(initialAnswers || {});
-      setIsSubmitted(initialReviewMode);
-
-      if (initialReviewMode) {
-        const computed =
-          initialAnalysis || evaluateQuiz(questions, initialAnswers || {});
-        setAnalysis(computed);
-        const resolvedStrikes =
-          computed.strikes !== undefined && computed.strikes > 0
-            ? computed.strikes
-            : (initialStrikes || 0);
-        const resolvedRaw =
-          computed.rawScore !== undefined
-            ? computed.rawScore
-            : computed.score + resolvedStrikes;
-        setRawScore(resolvedRaw);
-        setStrikes(resolvedStrikes);
-        strikesRef.current = resolvedStrikes;
-      } else {
-        setAnalysis(null);
-        setRawScore(null);
-        setStrikes(0);
-        strikesRef.current = 0;
-        setTimeLeft(isGrandQuiz ? 35 * 60 : 12 * 60);
-      }
-      setProctorAlert(null);
-      setReviewFilter("all");
+    if (!isOpen) {
+      sessionRef.current.isOpen = false;
+      return;
     }
-  }, [isOpen, isGrandQuiz, questions, initialReviewMode, initialAnswers, initialAnalysis, initialStrikes]);
+
+    const prev = sessionRef.current;
+    const questionsKey = (questions || []).map((q) => q.id).join(",");
+    const isNewSession =
+      !prev.isOpen ||
+      prev.attemptNumber !== attemptNumber ||
+      prev.initialReviewMode !== initialReviewMode ||
+      prev.questionsKey !== questionsKey;
+
+    sessionRef.current = {
+      isOpen: true,
+      attemptNumber,
+      initialReviewMode,
+      questionsKey,
+    };
+
+    // If it's the exact same attempt of the same quiz while open, do not reset!
+    // (This prevents the quiz from restarting when parent state updates on submission)
+    if (!isNewSession) return;
+
+    setCurrentIdx(0);
+    setSelectedAnswers(initialAnswers || {});
+    setIsSubmitted(initialReviewMode);
+
+    if (initialReviewMode) {
+      const computed =
+        initialAnalysis || evaluateQuiz(questions, initialAnswers || {});
+      setAnalysis(computed);
+      const resolvedStrikes =
+        computed.strikes !== undefined && computed.strikes > 0
+          ? computed.strikes
+          : (initialStrikes || 0);
+      const resolvedRaw =
+        computed.rawScore !== undefined
+          ? computed.rawScore
+          : computed.score + resolvedStrikes;
+      setRawScore(resolvedRaw);
+      setStrikes(resolvedStrikes);
+      strikesRef.current = resolvedStrikes;
+    } else {
+      setAnalysis(null);
+      setRawScore(null);
+      setStrikes(0);
+      strikesRef.current = 0;
+      lastViolationTimeRef.current = 0;
+      setTimeLeft(customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60));
+    }
+    setProctorAlert(null);
+    setReviewFilter("all");
+    setShowSubmitConfirm(false);
+    setAutoSubmitNotice(null);
+  }, [
+    isOpen,
+    attemptNumber,
+    isGrandQuiz,
+    questions,
+    initialReviewMode,
+    initialAnswers,
+    initialAnalysis,
+    initialStrikes,
+    customDurationSeconds,
+  ]);
 
   // PROCTORING & ANTI-CHEATING SECURITY CONTROLS
   useEffect(() => {
     if (!isOpen || isSubmitted) return;
+
+    const handleViolation = (reason: string) => {
+      if (isSubmitted) return;
+      const now = Date.now();
+      // Debounce: prevent duplicate strikes when blur & visibilitychange fire together
+      if (now - lastViolationTimeRef.current < 1200) {
+        return;
+      }
+      lastViolationTimeRef.current = now;
+
+      const nextStrikes = strikesRef.current + 1;
+      strikesRef.current = nextStrikes;
+      setStrikes(nextStrikes);
+
+      if (nextStrikes >= 3) {
+        setShowSubmitConfirm(false);
+        setAutoSubmitNotice({
+          type: "cheat",
+          title: "Exam Terminated: Security Violation",
+          description: `The exam has been automatically submitted due to reaching 3 proctoring security strikes (${reason}). A penalty of -3 marks has been applied to your final score.`,
+          strikesCount: 3,
+        });
+        setProctorAlert(
+          "🚨 3 Proctoring Strikes Reached: Exam auto-submitted with penalties due to security policy violations."
+        );
+        handleSubmitRef.current();
+      } else {
+        setProctorAlert(
+          `⚠️ Proctoring Warning ${nextStrikes} of 3: ${reason} (-1 mark deducted from final score! Auto-submits on Strike 3)`
+        );
+        if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
+        proctorTimerRef.current = setTimeout(() => {
+          setProctorAlert(null);
+        }, 5000);
+      }
+    };
 
     // 1. Tab Switching & Window Focus Detection
     const handleVisibilityChange = () => {
@@ -165,30 +273,6 @@ export default function ModuleQuizModal({
 
     const handleWindowBlur = () => {
       handleViolation("Switching away from exam window is prohibited!");
-    };
-
-    const handleViolation = (reason: string) => {
-      setStrikes((prev) => {
-        const next = prev + 1;
-        strikesRef.current = next;
-        if (next >= 3) {
-          setProctorAlert(
-            "🚨 3 Proctoring Strikes Reached: Exam auto-submitted with penalties due to security policy violations."
-          );
-          setTimeout(() => {
-            handleSubmitRef.current();
-          }, 1000);
-        } else {
-          setProctorAlert(
-            `⚠️ Proctoring Warning ${next} of 3: ${reason} (-1 mark deducted from final score! Auto-submits on Strike 3)`
-          );
-          if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
-          proctorTimerRef.current = setTimeout(() => {
-            setProctorAlert(null);
-          }, 6000);
-        }
-        return next;
-      });
     };
 
     // 2. Keyboard Shortcut Interception (Screenshots, DevTools, Copy, Print)
@@ -236,6 +320,14 @@ export default function ModuleQuizModal({
         e.preventDefault();
         return;
       }
+
+      // 5. Block Escape key from closing modal during exam
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        setProctorAlert("🔒 Exam in progress! The quiz interface can only be closed once it is ended.");
+        return;
+      }
     };
 
     // Handle keyup specifically for PrintScreen which triggers on release in many Windows browsers
@@ -248,16 +340,25 @@ export default function ModuleQuizModal({
       }
     };
 
+    // Prevent leaving tab / closing window during exam
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "Exam in progress! Your progress will be lost if you leave.";
+      return e.returnValue;
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
     };
   }, [isOpen, isSubmitted]);
@@ -356,12 +457,43 @@ export default function ModuleQuizModal({
                 <span>{formatTimer(timeLeft)}</span>
               </div>
             )}
-            <button className={styles.closeBtn} onClick={onClose} title="Close Quiz">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+            {!isSubmitted ? (
+              <div
+                className={styles.examLockedBadge}
+                title="Exam in progress. You must submit your quiz before closing."
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>Active Exam • Locked</span>
+              </div>
+            ) : (
+              <button
+                className={styles.closeBtn}
+                onClick={handleSafeClose}
+                title="Close Quiz Report"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -374,6 +506,22 @@ export default function ModuleQuizModal({
                 {answeredCount} Answered)
               </div>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                {strikes > 0 && (
+                  <span
+                    style={{
+                      fontSize: "11.5px",
+                      fontWeight: 700,
+                      color: "#dc2626",
+                      background: "#fef2f2",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      border: "1px solid #fecaca",
+                      animation: "pulse 1.5s infinite",
+                    }}
+                  >
+                    ⚠️ Strikes: {strikes} / 3
+                  </span>
+                )}
                 {!isGrandQuiz && (
                   <span style={{ fontSize: "11.5px", color: "#64748b" }}>
                     Attempt <strong>{attemptNumber}</strong> of {maxAttempts}
@@ -444,7 +592,7 @@ export default function ModuleQuizModal({
                 ← Previous
               </button>
 
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 {!isLastQuestion ? (
                   <button
                     type="button"
@@ -457,7 +605,7 @@ export default function ModuleQuizModal({
                   <button
                     type="button"
                     className={`${styles.navActionBtn} ${styles.btnSubmit}`}
-                    onClick={handleSubmit}
+                    onClick={() => setShowSubmitConfirm(true)}
                   >
                     Submit Quiz 🚀
                   </button>
@@ -814,6 +962,13 @@ export default function ModuleQuizModal({
                         setSelectedAnswers({});
                         setTimeLeft(initialDuration);
                         setCurrentIdx(0);
+                        setAnalysis(null);
+                        setRawScore(null);
+                        setStrikes(0);
+                        strikesRef.current = 0;
+                        setProctorAlert(null);
+                        setShowSubmitConfirm(false);
+                        setAutoSubmitNotice(null);
                       }
                     }}
                   >
@@ -822,7 +977,7 @@ export default function ModuleQuizModal({
                   <button
                     type="button"
                     className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                    onClick={onClose}
+                    onClick={handleSafeClose}
                   >
                     Continue Learning 🚀
                   </button>
@@ -839,6 +994,13 @@ export default function ModuleQuizModal({
                       setSelectedAnswers({});
                       setTimeLeft(initialDuration);
                       setCurrentIdx(0);
+                      setAnalysis(null);
+                      setRawScore(null);
+                      setStrikes(0);
+                      strikesRef.current = 0;
+                      setProctorAlert(null);
+                      setShowSubmitConfirm(false);
+                      setAutoSubmitNotice(null);
                     }
                   }}
                 >
@@ -848,11 +1010,129 @@ export default function ModuleQuizModal({
                 <button
                   type="button"
                   className={`${styles.navActionBtn} ${styles.btnSecondary}`}
-                  onClick={onClose}
+                  onClick={handleSafeClose}
                 >
                   Close & Review Videos
                 </button>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Submission Re-verification Confirmation Dialog */}
+        {showSubmitConfirm && (
+          <div className={styles.confirmOverlay} onClick={() => setShowSubmitConfirm(false)}>
+            <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.confirmIcon}>📝</div>
+              <h3 className={styles.confirmTitle}>Submit Your Exam?</h3>
+              <p className={styles.confirmDesc}>
+                You have answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
+                <br />
+                Time remaining: <strong>{formatTimer(timeLeft)}</strong>.
+                <br />
+                Are you sure you want to finalize and submit your answers?
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  type="button"
+                  className={styles.confirmCancelBtn}
+                  onClick={() => setShowSubmitConfirm(false)}
+                >
+                  ← Continue Exam
+                </button>
+                <button
+                  type="button"
+                  className={styles.confirmSubmitBtn}
+                  onClick={() => {
+                    setShowSubmitConfirm(false);
+                    handleSubmit();
+                  }}
+                >
+                  Yes, Submit Exam ✓
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Auto Submission Notification Modal (Timeout or Proctoring Violation) */}
+        {autoSubmitNotice && (
+          <div className={styles.confirmOverlay} onClick={() => setAutoSubmitNotice(null)}>
+            <div
+              className={styles.confirmBox}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                borderTop:
+                  autoSubmitNotice.type === "cheat"
+                    ? "4px solid #dc2626"
+                    : "4px solid #d97706",
+              }}
+            >
+              <div className={styles.confirmIcon}>
+                {autoSubmitNotice.type === "cheat" ? "🚨" : "⏱️"}
+              </div>
+              <h3
+                className={styles.confirmTitle}
+                style={{
+                  color: autoSubmitNotice.type === "cheat" ? "#dc2626" : "#b45309",
+                }}
+              >
+                {autoSubmitNotice.title}
+              </h3>
+              <p className={styles.confirmDesc}>
+                {autoSubmitNotice.description}
+              </p>
+              {autoSubmitNotice.type === "cheat" && (
+                <div
+                  style={{
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#991b1b",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    marginBottom: "18px",
+                    textAlign: "left",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  ⚠️ <strong>Security Advisory:</strong> Switching browser tabs, minimizing the exam window, taking screenshots, or developer tool access are strictly disallowed during testing.
+                </div>
+              )}
+              {autoSubmitNotice.type === "timeout" && (
+                <div
+                  style={{
+                    background: "#fffbeb",
+                    border: "1px solid #fde68a",
+                    color: "#92400e",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    marginBottom: "18px",
+                    textAlign: "left",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  ⏳ <strong>Time Allocation Notice:</strong> All answered questions have been safely graded. Unanswered questions are marked as unattempted.
+                </div>
+              )}
+              <div className={styles.confirmActions}>
+                <button
+                  type="button"
+                  className={styles.confirmSubmitBtn}
+                  style={{
+                    background:
+                      autoSubmitNotice.type === "cheat"
+                        ? "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
+                        : "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+                  }}
+                  onClick={() => setAutoSubmitNotice(null)}
+                >
+                  View Score &amp; Detailed Analysis 📊
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -434,10 +434,17 @@ export default function TopicDetailPage() {
       const completedInMod =
         modObj?.lessons.filter((l) => newCompleted.includes(l.id)).length || 1;
 
+      const currentMod = modulesProgress[modTitle];
+      const isAllModLessonsWatched = completedInMod >= totalLessonsInMod;
+      const wasLocked =
+        currentMod &&
+        (!currentMod.quizPassed &&
+          ((currentMod.attemptsUsed || 0) >= 3 || (currentMod.consecutiveFailures || 0) >= 5));
+
       const newModProgress = {
         ...modulesProgress,
         [modTitle]: {
-          ...(modulesProgress[modTitle] || {
+          ...(currentMod || {
             moduleTitle: modTitle,
             quizScore: null,
             quizPassed: false,
@@ -445,8 +452,25 @@ export default function TopicDetailPage() {
           }),
           totalLessons: totalLessonsInMod,
           completedLessons: completedInMod,
+          // When all module lessons are rewatched, reset attempts to 0 and unlock!
+          ...(isAllModLessonsWatched && wasLocked
+            ? {
+                attemptsUsed: 0,
+                consecutiveFailures: 0,
+                recommendedLessonCompleted: false,
+              }
+            : {}),
         },
       };
+
+      if (isAllModLessonsWatched && wasLocked) {
+        clearModuleQuizHistory(topic.id, modTitle);
+        setLockedAlert({
+          isOpen: true,
+          lessonTitle: "🎉 Lectures Rewatched!",
+          moduleTitle: `You have successfully rewatched the lectures in ${modTitle.split(":")[0]}. The compulsory quiz is now unlocked with 3 fresh attempts!`,
+        });
+      }
 
       setModulesProgress(newModProgress);
       saveProgressToStorage(newCompleted, newModProgress, activeModuleTitle, grandQuizPassed);
@@ -454,6 +478,7 @@ export default function TopicDetailPage() {
     [
       completedLessonIds,
       topic.lessons,
+      topic.id,
       activeModuleTitle,
       modulesList,
       modulesProgress,
@@ -614,6 +639,24 @@ export default function TopicDetailPage() {
   // Trigger Compulsory Module Quiz
   const handleOpenModuleQuiz = (modTitle: string) => {
     const currentProgress = modulesProgress[modTitle];
+
+    // Enforce lock if 3 attempts used or 5 weak streak reached
+    if (
+      currentProgress &&
+      ((!currentProgress.quizPassed && (currentProgress.attemptsUsed || 0) >= 3) ||
+        (currentProgress.consecutiveFailures || 0) >= 5)
+    ) {
+      setLockedAlert({
+        isOpen: true,
+        lessonTitle: `${modTitle.split(":")[0]} Locked`,
+        moduleTitle:
+          (currentProgress.consecutiveFailures || 0) >= 5
+            ? `⚠️ Streak of 5 Weak Scores (< 70% Cutoff): Module clearance is revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`
+            : `You have used 3 attempts without meeting the 70% cutoff. Please rewatch the module lectures to unlock 3 fresh quiz attempts!`,
+      });
+      return;
+    }
+
     const attempts = (currentProgress?.attemptsUsed || 0) + 1;
 
     // 1. Instant load from background cache if available (0ms)
@@ -1201,26 +1244,26 @@ export default function TopicDetailPage() {
       reportData,
     ];
 
-    // CASE 1: Student ALREADY PASSED, but failed 3 consecutive times in a row (< 70%)
-    if (wasAlreadyPassed && newConsecutiveFails >= 3) {
-      // Mastery Decay Triggered! Lock next ongoing module and reset this module
+    // CASE 1: Streak of 5 Weak Scores (< 70% Cutoff)
+    if (newConsecutiveFails >= 5) {
+      // Weak score streak lockout triggered! Reset module lectures so user must rewatch
       const resetCompletedLessonIds = completedLessonIds.filter((id) => !modLessonIds.includes(id));
       setCompletedLessonIds(resetCompletedLessonIds);
 
-      // Deduct XP (-10 per lesson, -50 for quiz)
+      // Deduct XP
       const currentXp = parseInt(localStorage.getItem("technocat_user_xp") || "0", 10);
-      const deductedXp = Math.max(0, currentXp - (modLessons.length * 10 + 50));
+      const deductedXp = Math.max(0, currentXp - (modLessons.length * 10 + (wasAlreadyPassed ? 50 : 0)));
       localStorage.setItem("technocat_user_xp", deductedXp.toString());
 
       const newModProgress: Record<string, ModuleProgressItem> = {
         ...modulesProgress,
         [modTitle]: {
           ...currentModProgress,
-          quizScore: highestScore, // Retain recorded personal best
+          quizScore: wasAlreadyPassed ? highestScore : newPercentage,
           highestScore: highestScore,
           quizPassed: false, // Revoke pass status
           attemptsUsed: 3, // Lock until rewatched
-          consecutiveFailures: 0,
+          consecutiveFailures: 5,
           completedLessons: 0,
           recommendedLessonCompleted: false,
           recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
@@ -1236,13 +1279,13 @@ export default function TopicDetailPage() {
 
       setLockedAlert({
         isOpen: true,
-        lessonTitle: `${modTitle.split(":")[0]} Mastery Decay`,
-        moduleTitle: `⚠️ 3 Consecutive Scores Below 70% Cutoff: Module clearance has been revoked and subsequent modules are locked! You must rewatch the lectures in ${modTitle.split(":")[0]} and reclear the quiz.`,
+        lessonTitle: `${modTitle.split(":")[0]} Locked (Weak Streak)`,
+        moduleTitle: `⚠️ Streak of 5 Weak Scores (< 70% Cutoff): Module clearance has been revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`,
       });
       return;
     }
 
-    // CASE 2: Student ALREADY PASSED, but this re-quiz attempt was below 70% (less than 3 in a row)
+    // CASE 2: Student ALREADY PASSED, but this re-quiz attempt was below 70% (< 5 weak streak)
     if (wasAlreadyPassed) {
       const newModProgress: Record<string, ModuleProgressItem> = {
         ...modulesProgress,
@@ -1252,7 +1295,7 @@ export default function TopicDetailPage() {
           highestScore: highestScore,
           quizPassed: true, // Remains passed
           attemptsUsed: newAttemptsUsed,
-          consecutiveFailures: newConsecutiveFails, // Increment streak
+          consecutiveFailures: newConsecutiveFails, // Increment streak (1-4)
           recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
           recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
           lastReportCard: reportData,
@@ -1284,6 +1327,7 @@ export default function TopicDetailPage() {
           highestScore: highestScore,
           quizPassed: false,
           attemptsUsed: 3,
+          consecutiveFailures: newConsecutiveFails,
           completedLessons: 0,
           recommendedLessonCompleted: false,
           recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
@@ -1304,7 +1348,7 @@ export default function TopicDetailPage() {
       return;
     }
 
-    // CASE 4: Student has NOT yet passed, attemptsUsed < 3 (regular attempt)
+    // CASE 4: Student has NOT yet passed, attemptsUsed < 3 & consecutiveFailures < 5 (regular attempt)
     const newModProgress: Record<string, ModuleProgressItem> = {
       ...modulesProgress,
       [modTitle]: {
@@ -1313,6 +1357,7 @@ export default function TopicDetailPage() {
         highestScore: highestScore,
         quizPassed: false,
         attemptsUsed: newAttemptsUsed,
+        consecutiveFailures: newConsecutiveFails,
         missedConcepts: analysis.missedConcepts.map((m) => m.concept),
         recommendedLessonId: firstRec?.lessonId || fallbackLesson?.id,
         recommendedLessonTitle: firstRec?.lessonTitle || fallbackLesson?.title,
@@ -1339,6 +1384,7 @@ export default function TopicDetailPage() {
       [modTitle]: {
         ...modulesProgress[modTitle],
         attemptsUsed: 0,
+        consecutiveFailures: 0,
         recommendedLessonCompleted: false,
       },
     };
@@ -2065,10 +2111,19 @@ export default function TopicDetailPage() {
                               <div className={styles.quizCardStatusRow}>
                                 <span className={styles.attemptsUsedBadge}>
                                   Attempt {modProgress.attemptsUsed} of 3 Used
+                                  {modProgress.consecutiveFailures && modProgress.consecutiveFailures > 0 ? (
+                                    <span style={{ color: "#ef4444", fontWeight: 700, marginLeft: "6px" }}>
+                                      • {modProgress.consecutiveFailures}/5 Weak Streak
+                                    </span>
+                                  ) : null}
                                 </span>
                                 <span className={isPassed ? styles.reportCardPassPill : styles.reportCardFailPill}>
                                   {isPassed
                                     ? `Passed (${modProgress.highestScore || modProgress.quizScore}%)`
+                                    : (modProgress.consecutiveFailures || 0) >= 5
+                                    ? `Locked (5 Weak Scores) • Rewatch Needed`
+                                    : modProgress.attemptsUsed >= 3
+                                    ? `Locked (3 Attempts Used) • Rewatch Needed`
                                     : `Cutoff Not Met (${modProgress.lastReportCard?.percentage ?? modProgress.quizScore}% • Cutoff 70%)`}
                                 </span>
                               </div>
@@ -2093,7 +2148,7 @@ export default function TopicDetailPage() {
                                 >
                                   🔄 Retake Quiz
                                 </button>
-                              ) : modProgress.attemptsUsed < 3 ? (
+                              ) : modProgress.attemptsUsed < 3 && (modProgress.consecutiveFailures || 0) < 5 ? (
                                 <button
                                   type="button"
                                   className={styles.retakeFromReportBtn}
@@ -2111,7 +2166,7 @@ export default function TopicDetailPage() {
                                     )
                                   }
                                 >
-                                  📺 Rewatch Lectures
+                                  📺 Rewatch Lectures to Unlock
                                 </button>
                               )}
                             </div>
@@ -2441,7 +2496,7 @@ export default function TopicDetailPage() {
                   >
                     🔄 Retake Quiz (Improve Score)
                   </button>
-                ) : (modProgress?.attemptsUsed || 0) < 3 ? (
+                ) : (modProgress?.attemptsUsed || 0) < 3 && (modProgress?.consecutiveFailures || 0) < 5 ? (
                   <button
                     type="button"
                     className={styles.retakeFromReportBtn}

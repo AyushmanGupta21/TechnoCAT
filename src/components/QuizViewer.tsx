@@ -232,25 +232,54 @@ export default function QuizViewer({
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)", flexShrink: 0
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            <button
-              onClick={onClose}
-              style={{
-                padding: "9px 20px",
-                backgroundColor: isSubmitted ? "#1e293b" : "#fff",
-                color: isSubmitted ? "#fff" : "#ef4444",
-                border: isSubmitted ? "none" : "1.5px solid #ef4444",
-                borderRadius: "10px", cursor: "pointer",
-                fontWeight: "700", fontSize: "14px",
-                transition: "all 0.2s",
-                display: "flex", alignItems: "center", gap: "6px"
-              }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-              {isSubmitted ? "Close Results" : "Exit Quiz"}
-            </button>
+            {!isSubmitted ? (
+              <div
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#fef2f2",
+                  color: "#dc2626",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  border: "1px solid #fecaca",
+                  userSelect: "none"
+                }}
+                title="Practice in progress. You must submit your quiz to exit."
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>Active Quiz • Locked</span>
+              </div>
+            ) : (
+              <button
+                onClick={onClose}
+                style={{
+                  padding: "9px 20px",
+                  backgroundColor: "#1e293b",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                  fontSize: "14px",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+                Close Results
+              </button>
+            )}
 
             <div>
               <h2 style={{ color: "#0f172a", fontSize: "1.2rem", fontWeight: "800", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>

@@ -141,10 +141,25 @@ export default function AiAdvisorCard({
       }
 
       // Not yet reviewed: prompt to watch the video
+      const isWeakStreakLocked = (firstReview.consecutiveFailures || 0) >= 5;
+      const isAttemptsExhausted = (firstReview.attemptsUsed || 0) >= 3;
+
+      const heading = isWeakStreakLocked
+        ? `Locked (5 Weak Scores): ${shortName}`
+        : isAttemptsExhausted
+        ? `Locked (3 Attempts Used): ${shortName}`
+        : `Review Required: ${shortName}`;
+
+      const text = isWeakStreakLocked
+        ? `You have reached a streak of 5 weak scores below the 70% cutoff. The quiz is locked. Rewatch "${recTitle}" to unlock fresh attempts!`
+        : isAttemptsExhausted
+        ? `You have used all 3 attempts without meeting the 70% cutoff. The quiz is locked. Rewatch "${recTitle}" to unlock 3 fresh attempts!`
+        : `We detected you need to review "${recTitle}" to solidify missed concepts before retrying the quiz.`;
+
       return {
         type: "rewatch" as const,
-        heading: `Review Required: ${shortName}`,
-        text: `We detected you need to review "${recTitle}" to solidify missed concepts before retrying the quiz.`,
+        heading,
+        text,
         buttonLabel: `📺 Watch "${recTitle}" Now →`,
         buttonClass: styles.btnRewatch,
         icon: (

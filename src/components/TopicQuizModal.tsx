@@ -85,16 +85,22 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
   const currentQ = questions[currentIndex];
 
   const modalContent = (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div className={styles.modalOverlay} onClick={() => { if (isFinished || loading) onClose(); }}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <div>
             <h2 className={styles.modalTitle}>AI Practice Quiz</h2>
             <p className={styles.modalSubtitle}>{topicTitle}</p>
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          {isFinished || loading ? (
+            <button className={styles.closeBtn} onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#dc2626", fontWeight: "700", background: "#fef2f2", padding: "6px 12px", borderRadius: "8px", border: "1px solid #fecaca" }}>
+              🔒 Quiz Active
+            </div>
+          )}
         </div>
 
         <div className={styles.modalBody}>
