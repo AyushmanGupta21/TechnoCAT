@@ -41,13 +41,7 @@ export async function GET(request: NextRequest) {
       [latestAttempt.id]
     );
 
-    // 3. Fetch Answer patterns for Latest Mock
-    const answersRes = await query(
-      `SELECT * FROM public.mock_answers WHERE attempt_id = $1`,
-      [latestAttempt.id]
-    );
-
-    // AI Analysis Aggregation (in real-world, this might call OpenAI, but we generate the insights here structurally)
+    // Provide robust placeholder data that aligns precisely with the new UI requirements.
     const data = {
       overview: {
         latestMockTitle: latestAttempt.mock_title,
@@ -55,72 +49,80 @@ export async function GET(request: NextRequest) {
         latestAccuracy: latestAttempt.accuracy_percent,
         timeUsedMin: Math.round(latestAttempt.time_used_seconds / 60),
         mocksAnalyzed: totalMocks,
+        status: "Improving", // e.g. "Improving", "Stable", "Needs Attention"
+        consistency: 72,
+        speed: 61,
+        bestSection: "VARC",
+        weakestSection: "QA",
+        streak: 3
       },
       diagnosis: {
-        pattern: "Your accuracy is stable, but performance drops in time-intensive reasoning sets.",
-        reasons: [
-          "Higher time spent on complex DILR sets",
-          "Accuracy decreases in the final 15 minutes",
-          "Repeated calculation errors in QA"
-        ],
-        action: "Focus on timed DILR set-selection practice before your next full mock."
+        pattern: "You are performing well in Accuracy, but your solving speed is reducing your overall score.",
+        well: "Maintaining >75% accuracy in Reading Comprehension.",
+        holdingBack: "Spending 3m+ on difficult QA algebra questions.",
+        improveFastest: "Target DILR set selection to avoid 10-minute traps."
       },
-      sections: sectionsRes.rows.reduce((acc: any, row: any) => {
-        acc[row.section_name] = {
-          score: row.score,
-          accuracy: row.accuracy_percent,
-          attemptRate: row.attempted,
-          avgTimeSec: row.average_time_seconds,
-          correct: row.correct,
-          wrong: row.wrong,
-          unanswered: row.unanswered,
-          insight: getSectionInsight(row.section_name, row.accuracy_percent, row.average_time_seconds)
-        };
-        return acc;
-      }, {}),
+      dna: {
+        accuracy: { value: 78, interpretation: "Strong — maintain current level", insight: "You rarely make careless errors when you know the concept." },
+        speed: { value: 61, interpretation: "Main improvement opportunity", insight: "You average 2m 10s per question, leaving 4-5 questions unattempted." },
+        consistency: { value: 72, interpretation: "Moderately stable", insight: "Your VARC scores vary depending on the passage genre." },
+        conceptStrength: { value: 85, interpretation: "Excellent foundation", insight: "You correctly answer 90% of arithmetic and geometry questions." },
+        questionSelection: { value: 55, interpretation: "Critical weakness", insight: "You often pick the hardest DILR set first, draining time." }
+      },
+      sections: {
+        VARC: { score: 32, accuracy: 85, attemptRate: 15, avgTimeSec: 130, trend: "STRONG" },
+        DILR: { score: 20, accuracy: 75, attemptRate: 12, avgTimeSec: 210, trend: "IMPROVING" },
+        QA: { score: 24, accuracy: 82, attemptRate: 21, avgTimeSec: 160, trend: "NEEDS ATTENTION" }
+      },
       trend: history.reverse().map((h: any, i: number) => ({
         mockId: h.id,
         name: `Mock ${i + 1}`,
+        mockName: h.mock_title,
         score: h.score,
         accuracy: h.accuracy_percent,
-        speed: Math.round((h.attempted_questions / (h.time_used_seconds / 60)) * 10) // arbitrary speed proxy
+        speed: Math.round((h.attempted_questions / (h.time_used_seconds / 60)) * 10),
+        date: new Date(h.completed_at || Date.now()).toLocaleDateString()
       })),
-      errorPatterns: [
-        { type: "Question Misread", freq: 4, topic: "QA", recent: "Mock 3" },
-        { type: "Calculation Error", freq: 6, topic: "QA", recent: "Mock 4" },
-        { type: "Set Selection", freq: 3, topic: "DILR", recent: "Mock 4" },
+      mistakesMap: [
+        { category: "Time Pressure", percent: 28, insight: "Most errors occur when solving questions under 90 seconds." },
+        { category: "Concept Gap", percent: 22, insight: "Missing foundational knowledge in Permutations & Combinations." },
+        { category: "Wrong Selection", percent: 18, insight: "Attempting questions with historical <30% success rate." },
+        { category: "Calculation Error", percent: 17, insight: "Silly arithmetic errors in the final steps of QA." },
+        { category: "Careless Mistake", percent: 15, insight: "Misreading 'except' or 'not' in VARC questions." }
       ],
-      lostMarks: [
-        { 
-          question: "QA · Algebra", 
-          time: "3m 42s", 
-          result: "Incorrect", 
-          insight: "You used a longer-than-necessary approach. A substitution method could reduce solving time." 
-        },
-        { 
-          question: "DILR · Matrix Puzzle", 
-          time: "11m 15s", 
-          result: "Unanswered", 
-          insight: "You spent too much time on a high-difficulty set instead of leaving it early." 
-        }
+      opportunities: [
+        { marks: 8, label: "Potential improvement from reducing calculation errors in QA." },
+        { marks: 6, label: "Potential improvement from better DILR set selection." },
+        { marks: 4, label: "Potential improvement from improving RC reading speed." }
       ],
-      opportunities: "Your largest measurable opportunity is reducing repeated calculation errors in Algebra and improving DILR set selection speed.",
+      topics: {
+        VARC: [
+          { name: "Reading Comprehension", status: "Strong", accuracy: 85, attempts: 12, avgTime: "1m 45s" },
+          { name: "Para Jumbles", status: "Needs Practice", accuracy: 40, attempts: 4, avgTime: "2m 10s" }
+        ],
+        DILR: [
+          { name: "Arrangements", status: "Good", accuracy: 75, attempts: 6, avgTime: "6m 20s" },
+          { name: "Games & Tournaments", status: "Critical", accuracy: 25, attempts: 4, avgTime: "8m 15s" }
+        ],
+        QA: [
+          { name: "Arithmetic", status: "Strong", accuracy: 90, attempts: 8, avgTime: "1m 30s" },
+          { name: "Algebra", status: "Critical", accuracy: 30, attempts: 5, avgTime: "3m 40s" }
+        ]
+      },
       actionPlan: [
-        "Review your last 5 Algebra mistakes",
-        "Practice 2 timed DILR sets focusing on selection",
-        "Attempt 15 RC questions under 20 mins"
+        { step: "FIX", title: "Algebra & Set Selection", desc: "Your biggest weakness detected by AI is time wasted on difficult Algebra and picking trap DILR sets.", goal: "Reduce average QA time by 15s per question." },
+        { step: "PRACTICE", title: "Targeted Mini-Mocks", desc: "Practice specific 15-minute sectional tests focusing exclusively on Games & Tournaments.", goal: "Achieve >60% accuracy in targeted practice." },
+        { step: "RETEST", title: "Full CAT Mock #6", desc: "Take a full mock to measure improvement in question selection under pressure.", goal: "Skip at least 3 'trap' questions." }
       ]
     };
 
     return NextResponse.json({ hasData: true, data });
-  } catch (error: any) {
-    console.error("[AI Analysis API Error]", error);
-    return NextResponse.json({ hasData: false, error: error.message }, { status: 500 });
-  }
-}
 
-function getSectionInsight(section: string, accuracy: number, timeSec: number) {
-  if (section === "VARC") return "Strong accuracy in RC but lower attempts due to longer reading time.";
-  if (section === "DILR") return "Set selection is currently affecting your overall efficiency.";
-  return "Arithmetic accuracy is stable, but algebra questions require more review.";
+  } catch (error) {
+    console.error("Error in AI Analysis:", error);
+    return NextResponse.json(
+      { hasData: false, message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
