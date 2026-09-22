@@ -20,18 +20,22 @@ function createPgPool(overridePassword?: string): Pool {
   let port = parseInt(process.env.PGPORT || "6543", 10);
   let user = process.env.PGUSER || "postgres.bcpisnqisnhiuxwhjuvo";
 
-  if (host.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
+  // Enforce the Supabase IPv4 pooler and tenant username so Vercel never attempts
+  // direct IPv6 connections or un-namespaced 'postgres' auth which fails on poolers.
+  if (!host || host.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
     host = "aws-0-ap-southeast-1.pooler.supabase.com";
     port = 6543;
-    if (user === "postgres") {
-      user = "postgres.bcpisnqisnhiuxwhjuvo";
-    }
+  }
+  if (!user || user === "postgres" || !user.includes(".")) {
+    user = "postgres.bcpisnqisnhiuxwhjuvo";
   }
 
   return new Pool({
-    connectionString:
-      process.env.DATABASE_URL ||
-      `postgresql://${user}:${encodeURIComponent(effectivePassword)}@${host}:${port}/${process.env.PGDATABASE || "postgres"}`,
+    host,
+    port,
+    user,
+    password: effectivePassword,
+    database: process.env.PGDATABASE || "postgres",
     ssl: { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
