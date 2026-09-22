@@ -25,6 +25,7 @@
 *.pem
 *.docx
 CAT PYQ 2017-24/
+CAT_PYQ_Data/
 
 # debug
 npm-debug.log*

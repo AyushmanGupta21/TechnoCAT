@@ -444,7 +444,7 @@ export default function AiAnalysisPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={mistakeData} cx="50%" cy="50%" innerRadius={45} outerRadius={60} paddingAngle={2} dataKey="value" stroke="none">
-                      {mistakeData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                      {mistakeData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -459,7 +459,7 @@ export default function AiAnalysisPage() {
                   <span style={{width: 30, textAlign: 'right', marginRight: '12px'}}>%</span>
                   <span style={{width: 20, textAlign: 'right'}}>Count</span>
                 </div>
-                {mistakeData.map((m, i) => (
+                {mistakeData.map((m: any, i: number) => (
                   <div key={i} className={styles.mlRow}>
                     <div className={styles.mlDot} style={{background: m.color}}></div>
                     <div className={styles.mlName}>{m.name}</div>

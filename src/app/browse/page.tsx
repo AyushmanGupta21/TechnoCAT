@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
+import PYQSection from "@/components/pyq/PYQSection";
+import PYQYearModal from "@/components/pyq/PYQYearModal";
 import styles from "./browse.module.css";
 
 // Assuming user is enrolled in these for mock logic
@@ -14,7 +16,25 @@ const ENROLLED_TOPIC_IDS = ["qa-quantitative-ability", "dilr-data-interpretation
 export default function BrowsePage() {
   const [activeNav, setActiveNav] = useState("Browse");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchPYQModalOpen, setSearchPYQModalOpen] = useState(false);
   const router = useRouter();
+
+  // Search match for PYQs
+  const matchesPYQ = useMemo(() => {
+    if (!searchQuery.trim()) return false;
+    const lower = searchQuery.toLowerCase();
+    return (
+      lower.includes("pyq") ||
+      lower.includes("past") ||
+      lower.includes("previous") ||
+      lower.includes("2024") ||
+      lower.includes("paper") ||
+      lower.includes("slot") ||
+      lower.includes("varc") ||
+      lower.includes("dilr") ||
+      lower.includes("quant")
+    );
+  }, [searchQuery]);
 
   // Filter topics based on search
   const filteredTopics = useMemo(() => {
@@ -26,6 +46,7 @@ export default function BrowsePage() {
       t.description.toLowerCase().includes(lowerQ)
     );
   }, [searchQuery]);
+
 
   return (
     <div className={styles.browseWrapper}>
@@ -131,6 +152,31 @@ export default function BrowsePage() {
           </>
         )}
 
+
+        {/* PYQ Search Match Banner */}
+        {matchesPYQ && (
+          <div className={styles.pyqSearchResultBanner}>
+            <div className={styles.pyqSearchLeft}>
+              <span className={styles.pyqSearchBadge}>PYQ Question Paper Found</span>
+              <h3 className={styles.pyqSearchTitle}>CAT 2024 Official Question Papers</h3>
+              <p className={styles.pyqSearchDesc}>
+                Access authentic questions across Slot 1, Slot 2 &amp; Slot 3. Covers VARC, DILR, and Quantitative Ability with step-by-step verified solutions and timed CAT exam proctoring.
+              </p>
+            </div>
+            <button
+              type="button"
+              className={styles.pyqSearchBtn}
+              onClick={() => setSearchPYQModalOpen(true)}
+            >
+              <span>Explore CAT 2024 PYQs</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Course Grid */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
           <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
@@ -148,6 +194,7 @@ export default function BrowsePage() {
             </button>
           )}
         </div>
+
         
         {filteredTopics.length === 0 ? (
           <div className={styles.noResults}>No topics found matching your search.</div>
@@ -217,7 +264,20 @@ export default function BrowsePage() {
             })}
           </div>
         )}
+
+        {/* Previous Year Questions (PYQs) Section (Listed below all topics) */}
+        {!searchQuery && <PYQSection />}
       </main>
+
+
+      {/* PYQ Year Modal from Search Banner */}
+      {searchPYQModalOpen && (
+        <PYQYearModal
+          isOpen={true}
+          year={2024}
+          onClose={() => setSearchPYQModalOpen(false)}
+        />
+      )}
     </div>
   );
-}
+}

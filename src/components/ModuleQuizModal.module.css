@@ -1112,3 +1112,157 @@
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
 }
 
+/* ===== PASSAGE & DATA CONTEXT STYLES ===== */
+.passageContainer {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #2563eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.passageHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.passageText {
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+/* ===== TITA INPUT STYLES ===== */
+.titaContainer {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 14px;
+}
+
+.titaLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.titaLabel span:first-child {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.titaSubtext {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.titaInputWrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.titaInput {
+  flex: 1;
+  padding: 14px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.titaInput:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.titaClearBtn {
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.titaClearBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ===== TITA REVIEW STYLES ===== */
+.titaReviewBlock {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titaReviewRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13.5px;
+}
+
+.titaReviewLabel {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.titaUserVal {
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.titaUserValCorrect {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.titaUserValWrong {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.titaCorrectVal {
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+}
+
+

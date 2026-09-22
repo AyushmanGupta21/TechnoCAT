@@ -6,12 +6,15 @@ export interface ModuleQuestion {
   id: string;
   q: string;
   options: string[];
-  answer: number; // 0 = A, 1 = B, 2 = C, 3 = D
+  answer: number; // 0 = A, 1 = B, 2 = C, 3 = D (-1 if TITA)
   explanation: string;
   concept: string;
   recommendedLessonId?: string;
   recommendedLessonTitle?: string;
   isOutsideContext?: boolean;
+  type?: "MCQ" | "TITA";
+  context?: string; // Passage context or DILR background data
+  titaAnswer?: string; // Text or numerical answer for TITA
 }
 
 export interface QuizAnalysis {
@@ -23,8 +26,15 @@ export interface QuizAnalysis {
   strikes?: number;
   penaltyMarks?: number;
   timeTakenSeconds?: number;
-  selectedAnswers?: Record<number, number>;
+  selectedAnswers?: Record<number, number | string>;
   questions?: ModuleQuestion[];
+  mcqCorrect?: number;
+  mcqWrong?: number;
+  titaCorrect?: number;
+  titaWrong?: number;
+  unattempted?: number;
+  maxPossibleMarks?: number;
+  scoringScheme?: "standard" | "cat";
   missedConcepts: Array<{
     questionId: string;
     question: string;
@@ -39,6 +49,7 @@ export interface QuizAnalysis {
     reason: string;
   }>;
 }
+
 
 // Multi-Set Question Pool per Module (Set 1 = Attempt 1, Set 2 = Attempt 2, Set 3 = Attempt 3)
 export const MODULE_QUIZZES: Record<string, Record<string, ModuleQuestion[]>> = {
@@ -1333,3 +1344,126 @@ export function evaluateQuiz(
     recommendedLessons,
   };
 }
+
+/**
+ * Official CAT Exam Scoring Scheme:
+ * MCQ: +3 correct, -1 incorrect, 0 unattempted
+ * TITA: +3 correct, 0 incorrect (no negative marks), 0 unattempted
+ */
+export function evaluateCATQuiz(
+  questions: ModuleQuestion[],
+  selectedAnswers: Record<number, number | string>
+): QuizAnalysis {
+  let netScore = 0;
+  let mcqCorrect = 0;
+  let mcqWrong = 0;
+  let titaCorrect = 0;
+  let titaWrong = 0;
+  let unattempted = 0;
+
+  const missedConcepts: QuizAnalysis["missedConcepts"] = [];
+  const lessonsToReviewMap: Record<string, { lessonId: string; lessonTitle: string; reasons: string[] }> = {};
+
+  questions.forEach((q, idx) => {
+    const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
+    const userAns = selectedAnswers[idx];
+
+    if (userAns === undefined || userAns === null || userAns === "") {
+      unattempted++;
+      return;
+    }
+
+    if (isTITA) {
+      const cleanExpected = (q.titaAnswer || "").trim().toLowerCase();
+      const cleanUser = String(userAns).trim().toLowerCase();
+      const isCorrect = cleanExpected !== "" && cleanExpected === cleanUser;
+
+      if (isCorrect) {
+        titaCorrect++;
+        netScore += 3;
+      } else {
+        titaWrong++;
+        // No negative marking for TITA
+        missedConcepts.push({
+          questionId: q.id,
+          question: q.q,
+          concept: q.concept,
+          explanation: q.explanation,
+          lessonId: q.recommendedLessonId,
+          lessonTitle: q.recommendedLessonTitle,
+        });
+
+        if (q.recommendedLessonId && q.recommendedLessonTitle) {
+          if (!lessonsToReviewMap[q.recommendedLessonId]) {
+            lessonsToReviewMap[q.recommendedLessonId] = {
+              lessonId: q.recommendedLessonId,
+              lessonTitle: q.recommendedLessonTitle,
+              reasons: [],
+            };
+          }
+          lessonsToReviewMap[q.recommendedLessonId].reasons.push(q.concept);
+        }
+      }
+    } else {
+      // MCQ
+      const isCorrect = typeof userAns === "number" && userAns === q.answer;
+      if (isCorrect) {
+        mcqCorrect++;
+        netScore += 3;
+      } else {
+        mcqWrong++;
+        netScore -= 1; // CAT -1 penalty for incorrect MCQ
+        missedConcepts.push({
+          questionId: q.id,
+          question: q.q,
+          concept: q.concept,
+          explanation: q.explanation,
+          lessonId: q.recommendedLessonId,
+          lessonTitle: q.recommendedLessonTitle,
+        });
+
+        if (q.recommendedLessonId && q.recommendedLessonTitle) {
+          if (!lessonsToReviewMap[q.recommendedLessonId]) {
+            lessonsToReviewMap[q.recommendedLessonId] = {
+              lessonId: q.recommendedLessonId,
+              lessonTitle: q.recommendedLessonTitle,
+              reasons: [],
+            };
+          }
+          lessonsToReviewMap[q.recommendedLessonId].reasons.push(q.concept);
+        }
+      }
+    }
+  });
+
+  const totalQuestions = questions.length;
+  const maxPossibleMarks = totalQuestions * 3;
+  const clampedScore = Math.max(0, netScore);
+  const percentage = Math.max(0, Math.round((clampedScore / maxPossibleMarks) * 100));
+  const passed = percentage >= 50; // 50% cutoff for CAT mock standard
+
+  const recommendedLessons = Object.values(lessonsToReviewMap).map((item) => ({
+    lessonId: item.lessonId,
+    lessonTitle: item.lessonTitle,
+    reason: `CAT Remediation for: ${item.reasons.join(", ")}`,
+  }));
+
+  return {
+    score: clampedScore,
+    total: maxPossibleMarks,
+    percentage,
+    passed,
+    selectedAnswers,
+    questions,
+    mcqCorrect,
+    mcqWrong,
+    titaCorrect,
+    titaWrong,
+    unattempted,
+    maxPossibleMarks,
+    scoringScheme: "cat",
+    missedConcepts,
+    recommendedLessons,
+  };
+}
+

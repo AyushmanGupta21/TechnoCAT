@@ -203,9 +203,10 @@ export default function TopicDetailPage() {
     questions: ModuleQuestion[];
     attemptNumber: number;
     initialReviewMode?: boolean;
-    initialAnswers?: Record<number, number>;
+    initialAnswers?: Record<number, number | string>;
     initialAnalysis?: QuizAnalysis | null;
     initialStrikes?: number;
+
   } | null>(null);
 
   // Practice quiz modal state (TechnoEEE lesson viewer)
@@ -710,7 +711,8 @@ export default function TopicDetailPage() {
       let score = report.score;
 
       const questions = report.questions && report.questions.length > 0 ? report.questions : [];
-      const selectedAnswers: Record<number, number> = { ...(report.selectedAnswers || {}) };
+      const selectedAnswers: Record<number, number | string> = { ...(report.selectedAnswers || {}) };
+
 
       // Count how many questions in selectedAnswers match q.answer
       const matchingAnswers = questions.filter(

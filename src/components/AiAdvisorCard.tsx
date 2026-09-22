@@ -14,8 +14,9 @@ export interface QuizReportCardData {
   penaltyMarks?: number;
   timeTakenSeconds?: number;
   date: string;
-  selectedAnswers: Record<number, number>;
+  selectedAnswers: Record<number, number | string>;
   questions: any[];
+
   missedConcepts: string[];
   recommendedLessonId?: string;
   recommendedLessonTitle?: string;

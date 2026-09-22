@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { ModuleQuestion, evaluateQuiz, QuizAnalysis } from "@/data/moduleQuizData";
+import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
 import styles from "./ModuleQuizModal.module.css";
 
 interface ModuleQuizModalProps {
@@ -12,10 +12,11 @@ interface ModuleQuizModalProps {
   attemptNumber: number;
   maxAttempts?: number;
   initialReviewMode?: boolean;
-  initialAnswers?: Record<number, number>;
+  initialAnswers?: Record<number, number | string>;
   initialAnalysis?: QuizAnalysis | null;
   initialStrikes?: number;
   customDurationSeconds?: number;
+  scoringScheme?: "standard" | "cat";
   onClose: () => void;
   onPass: (score: number, total: number, earnedPoints: number, analysis: QuizAnalysis) => void;
   onFail: (score: number, total: number, analysis: QuizAnalysis) => void;
@@ -25,7 +26,7 @@ interface ModuleQuizModalProps {
   onBackToAttempts?: () => void;
 }
 
-const OPTION_LETTERS = ["A", "B", "C", "D"];
+const OPTION_LETTERS = ["A", "B", "C", "D", "E"];
 
 export default function ModuleQuizModal({
   isOpen,
@@ -39,6 +40,7 @@ export default function ModuleQuizModal({
   initialAnalysis,
   initialStrikes = 0,
   customDurationSeconds,
+  scoringScheme = "standard",
   onClose,
   onPass,
   onFail,
@@ -48,7 +50,7 @@ export default function ModuleQuizModal({
   onBackToAttempts,
 }: ModuleQuizModalProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(initialAnswers || {});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number | string>>(initialAnswers || {});
   // Timer: 12 minutes (720s) for module quiz (10 questions), 35 minutes (2100s) for grand quiz (30 questions)
   const initialDuration = customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60);
   const [timeLeft, setTimeLeft] = useState(initialDuration);
@@ -95,11 +97,15 @@ export default function ModuleQuizModal({
   });
 
   const handleSubmit = useCallback(() => {
-    const rawResult = evaluateQuiz(questions, selectedAnswers);
+    const isCat = scoringScheme === "cat";
+    const rawResult = isCat
+      ? evaluateCATQuiz(questions, selectedAnswers)
+      : evaluateQuiz(questions, selectedAnswers as Record<number, number>);
     const penaltyMarks = strikesRef.current;
     const penalizedScore = Math.max(0, rawResult.score - penaltyMarks);
-    const penalizedPercentage = Math.round((penalizedScore / rawResult.total) * 100);
-    const penalizedPassed = penalizedPercentage >= 70;
+    const maxTotal = rawResult.total || (questions.length * (isCat ? 3 : 1));
+    const penalizedPercentage = Math.max(0, Math.round((penalizedScore / maxTotal) * 100));
+    const penalizedPassed = isCat ? penalizedPercentage >= 50 : penalizedPercentage >= 70;
     const timeTakenSeconds = Math.max(1, initialDuration - timeLeft);
 
     setRawScore(rawResult.score);
@@ -131,7 +137,8 @@ export default function ModuleQuizModal({
     } catch (err) {
       console.error("Quiz submission callback error:", err);
     }
-  }, [questions, selectedAnswers, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
+  }, [questions, selectedAnswers, scoringScheme, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
+
 
   const handleSubmitRef = useRef(handleSubmit);
   useEffect(() => {
@@ -187,8 +194,12 @@ export default function ModuleQuizModal({
 
     if (initialReviewMode) {
       const computed =
-        initialAnalysis || evaluateQuiz(questions, initialAnswers || {});
+        initialAnalysis ||
+        (scoringScheme === "cat"
+          ? evaluateCATQuiz(questions, initialAnswers || {})
+          : evaluateQuiz(questions, (initialAnswers as Record<number, number>) || {}));
       setAnalysis(computed);
+
       const resolvedStrikes =
         computed.strikes !== undefined && computed.strikes > 0
           ? computed.strikes
@@ -377,6 +388,31 @@ export default function ModuleQuizModal({
     }));
   };
 
+  const handleSetTITAAnswer = (val: string) => {
+    if (isSubmitted) return;
+    setSelectedAnswers((prev) => {
+      const updated = { ...prev };
+      if (val === "") {
+        delete updated[currentIdx];
+      } else {
+        updated[currentIdx] = val;
+      }
+      return updated;
+    });
+  };
+
+  const checkQuestionCorrect = (q: ModuleQuestion, idx: number): boolean => {
+    const userChoice = selectedAnswers[idx];
+    if (userChoice === undefined || userChoice === null || userChoice === "") return false;
+    const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
+    if (isTITA) {
+      const cleanExpected = (q.titaAnswer || "").trim().toLowerCase();
+      const cleanUser = String(userChoice).trim().toLowerCase();
+      return cleanExpected !== "" && cleanExpected === cleanUser;
+    }
+    return userChoice === q.answer;
+  };
+
   const formatTimer = (sec: number) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
@@ -385,11 +421,12 @@ export default function ModuleQuizModal({
 
   // Filter questions for the solution review screen
   const filteredQuestions = questions.filter((q, idx) => {
-    const isCorrect = selectedAnswers[idx] === q.answer;
+    const isCorrect = checkQuestionCorrect(q, idx);
     if (reviewFilter === "wrong") return !isCorrect;
     if (reviewFilter === "correct") return isCorrect;
     return true;
   });
+
 
   return (
     <div
@@ -528,7 +565,7 @@ export default function ModuleQuizModal({
                   </span>
                 )}
                 <div className={styles.cutoffNotice}>
-                  <span>🎯 70% Cutoff Required to Pass</span>
+                  <span>🎯 {scoringScheme === "cat" ? "CAT Scoring: +3 / -1 (TITA: +3/0)" : "70% Cutoff Required to Pass"}</span>
                 </div>
               </div>
             </div>
@@ -537,7 +574,7 @@ export default function ModuleQuizModal({
             <div className={styles.pillsRow}>
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIdx;
-                const isAnswered = selectedAnswers[idx] !== undefined;
+                const isAnswered = selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== "";
                 return (
                   <button
                     key={q.id || idx}
@@ -555,8 +592,30 @@ export default function ModuleQuizModal({
 
             {/* Question Body (NEVER shows right/wrong or explanation during active quiz) */}
             <div className={styles.bodyContent}>
+              {currentQ.context && (
+                <div className={styles.passageContainer}>
+                  <div className={styles.passageHeader}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span>Reading Passage / Caselet Context</span>
+                  </div>
+                  <div className={styles.passageText}>{currentQ.context}</div>
+                </div>
+              )}
+
               <div className={styles.questionMeta}>
                 <span className={styles.conceptBadge}>Concept: {currentQ.concept}</span>
+                {currentQ.type === "TITA" ? (
+                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "6px" }}>
+                    ⌨️ TITA Question
+                  </span>
+                ) : (
+                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: "6px" }}>
+                    🔘 Multiple Choice
+                  </span>
+                )}
                 {currentQ.isOutsideContext && (
                   <span className={styles.outsideTag}>CAT Applied Problem</span>
                 )}
@@ -564,22 +623,53 @@ export default function ModuleQuizModal({
 
               <h3 className={styles.questionTitle}>{currentQ.q}</h3>
 
-              <div className={styles.optionsGrid}>
-                {currentQ.options.map((optText, optIdx) => {
-                  const isSelected = selectedAnswers[currentIdx] === optIdx;
-                  return (
-                    <div
-                      key={optIdx}
-                      onClick={() => handleSelectOption(optIdx)}
-                      className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
-                    >
-                      <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                      <div className={styles.optionText}>{optText}</div>
-                    </div>
-                  );
-                })}
-              </div>
+              {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
+                <div className={styles.titaContainer}>
+                  <div className={styles.titaLabel}>
+                    <span>⌨️ Type In The Answer (TITA)</span>
+                    <span className={styles.titaSubtext}>
+                      Key in your numerical value or exact text answer below. (No negative marks apply in CAT).
+                    </span>
+                  </div>
+                  <div className={styles.titaInputWrapper}>
+                    <input
+                      type="text"
+                      className={styles.titaInput}
+                      placeholder="Enter numerical value or text answer..."
+                      value={selectedAnswers[currentIdx] !== undefined ? String(selectedAnswers[currentIdx]) : ""}
+                      onChange={(e) => handleSetTITAAnswer(e.target.value)}
+                    />
+                    {selectedAnswers[currentIdx] !== undefined && selectedAnswers[currentIdx] !== "" && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetTITAAnswer("")}
+                        className={styles.titaClearBtn}
+                        title="Clear Answer"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.optionsGrid}>
+                  {currentQ.options.map((optText, optIdx) => {
+                    const isSelected = selectedAnswers[currentIdx] === optIdx;
+                    return (
+                      <div
+                        key={optIdx}
+                        onClick={() => handleSelectOption(optIdx)}
+                        className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
+                      >
+                        <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
+                        <div className={styles.optionText}>{optText}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+
 
             {/* Modal Footer Controls */}
             <div className={styles.modalFooter}>
@@ -867,7 +957,8 @@ export default function ModuleQuizModal({
                 {filteredQuestions.map((q) => {
                   const originalIdx = questions.findIndex((orig) => orig.id === q.id);
                   const userChoice = selectedAnswers[originalIdx];
-                  const isUserCorrect = userChoice === q.answer;
+                  const isUserCorrect = checkQuestionCorrect(q, originalIdx);
+                  const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
 
                   return (
                     <div
@@ -881,48 +972,87 @@ export default function ModuleQuizModal({
                           <span className={styles.conceptBadge}>
                             Q{originalIdx + 1} • {q.concept}
                           </span>
+                          {isTITA && (
+                            <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px" }}>
+                              ⌨️ TITA
+                            </span>
+                          )}
                         </div>
                         {isUserCorrect ? (
-                          <span className={styles.reviewStatusBadgeCorrect}>✓ Correct</span>
+                          <span className={styles.reviewStatusBadgeCorrect}>
+                            ✓ Correct {scoringScheme === "cat" ? "(+3)" : ""}
+                          </span>
+                        ) : userChoice === undefined || userChoice === null || userChoice === "" ? (
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", background: "#f1f5f9", padding: "3px 8px", borderRadius: "6px" }}>
+                            ⚪ Unattempted (0)
+                          </span>
                         ) : (
-                          <span className={styles.reviewStatusBadgeWrong}>✗ Incorrect</span>
+                          <span className={styles.reviewStatusBadgeWrong}>
+                            ✗ Incorrect {scoringScheme === "cat" ? (isTITA ? "(0)" : "(-1)") : ""}
+                          </span>
                         )}
                       </div>
 
+                      {q.context && (
+                        <div className={styles.passageContainer} style={{ maxHeight: "180px", marginBottom: "12px" }}>
+                          <div className={styles.passageHeader}>
+                            <span>Context / Passage:</span>
+                          </div>
+                          <div className={styles.passageText} style={{ fontSize: "12.5px" }}>{q.context}</div>
+                        </div>
+                      )}
+
                       <div className={styles.reviewQuestionText}>{q.q}</div>
 
-                      <div className={styles.reviewOptionsList}>
-                        {q.options.map((opt, optIdx) => {
-                          const isSelectedByUser = userChoice === optIdx;
-                          const isActualCorrect = q.answer === optIdx;
+                      {isTITA ? (
+                        <div className={styles.titaReviewBlock}>
+                          <div className={styles.titaReviewRow}>
+                            <span className={styles.titaReviewLabel}>Your Answer:</span>
+                            <span className={`${styles.titaUserVal} ${isUserCorrect ? styles.titaUserValCorrect : styles.titaUserValWrong}`}>
+                              {userChoice !== undefined && userChoice !== "" ? String(userChoice) : "(Unattempted)"}
+                            </span>
+                          </div>
+                          <div className={styles.titaReviewRow}>
+                            <span className={styles.titaReviewLabel}>Correct Answer:</span>
+                            <span className={styles.titaCorrectVal}>
+                              {q.titaAnswer || q.explanation.slice(0, 80)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={styles.reviewOptionsList}>
+                          {q.options.map((opt, optIdx) => {
+                            const isSelectedByUser = userChoice === optIdx;
+                            const isActualCorrect = q.answer === optIdx;
 
-                          let rowClass = styles.reviewOptionItem;
-                          let tag = null;
+                            let rowClass = styles.reviewOptionItem;
+                            let tag = null;
 
-                          if (isSelectedByUser && isActualCorrect) {
-                            rowClass += ` ${styles.reviewOptSelectedCorrect}`;
-                            tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Your Answer (Correct)</span>;
-                          } else if (isSelectedByUser && !isActualCorrect) {
-                            rowClass += ` ${styles.reviewOptSelectedWrong}`;
-                            tag = <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>✗ Your Answer (Incorrect)</span>;
-                          } else if (isActualCorrect) {
-                            rowClass += ` ${styles.reviewOptCorrectAnswer}`;
-                            tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Correct Answer</span>;
-                          }
+                            if (isSelectedByUser && isActualCorrect) {
+                              rowClass += ` ${styles.reviewOptSelectedCorrect}`;
+                              tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Your Answer (Correct)</span>;
+                            } else if (isSelectedByUser && !isActualCorrect) {
+                              rowClass += ` ${styles.reviewOptSelectedWrong}`;
+                              tag = <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>✗ Your Answer (Incorrect)</span>;
+                            } else if (isActualCorrect) {
+                              rowClass += ` ${styles.reviewOptCorrectAnswer}`;
+                              tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Correct Answer</span>;
+                            }
 
-                          return (
-                            <div key={optIdx} className={rowClass}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <span style={{ fontWeight: 700, color: "#64748b" }}>
-                                  {OPTION_LETTERS[optIdx]}.
-                                </span>
-                                <span>{opt}</span>
+                            return (
+                              <div key={optIdx} className={rowClass}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                  <span style={{ fontWeight: 700, color: "#64748b" }}>
+                                    {OPTION_LETTERS[optIdx]}.
+                                  </span>
+                                  <span>{opt}</span>
+                                </div>
+                                {tag}
                               </div>
-                              {tag}
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
+                      )}
 
                       {/* Step-by-Step Explanation Callout */}
                       <div className={styles.explanationCallout}>
@@ -935,6 +1065,7 @@ export default function ModuleQuizModal({
                   );
                 })}
               </div>
+
             </div>
 
             {/* Action Buttons */}

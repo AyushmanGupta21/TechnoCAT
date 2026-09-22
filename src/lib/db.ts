@@ -29,17 +29,16 @@ function createPgPool(overridePassword?: string): Pool {
   }
 
   return new Pool({
-    host,
-    port,
-    user,
-    password: effectivePassword,
-    database: process.env.PGDATABASE || "postgres",
+    connectionString:
+      process.env.DATABASE_URL ||
+      `postgresql://${user}:${encodeURIComponent(effectivePassword)}@${host}:${port}/${process.env.PGDATABASE || "postgres"}`,
     ssl: { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 15000,
   });
 }
+
 
 if (!global._pgPool) {
   global._pgPool = createPgPool();
@@ -311,3 +310,85 @@ export async function updateLessonCompletion(userId: string, topicId: string, le
 
   return upsert.rows[0];
 }
+
+// ── PYQ Attempts & Lockout Operations ──
+export async function savePYQAttempt(attempt: {
+  userId: string;
+  year: number;
+  slot: string;
+  section: string;
+  attemptNum: number;
+  score: number;
+  total: number;
+  percentage: number;
+  mcqCorrect?: number;
+  mcqWrong?: number;
+  titaCorrect?: number;
+  titaWrong?: number;
+  unattempted?: number;
+  strikes?: number;
+  timeTakenSeconds?: number;
+  answers?: any;
+  analysis?: any;
+  isLocked?: boolean;
+  weakAreas?: any;
+}) {
+  const res = await query(
+    `INSERT INTO public.pyq_attempts (
+      user_id, year, slot, section, attempt_num, score, total, percentage,
+      mcq_correct, mcq_wrong, tita_correct, tita_wrong, unattempted,
+      strikes, time_taken_seconds, answers, analysis, is_locked, weak_areas, completed_at
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, now())
+    RETURNING *`,
+    [
+      attempt.userId,
+      attempt.year,
+      attempt.slot,
+      attempt.section,
+      attempt.attemptNum,
+      attempt.score,
+      attempt.total,
+      attempt.percentage,
+      attempt.mcqCorrect || 0,
+      attempt.mcqWrong || 0,
+      attempt.titaCorrect || 0,
+      attempt.titaWrong || 0,
+      attempt.unattempted || 0,
+      attempt.strikes || 0,
+      attempt.timeTakenSeconds || 0,
+      JSON.stringify(attempt.answers || {}),
+      JSON.stringify(attempt.analysis || {}),
+      Boolean(attempt.isLocked),
+      JSON.stringify(attempt.weakAreas || []),
+    ]
+  );
+  return res.rows[0];
+}
+
+export async function getPYQAttempts(userId: string, section?: string, year?: number) {
+  let q = `SELECT * FROM public.pyq_attempts WHERE user_id = $1`;
+  const params: any[] = [userId];
+  if (section) {
+    params.push(section);
+    q += ` AND section = $${params.length}`;
+  }
+  if (year) {
+    params.push(year);
+    q += ` AND year = $${params.length}`;
+  }
+  q += ` ORDER BY completed_at DESC`;
+  const res = await query(q, params);
+  return res.rows;
+}
+
+export async function unlockPYQSubject(userId: string, section: string) {
+  // Clear locked state for this subject across all attempts
+  await query(
+    `UPDATE public.pyq_attempts 
+     SET is_locked = false 
+     WHERE user_id = $1 AND section = $2 AND is_locked = true`,
+    [userId, section]
+  );
+}
+
