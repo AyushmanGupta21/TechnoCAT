@@ -22,6 +22,7 @@ interface DashboardData {
 }
 
 export default function IntelligenceHubPage() {
+  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -267,7 +268,7 @@ export default function IntelligenceHubPage() {
 
         <div className={styles.bottomGrid}>
           {/* CAT READINESS METER */}
-          <section className={styles.readinessSection}>
+          <section className={styles.readinessSection} style={{position: 'relative'}}>
             <div className={styles.readinessHeader}>
               <h2 className={styles.sectionTitleSmall}>CAT Readiness Meter</h2>
               <span className={styles.readinessBadge}>Updated Today</span>
@@ -325,7 +326,7 @@ export default function IntelligenceHubPage() {
             <div className={styles.affectingSection}>
               <h3 className={styles.affectingTitle}>What is affecting your readiness?</h3>
               <div className={styles.insightCards}>
-                <div className={styles.insightCard}>
+                <div className={`${styles.insightCard} ${selectedInsight === 'speed' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('speed')}>
                   <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   </div>
@@ -333,8 +334,9 @@ export default function IntelligenceHubPage() {
                     <span className={styles.insightName}>Speed Under Pressure</span>
                     <span className={styles.insightDesc}>Taking too long on tricky QA questions.</span>
                   </div>
+                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
                 </div>
-                <div className={styles.insightCard}>
+                <div className={`${styles.insightCard} ${selectedInsight === 'dilr' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('dilr')}>
                   <div className={`${styles.insightIconBox} ${styles.iconGood}`}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                   </div>
@@ -342,8 +344,9 @@ export default function IntelligenceHubPage() {
                     <span className={styles.insightName}>DILR Set Selection</span>
                     <span className={styles.insightDesc}>Excellent accuracy in choosing the right sets.</span>
                   </div>
+                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
                 </div>
-                <div className={styles.insightCard}>
+                <div className={`${styles.insightCard} ${selectedInsight === 'mock' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('mock')}>
                   <div className={`${styles.insightIconBox} ${styles.iconNeutral}`}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                   </div>
@@ -351,9 +354,169 @@ export default function IntelligenceHubPage() {
                     <span className={styles.insightName}>Mock Consistency</span>
                     <span className={styles.insightDesc}>Consistent scores, but lacking breakthroughs.</span>
                   </div>
+                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
                 </div>
               </div>
             </div>
+
+            {selectedInsight && (
+              <>
+                <div className={styles.panelOverlay} onClick={() => setSelectedInsight(null)}></div>
+                <div className={styles.detailPanel}>
+                  <button className={styles.panelClose} onClick={() => setSelectedInsight(null)}>&times;</button>
+                  
+                  {selectedInsight === 'speed' && (
+                    <div className={styles.panelContent}>
+                      <div className={styles.panelHeader}>
+                        <div className={`${styles.panelIcon} ${styles.iconWarn}`}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div className={styles.panelTitleArea}>
+                          <div className={styles.panelTitleRow}>
+                            <h4 className={styles.panelTitle}>Speed Under Pressure</h4>
+                            <span className={`${styles.impactBadge} ${styles.impactHigh}`}>IMPACT: HIGH</span>
+                          </div>
+                          <p className={styles.panelDesc}>You are taking more time than expected on QA questions, especially in the last part of the section.</p>
+                        </div>
+                      </div>
+                      
+                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
+                      <ul className={styles.panelList}>
+                        <li>You spend more time on complex calculation-based questions.</li>
+                        <li>This reduces the time left for easier questions.</li>
+                        <li>Leads to lower attempt rate and higher pressure.</li>
+                      </ul>
+                      
+                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
+                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
+                        <li>Practice timed QA sets (15-20 min).</li>
+                        <li>Focus on quick calculation techniques and shortcuts.</li>
+                        <li>Avoid spending too much time on a single question.</li>
+                      </ul>
+                      
+                      <div className={styles.panelTip}>
+                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipText}><strong>Tip:</strong> Try solving 1 timed QA set daily to improve your speed and confidence.</div>
+                      </div>
+                      
+                      <div className={styles.panelVisual}>
+                        <div className={styles.pvItem}>
+                          <span className={styles.pvLabel}>Current</span>
+                          <span className={styles.pvValWarn}>3.2 min/q</span>
+                        </div>
+                        <div className={styles.pvArrow}>&rarr;</div>
+                        <div className={styles.pvItem}>
+                          <span className={styles.pvLabel}>Target</span>
+                          <span className={styles.pvValGood}>2.0 min/q</span>
+                        </div>
+                      </div>
+
+                      <button className={styles.panelCta}>Practice 10 Timed QA Questions &rarr;</button>
+                    </div>
+                  )}
+
+                  {selectedInsight === 'dilr' && (
+                    <div className={styles.panelContent}>
+                      <div className={styles.panelHeader}>
+                        <div className={`${styles.panelIcon} ${styles.iconGood}`}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <div className={styles.panelTitleArea}>
+                          <div className={styles.panelTitleRow}>
+                            <h4 className={styles.panelTitle}>DILR Set Selection</h4>
+                            <span className={`${styles.impactBadge} ${styles.impactMedium}`}>IMPACT: MEDIUM</span>
+                          </div>
+                          <p className={styles.panelDesc}>Your accuracy is good, but you are not selecting the most suitable sets, which is affecting your overall score.</p>
+                        </div>
+                      </div>
+                      
+                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
+                      <ul className={styles.panelList}>
+                        <li>Difficulty in identifying high-scoring sets.</li>
+                        <li>Spending time on low-value sets.</li>
+                        <li>Inconsistent approach to set analysis.</li>
+                      </ul>
+                      
+                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
+                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
+                        <li>Practice set-selection strategies.</li>
+                        <li>Focus on question types and patterns.</li>
+                        <li>Attempt more sectional DILR sets.</li>
+                      </ul>
+                      
+                      <div className={styles.panelTip}>
+                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipText}><strong>Tip:</strong> Spend 1-2 minutes analyzing each set before attempting.</div>
+                      </div>
+                      
+                      <div className={styles.panelVisual}>
+                        <div className={styles.pvItem}>
+                          <span className={styles.pvLabel}>Current</span>
+                          <span className={styles.pvValNeutral}>Poor Selection</span>
+                        </div>
+                        <div className={styles.pvArrow}>&rarr;</div>
+                        <div className={styles.pvItem}>
+                          <span className={styles.pvLabel}>Target</span>
+                          <span className={styles.pvValGood}>Higher Attempts</span>
+                        </div>
+                      </div>
+
+                      <button className={styles.panelCta}>Practice DILR Set Selection &rarr;</button>
+                    </div>
+                  )}
+
+                  {selectedInsight === 'mock' && (
+                    <div className={styles.panelContent}>
+                      <div className={styles.panelHeader}>
+                        <div className={`${styles.panelIcon} ${styles.iconNeutral}`}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <div className={styles.panelTitleArea}>
+                          <div className={styles.panelTitleRow}>
+                            <h4 className={styles.panelTitle}>Mock Consistency</h4>
+                            <span className={`${styles.impactBadge} ${styles.impactMedium2}`}>IMPACT: MEDIUM</span>
+                          </div>
+                          <p className={styles.panelDesc}>Your scores are consistent, but you are not seeing significant improvement over time.</p>
+                        </div>
+                      </div>
+                      
+                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
+                      <ul className={styles.panelList}>
+                        <li>Limited number of full mock attempts.</li>
+                        <li>Inconsistent performance in some sections.</li>
+                        <li>Lack of post-mock analysis and revision.</li>
+                      </ul>
+                      
+                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
+                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
+                        <li>Take more full-length mocks (at least 2 per week).</li>
+                        <li>Analyze mistakes after each mock.</li>
+                        <li>Focus on weak topics and track progress.</li>
+                      </ul>
+                      
+                      <div className={styles.panelTip}>
+                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipText}><strong>Tip:</strong> Consistency with analysis = real improvement.</div>
+                      </div>
+                      
+                      <div className={styles.panelVisualPath}>
+                        <span>TAKE MOCK</span>
+                        <span className={styles.pvArrowDown}>&darr;</span>
+                        <span>ANALYZE</span>
+                        <span className={styles.pvArrowDown}>&darr;</span>
+                        <span>FIX WEAKNESS</span>
+                        <span className={styles.pvArrowDown}>&darr;</span>
+                        <span className={styles.pvValGood}>IMPROVE</span>
+                      </div>
+
+                      <button className={styles.panelCta}>Start Your Next Mock &rarr;</button>
+                    </div>
+                  )}
+
+                </div>
+              </>
+            )}
+
 
             {/* 7-Day Challenge */}
             <div className={styles.challengeSection}>
