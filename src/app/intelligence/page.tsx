@@ -449,7 +449,7 @@ export default function IntelligenceHubPage() {
                         </div>
                       </div>
 
-                      <button className={styles.panelCta}>Practice 10 Timed QA Questions &rarr;</button>
+                      
                     </div>
                   )}
 
@@ -499,7 +499,7 @@ export default function IntelligenceHubPage() {
                         </div>
                       </div>
 
-                      <button className={styles.panelCta}>Practice DILR Set Selection &rarr;</button>
+                      
                     </div>
                   )}
 
@@ -547,7 +547,7 @@ export default function IntelligenceHubPage() {
                         <span className={styles.pvValGood}>IMPROVE</span>
                       </div>
 
-                      <button className={styles.panelCta}>Start Your Next Mock &rarr;</button>
+                      
                     </div>
                   )}
 
