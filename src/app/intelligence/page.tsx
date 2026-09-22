@@ -6,6 +6,22 @@ import styles from "./intelligence.module.css";
 import Image from "next/image";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 
+interface ChallengeData {
+  startDate: string;
+  currentDay: number;
+  completedDays: number;
+  totalDays: number;
+  days: {
+    day: number;
+    date: string;
+    status: 'completed' | 'incomplete' | 'today' | 'upcoming';
+    title: string;
+    desc: string;
+    tasks: { name: string; done: boolean }[];
+    progress: { tasksDone: number; tasksTotal: number };
+  }[];
+}
+
 interface DashboardData {
   metrics: {
     inProgressCourses: number;
@@ -22,18 +38,40 @@ interface DashboardData {
 }
 
 export default function IntelligenceHubPage() {
-  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
+    const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
+  const [selectedChallengeDay, setSelectedChallengeDay] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+            const fetchDashboard = async () => {
       try {
-        const res = await fetch("/api/dashboard");
-        if (res.ok) {
-          const text = await res.text();
+        const [dashRes, chalRes] = await Promise.all([
+          fetch("/api/dashboard"),
+          fetch("/api/intelligence/challenge")
+        ]);
+
+        if (dashRes.ok) {
+          const text = await dashRes.text();
           if (text && text.trim().length > 0) {
             setDashboardData(JSON.parse(text));
+          }
+        }
+        
+        if (chalRes.ok) {
+          const text = await chalRes.text();
+          if (text && text.trim().length > 0) {
+            const data = JSON.parse(text);
+            setChallengeData(data);
+            
+            // Auto-select today if available
+            const todayItem = data.days.find((d: any) => d.status === 'today');
+            if (todayItem) {
+              setSelectedChallengeDay(todayItem.day);
+            } else {
+              setSelectedChallengeDay(data.currentDay);
+            }
           }
         }
       } catch (err) {
@@ -42,7 +80,7 @@ export default function IntelligenceHubPage() {
         setIsLoading(false);
       }
     };
-    fetchDashboard();
+      fetchDashboard();
   }, []);
 
 
@@ -519,29 +557,135 @@ export default function IntelligenceHubPage() {
 
 
             {/* 7-Day Challenge */}
-            <div className={styles.challengeSection}>
-              <div className={styles.challengeHeaderRow}>
-                <h3 className={styles.challengeTitle}>Your 7-Day CAT Challenge</h3>
-                <Link href="/dashboard" className={styles.challengeCta}>
-                  Start Today's Challenge &rarr;
-                </Link>
-              </div>
-              <div className={styles.timeline}>
-                {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                  <div key={day} className={`${styles.timelineDay} ${day < 5 ? styles.dayCompleted : day === 5 ? styles.dayToday : styles.dayUpcoming}`}>
-                    <div className={styles.dayCircle}>
-                      {day < 5 ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      ) : day === 5 ? (
-                        <span className={styles.dayDot}></span>
-                      ) : null}
+            <div className={styles.challengeSection} style={{position: 'relative'}}>
+              {challengeData ? (
+                <>
+                  <div className={styles.challengeHeaderRow}>
+                    <div>
+                      <h3 className={styles.challengeTitle}>Your 7-Day CAT Challenge</h3>
+                      <p className={styles.challengeSubtitle} style={{fontSize: '14px', color: '#64748B', marginTop: '4px'}}>
+                        Your personalized CAT improvement journey starts today.
+                      </p>
                     </div>
-                    <span className={styles.dayLabel}>
-                      {day === 5 ? "Today" : `Day ${day}`}
-                    </span>
+                    {challengeData.completedDays === 7 ? (
+                      <div className={styles.challengeCta} style={{background: '#10B981'}}>
+                        7-Day Journey Completed!
+                      </div>
+                    ) : (
+                      <div className={styles.challengeProgressBadge} style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', background: '#F0F9FF', padding: '8px 16px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', color: '#0369A1'
+                      }}>
+                        {challengeData.completedDays} / {challengeData.totalDays} Days Complete
+                        <div style={{width: '60px', height: '6px', background: '#E0F2FE', borderRadius: '3px', overflow: 'hidden'}}>
+                          <div style={{width: `${(challengeData.completedDays / 7) * 100}%`, height: '100%', background: '#0EA5E9'}}></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                  
+                  <div className={styles.timeline}>
+                    {challengeData.days.map((d) => (
+                      <div 
+                        key={d.day} 
+                        onClick={() => setSelectedChallengeDay(d.day)}
+                        className={`${styles.timelineDay} ${d.status === 'completed' ? styles.dayCompleted : d.status === 'today' ? styles.dayToday : d.status === 'incomplete' ? styles.dayIncomplete : styles.dayUpcoming}`}
+                        style={{ cursor: 'pointer', opacity: (d.status === 'upcoming' || d.status === 'incomplete') ? 0.7 : 1 }}
+                      >
+                        <div className={styles.dayCircle} style={{
+                          borderColor: d.status === 'incomplete' ? '#FCA5A5' : '',
+                          background: d.status === 'incomplete' ? '#FEF2F2' : ''
+                        }}>
+                          {d.status === 'completed' ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          ) : d.status === 'today' ? (
+                            <span className={styles.dayDot}></span>
+                          ) : d.status === 'incomplete' ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          ) : null}
+                        </div>
+                        <span className={styles.dayLabel} style={{
+                          color: d.status === 'incomplete' ? '#EF4444' : '',
+                          fontWeight: d.status === 'today' ? 'bold' : 'normal'
+                        }}>
+                          {d.status === 'today' ? "Today" : `Day ${d.day}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Dynamic Challenge Detail Panel */}
+                  {selectedChallengeDay !== null && (
+                    <div className={styles.challengeDetailCard} style={{
+                      marginTop: '24px',
+                      padding: '24px',
+                      background: '#F8FAFC',
+                      borderRadius: '16px',
+                      border: '1px solid #E2E8F0'
+                    }}>
+                      {(() => {
+                        const dayInfo = challengeData.days.find(d => d.day === selectedChallengeDay);
+                        if (!dayInfo) return null;
+                        
+                        return (
+                          <div>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                              <h4 style={{fontSize: '16px', fontWeight: '700', color: '#0F172A', margin: 0}}>
+                                {dayInfo.status === 'today' ? "Today's Focus: " : `Day ${dayInfo.day} Focus: `}
+                                <span style={{color: '#2563EB'}}>{dayInfo.title}</span>
+                              </h4>
+                              {dayInfo.status === 'completed' && <span style={{background: '#D1FAE5', color: '#059669', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold'}}>COMPLETED</span>}
+                              {dayInfo.status === 'incomplete' && <span style={{background: '#FEE2E2', color: '#EF4444', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold'}}>MISSED</span>}
+                            </div>
+                            
+                            <p style={{fontSize: '14px', color: '#475569', marginBottom: '20px'}}>{dayInfo.desc}</p>
+                            
+                            {dayInfo.status !== 'upcoming' && (
+                              <>
+                                <div style={{fontSize: '12px', fontWeight: '600', color: '#64748B', marginBottom: '8px', textTransform: 'uppercase'}}>
+                                  Tasks Progress ({dayInfo.progress.tasksDone} / {dayInfo.progress.tasksTotal})
+                                </div>
+                                <ul style={{listStyle: 'none', padding: 0, margin: '0 0 24px 0'}}>
+                                  {dayInfo.tasks.map((t, idx) => (
+                                    <li key={idx} style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', fontSize: '14px', color: '#334155'}}>
+                                      {t.done ? (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                      ) : (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle></svg>
+                                      )}
+                                      <span style={{textDecoration: t.done ? 'line-through' : 'none', opacity: t.done ? 0.7 : 1}}>{t.name}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                                
+                                {dayInfo.status === 'today' && (
+                                  <Link href="/dashboard" className={styles.challengeCta} style={{display: 'inline-block'}}>
+                                    Continue Today's Challenge &rarr;
+                                  </Link>
+                                )}
+                                {dayInfo.status === 'incomplete' && (
+                                  <Link href="/dashboard" className={styles.challengeCta} style={{display: 'inline-block', background: '#F59E0B'}}>
+                                    Retry Missed Challenge &rarr;
+                                  </Link>
+                                )}
+                              </>
+                            )}
+                            
+                            {dayInfo.status === 'upcoming' && (
+                              <div style={{padding: '16px', background: '#F1F5F9', borderRadius: '8px', color: '#64748B', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <span>🔒</span> Complete previous days to unlock this challenge.
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{padding: '40px', textAlign: 'center', color: '#94A3B8', fontSize: '14px'}}>
+                  Loading your journey...
+                </div>
+              )}
             </div>
           </section>
 
