@@ -645,7 +645,7 @@ export default function IntelligenceHubPage() {
                                   >
                                     {dayInfo.progress.tasksDone === 2 
                                       ? "Challenge Completed ✓" 
-                                      : (dayInfo.tasks[0].done ? "Continue Analysis &rarr;" : "Start Today's Challenge &rarr;")}
+                                      : (dayInfo.tasks[0].done ? "Continue Analysis" : "Start Today's Challenge")}
                                   </Link>
                                 )}
                                 {dayInfo.status === 'incomplete' && (
