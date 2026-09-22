@@ -18,7 +18,7 @@ export default function AiAnalysisPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/ai-analysis");
+        fetch("/api/intelligence/record-analysis-view", { method: "POST" }).catch(console.error); const res = await fetch("/api/ai-analysis");
         if (res.ok) {
           const json = await res.json();
           setData(json);

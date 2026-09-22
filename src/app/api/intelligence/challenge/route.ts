@@ -12,18 +12,25 @@ export async function GET(request: NextRequest) {
       userId = defaultUser?.id || FALLBACK_USER_ID;
     }
 
+    // Ensure analysis_views table exists for tracking task 2
+    await query(`
+      CREATE TABLE IF NOT EXISTS public.analysis_views (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `, []);
+
     // 1. Get user profile to find creation date (Challenge Start Date)
     const profileRes = await query(
       `SELECT created_at FROM public.profiles WHERE id = $1 LIMIT 1`,
       [userId]
     );
 
-    // If user not found, default to today
     const startDate = profileRes.rows.length > 0 
       ? new Date(profileRes.rows[0].created_at) 
       : new Date();
     
-    // Normalize to midnight UTC for pure day calculations
     startDate.setUTCHours(0, 0, 0, 0);
 
     const now = new Date();
@@ -32,17 +39,9 @@ export async function GET(request: NextRequest) {
     // 2. Calculate current day (1-indexed)
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const currentDay = Math.min(7, diffDays + 1); // Cap at 7 for a 7-day challenge
+    const currentDay = Math.min(7, diffDays + 1);
 
-    // 3. Get user activity to determine completed days
-    // An active day is one where they have a study_session OR a pyq_attempt
-    const sessionsRes = await query(
-      `SELECT DATE(study_date) as activity_date 
-       FROM public.study_sessions 
-       WHERE user_id = $1 AND (CAST(learning_hours AS float) > 0 OR CAST(challenge_hours AS float) > 0)`,
-      [userId]
-    );
-    
+    // 3. Get user activity (Mocks and Analysis Views)
     const pyqRes = await query(
       `SELECT DATE(completed_at) as activity_date 
        FROM public.pyq_attempts 
@@ -50,123 +49,52 @@ export async function GET(request: NextRequest) {
       [userId]
     );
 
-    const tasksRes = await query(
-      `SELECT DATE(task_date) as activity_date 
-       FROM public.study_tasks 
-       WHERE user_id = $1 AND is_completed = true`,
+    const analysisRes = await query(
+      `SELECT DATE(viewed_at) as activity_date 
+       FROM public.analysis_views 
+       WHERE user_id = $1`,
       [userId]
     );
 
-    // Collect all unique activity dates in YYYY-MM-DD format
-    const activeDates = new Set<string>();
-    
-    const addDates = (rows: any[]) => {
-      rows.forEach(row => {
-        if (row.activity_date) {
-          const d = new Date(row.activity_date);
-          activeDates.add(d.toISOString().split('T')[0]);
-        }
-      });
-    };
+    const mockDates = new Set<string>();
+    pyqRes.rows.forEach(r => {
+      if (r.activity_date) mockDates.add(new Date(r.activity_date).toISOString().split('T')[0]);
+    });
 
-    addDates(sessionsRes.rows);
-    addDates(pyqRes.rows);
-    addDates(tasksRes.rows);
+    const analysisDates = new Set<string>();
+    analysisRes.rows.forEach(r => {
+      if (r.activity_date) analysisDates.add(new Date(r.activity_date).toISOString().split('T')[0]);
+    });
 
-    // 4. Build the 7-day journey array
     const days = [];
     let completedCount = 0;
-    
-    // Objectives pool to make it dynamic based on day
-    const objectives = [
-      {
-        title: "Assess Weaknesses",
-        desc: "Explore your weak topics + complete a short practice session.",
-        tasks: [
-          { name: "Complete 1 practice session", done: activeDates.size > 0 },
-          { name: "Review 1 weak topic", done: false }
-        ]
-      },
-      {
-        title: "Targeted Practice",
-        desc: "Practice questions from one weak topic.",
-        tasks: [
-          { name: "Solve 10 questions in weak topic", done: false },
-          { name: "Review answers", done: false }
-        ]
-      },
-      {
-        title: "Sectional Focus",
-        desc: "Complete a focused sectional quiz.",
-        tasks: [
-          { name: "Take 1 Sectional Quiz", done: false }
-        ]
-      },
-      {
-        title: "Mistake Analysis",
-        desc: "Review previous mistakes and retry weak questions.",
-        tasks: [
-          { name: "Review 5 incorrect questions", done: false },
-          { name: "Watch 1 concept video", done: false }
-        ]
-      },
-      {
-        title: "DILR Mastery",
-        desc: "Practice identifying high-scoring DILR sets.",
-        tasks: [
-          { name: "Attempt 2 DILR sets", done: false },
-          { name: "Analyze set selection", done: false }
-        ]
-      },
-      {
-        title: "Speed Building",
-        desc: "Focus on quick calculation techniques.",
-        tasks: [
-          { name: "Complete timed QA practice", done: false }
-        ]
-      },
-      {
-        title: "Weekly Review",
-        desc: "Complete a full mock or weekly progress review.",
-        tasks: [
-          { name: "Take 1 Full Mock Test", done: false },
-          { name: "Analyze Mock performance", done: false }
-        ]
-      }
-    ];
 
     for (let i = 1; i <= 7; i++) {
-      // The date for Day i
       const targetDate = new Date(startDate);
       targetDate.setUTCDate(startDate.getUTCDate() + (i - 1));
       const targetDateStr = targetDate.toISOString().split('T')[0];
       
+      const hasMock = mockDates.has(targetDateStr);
+      const hasAnalysis = analysisDates.has(targetDateStr);
+      
+      // A day is only complete if BOTH tasks are done
+      const isCompleted = hasMock && hasAnalysis;
+      
       let status = "upcoming";
-      let isCompleted = false;
-      
-      if (activeDates.has(targetDateStr)) {
-        isCompleted = true;
-      }
-      
       if (i < currentDay) {
         status = isCompleted ? "completed" : "incomplete";
       } else if (i === currentDay) {
         status = isCompleted ? "completed" : "today";
-      } else {
-        status = "upcoming";
       }
 
       if (isCompleted) {
         completedCount++;
       }
       
-      // Calculate daily progress based on tasks
-      // For a completed day, all tasks are done. For today, maybe partial.
-      const dayObjective = objectives[i - 1];
-      const tasks = dayObjective.tasks.map(t => ({
-        name: t.name,
-        done: isCompleted ? true : (status === "today" ? Math.random() > 0.5 : false) // Mocking partial today progress for now since we don't have granular task tracking per day yet
-      }));
+      const tasks = [
+        { name: "Take 1 Full Mock Test", done: hasMock },
+        { name: "Analyze Mock Performance", done: hasAnalysis }
+      ];
       
       const tasksDone = tasks.filter(t => t.done).length;
 
@@ -174,8 +102,8 @@ export async function GET(request: NextRequest) {
         day: i,
         date: targetDateStr,
         status: status,
-        title: dayObjective.title,
-        desc: dayObjective.desc,
+        title: "Daily Mock & Review",
+        desc: "Complete a full mock and review your performance to build consistency.",
         tasks: tasks,
         progress: {
           tasksDone,

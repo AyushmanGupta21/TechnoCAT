@@ -177,26 +177,6 @@ export default function IntelligenceHubPage() {
 
       {/* ===== MAIN CONTENT ===== */}
       <main className={styles.mainContent}>
-        
-        {/* AI QUICK INSIGHT */}
-        <section className={styles.insightSection}>
-          <div className={styles.aiInsightCard}>
-            <div className={styles.aiIconBox}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-            </div>
-            <div className={styles.aiContent}>
-              <h3 className={styles.aiTitle}>TechnoCAT AI Insight</h3>
-              <p className={styles.aiText}>
-                Your overall performance has improved over the last 5 mocks. Your strongest area is <strong>VARC</strong>, while <strong>DILR</strong> needs more practice.
-              </p>
-              <Link href="/intelligence/ai-analysis" className={styles.aiLink}>
-                View Full AI Analysis &rarr;
-              </Link>
-            </div>
-          </div>
-        </section>
 
         {/* EXPLORE FEATURES */}
         <section className={styles.featuresSection}>
@@ -657,9 +637,15 @@ export default function IntelligenceHubPage() {
                                   ))}
                                 </ul>
                                 
-                                {dayInfo.status === 'today' && (
-                                  <Link href="/dashboard" className={styles.challengeCta} style={{display: 'inline-block'}}>
-                                    Continue Today's Challenge &rarr;
+                                                                {dayInfo.status === 'today' && (
+                                  <Link 
+                                    href={dayInfo.progress.tasksDone === 2 ? '/intelligence' : (dayInfo.tasks[0].done ? '/intelligence/ai-analysis' : '/browse')} 
+                                    className={styles.challengeCta} 
+                                    style={{display: 'inline-block'}}
+                                  >
+                                    {dayInfo.progress.tasksDone === 2 
+                                      ? "Challenge Completed ✓" 
+                                      : (dayInfo.tasks[0].done ? "Continue Analysis &rarr;" : "Start Today's Challenge &rarr;")}
                                   </Link>
                                 )}
                                 {dayInfo.status === 'incomplete' && (
