@@ -17,6 +17,7 @@ export interface PYQQuestion {
   explanation: string;
   video_url: string;
   source_url: string;
+  images?: string[];
 }
 
 export interface PYQSectionInfo {

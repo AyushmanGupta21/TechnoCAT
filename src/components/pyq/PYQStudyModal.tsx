@@ -10,6 +10,7 @@ import {
   findRecommendedLessonForPYQ,
   SECTION_METADATA,
 } from "@/data/pyqData";
+import PYQMarkdownViewer from "./PYQMarkdownViewer";
 import styles from "./PYQStudyModal.module.css";
 
 const OPTION_LETTERS = ["A", "B", "C", "D", "E"];
@@ -258,7 +259,9 @@ export default function PYQStudyModal({
                   </svg>
                   <span>Reading Passage / Data Context</span>
                 </div>
-                <div className={styles.passageBody}>{currentQ.context}</div>
+                <div className={styles.passageBody}>
+                  <PYQMarkdownViewer content={currentQ.context} />
+                </div>
               </div>
             )}
 
@@ -274,7 +277,9 @@ export default function PYQStudyModal({
             </div>
 
             {/* Question Text */}
-            <h3 className={styles.questionText}>{currentQ.question}</h3>
+            <div className={styles.questionText}>
+              <PYQMarkdownViewer content={currentQ.question} />
+            </div>
 
             {/* Options or TITA Answer */}
             {!isTITA ? (
@@ -341,7 +346,9 @@ export default function PYQStudyModal({
                 </svg>
                 <span>Comprehensive Step-by-Step Solution:</span>
               </div>
-              <div className={styles.explanationText}>{currentQ.explanation}</div>
+              <div className={styles.explanationText}>
+                <PYQMarkdownViewer content={currentQ.explanation} />
+              </div>
             </div>
           </main>
         </div>

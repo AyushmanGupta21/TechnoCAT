@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
+import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 
 interface ModuleQuizModalProps {
@@ -601,7 +602,9 @@ export default function ModuleQuizModal({
                     </svg>
                     <span>Reading Passage / Caselet Context</span>
                   </div>
-                  <div className={styles.passageText}>{currentQ.context}</div>
+                  <div className={styles.passageText}>
+                    <PYQMarkdownViewer content={currentQ.context} />
+                  </div>
                 </div>
               )}
 
@@ -621,7 +624,9 @@ export default function ModuleQuizModal({
                 )}
               </div>
 
-              <h3 className={styles.questionTitle}>{currentQ.q}</h3>
+              <div className={styles.questionTitle}>
+                <PYQMarkdownViewer content={currentQ.q} />
+              </div>
 
               {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
                 <div className={styles.titaContainer}>
@@ -994,15 +999,19 @@ export default function ModuleQuizModal({
                       </div>
 
                       {q.context && (
-                        <div className={styles.passageContainer} style={{ maxHeight: "180px", marginBottom: "12px" }}>
+                        <div className={styles.passageContainer} style={{ maxHeight: "360px", marginBottom: "12px" }}>
                           <div className={styles.passageHeader}>
                             <span>Context / Passage:</span>
                           </div>
-                          <div className={styles.passageText} style={{ fontSize: "12.5px" }}>{q.context}</div>
+                          <div className={styles.passageText} style={{ fontSize: "12.5px" }}>
+                            <PYQMarkdownViewer content={q.context} />
+                          </div>
                         </div>
                       )}
 
-                      <div className={styles.reviewQuestionText}>{q.q}</div>
+                      <div className={styles.reviewQuestionText}>
+                        <PYQMarkdownViewer content={q.q} />
+                      </div>
 
                       {isTITA ? (
                         <div className={styles.titaReviewBlock}>
@@ -1059,7 +1068,9 @@ export default function ModuleQuizModal({
                         <div className={styles.explanationTitle}>
                           <span>💡 Step-by-Step Explanation & Shortcut:</span>
                         </div>
-                        <div>{q.explanation}</div>
+                        <div>
+                          <PYQMarkdownViewer content={q.explanation} />
+                        </div>
                       </div>
                     </div>
                   );

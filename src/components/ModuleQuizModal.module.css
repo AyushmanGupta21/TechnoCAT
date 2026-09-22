@@ -1120,7 +1120,7 @@
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  max-height: 260px;
+  max-height: 480px;
   overflow-y: auto;
 }
 
@@ -1137,10 +1137,9 @@
 }
 
 .passageText {
-  font-size: 13.5px;
+  font-size: 14px;
   color: #334155;
-  line-height: 1.65;
-  white-space: pre-wrap;
+  line-height: 1.7;
   font-family: inherit;
 }
 

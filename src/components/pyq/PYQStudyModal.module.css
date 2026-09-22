@@ -329,10 +329,9 @@
 }
 
 .passageBody {
-  font-size: 14px;
+  font-size: 14.5px;
   color: #334155;
   line-height: 1.7;
-  white-space: pre-wrap;
   font-family: inherit;
 }
 
@@ -495,10 +494,9 @@
 }
 
 .explanationText {
-  font-size: 14px;
+  font-size: 14.5px;
   color: #334155;
   line-height: 1.7;
-  white-space: pre-wrap;
 }
 
 /* Curriculum Recommendation Link */
