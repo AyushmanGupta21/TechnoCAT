@@ -21,16 +21,27 @@ export async function GET(request: NextRequest) {
       )
     `, []);
 
-    // 1. Get user profile to find creation date (Challenge Start Date)
-    const profileRes = await query(
-      `SELECT created_at FROM public.profiles WHERE id = $1 LIMIT 1`,
+    // 1. Get or Initialize Challenge Start Date
+    await query(`
+      CREATE TABLE IF NOT EXISTS public.user_challenges (
+        user_id UUID PRIMARY KEY,
+        challenge_start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `, []);
+
+    let challengeRes = await query(
+      `SELECT challenge_start_date FROM public.user_challenges WHERE user_id = $1 LIMIT 1`,
       [userId]
     );
 
-    const startDate = profileRes.rows.length > 0 
-      ? new Date(profileRes.rows[0].created_at) 
-      : new Date();
-    
+    if (challengeRes.rows.length === 0) {
+      challengeRes = await query(
+        `INSERT INTO public.user_challenges (user_id) VALUES ($1) RETURNING challenge_start_date`,
+        [userId]
+      );
+    }
+
+    const startDate = new Date(challengeRes.rows[0].challenge_start_date);
     startDate.setUTCHours(0, 0, 0, 0);
 
     const now = new Date();

@@ -712,9 +712,9 @@ export default function IntelligenceHubPage() {
                           <div style={{background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginRight: '32px'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                              <span style={{fontSize: '13px', fontWeight: '700', color: '#0F172A'}}>{new Date(dayInfo.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</span>
+                              <span style={{fontSize: '13px', fontWeight: '700', color: '#0F172A'}}>{new Date(challengeData.startDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</span>
                             </div>
-                            <span style={{fontSize: '10px', color: '#94A3B8'}}>Your Learning Journey</span>
+                            <span style={{fontSize: '10px', color: '#94A3B8'}}>Started</span>
                           </div>
                         </header>
                         {/* Scrollable Content */}
