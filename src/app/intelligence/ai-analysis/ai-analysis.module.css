@@ -167,3 +167,49 @@
 
 .footerBar { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px 24px; border-radius: 100px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748B; font-weight: 500; }
 .fbLeft { display: flex; align-items: center; gap: 8px; }
+
+/* Detailed Tab Styles */
+.detailedGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.detailedCard { background: #FFF; border-radius: 20px; padding: 24px; border: 1px solid #E2E8F0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 16px; }
+.detailedSecHeader { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F1F5F9; }
+.detailedSecTitle { font-size: 16px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px; }
+.topicsList { display: flex; flex-direction: column; gap: 14px; }
+.topicItem { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0; }
+.topicHeader { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: #1E293B; }
+.topicStats { display: flex; justify-content: space-between; font-size: 12px; color: #64748B; }
+.topicBar { height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden; }
+.topicFill { height: 100%; border-radius: 4px; }
+.topicBadge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+.badgeStrong { background: #ECFDF5; color: #059669; }
+.badgeModerate { background: #EFF6FF; color: #2563EB; }
+.badgeNeeds { background: #FEF3C7; color: #D97706; }
+.badgeWeak { background: #FEF2F2; color: #DC2626; }
+
+/* Trends Tab Styles */
+.trendsContainer { display: flex; flex-direction: column; gap: 24px; }
+.trendsCard { background: #FFF; border-radius: 20px; padding: 24px; border: 1px solid #E2E8F0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.trendsHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.trendsTitle { font-size: 18px; font-weight: 800; color: #0F172A; }
+.trendsStatsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.trendStatPill { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+.trendStatLbl { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; }
+.trendStatVal { font-size: 20px; font-weight: 800; color: #0F172A; }
+.trendStatDelta { font-size: 12px; font-weight: 700; color: #10B981; }
+
+/* Improvement Plan Modal */
+.modalOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modalBox { background: #FFFFFF; border-radius: 24px; max-width: 620px; width: 100%; padding: 32px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); position: relative; }
+.modalClose { position: absolute; top: 20px; right: 20px; border: none; background: #F1F5F9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.planProgressBar { height: 8px; background: #F1F5F9; border-radius: 10px; overflow: hidden; margin: 16px 0 24px 0; }
+.planProgressFill { height: 100%; background: linear-gradient(90deg, #2563EB 0%, #10B981 100%); transition: width 0.3s ease; }
+.planStepsList { display: flex; flex-direction: column; gap: 16px; }
+.planStepItem { display: flex; align-items: flex-start; gap: 16px; padding: 16px; border-radius: 14px; border: 1.5px solid #E2E8F0; background: #F8FAFC; transition: all 0.2s; }
+.planStepDone { background: #F0FDF4; border-color: #86EFAC; }
+.planStepCheck { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #CBD5E1; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+.planStepCheckDone { background: #10B981; border-color: #10B981; color: #FFF; font-size: 12px; font-weight: 800; }
+.planStepContent { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.planStepTitle { font-size: 14px; font-weight: 700; color: #0F172A; }
+.planStepDesc { font-size: 12px; color: #64748B; line-height: 1.4; }
+.planStepAction { font-size: 12px; font-weight: 700; color: #2563EB; text-decoration: none; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; }
+.celebrationBox { background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 14px 18px; color: #065F46; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+

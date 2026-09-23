@@ -14,6 +14,14 @@ export default function AiAnalysisPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
   const [journeyTab, setJourneyTab] = useState('Score');
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState<number[]>([1]);
+
+  const toggleTask = (id: number) => {
+    setCompletedTasks(prev => 
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,8 +118,26 @@ export default function AiAnalysisPage() {
           <h1 className={styles.heroTitle}>Your CAT Performance,<br/><span>Explained.</span></h1>
           <p className={styles.heroSubtitle}>AI analyzes your attempts, accuracy, speed and mistakes to identify exactly where you are losing marks.</p>
           <div className={styles.heroActions}>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.btnPrimary}>View My Weaknesses &rarr;</Link>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.btnSecondary}>Explore Full Analysis</Link>
+            <Link 
+              href="#mistake-section" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' }); 
+              }} 
+              className={styles.btnPrimary}
+            >
+              View My Weaknesses &rarr;
+            </Link>
+            <Link 
+              href="#where-you-stand" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' }); 
+              }} 
+              className={styles.btnSecondary}
+            >
+              Explore Full Analysis
+            </Link>
           </div>
         </div>
         
@@ -233,134 +259,321 @@ export default function AiAnalysisPage() {
         </section>
 
         {/* WHERE YOU STAND */}
-        <section>
+        <section id="where-you-stand">
           <div className={styles.wysHeader}>
             <div>
               <h2 className={styles.secTitle}>Where You Stand</h2>
               <div className={styles.secSubtitle}>Section-wise performance analysis from your mock attempts</div>
             </div>
             <div className={styles.wysTabs}>
-              <div className={`${styles.wysTab} ${styles.active}`}>Overview</div>
-              <div className={styles.wysTab}>Detailed</div>
-              <div className={styles.wysTab}>Trends</div>
+              <div 
+                className={`${styles.wysTab} ${activeTab === 'Overview' ? styles.active : ''}`} 
+                onClick={() => setActiveTab('Overview')} 
+                style={{cursor: 'pointer'}}
+              >
+                Overview
+              </div>
+              <div 
+                className={`${styles.wysTab} ${activeTab === 'Detailed' ? styles.active : ''}`} 
+                onClick={() => setActiveTab('Detailed')} 
+                style={{cursor: 'pointer'}}
+              >
+                Detailed
+              </div>
+              <div 
+                className={`${styles.wysTab} ${activeTab === 'Trends' ? styles.active : ''}`} 
+                onClick={() => setActiveTab('Trends')} 
+                style={{cursor: 'pointer'}}
+              >
+                Trends
+              </div>
             </div>
           </div>
           
-          <div className={styles.wysGrid}>
-            {/* VARC */}
-            <div className={styles.wysCard}>
-              <div className={styles.wcHeader}>
-                <div className={styles.wcTitle}><span style={{color: '#0EA5E9'}}>📰</span> VARC</div>
-                <div className={`${styles.wcBadge} ${styles.statusSTRONG}`}>STRONG</div>
-              </div>
-              <div className={styles.wcMain}>
-                <div className={styles.wcDonut}>
-                  <svg viewBox="0 0 100 100">
-                    <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                    <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#0EA5E9', strokeDashoffset: 250 - (250*82)/100}} />
-                  </svg>
-                  <div className={styles.wcDonutText}>
-                    <div className={styles.wcDonutVal}>82%</div>
-                    <div className={styles.wcDonutLbl}>Accuracy</div>
+          {activeTab === 'Overview' && (
+            <div className={styles.wysGrid}>
+              {/* VARC */}
+              <div className={styles.wysCard}>
+                <div className={styles.wcHeader}>
+                  <div className={styles.wcTitle}><span style={{color: '#0EA5E9'}}>📰</span> VARC</div>
+                  <div className={`${styles.wcBadge} ${styles.statusSTRONG}`}>STRONG</div>
+                </div>
+                <div className={styles.wcMain}>
+                  <div className={styles.wcDonut}>
+                    <svg viewBox="0 0 100 100">
+                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
+                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#0EA5E9', strokeDashoffset: 250 - (250*82)/100}} />
+                    </svg>
+                    <div className={styles.wcDonutText}>
+                      <div className={styles.wcDonutVal}>82%</div>
+                      <div className={styles.wcDonutLbl}>Accuracy</div>
+                    </div>
+                  </div>
+                  <div className={styles.wcStats}>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>32 / 40</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>20 / 24</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>1.8 min</span></div>
                   </div>
                 </div>
-                <div className={styles.wcStats}>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>32 / 40</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>20 / 24</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>1.8 min</span></div>
+                
+                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
+                <div className={styles.wcSparkline}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
+                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
+                      <Line type="monotone" dataKey="v" name="Score" stroke="#0EA5E9" strokeWidth={2} dot={{r: 3, fill: '#0EA5E9'}} activeDot={{r: 5}} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #0EA5E9'}}>
+                  <span style={{color: '#0EA5E9'}}>🧠</span> Great performance in RC. Keep practicing para jumbles to improve consistency.
                 </div>
               </div>
-              
-              <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-              <div className={styles.wcSparkline}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                    <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                    <Line type="monotone" dataKey="v" name="Score" stroke="#0EA5E9" strokeWidth={2} dot={{r: 3, fill: '#0EA5E9'}} activeDot={{r: 5}} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className={styles.wcInsight} style={{borderLeft: '3px solid #0EA5E9'}}>
-                <span style={{color: '#0EA5E9'}}>🧠</span> Great performance in RC. Keep practicing para jumbles to improve consistency.
-              </div>
-            </div>
 
-            {/* DILR */}
-            <div className={styles.wysCard}>
-              <div className={styles.wcHeader}>
-                <div className={styles.wcTitle}><span style={{color: '#10B981'}}>🧩</span> DILR</div>
-                <div className={`${styles.wcBadge} ${styles.statusNEEDS}`}>NEEDS ATTENTION</div>
-              </div>
-              <div className={styles.wcMain}>
-                <div className={styles.wcDonut}>
-                  <svg viewBox="0 0 100 100">
-                    <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                    <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#10B981', strokeDashoffset: 250 - (250*58)/100}} />
-                  </svg>
-                  <div className={styles.wcDonutText}>
-                    <div className={styles.wcDonutVal}>58%</div>
-                    <div className={styles.wcDonutLbl}>Accuracy</div>
+              {/* DILR */}
+              <div className={styles.wysCard}>
+                <div className={styles.wcHeader}>
+                  <div className={styles.wcTitle}><span style={{color: '#10B981'}}>🧩</span> DILR</div>
+                  <div className={`${styles.wcBadge} ${styles.statusNEEDS}`}>NEEDS ATTENTION</div>
+                </div>
+                <div className={styles.wcMain}>
+                  <div className={styles.wcDonut}>
+                    <svg viewBox="0 0 100 100">
+                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
+                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#10B981', strokeDashoffset: 250 - (250*58)/100}} />
+                    </svg>
+                    <div className={styles.wcDonutText}>
+                      <div className={styles.wcDonutVal}>58%</div>
+                      <div className={styles.wcDonutLbl}>Accuracy</div>
+                    </div>
+                  </div>
+                  <div className={styles.wcStats}>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>18 / 40</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>12 / 18</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>3.2 min</span></div>
                   </div>
                 </div>
-                <div className={styles.wcStats}>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>18 / 40</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>12 / 18</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>3.2 min</span></div>
+                
+                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
+                <div className={styles.wcSparkline}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
+                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
+                      <Line type="monotone" dataKey="v" name="Score" stroke="#10B981" strokeWidth={2} dot={{r: 3, fill: '#10B981'}} activeDot={{r: 5}} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #10B981'}}>
+                  <span style={{color: '#10B981'}}>💡</span> You lose marks due to slower solving speed. Work on set selection and timed practice.
                 </div>
               </div>
-              
-              <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-              <div className={styles.wcSparkline}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                    <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                    <Line type="monotone" dataKey="v" name="Score" stroke="#10B981" strokeWidth={2} dot={{r: 3, fill: '#10B981'}} activeDot={{r: 5}} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className={styles.wcInsight} style={{borderLeft: '3px solid #10B981'}}>
-                <span style={{color: '#10B981'}}>💡</span> You lose marks due to slower solving speed. Work on set selection and timed practice.
-              </div>
-            </div>
 
-            {/* QA */}
-            <div className={styles.wysCard}>
-              <div className={styles.wcHeader}>
-                <div className={styles.wcTitle}><span style={{color: '#8B5CF6'}}>📐</span> QUANTITATIVE APTITUDE</div>
-                <div className={`${styles.wcBadge} ${styles.statusIMPROVING}`}>IMPROVING</div>
-              </div>
-              <div className={styles.wcMain}>
-                <div className={styles.wcDonut}>
-                  <svg viewBox="0 0 100 100">
-                    <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                    <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#8B5CF6', strokeDashoffset: 250 - (250*68)/100}} />
-                  </svg>
-                  <div className={styles.wcDonutText}>
-                    <div className={styles.wcDonutVal}>68%</div>
-                    <div className={styles.wcDonutLbl}>Accuracy</div>
+              {/* QA */}
+              <div className={styles.wysCard}>
+                <div className={styles.wcHeader}>
+                  <div className={styles.wcTitle}><span style={{color: '#8B5CF6'}}>📐</span> QUANTITATIVE APTITUDE</div>
+                  <div className={`${styles.wcBadge} ${styles.statusIMPROVING}`}>IMPROVING</div>
+                </div>
+                <div className={styles.wcMain}>
+                  <div className={styles.wcDonut}>
+                    <svg viewBox="0 0 100 100">
+                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
+                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#8B5CF6', strokeDashoffset: 250 - (250*68)/100}} />
+                    </svg>
+                    <div className={styles.wcDonutText}>
+                      <div className={styles.wcDonutVal}>68%</div>
+                      <div className={styles.wcDonutLbl}>Accuracy</div>
+                    </div>
+                  </div>
+                  <div className={styles.wcStats}>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>27 / 40</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>16 / 22</span></div>
+                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>2.4 min</span></div>
                   </div>
                 </div>
-                <div className={styles.wcStats}>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>27 / 40</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>16 / 22</span></div>
-                  <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>2.4 min</span></div>
+                
+                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
+                <div className={styles.wcSparkline}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
+                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
+                      <Line type="monotone" dataKey="v" name="Score" stroke="#8B5CF6" strokeWidth={2} dot={{r: 3, fill: '#8B5CF6'}} activeDot={{r: 5}} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #8B5CF6'}}>
+                  <span style={{color: '#8B5CF6'}}>📈</span> Arithmetic is strong. Focus on algebra and geometry concepts.
                 </div>
               </div>
-              
-              <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-              <div className={styles.wcSparkline}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                    <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                    <Line type="monotone" dataKey="v" name="Score" stroke="#8B5CF6" strokeWidth={2} dot={{r: 3, fill: '#8B5CF6'}} activeDot={{r: 5}} />
-                  </LineChart>
-                </ResponsiveContainer>
+            </div>
+          )}
+
+          {activeTab === 'Detailed' && (
+            <div className={styles.detailedGrid}>
+              {/* Detailed VARC Card */}
+              <div className={styles.detailedCard}>
+                <div className={styles.detailedSecHeader}>
+                  <div className={styles.detailedSecTitle}><span>📰</span> VARC Topics</div>
+                  <span className={`${styles.topicBadge} ${styles.badgeStrong}`}>STRONG (82%)</span>
+                </div>
+                <div className={styles.topicsList}>
+                  {(d.topics?.VARC?.length ? d.topics.VARC : [
+                    { name: "Reading Comprehension", status: "Strong", accuracy: 85, attempts: 16, avgTime: "1m 45s" },
+                    { name: "Para Jumbles", status: "Needs Practice", accuracy: 40, attempts: 4, avgTime: "2m 10s" },
+                    { name: "Summary & Completion", status: "Good", accuracy: 75, attempts: 6, avgTime: "1m 55s" },
+                    { name: "Odd Sentence Out", status: "Moderate", accuracy: 65, attempts: 4, avgTime: "1m 30s" }
+                  ]).map((t: any, i: number) => {
+                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
+                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
+                    return (
+                      <div key={i} className={styles.topicItem}>
+                        <div className={styles.topicHeader}>
+                          <span>{t.name}</span>
+                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
+                        </div>
+                        <div className={styles.topicStats}>
+                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
+                          <span>{t.attempts} attempts &bull; {t.avgTime || '2m'}</span>
+                        </div>
+                        <div className={styles.topicBar}>
+                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className={styles.wcInsight} style={{borderLeft: '3px solid #8B5CF6'}}>
-                <span style={{color: '#8B5CF6'}}>📈</span> Arithmetic is strong. Focus on algebra and geometry concepts.
+
+              {/* Detailed DILR Card */}
+              <div className={styles.detailedCard}>
+                <div className={styles.detailedSecHeader}>
+                  <div className={styles.detailedSecTitle}><span>🧩</span> DILR Topics</div>
+                  <span className={`${styles.topicBadge} ${styles.badgeNeeds}`}>NEEDS ATTENTION (58%)</span>
+                </div>
+                <div className={styles.topicsList}>
+                  {(d.topics?.DILR?.length ? d.topics.DILR : [
+                    { name: "Arrangements & Matrix", status: "Good", accuracy: 75, attempts: 6, avgTime: "6m 20s" },
+                    { name: "Games & Tournaments", status: "Critical", accuracy: 25, attempts: 4, avgTime: "8m 15s" },
+                    { name: "Charts & Tables DI", status: "Moderate", accuracy: 60, attempts: 5, avgTime: "5m 45s" },
+                    { name: "Quant Based LR", status: "Needs Practice", accuracy: 50, attempts: 3, avgTime: "7m 10s" }
+                  ]).map((t: any, i: number) => {
+                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
+                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
+                    return (
+                      <div key={i} className={styles.topicItem}>
+                        <div className={styles.topicHeader}>
+                          <span>{t.name}</span>
+                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
+                        </div>
+                        <div className={styles.topicStats}>
+                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
+                          <span>{t.attempts} attempts &bull; {t.avgTime || '6m'}</span>
+                        </div>
+                        <div className={styles.topicBar}>
+                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Detailed QA Card */}
+              <div className={styles.detailedCard}>
+                <div className={styles.detailedSecHeader}>
+                  <div className={styles.detailedSecTitle}><span>📐</span> QA Topics</div>
+                  <span className={`${styles.topicBadge} ${styles.badgeModerate}`}>IMPROVING (68%)</span>
+                </div>
+                <div className={styles.topicsList}>
+                  {(d.topics?.QA?.length ? d.topics.QA : [
+                    { name: "Arithmetic", status: "Strong", accuracy: 90, attempts: 12, avgTime: "1m 30s" },
+                    { name: "Algebra", status: "Critical", accuracy: 30, attempts: 6, avgTime: "3m 40s" },
+                    { name: "Geometry & Mensuration", status: "Moderate", accuracy: 65, attempts: 5, avgTime: "2m 15s" },
+                    { name: "Number System & P&C", status: "Needs Practice", accuracy: 50, attempts: 4, avgTime: "2m 50s" }
+                  ]).map((t: any, i: number) => {
+                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
+                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
+                    return (
+                      <div key={i} className={styles.topicItem}>
+                        <div className={styles.topicHeader}>
+                          <span>{t.name}</span>
+                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
+                        </div>
+                        <div className={styles.topicStats}>
+                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
+                          <span>{t.attempts} attempts &bull; {t.avgTime || '2m'}</span>
+                        </div>
+                        <div className={styles.topicBar}>
+                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === 'Trends' && (
+            <div className={styles.trendsContainer}>
+              <div className={styles.trendsStatsRow}>
+                <div className={styles.trendStatPill}>
+                  <span className={styles.trendStatLbl}>Latest Score</span>
+                  <span className={styles.trendStatVal}>{d.overview?.latestScore || 77} / 198</span>
+                  <span className={styles.trendStatDelta}>↑ +14 pts from Mock 1</span>
+                </div>
+                <div className={styles.trendStatPill}>
+                  <span className={styles.trendStatLbl}>Accuracy Trend</span>
+                  <span className={styles.trendStatVal}>{d.dna?.accuracy?.value || 78}%</span>
+                  <span className={styles.trendStatDelta}>↑ +8.5% improvement</span>
+                </div>
+                <div className={styles.trendStatPill}>
+                  <span className={styles.trendStatLbl}>Avg. Question Speed</span>
+                  <span className={styles.trendStatVal}>2m 04s</span>
+                  <span className={styles.trendStatDelta} style={{color: '#2563EB'}}>⚡ 18s faster per question</span>
+                </div>
+                <div className={styles.trendStatPill}>
+                  <span className={styles.trendStatLbl}>Consistency Index</span>
+                  <span className={styles.trendStatVal}>{d.dna?.consistency?.value || 72}%</span>
+                  <span className={styles.trendStatDelta}>🛡️ Low variance in VARC/QA</span>
+                </div>
+              </div>
+
+              <div className={styles.trendsCard}>
+                <div className={styles.trendsHeader}>
+                  <div>
+                    <div className={styles.trendsTitle}>Sectional Score Progression (Mock 1 to Mock 5)</div>
+                    <div style={{fontSize: '13px', color: '#64748B', marginTop: '4px'}}>Comparing section-by-section score trajectory across your mock exam timeline</div>
+                  </div>
+                </div>
+
+                <div style={{width: '100%', height: 320}}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart 
+                      data={[
+                        { name: 'Mock 1', VARC: 22, DILR: 12, QA: 16, Overall: 50 },
+                        { name: 'Mock 2', VARC: 25, DILR: 14, QA: 18, Overall: 57 },
+                        { name: 'Mock 3', VARC: 27, DILR: 16, QA: 22, Overall: 65 },
+                        { name: 'Mock 4', VARC: 29, DILR: 15, QA: 25, Overall: 69 },
+                        { name: 'Mock 5', VARC: 32, DILR: 18, QA: 27, Overall: 77 },
+                      ]} 
+                      margin={{top: 15, right: 25, left: -10, bottom: 5}}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                      <XAxis dataKey="name" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} dy={8} />
+                      <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{background: '#FFF', borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', fontSize: '12px'}} />
+                      <Legend wrapperStyle={{fontSize: '12px', fontWeight: 600, paddingTop: '10px'}} />
+                      <Line type="monotone" dataKey="Overall" name="Overall Score" stroke="#2563EB" strokeWidth={3} dot={{r: 4, fill: '#2563EB'}} activeDot={{r: 6}} />
+                      <Line type="monotone" dataKey="VARC" name="VARC" stroke="#0EA5E9" strokeWidth={2} dot={{r: 3, fill: '#0EA5E9'}} />
+                      <Line type="monotone" dataKey="QA" name="QA" stroke="#8B5CF6" strokeWidth={2} dot={{r: 3, fill: '#8B5CF6'}} />
+                      <Line type="monotone" dataKey="DILR" name="DILR" stroke="#10B981" strokeWidth={2} dot={{r: 3, fill: '#10B981'}} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* JOURNEY & MAP */}
@@ -434,7 +647,7 @@ export default function AiAnalysisPage() {
         </section>
 
         {/* LOWER ANALYTICS */}
-        <section className={styles.lowerGrid}>
+        <section className={styles.lowerGrid} id="mistake-section">
           {/* Mistake Intelligence */}
           <div className={styles.lcCard}>
             <div className={styles.lcTitle}>Mistake Intelligence</div>
@@ -469,7 +682,7 @@ export default function AiAnalysisPage() {
                 ))}
               </div>
             </div>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.lcBtn}>View All Mistakes &rarr;</Link>
+            <Link href="/intelligence/error-tracking" className={styles.lcBtn}>View All Mistakes &rarr;</Link>
           </div>
 
           {/* Gain Marks */}
@@ -520,7 +733,14 @@ export default function AiAnalysisPage() {
                 </div>
               </div>
             </div>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.apBtn}>Start My Improvement Plan &rarr;</Link>
+            <button 
+              type="button" 
+              onClick={() => setShowPlanModal(true)} 
+              className={styles.apBtn} 
+              style={{cursor: 'pointer', border: 'none', width: '100%'}}
+            >
+              Start My Improvement Plan &rarr;
+            </button>
           </div>
         </section>
 
@@ -533,6 +753,117 @@ export default function AiAnalysisPage() {
         </div>
 
       </div>
+
+      {/* Action Plan Modal */}
+      {showPlanModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowPlanModal(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setShowPlanModal(false)} aria-label="Close modal">&times;</button>
+            
+            <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
+              <span style={{fontSize: '24px'}}>🎯</span>
+              <h3 style={{fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0}}>Your AI Improvement Plan</h3>
+            </div>
+            <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 16px 0', lineHeight: 1.5}}>
+              Complete these targeted actions before your next mock to maximize your score gain. Click checkboxes to track your preparation.
+            </p>
+
+            <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, color: '#475569'}}>
+              <span>Progress: {completedTasks.length} of 3 tasks completed</span>
+              <span>{Math.round((completedTasks.length / 3) * 100)}%</span>
+            </div>
+            <div className={styles.planProgressBar}>
+              <div className={styles.planProgressFill} style={{width: `${(completedTasks.length / 3) * 100}%`}}></div>
+            </div>
+
+            <div className={styles.planStepsList}>
+              {/* Step 1 */}
+              <div className={`${styles.planStepItem} ${completedTasks.includes(1) ? styles.planStepDone : ''}`}>
+                <div 
+                  className={`${styles.planStepCheck} ${completedTasks.includes(1) ? styles.planStepCheckDone : ''}`}
+                  onClick={() => toggleTask(1)}
+                  role="checkbox"
+                  aria-checked={completedTasks.includes(1)}
+                  tabIndex={0}
+                >
+                  {completedTasks.includes(1) ? '✓' : ''}
+                </div>
+                <div className={styles.planStepContent}>
+                  <div className={styles.planStepTitle}>1. Review your last 5 Algebra mistakes</div>
+                  <div className={styles.planStepDesc}>Analyze quadratic equations and progressions questions you missed in recent mocks to eliminate recurring errors.</div>
+                  <Link href="/intelligence/error-tracking" className={styles.planStepAction}>
+                    Open Error Tracker &rarr;
+                  </Link>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className={`${styles.planStepItem} ${completedTasks.includes(2) ? styles.planStepDone : ''}`}>
+                <div 
+                  className={`${styles.planStepCheck} ${completedTasks.includes(2) ? styles.planStepCheckDone : ''}`}
+                  onClick={() => toggleTask(2)}
+                  role="checkbox"
+                  aria-checked={completedTasks.includes(2)}
+                  tabIndex={0}
+                >
+                  {completedTasks.includes(2) ? '✓' : ''}
+                </div>
+                <div className={styles.planStepContent}>
+                  <div className={styles.planStepTitle}>2. Practice 2 timed DILR sets</div>
+                  <div className={styles.planStepDesc}>Practice matrix arrangements and tournament sets with strict 12-minute caps to refine your set selection intuition.</div>
+                  <Link href="/browse#pyq-section" className={styles.planStepAction}>
+                    Solve DILR Sets in Archives &rarr;
+                  </Link>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className={`${styles.planStepItem} ${completedTasks.includes(3) ? styles.planStepDone : ''}`}>
+                <div 
+                  className={`${styles.planStepCheck} ${completedTasks.includes(3) ? styles.planStepCheckDone : ''}`}
+                  onClick={() => toggleTask(3)}
+                  role="checkbox"
+                  aria-checked={completedTasks.includes(3)}
+                  tabIndex={0}
+                >
+                  {completedTasks.includes(3) ? '✓' : ''}
+                </div>
+                <div className={styles.planStepContent}>
+                  <div className={styles.planStepTitle}>3. Attempt 15 QA Arithmetic questions</div>
+                  <div className={styles.planStepDesc}>Focus on Percentages, Profit & Loss, and Ratios to convert your arithmetic speed into 100% accuracy.</div>
+                  <Link href="/topics" className={styles.planStepAction}>
+                    Practice QA Topics &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {completedTasks.length === 3 ? (
+              <div className={styles.celebrationBox}>
+                <span>🏆</span> All steps completed! You are in prime condition for your next CAT mock test.
+              </div>
+            ) : null}
+
+            <div style={{marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px'}}>
+              <button 
+                onClick={() => setShowPlanModal(false)}
+                style={{
+                  background: '#2563EB',
+                  color: '#FFF',
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                {completedTasks.length === 3 ? 'Done' : 'Save & Continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

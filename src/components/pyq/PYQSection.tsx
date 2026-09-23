@@ -13,7 +13,7 @@ export default function PYQSection({ onSelectTopicCategory }: PYQSectionProps) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   return (
-    <section className={styles.pyqSection}>
+    <section className={styles.pyqSection} id="pyq-section">
       <div className={styles.sectionHeaderRow}>
         <div>
           <div className={styles.pillBadge}>★ Official CAT Archives</div>

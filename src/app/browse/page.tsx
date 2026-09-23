@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
@@ -18,6 +18,15 @@ export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchPYQModalOpen, setSearchPYQModalOpen] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window.location.hash === "#pyq-section" || window.location.hash === "#pyqs")) {
+      setTimeout(() => {
+        const el = document.getElementById("pyq-section");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 250);
+    }
+  }, []);
 
   // Search match for PYQs
   const matchesPYQ = useMemo(() => {

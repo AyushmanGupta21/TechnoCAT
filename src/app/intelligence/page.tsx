@@ -658,7 +658,7 @@ export default function IntelligenceHubPage() {
           <section className={styles.quickActionsSection}>
             <h2 className={styles.sectionTitleSmall}>Quick Actions</h2>
             <div className={styles.actionGrid}>
-              <Link href="/dashboard" className={styles.actionBtn}>Start a Mock</Link>
+              <Link href="/browse#pyq-section" className={styles.actionBtn}>Start a Mock</Link>
               <Link href="/analytics" className={styles.actionBtnSecondary}>View My Analytics</Link>
               <Link href="/intelligence/ai-analysis" className={styles.actionBtnSecondary}>Ask AI Mentor</Link>
               <Link href="/intelligence/error-tracking" className={styles.actionBtnSecondary}>Review Mistakes</Link>
