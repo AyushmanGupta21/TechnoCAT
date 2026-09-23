@@ -1446,7 +1446,7 @@ export default function TopicDetailPage() {
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/browse", hasDropdown: true },
+                { name: "Browse", href: "/browse" },
                 { name: "My Topics", href: "/topics" },
                 { name: "Intelligence Hub", href: "/intelligence" },
                 { name: "Mock Viva Prep", href: "#" },

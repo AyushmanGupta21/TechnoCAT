@@ -63,7 +63,7 @@ export default function BrowsePage() {
             <div className={styles.navLinks}>
               {[
                 { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/browse", hasDropdown: true },
+                { name: "Browse", href: "/browse" },
                 { name: "My Topics", href: "/topics" },
                 { name: "Intelligence Hub", href: "/intelligence" },
                 { name: "Mock Viva Prep", href: "#" },
@@ -78,11 +78,6 @@ export default function BrowsePage() {
                   className={`${styles.navLink} ${activeNav === item.name ? styles.navLinkActive : ""}`}
                 >
                   {item.name}
-                  {item.hasDropdown && (
-                    <svg className={styles.dropdownChevron} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  )}
                 </Link>
               ))}
             </div>

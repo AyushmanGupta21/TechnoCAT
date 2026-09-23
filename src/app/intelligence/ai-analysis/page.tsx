@@ -94,8 +94,8 @@ export default function AiAnalysisPage() {
           <nav className={styles.mainNav}>
             <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
             <Link href="/browse" className={styles.navLink}>Browse</Link>
+            <Link href="/topics" className={styles.navLink}>My Topics</Link>
             <Link href="/intelligence" className={`${styles.navLink} ${styles.active}`}>Intelligence Hub</Link>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.navLink}>My Topics</Link>
             <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
           </nav>
         </div>
