@@ -124,7 +124,7 @@ export default function WhatYouGetSection() {
       return;
     }
 
-    if (route === "/dashboard" && (!user || user.isGuest)) {
+    if (!user || user.isGuest) {
       openAuthModal("signup");
       return;
     }
