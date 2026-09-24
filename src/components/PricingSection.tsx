@@ -77,7 +77,7 @@ export default function PricingSection() {
         style={{
           background: "transparent",
           padding: "64px 0",
-          scrollMarginTop: "32px",
+          scrollMarginTop: "90px",
         }}
       >
         <div
@@ -125,12 +125,14 @@ export default function PricingSection() {
               return (
                 <div
                   key={i}
+                  id={i === 1 ? "pro-full-mocks" : i === 2 ? "omet-mocks" : undefined}
                   className={`pricingCard ${i === 1 ? "pro" : ""}`}
                   style={{
                     background: cardBg,
                     border: `1px solid ${borderColor}`,
                     boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-sm)",
                     cursor: "pointer",
+                    scrollMarginTop: "90px",
                   }}
                   onClick={() => handlePlanClick(plan)}
                   title={`Click to view ${plan.name}`}

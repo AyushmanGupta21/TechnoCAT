@@ -1,6 +1,7 @@
 .section {
   background: var(--bg-soft);
   padding: 64px 0;
+  scroll-margin-top: 90px;
 }
 
 .container {

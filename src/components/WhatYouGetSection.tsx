@@ -26,21 +26,21 @@ const stats = [
     number: "24",
     title: "PYQs as Mocks",
     details: ["Attempt Actual exam-level Papers as CAT Mocks"],
-    route: "/browse",
+    route: "/browse?section=pyqs#pyq-section",
   },
   {
     id: "omet",
     number: "15",
     title: "OMET Mocks",
     details: ["XAT, NMAT, SNAP, MAHCET, & Other MBA Exams"],
-    isModal: true,
+    route: "/#courses",
   },
   {
     id: "solutions",
     number: "100%",
     title: "Detailed Solutions",
     details: ["Textual + Video Solutions of CAT Mocks"],
-    route: "/topics",
+    route: "/#why-stand-out",
   },
   {
     id: "ai_analysis",
@@ -113,38 +113,26 @@ export default function WhatYouGetSection() {
   const [modalData, setModalData] = useState<CardInfoData | null>(null);
 
   const handleRouteClick = (route: string) => {
-    if (!user || user.isGuest) {
-      openAuthModal("signup");
-    } else {
+    if (route.startsWith("/#") || route.startsWith("#")) {
+      const id = route.replace(/^\/?#/, "");
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
       router.push(route);
-    }
-  };
-
-  const handleStatClick = (stat: typeof stats[0]) => {
-    if (stat.isModal) {
-      setModalData({
-        badge: "OMET PREPARATION",
-        title: "15 Other Management Entrance Tests (OMETs)",
-        description:
-          "Targeting XLRI, NMIMS, SIBM, or SNAP/MICAT colleges? Practice with dedicated mock tests matching the exact question pattern, speed requirements, and scoring algorithms of each OMET.",
-        highlights: [
-          "XAT Decision Making & Verbal Ability sectional mock drills",
-          "SNAP 60-minute speed tests with negative marking analytics",
-          "NMAT adaptive mock simulator & score range forecaster",
-          "CMAT & MICAT full-length papers with video explanations"
-        ],
-        primaryBtnText: "Explore OMET Test Series",
-        onPrimaryClick: () => {
-          if (!user || user.isGuest) {
-            openAuthModal("signup");
-          } else {
-            router.push("/dashboard");
-          }
-        }
-      });
       return;
     }
 
+    if (route === "/dashboard" && (!user || user.isGuest)) {
+      openAuthModal("signup");
+      return;
+    }
+
+    router.push(route);
+  };
+
+  const handleStatClick = (stat: typeof stats[0]) => {
     if (stat.route) {
       handleRouteClick(stat.route);
     }
