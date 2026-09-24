@@ -113,7 +113,7 @@ export default function HeroSection() {
                 </button>
                 <button
                   className={styles.pyqBtn}
-                  onClick={() => handleAuthAction("/browse")}
+                  onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
                 >
                   Attempt Past Year Paper as Mock
                 </button>
@@ -122,7 +122,7 @@ export default function HeroSection() {
               {/* Free sectionals card */}
               <div
                 className={styles.sectionalsCard}
-                onClick={() => handleAuthAction("/topics")}
+                onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
                 style={{ cursor: "pointer" }}
               >
                 <div className={styles.sectionalsInner}>
@@ -157,7 +157,7 @@ export default function HeroSection() {
                     className={styles.attemptNowBtn}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAuthAction("/topics");
+                      handleAuthAction("/browse?section=pyqs#pyq-section");
                     }}
                   >
                     Attempt Now

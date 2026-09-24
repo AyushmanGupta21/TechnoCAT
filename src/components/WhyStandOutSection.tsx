@@ -43,7 +43,7 @@ const features = [
     id: "best",
     badge: "★",
     badgeColor: "#2563EB",
-    href: "/dashboard",
+    href: "/browse?section=pyqs#pyq-section",
     title: "Best CAT Mock Test",
     body: "TechnoCAT's CAT mock test interface is really flexible to use. Even if power input gets cut, your mock will automatically get resumed.",
     tag: "BEST CAT MOCK TEST.",

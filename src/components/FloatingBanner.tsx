@@ -12,7 +12,7 @@ export default function FloatingBanner() {
     if (!user || user.isGuest) {
       openAuthModal("signup");
     } else {
-      router.push("/dashboard");
+      router.push("/browse?section=pyqs#pyq-section");
     }
   };
 
