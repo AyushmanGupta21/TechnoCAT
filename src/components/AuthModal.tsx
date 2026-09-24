@@ -35,7 +35,13 @@ export default function AuthModal() {
       if (!res.success) {
         setError(res.error || "Login failed");
       } else {
-        window.location.href = "/dashboard";
+        const hasPredictorRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_predictor_pending_redirect");
+        if (hasPredictorRedirect) {
+          sessionStorage.removeItem("technocat_predictor_pending_redirect");
+          window.location.href = "/intelligence/b-school-predictor";
+        } else {
+          window.location.href = "/dashboard";
+        }
       }
     } else {
       if (!fullName.trim()) {
@@ -59,7 +65,13 @@ export default function AuthModal() {
       if (!res.success) {
         setError(res.error || "Sign up failed");
       } else {
-        window.location.href = "/dashboard";
+        const hasPredictorRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_predictor_pending_redirect");
+        if (hasPredictorRedirect) {
+          sessionStorage.removeItem("technocat_predictor_pending_redirect");
+          window.location.href = "/intelligence/b-school-predictor";
+        } else {
+          window.location.href = "/dashboard";
+        }
       }
     }
   };

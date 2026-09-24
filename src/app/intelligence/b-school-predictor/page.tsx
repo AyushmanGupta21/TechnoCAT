@@ -34,8 +34,51 @@ export default function BSchoolPredictorPage() {
     mockAvgScore: number;
   }>({ points: 420, readiness: 68, mockAvgScore: 68 });
 
-  // On mount, fetch user's live dashboard and mock metrics to project starting CAT percentile
+  // On mount, fetch user's live dashboard and mock metrics or apply custom values from the landing page
   useEffect(() => {
+    let customTenth: number | null = null;
+    let customTwelfth: number | null = null;
+    let customGrad: number | null = null;
+    let customPercentile: number | null = null;
+
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qTenth = urlParams.get("tenth");
+      const qTwelfth = urlParams.get("twelfth");
+      const qGrad = urlParams.get("grad");
+      const qPercentile = urlParams.get("percentile");
+
+      if (qTenth || qTwelfth || qGrad || qPercentile) {
+        if (qTenth && !isNaN(parseFloat(qTenth))) customTenth = parseFloat(qTenth);
+        if (qTwelfth && !isNaN(parseFloat(qTwelfth))) customTwelfth = parseFloat(qTwelfth);
+        if (qGrad && !isNaN(parseFloat(qGrad))) customGrad = parseFloat(qGrad);
+        if (qPercentile && !isNaN(parseFloat(qPercentile))) customPercentile = parseFloat(qPercentile);
+      } else {
+        const saved = sessionStorage.getItem("technocat_predictor_data");
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed.tenth && !isNaN(parseFloat(parsed.tenth))) customTenth = parseFloat(parsed.tenth);
+            if (parsed.twelfth && !isNaN(parseFloat(parsed.twelfth))) customTwelfth = parseFloat(parsed.twelfth);
+            if (parsed.grad && !isNaN(parseFloat(parsed.grad))) customGrad = parseFloat(parsed.grad);
+            if (parsed.percentile && !isNaN(parseFloat(parsed.percentile))) customPercentile = parseFloat(parsed.percentile);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    }
+
+    if (customTenth !== null || customTwelfth !== null || customGrad !== null || customPercentile !== null) {
+      setProfile((prev) => ({
+        ...prev,
+        ...(customTenth !== null ? { tenthPercent: customTenth } : {}),
+        ...(customTwelfth !== null ? { twelfthPercent: customTwelfth } : {}),
+        ...(customGrad !== null ? { gradPercent: customGrad } : {}),
+        ...(customPercentile !== null ? { projectedPercentile: customPercentile } : {}),
+      }));
+    }
+
     async function fetchPrepData() {
       try {
         const [dashRes, aiRes] = await Promise.all([
@@ -64,17 +107,18 @@ export default function BSchoolPredictorPage() {
 
         setLearningSummary({ points: pts, readiness: Math.round(readinessVal), mockAvgScore: mockAvg });
 
-        // Calculate dynamic projection based on preparation metrics
-        // Base mapping: 60 marks ~ 90%ile, 75 marks ~ 96%ile, 90 marks ~ 99%ile
-        const calculatedPercentile = Math.min(
-          99.8,
-          Math.max(78.0, Math.round((85.0 + (mockAvg - 50) * 0.35 + (readinessVal / 100) * 5) * 10) / 10)
-        );
+        // Calculate dynamic projection based on preparation metrics only if user DID NOT provide a custom percentile
+        if (customPercentile === null) {
+          const calculatedPercentile = Math.min(
+            99.8,
+            Math.max(78.0, Math.round((85.0 + (mockAvg - 50) * 0.35 + (readinessVal / 100) * 5) * 10) / 10)
+          );
 
-        setProfile((prev) => ({
-          ...prev,
-          projectedPercentile: calculatedPercentile || 95.5,
-        }));
+          setProfile((prev) => ({
+            ...prev,
+            projectedPercentile: calculatedPercentile || 95.5,
+          }));
+        }
       } catch (err) {
         console.error("Failed to load user prep metrics:", err);
       }
@@ -218,8 +262,9 @@ export default function BSchoolPredictorPage() {
                 <span className={styles.label}>Class 10th Score (%)</span>
                 <input
                   type="number"
-                  min="50"
+                  min="30"
                   max="100"
+                  step="any"
                   className={styles.inputField}
                   value={profile.tenthPercent}
                   onChange={(e) =>
@@ -232,8 +277,9 @@ export default function BSchoolPredictorPage() {
                 <span className={styles.label}>Class 12th Score (%)</span>
                 <input
                   type="number"
-                  min="50"
+                  min="30"
                   max="100"
+                  step="any"
                   className={styles.inputField}
                   value={profile.twelfthPercent}
                   onChange={(e) =>
@@ -249,8 +295,9 @@ export default function BSchoolPredictorPage() {
                 <span className={styles.label}>Graduation Score (%)</span>
                 <input
                   type="number"
-                  min="50"
+                  min="30"
                   max="100"
+                  step="any"
                   className={styles.inputField}
                   value={profile.gradPercent}
                   onChange={(e) =>
