@@ -60,20 +60,20 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "CAT 2024 Actual Papers (All Slots)",
-        href: "/browse",
+        href: "/browse#pyq-section",
         badge: "Latest",
       },
       {
         label: "CAT 2023 Slot 1, 2, 3 with Solutions",
-        href: "/browse",
+        href: "/browse#pyq-section",
       },
       {
         label: "CAT 2022 Slot 1, 2, 3 with Solutions",
-        href: "/browse",
+        href: "/browse#pyq-section",
       },
       {
         label: "Attempt Past Year Paper as Mock",
-        href: "/browse",
+        href: "/browse#pyq-section",
         badge: "Free",
       },
     ],

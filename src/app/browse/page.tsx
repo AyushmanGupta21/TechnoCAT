@@ -20,12 +20,50 @@ export default function BrowsePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && (window.location.hash === "#pyq-section" || window.location.hash === "#pyqs")) {
-      setTimeout(() => {
-        const el = document.getElementById("pyq-section");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 250);
-    }
+    const scrollToPyq = () => {
+      if (typeof window === "undefined") return;
+      const hash = window.location.hash;
+      const search = window.location.search;
+      const shouldScroll =
+        hash === "#pyq-section" ||
+        hash === "#pyqs" ||
+        hash === "#mocks" ||
+        search.includes("section=pyq") ||
+        search.includes("section=mocks");
+
+      if (shouldScroll) {
+        const performScroll = () => {
+          const el = document.getElementById("pyq-section");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        };
+
+        // Staggered attempts ensure accuracy as cards/images render
+        performScroll();
+        const t1 = setTimeout(performScroll, 100);
+        const t2 = setTimeout(performScroll, 300);
+        const t3 = setTimeout(performScroll, 600);
+        const t4 = setTimeout(performScroll, 1000);
+
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+          clearTimeout(t4);
+        };
+      }
+    };
+
+    const cleanup = scrollToPyq();
+    window.addEventListener("hashchange", scrollToPyq);
+    window.addEventListener("popstate", scrollToPyq);
+
+    return () => {
+      if (cleanup) cleanup();
+      window.removeEventListener("hashchange", scrollToPyq);
+      window.removeEventListener("popstate", scrollToPyq);
+    };
   }, []);
 
   // Search match for PYQs
