@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import AiMotivationWidget from "@/components/AiMotivationWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
@@ -11,7 +12,7 @@ import DailyStudySchedule, { ScheduleItem } from "@/components/DailyStudySchedul
 import StudyCalendarWidget from "@/components/StudyCalendarWidget";
 import CatReadinessWidget from "@/components/CatReadinessWidget";
 import { useAuth } from "@/context/AuthContext";
-import { notifyTaskCompleted } from "@/services/notificationService";
+import { notifyTaskCompleted, pushNotification } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
 
 interface WeeklyStat {
@@ -946,9 +947,46 @@ const initialCurriculumTasks: ScheduleItem[] = [
   },
 ];
 
+interface AgendaSession {
+  id: string;
+  title: string;
+  topic: string;
+  faculty: string;
+  facultyBio: string;
+  timeRange: string;
+  dateFormatted: string;
+  isLiveNow: boolean;
+  duration: string;
+  activity: string;
+  color: string;
+  iconBg: string;
+  topicUrl: string;
+  syllabus: string[];
+  enrolledCount: number;
+}
+
+interface PrepNotice {
+  id: string;
+  title: string;
+  badge: string;
+  badgeBg: string;
+  badgeColor: string;
+  desc: string;
+  dateNotice: string;
+  thumbUrl: string;
+  actionUrl: string;
+  actionLabel: string;
+}
+
 export default function DashboardPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [activeNav, setActiveNav] = useState("Dashboard");
+
+  // Selected Agenda Modal State
+  const [selectedAgenda, setSelectedAgenda] = useState<AgendaSession | null>(null);
+  const [agendaReminderSaved, setAgendaReminderSaved] = useState<Record<string, boolean>>({});
+  const [liveStreamAlert, setLiveStreamAlert] = useState<string | null>(null);
 
   // Dynamic Planner & Calendar State - automatically derived from current date
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(() => new Date().getMonth());
@@ -961,6 +999,86 @@ export default function DashboardPage() {
     setSelectedMonthIndex(now.getMonth());
     setSelectedYear(now.getFullYear());
     setSelectedDay(now.getDate());
+  }, []);
+
+  // Dynamic Agenda sessions derived from current date
+  const upcomingAgenda: AgendaSession[] = useMemo(() => {
+    return [
+      {
+        id: "agenda-qa-geo",
+        title: "CAT QA: Geometry & Mensuration Masterclass",
+        topic: "Quantitative Aptitude",
+        faculty: "Prof. Rajesh Verma",
+        facultyBio: "IIM Bangalore Alum • 99.98%iler QA Lead",
+        timeRange: "7:00 PM – 8:30 PM",
+        dateFormatted: "Today • 7:00 PM – 8:30 PM",
+        isLiveNow: true,
+        duration: "90 min",
+        activity: "Live Class",
+        color: "#ED1C24",
+        iconBg: "#ED1C24",
+        topicUrl: "/topics/qa-quantitative-ability",
+        syllabus: [
+          "Tangents, Secants & Cyclic Quadrilaterals high-yield theorems",
+          "3D Mensuration: Cones, Frustums, Prisms & Volume ratios",
+          "Past 5 Years CAT Geometry PYQ shortcuts & elimination tips",
+          "Live Q&A + Rapid 60-second CAT drill with faculty"
+        ],
+        enrolledCount: 384
+      },
+      {
+        id: "agenda-dilr-matrix",
+        title: "CAT DILR: Arrangements & Matrix Sets Workshop",
+        topic: "Data Interpretation & Logical Reasoning",
+        faculty: "Arun Sharma Mentor Team",
+        facultyBio: "DILR Master Strategist • 99.9%ile CAT Mentor",
+        timeRange: "10:00 AM – 12:00 PM",
+        dateFormatted: "Tomorrow • 10:00 AM – 12:00 PM",
+        isLiveNow: false,
+        duration: "120 min",
+        activity: "Workshop",
+        color: "#0D9488",
+        iconBg: "#0D9488",
+        topicUrl: "/topics/dilr-data-interpretation",
+        syllabus: [
+          "Complex Linear & Circular Arrangements with conditional clues",
+          "Multi-Variable Matrix Grid Deduction & Binary Logic",
+          "Constraint Elimination Strategy to solve 4 sets in 40 mins",
+          "Interactive Caselet Speed-Run & Doubt Clearing"
+        ],
+        enrolledCount: 420
+      }
+    ];
+  }, []);
+
+  // Dynamic CAT Prep Notices
+  const prepNotices: PrepNotice[] = useMemo(() => {
+    return [
+      {
+        id: "notice-mock-07",
+        title: "All-India National CAT Mock 07 Registration Open",
+        badge: "National Mock",
+        badgeBg: "#EFF6FF",
+        badgeColor: "#2563EB",
+        desc: "Live All-India percentile benchmark with 25,000+ serious aspirants. Timed 66-question simulation.",
+        dateNotice: "Registration active • Closes in 3 days",
+        thumbUrl: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=160&auto=format&fit=crop&q=80",
+        actionUrl: "/browse?section=mocks#mock-section",
+        actionLabel: "Attempt Mock"
+      },
+      {
+        id: "notice-gdpi-prep",
+        title: "IIM Mock Viva & GD-PI Preparation Schedules Released",
+        badge: "Interview Prep",
+        badgeBg: "#ECFDF5",
+        badgeColor: "#059669",
+        desc: "WAT reviews, SOP vetting & 1-on-1 mock interviews by IIM Ahmedabad, Bangalore & Calcutta alumni.",
+        dateNotice: "Slot bookings open for CAT 2024/25 qualifiers",
+        thumbUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=160&auto=format&fit=crop&q=80",
+        actionUrl: "/intelligence/b-school-predictor",
+        actionLabel: "Check Call Odds"
+      }
+    ];
   }, []);
 
   // Dynamic taskCategoryMap for the calendar indicator dots
@@ -1379,79 +1497,139 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 3. Upcoming Agenda (Full Column Width) */}
+            {/* 3. Upcoming Agenda (Full Column Width) - Dynamic & Interactive */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Upcoming Agenda</h2>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h2 className={styles.cardTitle}>Upcoming Agenda</h2>
+                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#EFF6FF", color: "#2563EB", padding: "2px 8px", borderRadius: "6px" }}>
+                    Live & Upcoming
+                  </span>
+                </div>
               </div>
               <div className={styles.agendaList}>
-                <div className={styles.agendaItem}>
-                  <div className={styles.agendaLeft}>
-                    <div className={styles.agendaIconBox} style={{ background: "#ED1C24" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                {upcomingAgenda.map((item) => (
+                  <div
+                    key={item.id}
+                    className={styles.agendaItem}
+                    onClick={() => {
+                      setLiveStreamAlert(null);
+                      setSelectedAgenda(item);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setSelectedAgenda(item);
+                      }
+                    }}
+                  >
+                    <div className={styles.agendaLeft}>
+                      <div className={styles.agendaIconBox} style={{ background: item.iconBg }}>
+                        {item.activity === "Live Class" ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="20" height="14" x="2" y="3" rx="2" />
+                            <line x1="8" x2="16" y1="21" y2="21" />
+                            <line x1="12" x2="12" y1="17" y2="21" />
+                          </svg>
+                        )}
+                      </div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          {item.isLiveNow && (
+                            <span className={styles.agendaLiveTag}>
+                              <span className={styles.agendaLivePulse} />
+                              Live Today
+                            </span>
+                          )}
+                          <h3 className={styles.agendaTitle}>{item.title}</h3>
+                        </div>
+                        <p className={styles.agendaMeta}>
+                          <span style={{ fontWeight: "600", color: "#4B5563" }}>{item.faculty}</span>
+                          <span>•</span>
+                          <span>{item.dateFormatted}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className={styles.agendaTitle}>CAT QA: Geometry & Mensuration Masterclass</h3>
-                      <p className={styles.agendaMeta}>Faculty Live Session • 27 May, 7am-10am</p>
+                    <div className={styles.agendaRight}>
+                      <div className={styles.agendaMetaCol}>
+                        <span className={styles.agendaMetaLabel}>Duration</span>
+                        <span className={styles.agendaMetaVal}>{item.duration}</span>
+                      </div>
+                      <div className={styles.agendaMetaCol}>
+                        <span className={styles.agendaMetaLabel}>Activity</span>
+                        <span className={styles.agendaMetaVal}>{item.activity}</span>
+                      </div>
+                      <div className={styles.agendaCtaBtn}>
+                        <span>{item.isLiveNow ? "Join Class" : "View Session"}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                  <div className={styles.agendaRight}>
-                    <div className={styles.agendaMetaCol}>
-                      <span className={styles.agendaMetaLabel}>Duration</span>
-                      <span className={styles.agendaMetaVal}>90 min</span>
-                    </div>
-                    <div className={styles.agendaMetaCol}>
-                      <span className={styles.agendaMetaLabel}>Activity</span>
-                      <span className={styles.agendaMetaVal}>Live Class</span>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.agendaItem}>
-                  <div className={styles.agendaLeft}>
-                    <div className={styles.agendaIconBox} style={{ background: "#0D9488" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg>
-                    </div>
-                    <div>
-                      <h3 className={styles.agendaTitle}>CAT DILR: Arrangements & Matrix Sets Workshop</h3>
-                      <p className={styles.agendaMeta}>Mock Workshop • 28 May, 9am-11.30am</p>
-                    </div>
-                  </div>
-                  <div className={styles.agendaRight}>
-                    <div className={styles.agendaMetaCol}>
-                      <span className={styles.agendaMetaLabel}>Duration</span>
-                      <span className={styles.agendaMetaVal}>120 min</span>
-                    </div>
-                    <div className={styles.agendaMetaCol}>
-                      <span className={styles.agendaMetaLabel}>Activity</span>
-                      <span className={styles.agendaMetaVal}>Workshop</span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* 4. CAT Prep Notices (Full Column Width) */}
+            {/* 4. CAT Prep Notices (Full Column Width) - Dynamic & Clickable */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
+                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#D97706", padding: "2px 8px", borderRadius: "6px" }}>
+                    Official Updates
+                  </span>
+                </div>
               </div>
               <div className={styles.noticeList}>
-                <div className={styles.noticeItem}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=160&auto=format&fit=crop&q=80" alt="CAT Mock Series" className={styles.noticeThumb} />
-                  <div className={styles.noticeContent}>
-                    <h3 className={styles.noticeTitle}>All-India National CAT Mock 07 Registration Open</h3>
-                    <span className={styles.noticeDate}>Registration closes 28 May</span>
+                {prepNotices.map((notice) => (
+                  <div
+                    key={notice.id}
+                    className={styles.noticeItem}
+                    onClick={() => router.push(notice.actionUrl)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        router.push(notice.actionUrl);
+                      }
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={notice.thumbUrl}
+                      alt={notice.title}
+                      className={styles.noticeThumb}
+                    />
+                    <div className={styles.noticeContent}>
+                      <span
+                        className={styles.noticeBadge}
+                        style={{ background: notice.badgeBg, color: notice.badgeColor }}
+                      >
+                        {notice.badge}
+                      </span>
+                      <h3 className={styles.noticeTitle}>{notice.title}</h3>
+                      <span className={styles.noticeDate}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        {notice.dateNotice}
+                      </span>
+                    </div>
+                    <div className={styles.noticeCtaBtn}>
+                      <span>{notice.actionLabel}</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-                <div className={styles.noticeItem}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=160&auto=format&fit=crop&q=80" alt="IIM Interview Prep" className={styles.noticeThumb} />
-                  <div className={styles.noticeContent}>
-                    <h3 className={styles.noticeTitle}>IIM Mock Viva & GD-PI Preparation Schedules Released</h3>
-                    <span className={styles.noticeDate}>Slot bookings open</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1665,6 +1843,156 @@ export default function DashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===== AGENDA SESSION DETAILS MODAL ===== */}
+      {selectedAgenda && (
+        <div className={styles.modalBackdrop} onClick={() => setSelectedAgenda(null)}>
+          <div className={styles.agendaModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader} style={{ marginBottom: "14px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <span
+                    style={{
+                      background: selectedAgenda.isLiveNow ? "#FEF2F2" : "#F0FDF4",
+                      color: selectedAgenda.isLiveNow ? "#DC2626" : "#16A34A",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {selectedAgenda.activity}
+                  </span>
+                  <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                    👥 {selectedAgenda.enrolledCount} Aspirants Enrolled
+                  </span>
+                </div>
+                <h3 className={styles.modalTitle} style={{ fontSize: "19px", lineHeight: "1.3" }}>
+                  {selectedAgenda.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setSelectedAgenda(null)}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Faculty Box */}
+            <div className={styles.agendaFacultyBox}>
+              <div className={styles.agendaFacultyAvatar}>
+                {selectedAgenda.faculty.charAt(0)}
+              </div>
+              <div>
+                <div style={{ fontSize: "13.5px", fontWeight: "700", color: "#1E3A8A" }}>
+                  {selectedAgenda.faculty}
+                </div>
+                <div style={{ fontSize: "11.5px", color: "#3B82F6", fontWeight: "500" }}>
+                  {selectedAgenda.facultyBio}
+                </div>
+              </div>
+            </div>
+
+            {/* Meta Grid */}
+            <div className={styles.agendaModalMetaGrid}>
+              <div className={styles.agendaModalMetaItem}>
+                <label>Date & Time</label>
+                <span>{selectedAgenda.dateFormatted}</span>
+              </div>
+              <div className={styles.agendaModalMetaItem}>
+                <label>Duration</label>
+                <span>{selectedAgenda.duration}</span>
+              </div>
+              <div className={styles.agendaModalMetaItem}>
+                <label>Subject</label>
+                <span>{selectedAgenda.topic}</span>
+              </div>
+            </div>
+
+            {/* Syllabus */}
+            <div>
+              <h4 style={{ fontSize: "13px", fontWeight: "700", color: "#111827", margin: "14px 0 8px" }}>
+                Session Key Takeaways & Syllabus:
+              </h4>
+              <div className={styles.agendaSyllabusList}>
+                {selectedAgenda.syllabus.map((item, idx) => (
+                  <div key={idx} className={styles.agendaSyllabusItem}>
+                    <svg className={styles.agendaSyllabusCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {liveStreamAlert && (
+              <div style={{ background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "10px 14px", borderRadius: "10px", color: "#065F46", fontSize: "12.5px", fontWeight: "600", marginBottom: "14px" }}>
+                {liveStreamAlert}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className={styles.agendaModalActions}>
+              <button
+                type="button"
+                className={styles.agendaPrimaryAction}
+                onClick={() => {
+                  setLiveStreamAlert("🟢 Connecting to Live Classroom stream... Redirecting to Topic Masterclass!");
+                  setTimeout(() => {
+                    const url = selectedAgenda.topicUrl;
+                    setSelectedAgenda(null);
+                    router.push(url);
+                  }, 800);
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <span>Enter Classroom</span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.agendaSecondaryAction}
+                onClick={() => {
+                  const id = selectedAgenda.id;
+                  const alreadySaved = agendaReminderSaved[id];
+                  if (!alreadySaved) {
+                    setAgendaReminderSaved((prev) => ({ ...prev, [id]: true }));
+                    pushNotification({
+                      type: "system",
+                      category: "learning",
+                      title: `Reminder Set: ${selectedAgenda.title} ⏰`,
+                      desc: `Session scheduled for ${selectedAgenda.dateFormatted}. We will alert you 15 minutes before start.`,
+                      actionUrl: selectedAgenda.topicUrl,
+                      actionLabel: "View Session",
+                      priority: "normal",
+                      icon: "⏰",
+                      iconBg: "#EFF6FF",
+                      iconColor: "#2563EB",
+                    }, user?.id);
+                  }
+                }}
+              >
+                {agendaReminderSaved[selectedAgenda.id] ? "✓ Reminder Set" : "⏰ Remind Me"}
+              </button>
+
+              <Link
+                href={selectedAgenda.topicUrl}
+                className={styles.agendaSecondaryAction}
+                onClick={() => setSelectedAgenda(null)}
+              >
+                View Topic →
+              </Link>
+            </div>
           </div>
         </div>
       )}
