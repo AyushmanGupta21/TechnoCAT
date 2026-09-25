@@ -10,6 +10,7 @@ import {
   NotificationItem,
   NotificationCategory,
   loadNotifications,
+  checkDailyNotifications,
   markAsRead,
   markAllAsRead,
   dismissNotification,
@@ -38,7 +39,24 @@ export default function PostLoginNavActions() {
 
   useEffect(() => {
     setMounted(true);
-    setNotifications(loadNotifications(user?.id));
+    // Check daily notifications on mount
+    checkDailyNotifications(user?.id);
+
+    const refresh = () => {
+      setNotifications(loadNotifications(user?.id));
+    };
+
+    refresh();
+
+    // Listen to real-time notification updates triggered anywhere across the app
+    window.addEventListener("technocat_notifications_updated", refresh);
+    // Refresh relative times (e.g. "Just now" -> "1m ago") every 60 seconds
+    const interval = setInterval(refresh, 60000);
+
+    return () => {
+      window.removeEventListener("technocat_notifications_updated", refresh);
+      clearInterval(interval);
+    };
   }, [user?.id]);
 
   const unreadCount = useMemo(() => {

@@ -205,8 +205,76 @@ function saveStoredState(state: NotificationStorageState, userId?: string) {
   }
 }
 
+function notifyListeners() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("technocat_notifications_updated"));
+  }
+}
+
 /**
- * Load all notifications for the user, applying read and dismissal states.
+ * Format timestamp into human-readable relative time (e.g. "Just now", "15m ago", "2h ago", "Yesterday")
+ */
+export function formatRelativeTime(timestamp: number): string {
+  const diff = Date.now() - timestamp;
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diff < minute) return "Just now";
+  if (diff < hour) return `${Math.max(1, Math.floor(diff / minute))}m ago`;
+  if (diff < 24 * hour) return `${Math.floor(diff / hour)}h ago`;
+  if (diff < 48 * hour) return "Yesterday";
+  return `${Math.floor(diff / day)} days ago`;
+}
+
+/**
+ * Daily check: automatically triggers daily morning sprint notification if a new calendar day has arrived.
+ */
+export function checkDailyNotifications(userId?: string): void {
+  if (typeof window === "undefined") return;
+  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const lastCheckKey = `technocat_last_daily_check_${userId || "guest"}`;
+  const lastCheck = localStorage.getItem(lastCheckKey);
+
+  if (lastCheck !== todayStr) {
+    localStorage.setItem(lastCheckKey, todayStr);
+
+    const state = getStoredState(userId);
+    const dayLabel = new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+
+    const newDailyItem: NotificationItem = {
+      id: `notif-daily-sprint-${todayStr}`,
+      type: "system",
+      category: "learning",
+      title: `Today's CAT Sprint Ready 📅 (${dayLabel})`,
+      desc: "Your adaptive study schedule is loaded with today's target drills. Maintain consistency to boost your CAT percentile.",
+      time: "Just now",
+      timestamp: Date.now(),
+      read: false,
+      actionUrl: "/dashboard",
+      actionLabel: "View Daily Tasks",
+      priority: "normal",
+      icon: "📅",
+      iconBg: "#EFF6FF",
+      iconColor: "#2563EB",
+    };
+
+    // Avoid duplicate if already exists
+    if (!state.customList.some((n) => n.id === newDailyItem.id)) {
+      state.customList.unshift(newDailyItem);
+      saveStoredState(state, userId);
+      notifyListeners();
+    }
+  }
+}
+
+/**
+ * Load all notifications for the user, applying read and dismissal states,
+ * recomputing relative time dynamically.
  */
 export function loadNotifications(userId?: string): NotificationItem[] {
   const state = getStoredState(userId);
@@ -221,6 +289,7 @@ export function loadNotifications(userId?: string): NotificationItem[] {
     if (!dismissedSet.has(item.id) && !map.has(item.id)) {
       map.set(item.id, {
         ...item,
+        time: formatRelativeTime(item.timestamp),
         read: readSet.has(item.id) || item.read,
       });
     }
@@ -238,6 +307,7 @@ export function markAsRead(id: string, userId?: string): NotificationItem[] {
   if (!state.readIds.includes(id)) {
     state.readIds.push(id);
     saveStoredState(state, userId);
+    notifyListeners();
   }
   return loadNotifications(userId);
 }
@@ -251,6 +321,7 @@ export function markAllAsRead(userId?: string): NotificationItem[] {
   const allIds = list.map((n) => n.id);
   state.readIds = Array.from(new Set([...state.readIds, ...allIds]));
   saveStoredState(state, userId);
+  notifyListeners();
   return loadNotifications(userId);
 }
 
@@ -262,6 +333,7 @@ export function dismissNotification(id: string, userId?: string): NotificationIt
   if (!state.dismissedIds.includes(id)) {
     state.dismissedIds.push(id);
     saveStoredState(state, userId);
+    notifyListeners();
   }
   return loadNotifications(userId);
 }
@@ -275,6 +347,7 @@ export function clearAllNotifications(userId?: string): NotificationItem[] {
   const allIds = list.map((n) => n.id);
   state.dismissedIds = Array.from(new Set([...state.dismissedIds, ...allIds]));
   saveStoredState(state, userId);
+  notifyListeners();
   return [];
 }
 
@@ -282,17 +355,171 @@ export function clearAllNotifications(userId?: string): NotificationItem[] {
  * Push a new dynamic notification into the user's feed.
  */
 export function pushNotification(
-  notif: Omit<NotificationItem, "id" | "timestamp" | "read">,
+  notif: Omit<NotificationItem, "id" | "timestamp" | "read" | "time">,
   userId?: string
 ): NotificationItem[] {
   const state = getStoredState(userId);
   const newItem: NotificationItem = {
     ...notif,
     id: `notif-custom-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    time: "Just now",
     timestamp: Date.now(),
     read: false,
   };
   state.customList.unshift(newItem);
   saveStoredState(state, userId);
+  notifyListeners();
   return loadNotifications(userId);
+}
+
+// ==========================================
+// ACTIVITY-BASED NOTIFICATION TRIGGERS
+// ==========================================
+
+/**
+ * Triggered when a student completes a quiz or drill.
+ */
+export function notifyQuizCompleted(
+  quizTitle: string,
+  score: number,
+  total: number,
+  userId?: string
+): NotificationItem[] {
+  const percent = Math.round((score / total) * 100);
+  const earnedPoints = score * 5;
+  return pushNotification(
+    {
+      type: "quiz",
+      category: "learning",
+      title: `Quiz Completed: ${quizTitle} 🎯`,
+      desc: `You scored ${score}/${total} (${percent}% accuracy) and earned +${earnedPoints} practice points!`,
+      actionUrl: "/analytics",
+      actionLabel: "View Analytics",
+      priority: percent >= 80 ? "normal" : "urgent",
+      icon: "🎯",
+      iconBg: percent >= 80 ? "#ECFDF5" : "#FFFBEB",
+      iconColor: percent >= 80 ? "#059669" : "#D97706",
+    },
+    userId
+  );
+}
+
+/**
+ * Triggered when a student completes tasks in DailyStudySchedule.
+ */
+export function notifyTaskCompleted(
+  taskTitle: string,
+  remainingToday: number,
+  userId?: string
+): NotificationItem[] {
+  if (remainingToday === 0) {
+    return pushNotification(
+      {
+        type: "milestone",
+        category: "learning",
+        title: "All Tasks Finished Today! 🔥",
+        desc: "Outstanding work! You completed all scheduled drills for today and secured your study streak.",
+        actionUrl: "/dashboard",
+        actionLabel: "View Schedule",
+        priority: "normal",
+        icon: "🔥",
+        iconBg: "#FEF3C7",
+        iconColor: "#D97706",
+      },
+      userId
+    );
+  }
+  return pushNotification(
+    {
+      type: "resume",
+      category: "learning",
+      title: `Task Completed: ${taskTitle} ✅`,
+      desc: `Great progress! You have ${remainingToday} task${remainingToday > 1 ? "s" : ""} remaining in today's plan.`,
+      actionUrl: "/dashboard",
+      actionLabel: "Continue Sprint",
+      priority: "low",
+      icon: "✅",
+      iconBg: "#F0FDF4",
+      iconColor: "#16A34A",
+    },
+    userId
+  );
+}
+
+/**
+ * Triggered when user watches or resumes a video lesson.
+ */
+export function notifyVideoProgress(
+  topicTitle: string,
+  moduleTitle: string,
+  topicUrl: string,
+  userId?: string
+): NotificationItem[] {
+  return pushNotification(
+    {
+      type: "resume",
+      category: "learning",
+      title: `Continue Watching: ${topicTitle} ▶️`,
+      desc: `Pick up where you left off on ${moduleTitle}. Keep your daily study pace going.`,
+      actionUrl: topicUrl,
+      actionLabel: "Resume Video",
+      priority: "normal",
+      icon: "▶️",
+      iconBg: "#EFF6FF",
+      iconColor: "#2563EB",
+    },
+    userId
+  );
+}
+
+/**
+ * Triggered when a full mock or sectional mock is finished.
+ */
+export function notifyMockResult(
+  mockName: string,
+  percentile: number,
+  score: number,
+  userId?: string
+): NotificationItem[] {
+  return pushNotification(
+    {
+      type: "mock",
+      category: "mocks",
+      title: `${mockName} Result Ready! 🏆`,
+      desc: `Your national benchmark is live: ${percentile} percentile with a score of ${score}. Check detailed question-by-question analysis.`,
+      actionUrl: "/intelligence/error-tracking",
+      actionLabel: "View Analysis",
+      priority: "urgent",
+      icon: "🏆",
+      iconBg: "#EFF6FF",
+      iconColor: "#2563EB",
+    },
+    userId
+  );
+}
+
+/**
+ * Triggered when a topic requires spaced repetition revision.
+ */
+export function notifySpacedRevision(
+  topicName: string,
+  daysAgo: number,
+  topicUrl: string,
+  userId?: string
+): NotificationItem[] {
+  return pushNotification(
+    {
+      type: "revision",
+      category: "learning",
+      title: `Retention Check: Revise ${topicName} 🧠`,
+      desc: `It's been ${daysAgo} days since your last ${topicName} drill. A quick 10-minute review now locks in long-term memory.`,
+      actionUrl: topicUrl,
+      actionLabel: "Revise Topic",
+      priority: "normal",
+      icon: "🧠",
+      iconBg: "#F5F3FF",
+      iconColor: "#7C3AED",
+    },
+    userId
+  );
 }

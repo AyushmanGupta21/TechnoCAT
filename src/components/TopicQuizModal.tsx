@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { notifyQuizCompleted } from "@/services/notificationService";
 import styles from "./TopicQuizModal.module.css";
 
 interface QuizQuestion {
@@ -79,6 +80,8 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
       setShowFeedback(false);
     } else {
       setIsFinished(true);
+      const finalScore = score + (selectedOption === questions[currentIndex].correctIndex ? 1 : 0);
+      notifyQuizCompleted(topicTitle, finalScore, questions.length);
     }
   };
 

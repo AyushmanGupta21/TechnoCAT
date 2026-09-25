@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
+import { notifyQuizCompleted } from "@/services/notificationService";
 import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 
@@ -130,6 +131,7 @@ export default function ModuleQuizModal({
     const points = isGrandQuiz ? 100 : 50;
 
     try {
+      notifyQuizCompleted(title, finalResult.score, maxTotal);
       if (finalResult.passed) {
         onPass?.(finalResult.score, finalResult.total, points, finalResult);
       } else {
@@ -138,7 +140,7 @@ export default function ModuleQuizModal({
     } catch (err) {
       console.error("Quiz submission callback error:", err);
     }
-  }, [questions, selectedAnswers, scoringScheme, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
+  }, [title, questions, selectedAnswers, scoringScheme, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
 
 
   const handleSubmitRef = useRef(handleSubmit);

@@ -11,6 +11,7 @@ import DailyStudySchedule, { ScheduleItem } from "@/components/DailyStudySchedul
 import StudyCalendarWidget from "@/components/StudyCalendarWidget";
 import CatReadinessWidget from "@/components/CatReadinessWidget";
 import { useAuth } from "@/context/AuthContext";
+import { notifyTaskCompleted } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
 
 interface WeeklyStat {
@@ -990,9 +991,22 @@ export default function DashboardPage() {
     if (!isToday) {
       return;
     }
-    setScheduleTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, isCompleted: !t.isCompleted } : t))
-    );
+    setScheduleTasks((prev) => {
+      const task = prev.find((t) => t.id === id);
+      const willBeCompleted = task ? !task.isCompleted : false;
+      const updated = prev.map((t) => (t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
+
+      if (task && willBeCompleted) {
+        const remaining = updated.filter(
+          (t) =>
+            t.day === selectedDay &&
+            (t.monthIndex ?? 8) === selectedMonthIndex &&
+            !t.isCompleted
+        ).length;
+        notifyTaskCompleted(task.title, remaining, user?.id);
+      }
+      return updated;
+    });
   };
 
   const handleAutoAssignDay = (day: number) => {
