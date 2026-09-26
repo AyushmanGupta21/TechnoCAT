@@ -383,6 +383,135 @@ export default function TopicDetailPage() {
     }, 2600);
   }, []);
 
+  const toggleMute = useCallback(() => {
+    if (isMuted) {
+      sendPlayerCommand("unMute");
+      sendPlayerCommand("setVolume", [volume > 0 ? volume : 80]);
+      setIsMuted(false);
+    } else {
+      sendPlayerCommand("mute");
+      setIsMuted(true);
+    }
+  }, [isMuted, volume, sendPlayerCommand]);
+
+  const handleVolumeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newVol = Number(e.target.value);
+      setVolume(newVol);
+      if (newVol === 0) {
+        setIsMuted(true);
+        sendPlayerCommand("mute");
+      } else {
+        if (isMuted) {
+          setIsMuted(false);
+          sendPlayerCommand("unMute");
+        }
+        sendPlayerCommand("setVolume", [newVol]);
+      }
+    },
+    [isMuted, sendPlayerCommand]
+  );
+
+  const cyclePlaybackSpeed = useCallback(() => {
+    const speeds = [1, 1.25, 1.5, 1.75, 2];
+    const currentIndex = speeds.indexOf(playbackSpeed);
+    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
+    setPlaybackSpeed(nextSpeed);
+    sendPlayerCommand("setPlaybackRate", [nextSpeed]);
+  }, [playbackSpeed, sendPlayerCommand]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!playerCardRef.current) return;
+
+    const doc = document as any;
+    const isCurrentlyFull = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+    );
+
+    if (isCurrentlyFull) {
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen().catch(() => {});
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.mozCancelFullScreen) {
+        doc.mozCancelFullScreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+    } else {
+      const elem = playerCardRef.current as any;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {
+          setIsFullscreen((prev) => !prev);
+        });
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      } else {
+        setIsFullscreen((prev) => !prev);
+      }
+    }
+  }, []);
+
+  const handleMouseMovePlayer = useCallback(() => {
+    setShowControls(true);
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    if (playerState === "playing") {
+      inactivityTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  }, [playerState]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const doc = document as any;
+      const isFull = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isFull);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleFullscreen]);
+
   // Scrubber calculation
   const handleScrubberInteract = useCallback(
     (clientX: number, commit = false) => {
@@ -1492,7 +1621,15 @@ export default function TopicDetailPage() {
         {/* ===== LEFT COLUMN: VIDEO PLAYER & DETAILS ===== */}
         <div className={styles.leftColumn}>
           {/* 1. REAL YOUTUBE PLAYER WITH CENTERED PLAY BUTTON */}
-          <div ref={playerCardRef} className={styles.playerCard}>
+          <div
+            ref={playerCardRef}
+            className={`${styles.playerCard} ${isFullscreen ? styles.playerCardFullscreen : ""}`}
+            onMouseMove={handleMouseMovePlayer}
+            onMouseLeave={() => {
+              if (playerState === "playing") setShowControls(false);
+            }}
+            onDoubleClick={toggleFullscreen}
+          >
             {playerState === "idle" ? (
               <div
                 className={styles.facadeWrapper}
@@ -1544,7 +1681,7 @@ export default function TopicDetailPage() {
                     src={`https://www.youtube-nocookie.com/embed/${activeLesson.youtubeId}?enablejsapi=1&autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&origin=${iframeOrigin}`}
                     title={activeLesson.title}
                     className={styles.youtubeIframe}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     allowFullScreen
                   />
                 )}
@@ -1643,7 +1780,11 @@ export default function TopicDetailPage() {
 
                   <div className={styles.controlsRow}>
                     <div className={styles.controlsLeft}>
-                      <button className={styles.ctrlPlayBtn} onClick={togglePlayPause}>
+                      <button
+                        className={styles.ctrlPlayBtn}
+                        onClick={togglePlayPause}
+                        title={playerState === "playing" ? "Pause (k/space)" : "Play (k/space)"}
+                      >
                         {playerState === "playing" ? (
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <rect x="6" y="4" width="4" height="16" />
@@ -1655,11 +1796,94 @@ export default function TopicDetailPage() {
                           </svg>
                         )}
                       </button>
+
+                      <button
+                        className={styles.rewindBtn}
+                        onClick={() => {
+                          const target = Math.max(0, currentTime - 10);
+                          seekTo(target);
+                        }}
+                        title="Rewind 10 seconds (←)"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M1 4v6h6" />
+                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                        <span>10s</span>
+                      </button>
+
                       <div className={styles.timeDisplay}>
                         <span>{formatTime(currentTime)}</span>
                         <span style={{ opacity: 0.5 }}>/</span>
                         <span>{formatTime(duration)}</span>
                       </div>
+                    </div>
+
+                    <div className={styles.controlsRight}>
+                      {/* Volume Group */}
+                      <div className={styles.volumeGroup}>
+                        <button
+                          className={styles.ctrlBtn}
+                          onClick={toggleMute}
+                          title={isMuted || volume === 0 ? "Unmute (m)" : "Mute (m)"}
+                          aria-label={isMuted || volume === 0 ? "Unmute" : "Mute"}
+                        >
+                          {isMuted || volume === 0 ? (
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                              <line x1="23" y1="9" x2="17" y2="15" />
+                              <line x1="17" y1="9" x2="23" y2="15" />
+                            </svg>
+                          ) : volume < 50 ? (
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            </svg>
+                          ) : (
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            </svg>
+                          )}
+                        </button>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={isMuted ? 0 : volume}
+                          onChange={handleVolumeChange}
+                          className={styles.volumeSlider}
+                          title="Volume"
+                          aria-label="Volume"
+                        />
+                      </div>
+
+                      {/* Playback Speed */}
+                      <button
+                        className={styles.speedBtn}
+                        onClick={cyclePlaybackSpeed}
+                        title="Playback Speed"
+                      >
+                        {playbackSpeed}x
+                      </button>
+
+                      {/* Fullscreen Button */}
+                      <button
+                        className={styles.ctrlBtn}
+                        onClick={toggleFullscreen}
+                        title={isFullscreen ? "Exit full screen (f)" : "Full screen (f)"}
+                        aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+                      >
+                        {isFullscreen ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
