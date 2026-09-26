@@ -76,7 +76,7 @@ export default function HeroSection() {
               {/* Heading */}
               <h1 className={styles.heading}>
                 TechnoCAT: Best CAT Mock Test
-                <span className={styles.headingAccent}> – 35 Full Mocks &amp; AI Analysis</span>
+                <span className={styles.headingAccent}>with 35 Full Mocks &amp; AI Analysis</span>
               </h1>
 
               {/* Subtitle / Description */}
