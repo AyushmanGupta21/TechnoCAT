@@ -1675,15 +1675,24 @@ export default function TopicDetailPage() {
             ) : (
               <>
                 {iframeOrigin && (
-                  <iframe
-                    ref={iframeRef}
-                    key={activeLesson.youtubeId}
-                    src={`https://www.youtube-nocookie.com/embed/${activeLesson.youtubeId}?enablejsapi=1&autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&origin=${iframeOrigin}`}
-                    title={activeLesson.title}
-                    className={styles.youtubeIframe}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
+                  <>
+                    <iframe
+                      ref={iframeRef}
+                      key={activeLesson.youtubeId}
+                      src={`https://www.youtube-nocookie.com/embed/${activeLesson.youtubeId}?enablejsapi=1&autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&origin=${iframeOrigin}`}
+                      title={activeLesson.title}
+                      className={styles.youtubeIframe}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                    />
+                    {/* Transparent Click Shield over Iframe to toggle play/pause & prevent YouTube popup overlays */}
+                    <div
+                      className={styles.videoClickShield}
+                      onClick={togglePlayPause}
+                      onDoubleClick={toggleFullscreen}
+                      title={playerState === "playing" ? "Click to pause" : "Click to play"}
+                    />
+                  </>
                 )}
 
                 {/* Custom TechnoCAT Pause Screen */}

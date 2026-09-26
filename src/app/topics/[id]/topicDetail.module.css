@@ -320,10 +320,13 @@
 .playerCard:-moz-full-screen .youtubeIframe,
 .playerCard:-ms-fullscreen .youtubeIframe {
   width: 100% !important;
-  height: 100% !important;
-  max-height: 100vh !important;
+  height: 124% !important;
+  margin-top: -12% !important;
+  margin-bottom: -12% !important;
+  max-height: none !important;
   border-radius: 0 !important;
   border: none !important;
+  pointer-events: none !important;
 }
 
 .playerCardFullscreen .controlsBar,
@@ -348,9 +351,20 @@
 
 .youtubeIframe {
   width: 100%;
-  height: 100%;
+  height: 124%;
+  margin-top: -12%;
+  margin-bottom: -12%;
   border: none;
   display: block;
+  pointer-events: none;
+}
+
+.videoClickShield {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  cursor: pointer;
+  background: transparent;
 }
 
 /* Custom TechnoCAT Player Controls Bar */
@@ -782,9 +796,9 @@
 .pauseOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(10, 11, 15, 0.75);
-  backdrop-filter: blur(4px);
-  z-index: 18;
+  background: rgba(10, 11, 15, 0.92);
+  backdrop-filter: blur(6px);
+  z-index: 22;
   display: flex;
   flex-direction: column;
   align-items: center;
