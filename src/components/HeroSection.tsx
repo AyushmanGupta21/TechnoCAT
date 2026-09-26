@@ -67,63 +67,108 @@ export default function HeroSection() {
           <div className={styles.grid}>
             {/* Left: Text content */}
             <div className={styles.leftCol}>
+              {/* Badge */}
+              <div className={styles.heroBadge}>
+                <span className={styles.badgePulse} />
+                <span>AI-Powered CAT Mock Series 2026</span>
+              </div>
+
+              {/* Heading */}
               <h1 className={styles.heading}>
                 TechnoCAT: Best CAT Mock Test
-                <br className={styles.lgBreak} />
-                &nbsp;- 35 Full Mocks &amp; AI Analysis
+                <span className={styles.headingAccent}> – 35 Full Mocks &amp; AI Analysis</span>
               </h1>
-              <div className={styles.subtext}>
-                <p className={styles.description}>
-                  Personalized AI Mentor based on Your Performance &amp; Indra&apos;s Mock Analysis
-                  which reduces your Mock Analysis time from 3 hrs to 0 hrs.
-                </p>
-              </div>
-              <p className={styles.highlight}>
-                Get 35 Full CAT Mock Tests &amp; 45 Sectional Tests with Detailed Video Solutions.
+
+              {/* Subtitle / Description */}
+              <p className={styles.description}>
+                Personalized AI Mentor based on Your Performance &amp; Indra&apos;s Mock Analysis
+                which reduces your Mock Analysis time from 3 hrs to 0 hrs.
               </p>
 
-              <div className={styles.ctaButtons}>
-                <button className={styles.enrollBtn} onClick={handleEnroll}>
-                  Enroll Now for TechnoCAT 2026 Mock Tests
-                </button>
-                <button
-                  className={styles.freeAttemptBtn}
-                  onClick={() => handleAuthAction("/dashboard")}
-                >
-                  <span className={styles.freeBadge}>FREE</span>
-                  <span className={styles.freeBtnText}>Attempt TechnoCAT 6.0 Mock Now</span>
-                </button>
-                <button
-                  className={styles.whatsappBtn}
-                  onClick={() =>
-                    window.open("https://chat.whatsapp.com/sample-technocat-cat2026", "_blank")
-                  }
-                >
-                  <svg
-                    className={styles.whatsappIcon}
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="white"
-                  >
-                    <path d="M21.98 11.41c-.34-5.8-5.61-10.27-11.68-9.27-4.18.69-7.53 4.08-8.18 8.26-.38 2.42.12 4.71 1.21 6.6l-.89 3.31c-.2.75.49 1.43 1.23 1.22l3.26-.9c1.48.87 3.21 1.37 5.06 1.37 5.64 0 10.32-4.97 9.99-10.59z" />
+              {/* Feature Chips / Pills */}
+              <div className={styles.featureChips}>
+                <span className={styles.chipItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  Join Group For Updates
-                </button>
-                <button
-                  className={styles.pyqBtn}
-                  onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
-                >
-                  Attempt Past Year Paper as Mock
-                </button>
+                  35 Full CAT Mocks
+                </span>
+                <span className={styles.chipItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  45 Sectional Tests
+                </span>
+                <span className={styles.chipItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Detailed Video Solutions
+                </span>
+                <span className={styles.chipItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  All-India Percentiles
+                </span>
+              </div>
+
+              {/* Primary & Secondary Action CTAs */}
+              <div className={styles.ctaGroup}>
+                <div className={styles.primaryCtaRow}>
+                  <button
+                    className={styles.freeAttemptBtn}
+                    onClick={() => handleAuthAction("/dashboard")}
+                  >
+                    <span className={styles.freeBadge}>FREE</span>
+                    <span>Attempt TechnoCAT 6.0 Mock</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  <button className={styles.enrollBtn} onClick={handleEnroll}>
+                    Enroll for 2026 Mock Series
+                  </button>
+                </div>
+
+                <div className={styles.secondaryCtaRow}>
+                  <button
+                    className={styles.pyqBtn}
+                    onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    <span>Attempt Past Year Paper as Mock</span>
+                  </button>
+                  <button
+                    className={styles.whatsappBtn}
+                    onClick={() =>
+                      window.open("https://chat.whatsapp.com/sample-technocat-cat2026", "_blank")
+                    }
+                  >
+                    <svg
+                      className={styles.whatsappIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="white"
+                    >
+                      <path d="M21.98 11.41c-.34-5.8-5.61-10.27-11.68-9.27-4.18.69-7.53 4.08-8.18 8.26-.38 2.42.12 4.71 1.21 6.6l-.89 3.31c-.2.75.49 1.43 1.23 1.22l3.26-.9c1.48.87 3.21 1.37 5.06 1.37 5.64 0 10.32-4.97 9.99-10.59z" />
+                    </svg>
+                    <span>Join Community (20k+)</span>
+                  </button>
+                </div>
               </div>
 
               {/* Free sectionals card */}
               <div
                 className={styles.sectionalsCard}
                 onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
-                style={{ cursor: "pointer" }}
               >
                 <div className={styles.sectionalsInner}>
                   <div className={styles.sectionalsLeft}>
@@ -148,8 +193,8 @@ export default function HeroSection() {
                     <div>
                       <div className={styles.sectionalsTitle}>6 CAT Sectionals Free For Everyone</div>
                       <p className={styles.sectionalsDesc}>
-                        Attempt <span className={styles.bold}>2 Sectionals</span> each for QA, LRDI
-                        and VARC and get detailed analysis and video Solutions.
+                        Attempt <span className={styles.bold}>2 Sectionals</span> each for QA, DILR
+                        and VARC with detailed AI analysis and video solutions.
                       </p>
                     </div>
                   </div>
@@ -160,35 +205,38 @@ export default function HeroSection() {
                       handleAuthAction("/browse?section=pyqs#pyq-section");
                     }}
                   >
-                    Attempt Now
+                    <span>Attempt Now</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Right: Video + stats */}
+            {/* Right: Mockup frame + Attempt Bar + Stats */}
             <div className={styles.rightCol}>
-              <section className={styles.videoSection}>
+              <div className={styles.rightContentWrapper}>
+                {/* Mockup Frame */}
                 <div
                   className={styles.videoWrapper}
                   onClick={() => handleAuthAction("/dashboard")}
                   title="Click to attempt mock in dashboard"
                 >
                   <div className={styles.videoThumb}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/dashboard.jpg"
-                      alt="CAT mock test"
+                      alt="CAT mock test interface"
                       className={styles.videoImg}
-                      width={430}
-                      height={350}
+                      width={680}
+                      height={380}
                     />
                     <div className={styles.playOverlay}>
                       <button className={styles.playBtn} aria-label="CAT Online Coaching Video">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
+                          width="26"
+                          height="26"
                           viewBox="0 0 24 24"
                           fill="currentColor"
                           stroke="currentColor"
@@ -202,10 +250,20 @@ export default function HeroSection() {
                       </button>
                     </div>
                   </div>
+                </div>
 
-                  <div className={styles.attemptBar}>
-                    <p className={styles.attemptBarText}>Attempt TechnoCAT 6.0 Mock Now</p>
-                  </div>
+                {/* Attempt Mock Link Bar */}
+                <div
+                  className={styles.attemptBar}
+                  onClick={() => handleAuthAction("/dashboard")}
+                  title="Click to attempt mock in dashboard"
+                >
+                  <p className={styles.attemptBarText}>
+                    <span>Attempt TechnoCAT 6.0 Mock Now</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </p>
                 </div>
 
                 {/* Stats cards */}
@@ -236,7 +294,7 @@ export default function HeroSection() {
                       </svg>
                       <span className={styles.statNumber}>20,000+</span>
                     </div>
-                    <span className={styles.statLabel}>Test Takers</span>
+                    <span className={styles.statLabel}>Active Test Takers</span>
                   </div>
 
                   <div
@@ -248,13 +306,12 @@ export default function HeroSection() {
                       <span className={styles.statNumberWhite}>580+</span>
                       <div className={styles.avatarStack}>
                         {[11, 12, 13, 14, 12].map((id, i) => (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             key={i}
                             src={`https://i.pravatar.cc/40?img=${id}`}
-                            alt="winner"
+                            alt="IIM Call Winner"
                             className={styles.avatar}
-                            style={{ zIndex: 5 - i, borderColor: "#FB8D00" }}
+                            style={{ zIndex: 5 - i, borderColor: "#2563EB" }}
                           />
                         ))}
                       </div>
@@ -262,7 +319,7 @@ export default function HeroSection() {
                     <span className={styles.statLabelWhite}>99%ilers in CAT 2025</span>
                   </div>
                 </div>
-              </section>
+              </div>
             </div>
           </div>
         </div>
