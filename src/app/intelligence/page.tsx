@@ -167,70 +167,757 @@ export default function IntelligenceHubPage() {
 
         {/* EXPLORE FEATURES */}
         <section className={styles.featuresSection}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Explore Your Intelligence Tools</h2>
-            <p className={styles.sectionSubtitle}>Everything you need to understand your CAT preparation better.</p>
+          <div className={styles.toolsSectionHeader}>
+            <div className={styles.toolsTitleGroup}>
+              <span className={styles.toolsSparkle} aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M11 3L13 9" stroke="#2563EB" strokeWidth="2.4" strokeLinecap="round" />
+                  <path d="M4 7L9 11" stroke="#38BDF8" strokeWidth="2.4" strokeLinecap="round" />
+                  <path d="M2 14L8 15" stroke="#2563EB" strokeWidth="2.4" strokeLinecap="round" />
+                </svg>
+              </span>
+              <h2 className={styles.toolsSectionTitle}>
+                Explore Your <span className={styles.toolsTitleHighlight}>Intelligence</span> Tools
+              </h2>
+              <p className={styles.toolsSectionSubtitle}>
+                Everything you need to understand your CAT preparation better.
+              </p>
+            </div>
+            <div className={styles.toolsDotMatrix} aria-hidden="true">
+              {Array.from({ length: 16 }).map((_, idx) => (
+                <span key={idx} className={styles.toolsDot} />
+              ))}
+            </div>
           </div>
 
           <div className={styles.featuresGrid}>
-            {/* Card 1 */}
+            {/* Card 1: AI Performance Analysis */}
             <Link href="/intelligence/ai-analysis" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgBlue}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgBlue}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="22 12 18 12 15 20 9 4 6 12 2 12"></polyline>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>AI Performance Analysis</h3>
+                  <p className={styles.featureDesc}>Get personalized insights from your mock-test performance and discover exactly where you need to improve.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>AI Performance Analysis</h3>
-              <p className={styles.featureDesc}>Get personalized insights from your mock-test performance and discover exactly where you need to improve.</p>
-              <div className={styles.featureCta}>View AI Analysis &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                      </svg>
+                    </span>
+                    <span>Strengths &amp; Weaknesses</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+                      </svg>
+                    </span>
+                    <span>Section-wise Insights</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipMint}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18h6"></path>
+                        <path d="M10 22h4"></path>
+                        <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+                      </svg>
+                    </span>
+                    <span>Personalized Recommendations</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: AI Chart + AI Bot Overlay */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.aiBrowserCard}>
+                    <div className={styles.aiBrowserTop}>
+                      <span className={styles.aiTopDot}></span>
+                      <span className={styles.aiTopDot}></span>
+                      <span className={styles.aiTopDot}></span>
+                    </div>
+                    <div className={styles.aiChartBody}>
+                      <svg viewBox="0 0 120 62" className={styles.aiMiniSvg}>
+                        <rect x="10" y="38" width="12" height="20" rx="3" fill="#E0F2FE" />
+                        <rect x="30" y="28" width="12" height="30" rx="3" fill="#BAE6FD" />
+                        <rect x="50" y="32" width="12" height="26" rx="3" fill="#E0F2FE" />
+                        <rect x="70" y="20" width="12" height="38" rx="3" fill="#93C5FD" />
+                        <rect x="90" y="14" width="12" height="44" rx="3" fill="#BFDBFE" />
+                        <polyline
+                          points="16,36 36,24 56,29 76,16 96,9"
+                          fill="none"
+                          stroke="#0EA5E9"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle cx="16" cy="36" r="3" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="2" />
+                        <circle cx="36" cy="24" r="3" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="2" />
+                        <circle cx="56" cy="29" r="3" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="2" />
+                        <circle cx="76" cy="16" r="3" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="2" />
+                        <circle cx="96" cy="9" r="3" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="2" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className={styles.aiBotFloatCard}>
+                    <div className={styles.aiBotAvatar}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <line x1="12" y1="2" x2="12" y2="5" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="12" cy="2" r="1.5" fill="#38BDF8" />
+                        <rect x="4" y="5" width="16" height="13" rx="5" fill="#2563EB" />
+                        <circle cx="9.5" cy="11.5" r="1.6" fill="#FFFFFF" />
+                        <circle cx="14.5" cy="11.5" r="1.6" fill="#FFFFFF" />
+                        <path d="M9.5 15h5" stroke="#93C5FD" strokeWidth="1.6" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <div className={styles.aiBotTextCol}>
+                      <span className={styles.aiBotHeading}>AI Insights</span>
+                      <span className={styles.aiSkelBarBlue}></span>
+                      <span className={styles.aiSkelBarGray}></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>View AI Analysis</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
 
-            {/* Card 2 */}
+            {/* Card 2: Error Tracking */}
             <Link href="/intelligence/error-tracking" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgTeal}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgTeal}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12.5"></line>
+                    <circle cx="12" cy="16" r="0.8" fill="currentColor"></circle>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>Error Tracking</h3>
+                  <p className={styles.featureDesc}>Track repeated mistakes, identify error patterns and understand the concepts behind your wrong answers.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>Error Tracking</h3>
-              <p className={styles.featureDesc}>Track repeated mistakes, identify error patterns and understand the concepts behind your wrong answers.</p>
-              <div className={styles.featureCta}>Track My Errors &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipRose}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                      </svg>
+                    </span>
+                    <span>Concept Error</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipAmber}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <polyline points="12 7 12 12 15 14"></polyline>
+                      </svg>
+                    </span>
+                    <span>Speed Error</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="8" y1="11" x2="10" y2="11"></line>
+                        <line x1="14" y1="11" x2="16" y2="11"></line>
+                        <line x1="8" y1="16" x2="10" y2="16"></line>
+                        <line x1="14" y1="16" x2="16" y2="16"></line>
+                      </svg>
+                    </span>
+                    <span>Calculation Error</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"></path>
+                        <circle cx="12" cy="16.5" r="0.8" fill="currentColor"></circle>
+                      </svg>
+                    </span>
+                    <span>Question Selection</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: Donut Chart + Error Analysis Card */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.errorDonutCard}>
+                    <svg viewBox="0 0 100 100" className={styles.errorDonutSvg}>
+                      <circle cx="50" cy="50" r="32" fill="none" stroke="#E2E8F0" strokeWidth="18" />
+                      {/* Blue segment */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="32"
+                        fill="none"
+                        stroke="#3B82F6"
+                        strokeWidth="18"
+                        strokeDasharray="68 201"
+                        strokeDashoffset="50"
+                      />
+                      {/* Teal segment */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="32"
+                        fill="none"
+                        stroke="#14B8A6"
+                        strokeWidth="18"
+                        strokeDasharray="45 201"
+                        strokeDashoffset="-18"
+                      />
+                      {/* Amber segment */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="32"
+                        fill="none"
+                        stroke="#FBBF24"
+                        strokeWidth="18"
+                        strokeDasharray="40 201"
+                        strokeDashoffset="-63"
+                      />
+                      {/* Coral/Rose segment */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="32"
+                        fill="none"
+                        stroke="#FB7185"
+                        strokeWidth="18"
+                        strokeDasharray="48 201"
+                        strokeDashoffset="-103"
+                      />
+                    </svg>
+                  </div>
+                  <div className={styles.errorLegendFloat}>
+                    <div className={styles.errorLegendHeader}>
+                      <span className={styles.legendDotTeal}></span>
+                      <span>Error Analysis</span>
+                    </div>
+                    <div className={styles.errorLegendRow}>
+                      <span className={styles.legendDotRose}></span>
+                      <span className={styles.legendBarLong}></span>
+                    </div>
+                    <div className={styles.errorLegendRow}>
+                      <span className={styles.legendDotPurple}></span>
+                      <span className={styles.legendBarMed}></span>
+                    </div>
+                    <div className={styles.errorLegendRow}>
+                      <span className={styles.legendDotBlue}></span>
+                      <span className={styles.legendBarShort}></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>Track My Errors</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
 
-            {/* Card 3 */}
+            {/* Card 3: B-School Predictor */}
             <Link href="/intelligence/b-school-predictor" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgCyan}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgCyan}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>B-School Predictor</h3>
+                  <p className={styles.featureDesc}>Explore profile and percentile-based B-school possibilities using your CAT performance.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>B-School Predictor</h3>
-              <p className={styles.featureDesc}>Explore profile and percentile-based B-school possibilities using your CAT performance.</p>
-              <div className={styles.featureCta}>Check My Profile &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                      </svg>
+                    </span>
+                    <span>Percentile Analysis</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 2 7 22 7 12 2"></polygon>
+                        <line x1="6" y1="7" x2="6" y2="17"></line>
+                        <line x1="12" y1="7" x2="12" y2="17"></line>
+                        <line x1="18" y1="7" x2="18" y2="17"></line>
+                        <line x1="2" y1="20" x2="22" y2="20"></line>
+                      </svg>
+                    </span>
+                    <span>College Predictions</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipMint}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </span>
+                    <span>Profile-Based Insights</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipAmber}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                    </span>
+                    <span>Shortlist Recommendations</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: Your B-School Chances */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.bschoolCapBadge}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 4L2 9L12 14L22 9L12 4Z" fill="#2563EB" />
+                      <path d="M6 11.5V16C8.5 18 15.5 18 18 16V11.5" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div className={styles.bschoolMiniCard}>
+                    <div className={styles.bschoolCardHeader}>Your B-School Chances</div>
+                    <div className={styles.bschoolRow}>
+                      <span className={styles.bschoolBankIcon}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2">
+                          <polygon points="12 2 2 7 22 7 12 2"></polygon>
+                          <line x1="6" y1="7" x2="6" y2="17"></line>
+                          <line x1="12" y1="7" x2="12" y2="17"></line>
+                          <line x1="18" y1="7" x2="18" y2="17"></line>
+                          <line x1="2" y1="20" x2="22" y2="20"></line>
+                        </svg>
+                      </span>
+                      <div className={styles.bschoolBars}>
+                        <div className={styles.bschoolBarTrack}>
+                          <span className={styles.bschoolBarBlue} style={{ width: '68%' }}></span>
+                        </div>
+                        <span className={styles.bschoolSubTrack}></span>
+                      </div>
+                    </div>
+                    <div className={styles.bschoolRow}>
+                      <span className={styles.bschoolBankIcon}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2">
+                          <polygon points="12 2 2 7 22 7 12 2"></polygon>
+                          <line x1="6" y1="7" x2="6" y2="17"></line>
+                          <line x1="12" y1="7" x2="12" y2="17"></line>
+                          <line x1="18" y1="7" x2="18" y2="17"></line>
+                          <line x1="2" y1="20" x2="22" y2="20"></line>
+                        </svg>
+                      </span>
+                      <div className={styles.bschoolBars}>
+                        <div className={styles.bschoolBarTrack}>
+                          <span className={styles.bschoolBarSky} style={{ width: '56%' }}></span>
+                        </div>
+                        <span className={styles.bschoolSubTrack}></span>
+                      </div>
+                    </div>
+                    <div className={styles.bschoolRow}>
+                      <span className={styles.bschoolBankIconTeal}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0D9488" strokeWidth="2.2">
+                          <polygon points="12 2 2 7 22 7 12 2"></polygon>
+                          <line x1="6" y1="7" x2="6" y2="17"></line>
+                          <line x1="12" y1="7" x2="12" y2="17"></line>
+                          <line x1="18" y1="7" x2="18" y2="17"></line>
+                          <line x1="2" y1="20" x2="22" y2="20"></line>
+                        </svg>
+                      </span>
+                      <div className={styles.bschoolBars}>
+                        <div className={styles.bschoolBarTrack}>
+                          <span className={styles.bschoolBarTeal} style={{ width: '74%' }}></span>
+                        </div>
+                        <span className={styles.bschoolSubTrack}></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>Check My Profile</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
 
-            {/* Card 4 */}
+            {/* Card 4: Sectional & Full Mocks */}
             <Link href="/browse#pyq-section" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgLavender}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgLavender}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>Sectional &amp; Full Mocks</h3>
+                  <p className={styles.featureDesc}>Practice with full-length CAT mocks and section-wise tests designed for realistic exam preparation.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>Sectional & Full Mocks</h3>
-              <p className={styles.featureDesc}>Practice with full-length CAT mocks and section-wise tests designed for realistic exam preparation.</p>
-              <div className={styles.featureCta}>Explore Mocks &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                    </span>
+                    <span>Full-Length Mocks</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                      </svg>
+                    </span>
+                    <span>Sectional Tests</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipMint}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                    </span>
+                    <span>Real Exam Interface</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipAmber}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+                      </svg>
+                    </span>
+                    <span>Detailed Solutions</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: CAT Mock Test Window */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.mockMiniWindow}>
+                    <div className={styles.mockWinHeader}>
+                      <div className={styles.mockTrafficDots}>
+                        <span className={styles.dotRed}></span>
+                        <span className={styles.dotYellow}></span>
+                        <span className={styles.dotGreen}></span>
+                      </div>
+                      <span className={styles.mockTimerBadge}>01:59:32</span>
+                    </div>
+                    <div className={styles.mockWinBody}>
+                      <div className={styles.mockWinTitle}>CAT Mock Test</div>
+                      <div className={styles.mockStepRow}>
+                        <span className={styles.mockStepActive}>1</span>
+                        <span className={styles.mockStepLine}></span>
+                        <span className={styles.mockStepNode}>2</span>
+                        <span className={styles.mockStepLine}></span>
+                        <span className={styles.mockStepNode}>3</span>
+                        <span className={styles.mockStepLine}></span>
+                        <span className={styles.mockStepNode}>4</span>
+                        <span className={styles.mockStepLine}></span>
+                        <span className={styles.mockStepNode}>5</span>
+                      </div>
+                      <div className={styles.mockOptionsList}>
+                        <div className={styles.mockOptRow}>
+                          <span className={styles.mockOptBadgeActive}>A</span>
+                          <span className={styles.mockOptBarActive}></span>
+                        </div>
+                        <div className={styles.mockOptRow}>
+                          <span className={styles.mockOptBadge}>B</span>
+                          <span className={styles.mockOptBar}></span>
+                        </div>
+                        <div className={styles.mockOptRow}>
+                          <span className={styles.mockOptBadge}>D</span>
+                          <span className={styles.mockOptBarShort}></span>
+                        </div>
+                      </div>
+                      <div className={styles.mockSubmitRow}>
+                        <span className={styles.mockSubmitPill}>Submit Mock</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>Explore Mocks</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
 
-            {/* Card 5 */}
+            {/* Card 5: Detailed Analytics */}
             <Link href="/analytics" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgBlue}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgBlue}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>Detailed Analytics</h3>
+                  <p className={styles.featureDesc}>Track your score, percentile, accuracy, speed and topic-wise performance over time.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>Detailed Analytics</h3>
-              <p className={styles.featureDesc}>Track your score, percentile, accuracy, speed and topic-wise performance over time.</p>
-              <div className={styles.featureCta}>View Analytics &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                      </svg>
+                    </span>
+                    <span>Score &amp; Percentile</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+                      </svg>
+                    </span>
+                    <span>Accuracy &amp; Speed</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipMint}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                      </svg>
+                    </span>
+                    <span>Topic-wise Analysis</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipAmber}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                      </svg>
+                    </span>
+                    <span>Performance Trends</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: Performance Trend + Legend */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.trendMiniCard}>
+                    <div className={styles.trendCardTitle}>Performance Trend</div>
+                    <svg viewBox="0 0 130 64" className={styles.trendMiniSvg}>
+                      <defs>
+                        <linearGradient id="trendAreaFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.32" />
+                          <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.02" />
+                        </linearGradient>
+                      </defs>
+                      <line x1="12" y1="10" x2="12" y2="56" stroke="#F1F5F9" strokeWidth="1" />
+                      <line x1="36" y1="10" x2="36" y2="56" stroke="#F1F5F9" strokeWidth="1" />
+                      <line x1="60" y1="10" x2="60" y2="56" stroke="#F1F5F9" strokeWidth="1" />
+                      <line x1="84" y1="10" x2="84" y2="56" stroke="#F1F5F9" strokeWidth="1" />
+                      <line x1="108" y1="10" x2="108" y2="56" stroke="#F1F5F9" strokeWidth="1" />
+                      <path
+                        d="M12,45 L36,35 L60,26 L84,29 L108,18 L122,12 L122,56 L12,56 Z"
+                        fill="url(#trendAreaFill)"
+                      />
+                      <polyline
+                        points="12,45 36,35 60,26 84,29 108,18 122,12"
+                        fill="none"
+                        stroke="#2563EB"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="12" cy="45" r="2.5" fill="#2563EB" />
+                      <circle cx="36" cy="35" r="2.5" fill="#2563EB" />
+                      <circle cx="60" cy="26" r="2.5" fill="#2563EB" />
+                      <circle cx="84" cy="29" r="2.5" fill="#2563EB" />
+                      <circle cx="108" cy="18" r="2.5" fill="#2563EB" />
+                      <circle cx="122" cy="12" r="2.5" fill="#2563EB" />
+                    </svg>
+                  </div>
+                  <div className={styles.trendLegendFloat}>
+                    <div className={styles.trendLegendItem}>
+                      <span className={styles.legendDotBlue}></span>
+                      <span>Accuracy</span>
+                    </div>
+                    <div className={styles.trendLegendItem}>
+                      <span className={styles.legendDotRose}></span>
+                      <span>Speed</span>
+                    </div>
+                    <div className={styles.trendLegendItem}>
+                      <span className={styles.legendDotAmber}></span>
+                      <span>Percentile</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>View Analytics</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
 
-            {/* Card 6 */}
+            {/* Card 6: Learning Community */}
             <Link href="/intelligence/community" className={styles.featureCard}>
-              <div className={`${styles.featureIcon} ${styles.bgTeal}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <div className={styles.featureHeaderRow}>
+                <div className={`${styles.featureIcon} ${styles.bgTeal}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </div>
+                <div className={styles.featureHeadText}>
+                  <h3 className={styles.featureTitle}>Learning Community</h3>
+                  <p className={styles.featureDesc}>Connect with fellow CAT aspirants, discuss strategies, solve challenges and stay motivated.</p>
+                </div>
               </div>
-              <h3 className={styles.featureTitle}>Learning Community</h3>
-              <p className={styles.featureDesc}>Connect with fellow CAT aspirants, discuss strategies, solve challenges and stay motivated.</p>
-              <div className={styles.featureCta}>Join Community &rarr;</div>
+
+              <div className={styles.featureBodyRow}>
+                <div className={styles.featureChipsList}>
+                  <div className={`${styles.featureChip} ${styles.chipBlue}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                    </span>
+                    <span>Ask Doubts</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipPurple}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      </svg>
+                    </span>
+                    <span>Discussion Forums</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipMint}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18h6"></path>
+                        <path d="M10 22h4"></path>
+                        <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+                      </svg>
+                    </span>
+                    <span>Strategy Sharing</span>
+                  </div>
+                  <div className={`${styles.featureChip} ${styles.chipAmber}`}>
+                    <span className={styles.chipIcon}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                    </span>
+                    <span>Peer Learning</span>
+                  </div>
+                </div>
+
+                {/* Mini UI Preview: Community Thread */}
+                <div className={styles.featureVisualWrap} aria-hidden="true">
+                  <div className={styles.commGroupBadge}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </div>
+                  <div className={styles.commMiniCard}>
+                    <div className={styles.commTopBar}></div>
+                    <div className={styles.commThreadList}>
+                      <div className={styles.commMsgRow}>
+                        <span className={styles.commAvatarBlue}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFFFFF">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                          </svg>
+                        </span>
+                        <div className={styles.commBubbleWhite}>
+                          <span className={styles.commLineLong}></span>
+                          <span className={styles.commLineMed}></span>
+                        </div>
+                      </div>
+                      <div className={styles.commMsgRow}>
+                        <span className={styles.commAvatarPurple}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFFFFF">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                          </svg>
+                        </span>
+                        <div className={styles.commBubblePurple}>
+                          <span className={styles.commLinePurpleLong}></span>
+                          <span className={styles.commLinePurpleShort}></span>
+                        </div>
+                      </div>
+                      <div className={styles.commMsgRow}>
+                        <span className={styles.commAvatarTeal}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFFFFF">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                          </svg>
+                        </span>
+                        <div className={styles.commBubbleMint}>
+                          <span className={styles.commLineMintLong}></span>
+                          <span className={styles.commLineMintShort}></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureCta}>
+                <span>Join Community</span>
+                <span className={styles.featureCtaCircle}>&rarr;</span>
+              </div>
             </Link>
           </div>
         </section>
