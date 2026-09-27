@@ -14,6 +14,7 @@ export interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
+  isLoggingOut: boolean;
   isAuthModalOpen: boolean;
   openAuthModal: (tab?: "signin" | "signup") => void;
   closeAuthModal: () => void;
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
 
@@ -130,11 +132,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      setIsLoggingOut(true);
       await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      window.location.href = "/";
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("technocat_auth_redirect");
+        sessionStorage.removeItem("technocat_predictor_pending_redirect");
+        window.location.href = "/";
+      }
     } catch (err) {
       console.error("[Logout Error]", err);
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     }
   };
 
@@ -143,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         loading,
+        isLoggingOut,
         isAuthModalOpen,
         openAuthModal,
         closeAuthModal,
@@ -156,6 +166,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      {isLoggingOut && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#FFFFFF",
+            zIndex: 9999999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "14px",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              border: "3px solid #E2E8F0",
+              borderTopColor: "#2563EB",
+              borderRadius: "50%",
+              animation: "authLogoutSpin 0.7s linear infinite",
+            }}
+          />
+          <style>{`@keyframes authLogoutSpin { to { transform: rotate(360deg); } }`}</style>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "#64748B", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+            Logging out...
+          </span>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }

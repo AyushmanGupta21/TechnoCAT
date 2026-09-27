@@ -982,7 +982,7 @@ interface PrepNotice {
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
   const [activeNav, setActiveNav] = useState("Dashboard");
 
   // Live Supabase Dashboard Data State
@@ -1013,7 +1013,7 @@ export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
   const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>(() => {
-    return !user || user.email === "student@technocat.edu" ? initialCurriculumTasks : [];
+    return user?.email === "student@technocat.edu" ? initialCurriculumTasks : [];
   });
 
   useEffect(() => {

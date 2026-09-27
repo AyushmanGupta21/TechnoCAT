@@ -97,7 +97,7 @@ export default function TopicDetailPage() {
 
   const [activeNav, setActiveNav] = useState("My Topics");
 
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   // First lesson of the topic (Video 1 of Module 1)
   const firstLesson = useMemo(() => {

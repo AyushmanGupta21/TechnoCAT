@@ -13,7 +13,7 @@ import styles from "./browse.module.css";
 
 export default function BrowsePage() {
   const { user } = useAuth();
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   const [enrolledTopics, setEnrolledTopics] = useState<string[]>(() => {
     return isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"] : [];

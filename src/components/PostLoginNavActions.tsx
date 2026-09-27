@@ -32,7 +32,7 @@ export default function PostLoginNavActions() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<NotificationCategory>("all");

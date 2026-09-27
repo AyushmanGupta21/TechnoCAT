@@ -12,7 +12,7 @@ export default function EditProfilePage() {
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   // Derive initial names
   const [firstName, setFirstName] = useState("");

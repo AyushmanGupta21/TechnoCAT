@@ -35,7 +35,7 @@ import styles from "./analytics.module.css";
 
 function AnalyticsPageContent() {
   const { user } = useAuth();
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   const searchParams = useSearchParams();
   const initialTabParam = searchParams?.get("tab");

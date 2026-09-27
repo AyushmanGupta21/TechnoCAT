@@ -17,7 +17,7 @@ const categories = [
 
 export default function TopicsListPage() {
   const { user, logout } = useAuth();
-  const isDemo = !user || user.email === "student@technocat.edu";
+  const isDemo = Boolean(user && user.email === "student@technocat.edu");
   const [activeNav, setActiveNav] = useState("My Topics");
   const [selectedCategory, setSelectedCategory] = useState("All Topics");
   const [searchQuery, setSearchQuery] = useState("");
