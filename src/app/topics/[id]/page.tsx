@@ -1670,7 +1670,7 @@ export default function TopicDetailPage() {
                 <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
               </Link>
               <Link
-                href="/browse"
+                href="/topics"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1690,7 +1690,7 @@ export default function TopicDetailPage() {
                   <line x1="19" y1="12" x2="5" y2="12" />
                   <polyline points="12 19 5 12 12 5" />
                 </svg>
-                Back to Browse
+                Back to My Topics
               </Link>
             </div>
 
