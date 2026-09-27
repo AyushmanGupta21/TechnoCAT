@@ -134,40 +134,41 @@ export async function createProfile(email: string, passwordHash: string, fullNam
   );
   const user = res.rows[0];
 
-  try {
-    // Seed initial topic progress for QA, DILR, VARC
-    await query(
-      `INSERT INTO public.topic_progress (user_id, topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned)
-       VALUES 
-         ($1, 'qa-quantitative-ability', 0, '{}'::text[], 0, 0),
-         ($1, 'varc-verbal-ability', 0, '{}'::text[], 0, 0),
-         ($1, 'dilr-data-interpretation', 0, '{}'::text[], 0, 0)
-       ON CONFLICT (user_id, topic_id) DO NOTHING`,
-      [user.id]
-    );
-
-    // Seed a welcome study task
-    const todayStr = new Date().toISOString().split("T")[0];
-    await query(
-      `INSERT INTO public.study_tasks (user_id, title, task_date, is_completed)
-       VALUES ($1, 'Begin QA-1.1 Percentage Foundations', $2, false)`,
-      [user.id, todayStr]
-    );
-
-    // Seed 7-day starter study sessions for weekly chart
-    const days = [6, 5, 4, 3, 2, 1, 0];
-    for (const d of days) {
-      const dateObj = new Date();
-      dateObj.setDate(dateObj.getDate() - d);
-      const dStr = dateObj.toISOString().split("T")[0];
+  // NOTE: Only seed starter mock data if it is the demo account ("student@technocat.edu").
+  // Real accounts start clean with real data and real progress.
+  if (email.toLowerCase() === "student@technocat.edu") {
+    try {
       await query(
-        `INSERT INTO public.study_sessions (user_id, study_date, learning_hours, challenge_hours, total_hours, topic_title)
-         VALUES ($1, $2, 3.0, 2.0, 5.0, 'CAT Prep Orientation')`,
-        [user.id, dStr]
+        `INSERT INTO public.topic_progress (user_id, topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned)
+         VALUES 
+           ($1, 'qa-quantitative-ability', 74, '{l1,l2,l3}'::text[], 480, 240),
+           ($1, 'varc-verbal-ability', 45, '{l1,l2}'::text[], 320, 160),
+           ($1, 'dilr-data-interpretation', 30, '{l1}'::text[], 200, 100)
+         ON CONFLICT (user_id, topic_id) DO NOTHING`,
+        [user.id]
       );
+
+      const todayStr = new Date().toISOString().split("T")[0];
+      await query(
+        `INSERT INTO public.study_tasks (user_id, title, task_date, is_completed)
+         VALUES ($1, 'Begin QA-1.1 Percentage Foundations', $2, false)`,
+        [user.id, todayStr]
+      );
+
+      const days = [6, 5, 4, 3, 2, 1, 0];
+      for (const d of days) {
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - d);
+        const dStr = dateObj.toISOString().split("T")[0];
+        await query(
+          `INSERT INTO public.study_sessions (user_id, study_date, learning_hours, challenge_hours, total_hours, topic_title)
+           VALUES ($1, $2, 3.0, 2.0, 5.0, 'CAT Prep Orientation')`,
+          [user.id, dStr]
+        );
+      }
+    } catch (seedErr) {
+      console.warn("[Seed Demo User Data Warning]", seedErr);
     }
-  } catch (seedErr) {
-    console.warn("[Seed New User Data Warning]", seedErr);
   }
 
   return user;
@@ -175,6 +176,10 @@ export async function createProfile(email: string, passwordHash: string, fullNam
 
 // ── Dashboard Data Aggregation ──
 export async function getDashboardData(userId: string) {
+  // Check if this user is the demo user
+  const userProfile = await getProfileById(userId);
+  const isDemo = userProfile?.email?.toLowerCase() === "student@technocat.edu";
+
   // 1. Topic progress summary
   const progressRes = await query(
     `SELECT topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned 
@@ -184,7 +189,8 @@ export async function getDashboardData(userId: string) {
   );
 
   const rows = progressRes.rows;
-  const inProgressTopics = rows.filter((r) => r.progress_percent >= 0 && r.progress_percent < 100);
+  // Count as in-progress only if progress > 0 and < 100
+  const inProgressTopics = rows.filter((r) => r.progress_percent > 0 && r.progress_percent < 100);
   const completedTopics = rows.filter((r) => r.progress_percent === 100);
   
   const inProgressCount = inProgressTopics.length;
@@ -207,23 +213,53 @@ export async function getDashboardData(userId: string) {
   );
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const weeklyStats = (sessionsRes.rows.length > 0 ? sessionsRes.rows : []).map((s, idx) => {
-    const d = new Date(s.study_date);
-    const dayName = dayNames[d.getDay()] || dayNames[idx % 7];
-    return {
-      day: dayName,
-      learning: Math.round(parseFloat(s.learning_hours || "0") * 10), // scaled for bar height
-      challenge: Math.round(parseFloat(s.challenge_hours || "0") * 10),
-      rawLearning: parseFloat(s.learning_hours || "0"),
-      rawChallenge: parseFloat(s.challenge_hours || "0"),
-    };
-  });
+  const recordedSessions = sessionsRes.rows || [];
+
+  let weeklyStats: any[] = [];
+  if (recordedSessions.length > 0) {
+    weeklyStats = recordedSessions.map((s, idx) => {
+      const d = new Date(s.study_date);
+      const dayName = dayNames[d.getDay()] || dayNames[idx % 7];
+      return {
+        day: dayName,
+        learning: Math.round(parseFloat(s.learning_hours || "0") * 10),
+        challenge: Math.round(parseFloat(s.challenge_hours || "0") * 10),
+        rawLearning: parseFloat(s.learning_hours || "0"),
+        rawChallenge: parseFloat(s.challenge_hours || "0"),
+      };
+    });
+  } else if (isDemo) {
+    // Demo user fallback
+    weeklyStats = [
+      { day: "Sun", learning: 50, challenge: 40, rawLearning: 2.5, rawChallenge: 1.8 },
+      { day: "Mon", learning: 75, challenge: 60, rawLearning: 4.2, rawChallenge: 2.9 },
+      { day: "Tue", learning: 50, challenge: 42, rawLearning: 3.1, rawChallenge: 2.0 },
+      { day: "Wed", learning: 60, challenge: 50, rawLearning: 3.8, rawChallenge: 2.6 },
+      { day: "Thu", learning: 60, challenge: 52, rawLearning: 4.0, rawChallenge: 3.1 },
+      { day: "Fri", learning: 38, challenge: 32, rawLearning: 2.2, rawChallenge: 1.5 },
+      { day: "Sat", learning: 28, challenge: 22, rawLearning: 1.8, rawChallenge: 1.0 },
+    ];
+  } else {
+    // Real user with 0 sessions: 7 clean zero-days of the current week
+    const today = new Date();
+    weeklyStats = [6, 5, 4, 3, 2, 1, 0].map((dOffset) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - dOffset);
+      return {
+        day: dayNames[date.getDay()],
+        learning: 0,
+        challenge: 0,
+        rawLearning: 0,
+        rawChallenge: 0,
+      };
+    });
+  }
 
   // Calculate weekly totals
-  const totalLearning = weeklyStats.reduce((sum, item) => sum + item.rawLearning, 0);
-  const totalChallenge = weeklyStats.reduce((sum, item) => sum + item.rawChallenge, 0);
-  const totalWeek = Math.round(totalLearning + totalChallenge) || 37;
-  const avgDay = Math.round((totalWeek / 7) * 10) / 10 || 5;
+  const totalLearning = weeklyStats.reduce((sum, item) => sum + (item.rawLearning || 0), 0);
+  const totalChallenge = weeklyStats.reduce((sum, item) => sum + (item.rawChallenge || 0), 0);
+  const totalWeek = isDemo && totalLearning + totalChallenge === 0 ? 37 : Math.round(totalLearning + totalChallenge);
+  const avgDay = isDemo && totalWeek === 37 ? 5.2 : Math.round((totalWeek / 7) * 10) / 10;
 
   // 3. Study tasks
   const tasksRes = await query(
@@ -235,6 +271,7 @@ export async function getDashboardData(userId: string) {
   );
 
   return {
+    isDemo,
     metrics: {
       inProgressCourses: inProgressCount,
       completedCourses: completedCount,
@@ -252,20 +289,12 @@ export async function getDashboardData(userId: string) {
         .filter(t => t.points_earned > 0)
         .sort((a, b) => b.points_earned - a.points_earned)
     },
-    weeklyStats: weeklyStats.length === 7 ? weeklyStats : [
-      { day: "Sun", learning: 50, challenge: 40 },
-      { day: "Mon", learning: 75, challenge: 60 },
-      { day: "Tue", learning: 50, challenge: 42 },
-      { day: "Wed", learning: 60, challenge: 50 },
-      { day: "Thu", learning: 60, challenge: 52 },
-      { day: "Fri", learning: 38, challenge: 32 },
-      { day: "Sat", learning: 28, challenge: 22 },
-    ],
+    weeklyStats,
     summary: {
       totalHoursWeek: totalWeek,
       avgHoursDay: avgDay,
-      courseHoursWeek: Math.round(totalLearning) || 18,
-      challengeHoursWeek: Math.round(totalChallenge) || 20,
+      courseHoursWeek: isDemo && totalLearning === 0 ? 18 : Math.round(totalLearning),
+      challengeHoursWeek: isDemo && totalChallenge === 0 ? 20 : Math.round(totalChallenge),
     },
     tasks: tasksRes.rows,
   };

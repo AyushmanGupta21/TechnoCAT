@@ -947,6 +947,12 @@
   border-color: #CBD5E1;
 }
 
+.badgeLocked {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+  background: #F8FAFC;
+}
+
 .badgeIconBox {
   width: 50px;
   height: 50px;

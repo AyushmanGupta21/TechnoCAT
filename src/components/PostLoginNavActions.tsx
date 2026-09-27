@@ -88,11 +88,27 @@ export default function PostLoginNavActions() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const displayName = user?.fullName || "Sabrina Gomez";
+  const isDemo = !user || user.email === "student@technocat.edu";
+  const displayName = user?.fullName || (isDemo ? "Sabrina Gomez" : "Student");
   const firstName = displayName.split(" ")[0];
-  const userAvatar =
-    user?.avatarUrl ||
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80";
+
+  const userInitials = useMemo(() => {
+    if (!displayName) return "U";
+    const parts = displayName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [displayName]);
+
+  // Demo user uses Sabrina's photo. Real user uses custom avatar if uploaded, or initials
+  const isHardcodedDemoAvatar = user?.avatarUrl?.includes("photo-1494790108377");
+  const showCustomImageAvatar = isDemo
+    ? true
+    : Boolean(user?.avatarUrl && !isHardcodedDemoAvatar);
+
+  const userAvatarUrl = isDemo
+    ? (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80")
+    : user?.avatarUrl;
+
   const userRole = user?.role
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
     : "Student";
@@ -162,12 +178,18 @@ export default function PostLoginNavActions() {
           className={styles.userPill}
           onClick={() => setIsProfileOpen(!isProfileOpen)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={userAvatar}
-            alt={displayName}
-            className={styles.userAvatar}
-          />
+          {showCustomImageAvatar ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={userAvatarUrl}
+              alt={displayName}
+              className={styles.userAvatar}
+            />
+          ) : (
+            <div className={styles.avatarInitials} aria-hidden="true">
+              {userInitials}
+            </div>
+          )}
           <div className={styles.userInfo}>
             <span className={styles.userName}>{firstName}</span>
             <span className={styles.userRole}>{userRole}</span>
@@ -190,15 +212,22 @@ export default function PostLoginNavActions() {
         {isProfileOpen && (
           <div className={styles.profileDropdown}>
             <div className={styles.dropdownHeader}>
-              <img
-                src={userAvatar}
-                alt="Profile"
-                className={styles.dropdownHeaderAvatar}
-              />
+              {showCustomImageAvatar ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={userAvatarUrl}
+                  alt="Profile"
+                  className={styles.dropdownHeaderAvatar}
+                />
+              ) : (
+                <div className={styles.dropdownHeaderInitials} aria-hidden="true">
+                  {userInitials}
+                </div>
+              )}
               <div className={styles.dropdownHeaderInfo}>
                 <span className={styles.dropdownHeaderName}>{displayName}</span>
-                <span className={styles.dropdownHeaderRole}>
-                  {user?.email || "sabrina@example.com"}
+                <span className={styles.dropdownHeaderRole} title={user?.email || ""}>
+                  {user?.email || (isDemo ? "student@technocat.edu" : "")}
                 </span>
               </div>
             </div>

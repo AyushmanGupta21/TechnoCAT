@@ -981,6 +981,7 @@ interface PrepNotice {
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const isDemo = !user || user.email === "student@technocat.edu";
   const [activeNav, setActiveNav] = useState("Dashboard");
 
   // Selected Agenda Modal State
@@ -992,7 +993,9 @@ export default function DashboardPage() {
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(() => new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
-  const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>(initialCurriculumTasks);
+  const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>(() => {
+    return !user || user.email === "student@technocat.edu" ? initialCurriculumTasks : [];
+  });
 
   useEffect(() => {
     const now = new Date();
@@ -1261,19 +1264,60 @@ export default function DashboardPage() {
     }
   };
 
-  const displayName = user?.fullName || "Sabrina Gomez";
+  useEffect(() => {
+    if (isDemo) {
+      setScheduleTasks(initialCurriculumTasks);
+    } else if (dashboardData?.tasks) {
+      const mapped: ScheduleItem[] = dashboardData.tasks.map((t, idx) => {
+        const d = new Date(t.task_date);
+        return {
+          id: t.id || `task-${idx}`,
+          day: d.getDate(),
+          monthIndex: d.getMonth(),
+          year: d.getFullYear(),
+          timeRange: "Flexible",
+          duration: "45 min",
+          category: "QA",
+          code: "STUDY",
+          title: t.title,
+          subtitle: "Target Study Task",
+          isCompleted: t.is_completed,
+        };
+      });
+      setScheduleTasks(mapped);
+    }
+  }, [isDemo, dashboardData?.tasks]);
+
+  const displayName = user?.fullName || (isDemo ? "Sabrina Gomez" : "Student");
   const firstName = displayName.split(" ")[0];
 
-  const metrics = dashboardData?.metrics || {
-    inProgressCourses: 4,
-    completedCourses: 23,
-    watchingTime: "12h 10 min",
-    pointsEarned: 40,
-  };
+  const metrics = dashboardData?.metrics || (isDemo ? {
+    inProgressCourses: 3,
+    completedCourses: 2,
+    watchingTime: "18h 45 min",
+    pointsEarned: 840,
+  } : {
+    inProgressCourses: 0,
+    completedCourses: 0,
+    watchingTime: "0h 0 min",
+    pointsEarned: 0,
+  });
 
-  const currentWeeklyStats = dashboardData?.weeklyStats && dashboardData.weeklyStats.length === 7
-    ? dashboardData.weeklyStats
-    : defaultWeeklyStats;
+  const currentWeeklyStats = isDemo
+    ? (dashboardData?.weeklyStats && dashboardData.weeklyStats.length === 7 ? dashboardData.weeklyStats : defaultWeeklyStats)
+    : (dashboardData?.weeklyStats || [
+        { day: "Sun", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Mon", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Tue", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Wed", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Thu", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Fri", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+        { day: "Sat", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+      ]);
+
+  const streak = isDemo
+    ? 7
+    : (currentWeeklyStats.filter(s => (s.rawLearning || 0) > 0 || (s.rawChallenge || 0) > 0).length);
 
   return (
     <div className={styles.dashboardWrapper}>
@@ -1337,7 +1381,7 @@ export default function DashboardPage() {
           </div>
 
           {/* AI Motivation Widget */}
-          <AiMotivationWidget firstName={firstName} streak={7} points={metrics.pointsEarned} />
+          <AiMotivationWidget firstName={firstName} streak={streak} points={metrics.pointsEarned} />
 
           {/* 4 Metric Cards Row */}
           <div className={styles.metricCardsRow}>
@@ -1424,7 +1468,7 @@ export default function DashboardPage() {
       <main className={styles.mainContent}>
         {/* Full Width Spotlight: Continue Learning Widget */}
         <div style={{ marginBottom: "28px" }}>
-          <ContinueLearningWidget />
+          <ContinueLearningWidget isDemo={isDemo} topicProgress={dashboardData?.detailed?.inProgressTopics || []} />
         </div>
 
         {/* 2-Column Responsive Dashboard Grid (65% / 35%) */}
@@ -1475,23 +1519,37 @@ export default function DashboardPage() {
                   </div>
 
                   <p style={{ fontSize: "12.5px", color: "#475569", margin: 0, lineHeight: "1.5" }}>
-                    Your learning hours are <strong>up 16%</strong> this week. You are spending disproportionately more time on Quantitative Ability compared to VARC.
+                    {isDemo ? (
+                      <>Your learning hours are <strong>up 16%</strong> this week. You are spending disproportionately more time on Quantitative Ability compared to VARC.</>
+                    ) : (dashboardData?.summary?.totalHoursWeek || 0) > 0 ? (
+                      <>You have logged <strong>{dashboardData?.summary?.totalHoursWeek} hours</strong> this week. Maintain steady consistency across all 3 CAT sections.</>
+                    ) : (
+                      <>Your study activity is currently at <strong>0 hours</strong> this week. Attend your first video lecture and solve practice drills to start logging your learning pace.</>
+                    )}
                   </p>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>Quant Progress</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#0D9488", background: "#F0FDFA", padding: "2px 8px", borderRadius: "6px" }}>Good Pace</span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: isDemo ? "#0D9488" : "#64748B", background: isDemo ? "#F0FDFA" : "#F1F5F9", padding: "2px 8px", borderRadius: "6px" }}>
+                        {isDemo ? "Good Pace" : (dashboardData?.detailed?.inProgressTopics?.some(t => t.topic_id === 'qa-quantitative-ability') ? "In Progress" : "Ready to Begin")}
+                      </span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>VARC Progress</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#EF4444", background: "#FEE2E2", padding: "2px 8px", borderRadius: "6px" }}>Needs Attention</span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: isDemo ? "#EF4444" : "#64748B", background: isDemo ? "#FEE2E2" : "#F1F5F9", padding: "2px 8px", borderRadius: "6px" }}>
+                        {isDemo ? "Needs Attention" : (dashboardData?.detailed?.inProgressTopics?.some(t => t.topic_id === 'varc-verbal-ability') ? "In Progress" : "Ready to Begin")}
+                      </span>
                     </div>
                   </div>
 
                   <div style={{ background: "#EFF6FF", padding: "10px 12px", borderRadius: "12px", border: "1px solid #BFDBFE" }}>
                     <h4 style={{ fontSize: "11px", fontWeight: "700", color: "#1E3A8A", margin: "0 0 4px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>Recommended Next Step</h4>
-                    <p style={{ fontSize: "12px", color: "#1E40AF", margin: 0, fontWeight: "500", lineHeight: "1.4" }}>Take a Reading Comprehension sectional mock today to identify weak spots.</p>
+                    <p style={{ fontSize: "12px", color: "#1E40AF", margin: 0, fontWeight: "500", lineHeight: "1.4" }}>
+                      {isDemo
+                        ? "Take a Reading Comprehension sectional mock today to identify weak spots."
+                        : "Start with QA Module 1.1 Percentage Foundations or explore the CAT syllabus."}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1647,7 +1705,7 @@ export default function DashboardPage() {
             />
 
             {/* 2. CAT 2026 Readiness & Weak Area Diagnostic */}
-            <CatReadinessWidget />
+            <CatReadinessWidget isDemo={isDemo} topicProgress={dashboardData?.detailed?.inProgressTopics || []} />
 
             {/* 3. Weekly Leaderboard */}
             <LeaderboardWidget />

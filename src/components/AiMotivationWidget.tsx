@@ -17,6 +17,13 @@ const MESSAGES = [
   "Consistency is your superpower. Your {streak}-day streak is proof of your dedication. 💪"
 ];
 
+const STARTER_MESSAGES = [
+  "Welcome to TechnoCAT, {name}! Dive into your first video masterclass to begin your streak! 🚀",
+  "Consistency is your superpower, {name}. Start today's session to build your study habit. 💡",
+  "Ready to conquer CAT 2026, {name}? Complete your first practice drill to earn your first points! 🏆",
+  "Great journey starts with a single step, {name}. Choose a topic from the CAT syllabus to begin! ✨"
+];
+
 export default function AiMotivationWidget({ firstName, streak, points }: AiMotivationWidgetProps) {
   const [isThinking, setIsThinking] = useState(true);
   const [message, setMessage] = useState("");
@@ -24,7 +31,8 @@ export default function AiMotivationWidget({ firstName, streak, points }: AiMoti
 
   useEffect(() => {
     // 1. Pick a message
-    const rawMsg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+    const msgPool = streak > 0 ? MESSAGES : STARTER_MESSAGES;
+    const rawMsg = msgPool[Math.floor(Math.random() * msgPool.length)];
     const personalizedMsg = rawMsg
       .replace("{name}", firstName)
       .replace("{streak}", streak.toString())
