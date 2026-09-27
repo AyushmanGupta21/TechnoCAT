@@ -12,17 +12,24 @@ export async function POST(request: NextRequest) {
       userId = defaultUser?.id || FALLBACK_USER_ID;
     }
 
-    // Ensure table exists
-    await query(`
-      CREATE TABLE IF NOT EXISTS public.analysis_views (
-        id SERIAL PRIMARY KEY,
-        user_id UUID NOT NULL,
-        viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      )
-    `, []);
-
-    // Record the view
-    await query(`INSERT INTO public.analysis_views (user_id) VALUES ($1)`, [userId]);
+    // Try direct insert first (fast path avoiding expensive DDL locks)
+    try {
+      await query(`INSERT INTO public.analysis_views (user_id) VALUES ($1)`, [userId]);
+    } catch (insertErr: any) {
+      if (insertErr?.code === '42P01') {
+        // Table doesn't exist yet, create it and retry once
+        await query(`
+          CREATE TABLE IF NOT EXISTS public.analysis_views (
+            id SERIAL PRIMARY KEY,
+            user_id UUID NOT NULL,
+            viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          )
+        `, []);
+        await query(`INSERT INTO public.analysis_views (user_id) VALUES ($1)`, [userId]);
+      } else {
+        throw insertErr;
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

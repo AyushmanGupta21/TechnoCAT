@@ -40,7 +40,95 @@ export default function AiAnalysisPage() {
     fetchData();
   }, []);
 
-  if (isLoading) return null; // Or loader
+  if (isLoading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <header className={styles.darkHeader}>
+          <div className={styles.headerLeft}>
+            <Link href="/dashboard">
+              <Image src="/logo.jpg" alt="TechnoCAT" width={180} height={75} className={styles.logo} priority />
+            </Link>
+            <nav className={styles.mainNav}>
+              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+              <Link href="/browse" className={styles.navLink}>Browse</Link>
+              <Link href="/topics" className={styles.navLink}>My Topics</Link>
+              <Link href="/intelligence" className={`${styles.navLink} ${styles.active}`}>Intelligence Hub</Link>
+              <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
+            </nav>
+          </div>
+          <PostLoginNavActions />
+        </header>
+
+        {/* Breadcrumb Navigation */}
+        <div className={styles.breadcrumb}>
+          <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+        </div>
+
+        {/* Skeleton Hero */}
+        <section className={styles.heroSection}>
+          <div className={styles.heroLeft}>
+            <div className={styles.heroBadge}>
+              <span className={styles.loadingSpinner} style={{ borderColor: 'rgba(37, 99, 235, 0.3)', borderTopColor: '#2563EB' }}></span>
+              AI PERFORMANCE INTELLIGENCE
+            </div>
+            <h1 className={styles.heroTitle} style={{ color: '#0F172A', opacity: 0.9 }}>
+              Synthesizing Your<br /><span>CAT Performance...</span>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              TechnoCAT AI is compiling your mock attempts, accuracy trends, solving speed and diagnostic insights.
+            </p>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div className={styles.skeletonPulse} style={{ width: 180, height: 46, borderRadius: 100 }}></div>
+              <div className={styles.skeletonPulse} style={{ width: 160, height: 46, borderRadius: 100 }}></div>
+            </div>
+          </div>
+
+          <div className={styles.heroRight}>
+            <div className={styles.mainRing} style={{ background: '#FFF' }}>
+              <div className={styles.skeletonPulse} style={{ width: 140, height: 140, borderRadius: '50%' }}></div>
+            </div>
+            <div className={styles.heroMetrics}>
+              <div className={styles.hmRow}>
+                <div className={styles.skeletonPulse} style={{ width: '60%', height: 16, marginBottom: 8 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
+              </div>
+              <div className={styles.hmRow}>
+                <div className={styles.skeletonPulse} style={{ width: '50%', height: 16, marginBottom: 8 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
+              </div>
+              <div className={styles.hmRow}>
+                <div className={styles.skeletonPulse} style={{ width: '70%', height: 16, marginBottom: 8 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Skeleton Content */}
+        <div className={styles.contentWrapper}>
+          <div className={styles.aiDiagnosisCard} style={{ minHeight: 160, alignItems: 'center' }}>
+            <div className={styles.skeletonPulse} style={{ width: 80, height: 80, borderRadius: '50%', flexShrink: 0 }}></div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className={styles.skeletonPulse} style={{ width: '28%', height: 22 }}></div>
+              <div className={styles.skeletonPulse} style={{ width: '55%', height: 14 }}></div>
+              <div className={styles.skeletonPulse} style={{ width: '100%', height: 50, borderRadius: 10 }}></div>
+            </div>
+          </div>
+
+          <div className={styles.dnaGrid}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className={styles.dnaCard} style={{ minHeight: 140 }}>
+                <div className={styles.skeletonPulse} style={{ width: '65%', height: 16, marginBottom: 12 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '45%', height: 28, marginBottom: 10 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '90%', height: 12, marginBottom: 6 }}></div>
+                <div className={styles.skeletonPulse} style={{ width: '75%', height: 12 }}></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const hasData = data?.hasData && data?.data;
   if (!hasData) {
