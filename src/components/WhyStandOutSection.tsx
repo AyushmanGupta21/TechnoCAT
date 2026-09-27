@@ -253,7 +253,7 @@ const features: FeatureCardData[] = [
     id: "best",
     badgeType: "star",
     topTag: "BEST CAT MOCK TEST.",
-    href: "/browse?section=mocks&mock=latest#pyq-section",
+    href: "/browse?section=pyqs#pyq-section",
     title: "Best CAT Mock Test",
     body: "TechnoCAT's CAT mock test interface is really flexible to use. Even if power input gets cut, your mock will automatically get resumed.",
     renderVisual: () => (
