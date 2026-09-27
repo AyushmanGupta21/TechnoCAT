@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProfileByEmail, getProfileById, createProfile } from "@/lib/db";
+import bcrypt from "bcryptjs";
+import { getProfileByEmail, getProfileById, createProfile, updateProfilePassword } from "@/lib/db";
 
 export async function POST(
   request: NextRequest,
@@ -15,13 +16,33 @@ export async function POST(
         return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
       }
 
-      const user = await getProfileByEmail(email);
+      const cleanEmail = email.trim().toLowerCase();
+      const user = await getProfileByEmail(cleanEmail);
       if (!user) {
         return NextResponse.json({ error: "No account found with this email." }, { status: 401 });
       }
 
-      // Plaintext or hashed comparison (supporting demo password 'techno123')
-      if (user.password_hash !== password) {
+      const storedHash = user.password_hash || "";
+      let isMatch = false;
+
+      // Check if stored hash is a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+      if (storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$")) {
+        isMatch = await bcrypt.compare(password, storedHash);
+      } else {
+        // Plaintext legacy password support (e.g. existing accounts)
+        if (storedHash === password) {
+          isMatch = true;
+          // Seamlessly auto-upgrade legacy plaintext to bcrypt hash in database
+          try {
+            const upgradedHash = await bcrypt.hash(password, 10);
+            await updateProfilePassword(user.id, upgradedHash);
+          } catch (upgradeErr) {
+            console.warn("[Password Upgrade Error]", upgradeErr);
+          }
+        }
+      }
+
+      if (!isMatch) {
         return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 });
       }
 
@@ -52,12 +73,27 @@ export async function POST(
         return NextResponse.json({ error: "All fields are required." }, { status: 400 });
       }
 
-      const existing = await getProfileByEmail(email);
-      if (existing) {
-        return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
+      const trimmedName = fullName.trim();
+      const cleanEmail = email.trim().toLowerCase();
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
       }
 
-      const newUser = await createProfile(email, password, fullName);
+      if (password.length < 6) {
+        return NextResponse.json({ error: "Password must be at least 6 characters long." }, { status: 400 });
+      }
+
+      const existing = await getProfileByEmail(cleanEmail);
+      if (existing) {
+        return NextResponse.json({ error: "An account with this email already exists. Please sign in." }, { status: 409 });
+      }
+
+      // Hash password with bcryptjs
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await createProfile(cleanEmail, hashedPassword, trimmedName);
 
       const response = NextResponse.json({
         user: {

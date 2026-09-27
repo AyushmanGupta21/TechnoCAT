@@ -14,13 +14,43 @@ export default function AuthModal() {
     signup,
   } = useAuth();
 
-  const [email, setEmail] = useState("student@technocat.edu");
-  const [password, setPassword] = useState("techno123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Clean form state when switching between tabs or when modal opens
+  const handleTabChange = (tab: "signin" | "signup") => {
+    setAuthModalTab(tab);
+    setError("");
+    if (tab === "signup") {
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setFullName("");
+    }
+  };
+
+  const handleAutoFillDemo = () => {
+    setEmail("student@technocat.edu");
+    setPassword("techno123");
+    setError("");
+  };
+
+  React.useEffect(() => {
+    if (isAuthModalOpen) {
+      setError("");
+      if (authModalTab === "signup") {
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setFullName("");
+      }
+    }
+  }, [isAuthModalOpen, authModalTab]);
 
   if (!isAuthModalOpen) return null;
 
@@ -49,13 +79,13 @@ export default function AuthModal() {
         setLoading(false);
         return;
       }
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
         setLoading(false);
         return;
       }
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters.");
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
         setLoading(false);
         return;
       }
@@ -108,10 +138,7 @@ export default function AuthModal() {
             className={`${styles.tabBtn} ${
               authModalTab === "signin" ? styles.tabBtnActive : ""
             }`}
-            onClick={() => {
-              setAuthModalTab("signin");
-              setError("");
-            }}
+            onClick={() => handleTabChange("signin")}
           >
             Sign In
           </button>
@@ -120,10 +147,7 @@ export default function AuthModal() {
             className={`${styles.tabBtn} ${
               authModalTab === "signup" ? styles.tabBtnActive : ""
             }`}
-            onClick={() => {
-              setAuthModalTab("signup");
-              setError("");
-            }}
+            onClick={() => handleTabChange("signup")}
           >
             Create Account
           </button>
@@ -135,7 +159,22 @@ export default function AuthModal() {
 
           {authModalTab === "signin" && (
             <div className={styles.demoHintBox}>
-              💡 <strong>Demo Account:</strong> student@technocat.edu / techno123
+              <div className={styles.demoHintHeader}>
+                <div className={styles.demoHintTitle}>
+                  💡 <strong>Demo Login:</strong> <code>student@technocat.edu</code>
+                </div>
+                <button
+                  type="button"
+                  className={styles.demoFillBtn}
+                  onClick={handleAutoFillDemo}
+                  title="Auto-fill demo credentials"
+                >
+                  ⚡ Auto-fill
+                </button>
+              </div>
+              <div className={styles.demoHintSub}>
+                Password: <code>techno123</code> &bull; Or enter your registered account
+              </div>
             </div>
           )}
 
@@ -171,7 +210,7 @@ export default function AuthModal() {
               <input
                 type={showPassword ? "text" : "password"}
                 className={styles.textInput}
-                placeholder="••••••••"
+                placeholder={authModalTab === "signup" ? "Create a secure password (min 6 chars)" : "••••••••"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -196,6 +235,9 @@ export default function AuthModal() {
                 )}
               </button>
             </div>
+            {authModalTab === "signup" && password.length > 0 && password.length < 6 && (
+              <span className={styles.inputHintError}>Must be at least 6 characters</span>
+            )}
           </div>
 
           {authModalTab === "signup" && (
@@ -204,11 +246,18 @@ export default function AuthModal() {
               <input
                 type="password"
                 className={styles.textInput}
-                placeholder="••••••••"
+                placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
+              {confirmPassword.length > 0 && (
+                confirmPassword === password ? (
+                  <span className={styles.inputHintSuccess}>✓ Passwords match</span>
+                ) : (
+                  <span className={styles.inputHintError}>✕ Passwords do not match</span>
+                )
+              )}
             </div>
           )}
 

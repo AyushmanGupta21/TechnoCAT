@@ -116,6 +116,15 @@ export async function getProfileById(id: string) {
   return res.rows[0] || null;
 }
 
+export async function updateProfilePassword(id: string, newPasswordHash: string) {
+  await query(
+    `UPDATE public.profiles 
+     SET password_hash = $1 
+     WHERE id = $2`,
+    [newPasswordHash, id]
+  );
+}
+
 export async function createProfile(email: string, passwordHash: string, fullName: string) {
   const res = await query(
     `INSERT INTO public.profiles (email, password_hash, full_name)
