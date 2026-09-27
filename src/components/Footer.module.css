@@ -1,27 +1,29 @@
 .footer {
-  background: #020617; /* Very deep navy */
-  color: #F8FAFC;
-  padding: 80px 0 24px;
+  background: linear-gradient(180deg, #F8FCFF 0%, #F0F9FF 100%);
+  border-top: 1px solid #DBEAFE;
+  color: #0F172A;
+  padding: 72px 0 32px;
 }
 
 .container {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
 .topSection {
   display: flex;
   flex-direction: column;
-  gap: 60px;
-  margin-bottom: 60px;
+  gap: 48px;
+  margin-bottom: 52px;
 }
 
 @media (min-width: 1024px) {
   .topSection {
     flex-direction: row;
     justify-content: space-between;
-    gap: 40px;
+    align-items: flex-start;
+    gap: 56px;
   }
 }
 
@@ -30,33 +32,41 @@
   flex: 0 0 340px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+}
+
+@media (max-width: 1023px) {
+  .brandCol {
+    flex: none;
+    max-width: 460px;
+  }
 }
 
 .logoLink {
   display: inline-block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .logoImage {
-  height: 65px;
+  height: 62px;
   width: auto;
   display: block;
+  border-radius: 10px;
 }
 
 .brandTagline {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0EA5E9; /* Sky blue */
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #2563EB;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   margin: 0;
 }
 
 .brandDesc {
   font-size: 14px;
-  line-height: 1.6;
-  color: #94A3B8;
+  line-height: 1.65;
+  color: #475569;
   margin: 0;
 }
 
@@ -64,19 +74,20 @@
 .socialRow {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .socialIcon {
-  width: 36px;
-  height: 36px;
-  background: #0F172A;
-  border: 1px solid #1E293B;
-  color: #94A3B8;
+  width: 38px;
+  height: 38px;
+  background: #FFFFFF;
+  border: 1px solid #BAE6FD;
+  color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
   transition: all 0.2s ease;
 }
 
@@ -85,28 +96,30 @@
   color: #FFFFFF;
   border-color: #2563EB;
   transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
 }
 
 /* Links Grid */
 .linksGrid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  grid-template-columns: 1fr;
+  gap: 32px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .linksGrid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
   }
 }
 
 .colHeading {
-  font-size: 14px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 20px;
-  letter-spacing: 0.05em;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 18px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -120,19 +133,20 @@
 }
 
 .link {
-  color: #94A3B8;
+  color: #475569;
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .link:hover {
-  color: #0EA5E9;
+  color: #2563EB;
 }
 
 /* Bottom Bar */
 .bottomBar {
-  border-top: 1px solid #1E293B;
+  border-top: 1px solid #DBEAFE;
   padding-top: 24px;
   text-align: center;
 }

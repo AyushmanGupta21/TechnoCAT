@@ -27,7 +27,7 @@ export default function FloatingBanner() {
           <span className={styles.badge}>FREE</span>
           <span className={styles.text}>Get 6 Free Sectionals &amp; 1 Full Mock — No Credit Card Required</span>
         </div>
-        <button className={styles.ctaBtn} onClick={handleClaim}>Claim Free Mocks</button>
+        <button className={styles.ctaBtn} onClick={handleClaim}>Claim Free Mocks &rarr;</button>
       </div>
     </div>
   );

@@ -1,73 +1,184 @@
 .section {
-  background: linear-gradient(180deg, #F8FCFF 0%, #FFFFFF 100%);
-  padding: 80px 0;
+  position: relative;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F4FAFF 48%, #FFFFFF 100%);
+  padding: 64px 0 96px;
   width: 100%;
+  overflow: hidden;
+}
+
+/* Subtle Decorative Ambient Circles */
+.decorCircleTop {
+  position: absolute;
+  top: 40px;
+  right: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.09) 0%, rgba(186, 230, 253, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.decorCircleBottom {
+  position: absolute;
+  bottom: 40px;
+  left: -90px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.07) 0%, rgba(219, 234, 254, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle Educational SVG Decorations */
+.decorPaperPlane {
+  position: absolute;
+  top: 24px;
+  right: max(24px, calc(50% - 640px));
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decorQuestionMark {
+  position: absolute;
+  top: 390px;
+  left: max(18px, calc(50% - 630px));
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decorBooks {
+  position: absolute;
+  bottom: 64px;
+  left: max(24px, calc(50% - 620px));
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 1200px) {
+  .decorQuestionMark,
+  .decorBooks,
+  .decorPaperPlane {
+    display: none;
+  }
 }
 
 .container {
-  max-width: 1024px;
+  position: relative;
+  z-index: 2;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
-.titleGroup {
-  text-align: center;
-  margin-bottom: 56px;
+/* ==========================================================================
+   1. FAQ HERO BANNER
+   ========================================================================== */
+.heroCard {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 60%, #EFF6FF 100%);
+  border: 1px solid #BAE6FD;
+  border-radius: 28px;
+  padding: 36px 44px;
+  margin-bottom: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroContent {
+  flex: 1;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .heading {
-  font-size: 2.2rem;
+  font-size: 2.15rem;
   font-weight: 800;
-  color: var(--primary-dark);
-  line-height: 1.25;
-  margin-bottom: 12px;
+  color: #0F172A;
+  line-height: 1.2;
+  margin: 0 0 14px;
+  letter-spacing: -0.02em;
 }
 
 @media (min-width: 1024px) {
-  .heading { font-size: 2.8rem; }
+  .heading {
+    font-size: 2.65rem;
+  }
 }
 
 .headingHighlight {
   background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .subHeading {
-  font-size: 16px;
-  color: #64748B;
-  line-height: 1.6;
-  max-width: 600px;
+  font-size: 15.5px;
+  color: #475569;
+  line-height: 1.65;
+  margin: 0;
   font-weight: 500;
+}
+
+.heroIllustration {
+  flex: 0 0 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustrationSvg {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   2. CENTERED FAQ ACCORDION
+   ========================================================================== */
+.accordionWrapper {
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .item {
-  border: 1px solid #E0F2FE;
+  border: 1px solid #DBEAFE;
   border-radius: 20px;
   background: #FFFFFF;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.05);
+  transition: all 0.25s ease;
   overflow: hidden;
 }
 
 .item:hover {
-  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+  border-color: #93C5FD;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
 }
 
 .itemOpen {
-  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-  border-color: #BAE6FD;
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%);
+  border-color: #7DD3FC;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.1);
 }
 
 .question {
@@ -75,72 +186,170 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 20px 26px;
   background: transparent;
   cursor: pointer;
   border: none;
   gap: 16px;
+  text-align: left;
 }
 
 .questionLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   text-align: left;
 }
 
-.iconBox {
+.questionNumber {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6 0%, #0EA5E9 100%);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.itemOpen .questionNumber {
+  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  border-color: transparent;
+  color: #FFFFFF;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
 }
 
 .questionText {
   font-size: 16px;
   font-weight: 700;
-  color: #000000;
-  line-height: 1.4;
+  color: #0F172A;
+  line-height: 1.45;
+  transition: color 0.2s ease;
+}
+
+.itemOpen .questionText {
+  color: #1D4ED8;
 }
 
 .chevron {
   flex-shrink: 0;
   color: #2563EB;
-  transition: transform 0.3s ease;
-  width: 24px;
-  height: 24px;
+  transition: transform 0.3s ease, background 0.25s ease, color 0.25s ease;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #F0F9FF;
+  border: 1px solid #E0F2FE;
   border-radius: 50%;
 }
 
 .itemOpen .chevron {
   transform: rotate(180deg);
-  background: #DBEAFE;
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+}
+
+/* Smooth CSS Grid Accordion Collapse */
+.answerCollapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.answerCollapseOpen {
+  grid-template-rows: 1fr;
+}
+
+.answerInner {
+  overflow: hidden;
 }
 
 .answer {
-  padding: 0 24px 24px 52px; /* Align text with question, compensating for icon */
+  margin: 0 26px 22px 26px;
+  padding: 16px 20px;
+  background: #F0F9FF;
+  border: 1px solid #E0F2FE;
+  border-radius: 14px;
   font-size: 15px;
   color: #334155;
   line-height: 1.7;
   font-weight: 500;
-  animation: fadeIn 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .answer {
-    padding: 0 24px 24px 24px; /* On mobile, the question might wrap, standard padding is better */
+.answer p {
+  margin: 0;
+}
+
+/* ==========================================================================
+   3. RESPONSIVE BREAKPOINTS (Tablet & Mobile)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .heroCard {
+    padding: 28px 28px;
+    gap: 24px;
+  }
+
+  .heroIllustration {
+    flex: 0 0 200px;
   }
 }
 
-.answer p { margin: 0; }
+@media (max-width: 768px) {
+  .section {
+    padding: 44px 0 72px;
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  .heroCard {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 26px 22px;
+    border-radius: 22px;
+    margin-bottom: 32px;
+  }
+
+  .heroContent {
+    max-width: 100%;
+  }
+
+  .heading {
+    font-size: 1.75rem;
+  }
+
+  .subHeading {
+    font-size: 14.5px;
+  }
+
+  .heroIllustration {
+    flex: none;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .illustrationSvg {
+    max-width: 210px;
+  }
+
+  .question {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  .questionText {
+    font-size: 15px;
+  }
+
+  .answer {
+    margin: 0 18px 18px 18px;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
 }
