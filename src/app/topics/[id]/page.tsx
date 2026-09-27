@@ -103,19 +103,44 @@ export default function TopicDetailPage() {
     return modulesList[0]?.lessons[0] || topic.lessons[0];
   }, [modulesList, topic.lessons]);
 
-  // Initial active lesson: start strictly from Video 1
-  const [activeLessonId, setActiveLessonId] = useState<string>(() => {
-    return firstLesson?.id || topic.lessons[0]?.id;
-  });
-
-  // Active module title: defaults to first module
-  const [activeModuleTitle, setActiveModuleTitle] = useState<string>(
-    modulesList[0]?.title || "Module 1"
-  );
-
-  // Completed lesson IDs: e.g. 3 videos in QA-0 (QA-0.1, QA-0.2, QA-0.3) for demo user, empty for new user
+  // Completed lesson IDs: e.g. 3 videos in QA-0 for demo user, empty for fresh user
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() => {
     return isDemo ? topic.lessons.filter((l) => l.completed).map((l) => l.id) : [];
+  });
+
+  // Calculate initial resume lecture:
+  // Fresh account (0 completed): starts strictly from Video 1
+  // Demo account or returning user: resumes from the next uncompleted video
+  const initialResume = useMemo(() => {
+    const initialCompleted = isDemo ? topic.lessons.filter((l) => l.completed).map((l) => l.id) : [];
+    if (initialCompleted.length === 0) {
+      return {
+        lesson: firstLesson,
+        moduleTitle: modulesList[0]?.title || firstLesson?.moduleTitle || "Module 1",
+      };
+    }
+    const nextUncompleted = topic.lessons.find((l) => !initialCompleted.includes(l.id));
+    if (nextUncompleted) {
+      const parentMod = modulesList.find((m) => m.lessons.some((l) => l.id === nextUncompleted.id));
+      return {
+        lesson: nextUncompleted,
+        moduleTitle: parentMod?.title || nextUncompleted.moduleTitle || modulesList[0]?.title,
+      };
+    }
+    return {
+      lesson: firstLesson,
+      moduleTitle: modulesList[0]?.title || "Module 1",
+    };
+  }, [isDemo, topic.lessons, firstLesson, modulesList]);
+
+  // Initial active lesson:
+  const [activeLessonId, setActiveLessonId] = useState<string>(() => {
+    return initialResume.lesson?.id || firstLesson?.id || topic.lessons[0]?.id;
+  });
+
+  // Active module title:
+  const [activeModuleTitle, setActiveModuleTitle] = useState<string>(() => {
+    return initialResume.moduleTitle || modulesList[0]?.title || "Module 1";
   });
 
   // Module Progress state: tracks quiz scores, pass status, attempts used
@@ -151,11 +176,30 @@ export default function TopicDetailPage() {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.activeModuleTitle) setActiveModuleTitle(parsed.activeModuleTitle);
-        if (parsed.activeLessonId && topic.lessons.some((l) => l.id === parsed.activeLessonId)) {
-          setActiveLessonId(parsed.activeLessonId);
+        const completedIds: string[] = Array.isArray(parsed.completedLessonIds) ? parsed.completedLessonIds : [];
+        if (completedIds.length > 0) setCompletedLessonIds(completedIds);
+
+        // Resume watching logic:
+        let resumeLessonId = parsed.activeLessonId;
+        // If the saved active lesson was already completed, automatically advance to the NEXT uncompleted lesson!
+        if (!resumeLessonId || completedIds.includes(resumeLessonId)) {
+          const nextUncompleted = topic.lessons.find((l) => !completedIds.includes(l.id));
+          if (nextUncompleted) {
+            resumeLessonId = nextUncompleted.id;
+            const parentMod = modulesList.find((m) => m.lessons.some((l) => l.id === nextUncompleted.id));
+            if (parentMod) {
+              setActiveModuleTitle(parentMod.title);
+              setExpandedModules((prev) => ({ ...prev, [parentMod.title]: true }));
+            }
+          }
+        } else if (parsed.activeModuleTitle) {
+          setActiveModuleTitle(parsed.activeModuleTitle);
         }
-        if (Array.isArray(parsed.completedLessonIds)) setCompletedLessonIds(parsed.completedLessonIds);
+
+        if (resumeLessonId && topic.lessons.some((l) => l.id === resumeLessonId)) {
+          setActiveLessonId(resumeLessonId);
+        }
+
         if (parsed.modulesProgress) {
           const cleaned: Record<string, ModuleProgressItem> = {};
           for (const k of Object.keys(parsed.modulesProgress)) {
@@ -177,7 +221,7 @@ export default function TopicDetailPage() {
         if (parsed.grandQuizPassed !== undefined) setGrandQuizPassed(parsed.grandQuizPassed);
       }
     } catch {}
-  }, [storageKey, topic.lessons]);
+  }, [storageKey, topic.lessons, modulesList]);
 
   // If real user, sync completed lessons from DB
   useEffect(() => {
@@ -189,12 +233,22 @@ export default function TopicDetailPage() {
             const thisTopic = data.progress.find((p: any) => p.topic_id === topic.id);
             if (thisTopic && Array.isArray(thisTopic.completed_lessons) && thisTopic.completed_lessons.length > 0) {
               setCompletedLessonIds(thisTopic.completed_lessons);
+              // Auto-advance to next uncompleted lesson if current active is completed
+              const nextUncompleted = topic.lessons.find((l) => !thisTopic.completed_lessons.includes(l.id));
+              if (nextUncompleted) {
+                setActiveLessonId(nextUncompleted.id);
+                const parentMod = modulesList.find((m) => m.lessons.some((l) => l.id === nextUncompleted.id));
+                if (parentMod) {
+                  setActiveModuleTitle(parentMod.title);
+                  setExpandedModules((prev) => ({ ...prev, [parentMod.title]: true }));
+                }
+              }
             }
           }
         })
         .catch(() => {});
     }
-  }, [isDemo, user, topic.id]);
+  }, [isDemo, user, topic.id, topic.lessons, modulesList]);
 
   const saveProgressToStorage = useCallback(
     (
@@ -224,8 +278,9 @@ export default function TopicDetailPage() {
   // Accordion expanded modules state
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
+    const targetTitle = initialResume.moduleTitle || modulesList[0]?.title;
     modulesList.forEach((m, idx) => {
-      map[m.title] = idx === 0; // First module open by default
+      map[m.title] = m.title === targetTitle || idx === 0;
     });
     return map;
   });
@@ -642,18 +697,42 @@ export default function TopicDetailPage() {
         });
       }
 
+      // Find the next uncompleted lesson to prime resume state
+      const nextUncompleted = topic.lessons.find((l) => !newCompleted.includes(l.id));
+
+      if (!isDemo && user) {
+        fetch("/api/topics/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topicId: topic.id,
+            lessonId,
+            totalLessons: topic.totalLessons,
+          }),
+        }).catch(console.error);
+      }
+
       setModulesProgress(newModProgress);
-      saveProgressToStorage(newCompleted, newModProgress, activeModuleTitle, grandQuizPassed);
+      saveProgressToStorage(
+        newCompleted,
+        newModProgress,
+        activeModuleTitle,
+        grandQuizPassed,
+        nextUncompleted ? nextUncompleted.id : lessonId
+      );
     },
     [
       completedLessonIds,
       topic.lessons,
+      topic.totalLessons,
       topic.id,
       activeModuleTitle,
       modulesList,
       modulesProgress,
       saveProgressToStorage,
       grandQuizPassed,
+      isDemo,
+      user,
     ]
   );
 
