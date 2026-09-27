@@ -95,15 +95,23 @@ export default function TopicDetailPage() {
   }, [topic]);
 
   const [activeNav, setActiveNav] = useState("My Topics");
-  const initialLesson = topic.lessons.find((l) => l.active) || topic.lessons[0];
-  const [activeLessonId, setActiveLessonId] = useState<string>(initialLesson.id);
+
+  const isDemo = !user || user.email === "student@technocat.edu";
+
+  // First lesson of the topic (Video 1 of Module 1)
+  const firstLesson = useMemo(() => {
+    return modulesList[0]?.lessons[0] || topic.lessons[0];
+  }, [modulesList, topic.lessons]);
+
+  // Initial active lesson: start strictly from Video 1
+  const [activeLessonId, setActiveLessonId] = useState<string>(() => {
+    return firstLesson?.id || topic.lessons[0]?.id;
+  });
 
   // Active module title: defaults to first module
   const [activeModuleTitle, setActiveModuleTitle] = useState<string>(
     modulesList[0]?.title || "Module 1"
   );
-
-  const isDemo = !user || user.email === "student@technocat.edu";
 
   // Completed lesson IDs: e.g. 3 videos in QA-0 (QA-0.1, QA-0.2, QA-0.3) for demo user, empty for new user
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() => {
@@ -144,6 +152,9 @@ export default function TopicDetailPage() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.activeModuleTitle) setActiveModuleTitle(parsed.activeModuleTitle);
+        if (parsed.activeLessonId && topic.lessons.some((l) => l.id === parsed.activeLessonId)) {
+          setActiveLessonId(parsed.activeLessonId);
+        }
         if (Array.isArray(parsed.completedLessonIds)) setCompletedLessonIds(parsed.completedLessonIds);
         if (parsed.modulesProgress) {
           const cleaned: Record<string, ModuleProgressItem> = {};
@@ -166,7 +177,7 @@ export default function TopicDetailPage() {
         if (parsed.grandQuizPassed !== undefined) setGrandQuizPassed(parsed.grandQuizPassed);
       }
     } catch {}
-  }, [storageKey]);
+  }, [storageKey, topic.lessons]);
 
   // If real user, sync completed lessons from DB
   useEffect(() => {
@@ -190,7 +201,8 @@ export default function TopicDetailPage() {
       newCompletedIds: string[],
       newModulesProgress: Record<string, ModuleProgressItem>,
       newActiveModule: string,
-      isGrandPassed: boolean
+      isGrandPassed: boolean,
+      currentLessonId?: string
     ) => {
       if (typeof window === "undefined") return;
       try {
@@ -198,6 +210,7 @@ export default function TopicDetailPage() {
           storageKey,
           JSON.stringify({
             activeModuleTitle: newActiveModule,
+            activeLessonId: currentLessonId || activeLessonId,
             completedLessonIds: newCompletedIds,
             modulesProgress: newModulesProgress,
             grandQuizPassed: isGrandPassed,
@@ -205,7 +218,7 @@ export default function TopicDetailPage() {
         );
       } catch {}
     },
-    [storageKey]
+    [storageKey, activeLessonId]
   );
 
   // Accordion expanded modules state
@@ -255,7 +268,7 @@ export default function TopicDetailPage() {
 
   // Active lesson object
   const activeLesson: Lesson =
-    topic.lessons.find((l) => l.id === activeLessonId) || initialLesson;
+    topic.lessons.find((l) => l.id === activeLessonId) || firstLesson || topic.lessons[0];
 
   // Video playback & seeking state
   const [playerState, setPlayerState] = useState<"idle" | "playing" | "paused" | "ended">("idle");
@@ -265,7 +278,7 @@ export default function TopicDetailPage() {
   const [iframeOrigin, setIframeOrigin] = useState("");
 
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(() => parseLessonDuration(initialLesson.duration));
+  const [duration, setDuration] = useState<number>(() => parseLessonDuration(firstLesson?.duration));
   const [maxWatchedTime, setMaxWatchedTime] = useState<number>(0);
   const maxWatchedTimeRef = useRef<number>(0);
   const isDraggingRef = useRef<boolean>(false);
@@ -351,12 +364,17 @@ export default function TopicDetailPage() {
   // User can only play lectures in their activeModuleTitle OR any previously passed modules
   const isModuleUnlocked = useCallback(
     (modTitle: string) => {
+      if (!modTitle) return true;
+      // First module of any topic is ALWAYS unlocked
+      if (modulesList.length > 0 && modTitle === modulesList[0].title) return true;
+      // Currently active module is ALWAYS unlocked
       if (modTitle === activeModuleTitle) return true;
+      // Any previously passed module is unlocked
       const modProgress = modulesProgress[modTitle];
       if (modProgress?.quizPassed) return true;
       return false;
     },
-    [activeModuleTitle, modulesProgress]
+    [activeModuleTitle, modulesList, modulesProgress]
   );
 
   // Check if all modules have passed (to unlock Grand Quiz)
@@ -737,7 +755,8 @@ export default function TopicDetailPage() {
 
   // Handle lesson selection with locking checks
   const handleLessonSelect = (lesson: Lesson) => {
-    const lessonModuleTitle = lesson.moduleTitle || activeModuleTitle;
+    const parentModule = modulesList.find((m) => m.lessons.some((l) => l.id === lesson.id));
+    const lessonModuleTitle = parentModule?.title || lesson.moduleTitle || activeModuleTitle;
 
     if (!isModuleUnlocked(lessonModuleTitle)) {
       setLockedAlert({
@@ -749,11 +768,13 @@ export default function TopicDetailPage() {
     }
 
     setActiveLessonId(lesson.id);
+    setExpandedModules((prev) => ({ ...prev, [lessonModuleTitle]: true }));
     setPlayerState("idle");
     setCurrentTime(0);
     setMaxWatchedTime(0);
     maxWatchedTimeRef.current = 0;
     setDuration(parseLessonDuration(lesson.duration));
+    saveProgressToStorage(completedLessonIds, modulesProgress, activeModuleTitle, grandQuizPassed, lesson.id);
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
@@ -1749,14 +1770,18 @@ export default function TopicDetailPage() {
                       >
                         Rewatch
                       </button>
-                      {nextLesson && isModuleUnlocked(nextLesson.moduleTitle || activeModuleTitle) && (
-                        <button
-                          className={styles.nextLessonBtn}
-                          onClick={() => handleLessonSelect(nextLesson)}
-                        >
-                          Next Lecture ({nextLesson.code}) →
-                        </button>
-                      )}
+                      {nextLesson && (() => {
+                        const nextParent = modulesList.find((m) => m.lessons.some((l) => l.id === nextLesson.id));
+                        const nextModTitle = nextParent?.title || nextLesson.moduleTitle || activeModuleTitle;
+                        return isModuleUnlocked(nextModTitle) ? (
+                          <button
+                            className={styles.nextLessonBtn}
+                            onClick={() => handleLessonSelect(nextLesson)}
+                          >
+                            Next Lecture ({nextLesson.code}) →
+                          </button>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                 )}

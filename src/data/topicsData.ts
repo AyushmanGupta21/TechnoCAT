@@ -112,7 +112,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/watch?v=VT9-jeEmlJ8&amp;utm_source=chatgpt.com",
             "youtubeId": "VT9-jeEmlJ8",
             "completed": true,
-            "active": false
+            "active": true
           },
           {
             "id": "qa-0-2",
@@ -156,7 +156,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/live/x-k8iSNr85g?utm_source=chatgpt.com",
             "youtubeId": "x-k8iSNr85g",
             "completed": false,
-            "active": true
+            "active": false
           },
           {
             "id": "qa-1-2",
@@ -819,7 +819,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/watch?v=VT9-jeEmlJ8&amp;utm_source=chatgpt.com",
         "youtubeId": "VT9-jeEmlJ8",
         "completed": true,
-        "active": false
+        "active": true
       },
       {
         "id": "qa-0-2",
@@ -858,7 +858,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/live/x-k8iSNr85g?utm_source=chatgpt.com",
         "youtubeId": "x-k8iSNr85g",
         "completed": false,
-        "active": true
+        "active": false
       },
       {
         "id": "qa-1-2",
@@ -1534,7 +1534,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/watch?v=72Eycf7cPeo&amp;utm_source=chatgpt.com",
             "youtubeId": "72Eycf7cPeo",
             "completed": true,
-            "active": false
+            "active": true
           },
           {
             "id": "dilr-1-2",
@@ -1560,7 +1560,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/watch?v=KGJzU8jQqsE&amp;utm_source=chatgpt.com",
             "youtubeId": "KGJzU8jQqsE",
             "completed": false,
-            "active": true
+            "active": false
           },
           {
             "id": "dilr-1-4",
@@ -1808,7 +1808,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/watch?v=72Eycf7cPeo&amp;utm_source=chatgpt.com",
         "youtubeId": "72Eycf7cPeo",
         "completed": true,
-        "active": false
+        "active": true
       },
       {
         "id": "dilr-1-2",
@@ -1834,7 +1834,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/watch?v=KGJzU8jQqsE&amp;utm_source=chatgpt.com",
         "youtubeId": "KGJzU8jQqsE",
         "completed": false,
-        "active": true
+        "active": false
       },
       {
         "id": "dilr-1-4",
@@ -2120,7 +2120,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/watch?v=IzzDC2qCYu0&amp;utm_source=chatgpt.com",
             "youtubeId": "IzzDC2qCYu0",
             "completed": true,
-            "active": false
+            "active": true
           },
           {
             "id": "varc-1-2",
@@ -2146,7 +2146,7 @@ export const TOPICS_DATA: Topic[] = [
             "videoUrl": "https://www.youtube.com/watch?v=IzzDC2qCYu0&amp;utm_source=chatgpt.com",
             "youtubeId": "IzzDC2qCYu0",
             "completed": false,
-            "active": true
+            "active": false
           },
           {
             "id": "varc-1-4",
@@ -2373,7 +2373,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/watch?v=IzzDC2qCYu0&amp;utm_source=chatgpt.com",
         "youtubeId": "IzzDC2qCYu0",
         "completed": true,
-        "active": false
+        "active": true
       },
       {
         "id": "varc-1-2",
@@ -2399,7 +2399,7 @@ export const TOPICS_DATA: Topic[] = [
         "videoUrl": "https://www.youtube.com/watch?v=IzzDC2qCYu0&amp;utm_source=chatgpt.com",
         "youtubeId": "IzzDC2qCYu0",
         "completed": false,
-        "active": true
+        "active": false
       },
       {
         "id": "varc-1-4",
@@ -2653,27 +2653,27 @@ export const TOPICS_DATA: Topic[] = [
             "id": "1",
             "code": "DES-1.1",
             "title": "Introduction to Digital Vector Design",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "20 min",
             "completed": true,
-            "active": false,
+            "active": true,
             "youtubeId": "bC3Wlg6DIRg"
           },
           {
             "id": "2",
             "code": "DES-1.2",
             "title": "Mastering Tools & Panels",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "1 hour 20 min",
             "completed": false,
-            "active": true,
+            "active": false,
             "youtubeId": "VT9-jeEmlJ8"
           },
           {
             "id": "3",
             "code": "DES-1.3",
             "title": "Mastering Vector Shapes & Curves",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "2 hour 10 min",
             "completed": false,
             "active": false,
@@ -2683,7 +2683,7 @@ export const TOPICS_DATA: Topic[] = [
             "id": "4",
             "code": "DES-1.4",
             "title": "Create Simple Shapes & Icons",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "40 min",
             "completed": false,
             "active": false,
@@ -2693,7 +2693,7 @@ export const TOPICS_DATA: Topic[] = [
             "id": "5",
             "code": "DES-1.5",
             "title": "Typography & Layout Hierarchy",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "40 min",
             "completed": false,
             "active": false,
@@ -2703,7 +2703,7 @@ export const TOPICS_DATA: Topic[] = [
             "id": "6",
             "code": "DES-1.6",
             "title": "Mastering the Pen Tool & Bezier Anchor Points",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "1 hour 40 min",
             "completed": false,
             "active": false,
@@ -2713,7 +2713,7 @@ export const TOPICS_DATA: Topic[] = [
             "id": "7",
             "code": "DES-1.7",
             "title": "Mastering Procreate & Color Gradients",
-            "moduleTitle": "Module 1",
+            "moduleTitle": "Module 1: Vector Graphics Essentials",
             "duration": "2 hour",
             "completed": false,
             "active": false,
@@ -2727,27 +2727,27 @@ export const TOPICS_DATA: Topic[] = [
         "id": "1",
         "code": "DES-1.1",
         "title": "Introduction to Digital Vector Design",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "20 min",
         "completed": true,
-        "active": false,
+        "active": true,
         "youtubeId": "bC3Wlg6DIRg"
       },
       {
         "id": "2",
         "code": "DES-1.2",
         "title": "Mastering Tools & Panels",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "1 hour 20 min",
         "completed": false,
-        "active": true,
+        "active": false,
         "youtubeId": "VT9-jeEmlJ8"
       },
       {
         "id": "3",
         "code": "DES-1.3",
         "title": "Mastering Vector Shapes & Curves",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "2 hour 10 min",
         "completed": false,
         "active": false,
@@ -2757,7 +2757,7 @@ export const TOPICS_DATA: Topic[] = [
         "id": "4",
         "code": "DES-1.4",
         "title": "Create Simple Shapes & Icons",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "40 min",
         "completed": false,
         "active": false,
@@ -2767,7 +2767,7 @@ export const TOPICS_DATA: Topic[] = [
         "id": "5",
         "code": "DES-1.5",
         "title": "Typography & Layout Hierarchy",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "40 min",
         "completed": false,
         "active": false,
@@ -2777,7 +2777,7 @@ export const TOPICS_DATA: Topic[] = [
         "id": "6",
         "code": "DES-1.6",
         "title": "Mastering the Pen Tool & Bezier Anchor Points",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "1 hour 40 min",
         "completed": false,
         "active": false,
@@ -2787,7 +2787,7 @@ export const TOPICS_DATA: Topic[] = [
         "id": "7",
         "code": "DES-1.7",
         "title": "Mastering Procreate & Color Gradients",
-        "moduleTitle": "Module 1",
+        "moduleTitle": "Module 1: Vector Graphics Essentials",
         "duration": "2 hour",
         "completed": false,
         "active": false,
