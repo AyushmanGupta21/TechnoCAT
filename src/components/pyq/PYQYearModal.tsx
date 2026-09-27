@@ -185,16 +185,18 @@ export default function PYQYearModal({
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <div className={styles.badgeRow}>
-              <span className={styles.yearBadge}>CAT {year} Archive</span>
+              <span className={styles.yearBadge}>
+                {year === 2024 ? "TechnoCAT 6.0 Full Mock & Official Archive" : `CAT ${year} Archive`}
+              </span>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
-                Official Question Papers
+                {year === 2024 ? "Free All-India Live Simulation • 3 Slots" : "Official Question Papers"}
               </span>
             </div>
             <h2 className={styles.headerTitle}>
-              CAT {year} Previous Year Question Papers
+              {year === 2024 ? `TechnoCAT 6.0 Full Mock (Official CAT ${year})` : `CAT ${year} Previous Year Question Papers`}
             </h2>
             <p className={styles.headerSubtitle}>
-              Access all 3 Slots & 3 Sections. Review detailed solutions in Study Mode or simulate official exam conditions in Timed Attempt Mode.
+              Access all 3 Slots &amp; 3 Sections. Review detailed solutions in Study Mode or simulate official exam conditions in Timed Attempt Mode.
             </p>
           </div>
 

@@ -13,6 +13,9 @@ export default function HeroSection() {
 
   const handleAuthAction = (destination: string) => {
     if (!user || user.isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", destination);
+      }
       openAuthModal("signup");
     } else {
       router.push(destination);
@@ -40,7 +43,7 @@ export default function HeroSection() {
         "Sectional pacing analysis: VARC, DILR, and QA benchmarked live"
       ],
       primaryBtnText: "Attempt Free Mock Now",
-      onPrimaryClick: () => handleAuthAction("/dashboard")
+      onPrimaryClick: () => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")
     });
   };
 
@@ -118,7 +121,7 @@ export default function HeroSection() {
                 <div className={styles.primaryCtaRow}>
                   <button
                     className={styles.freeAttemptBtn}
-                    onClick={() => handleAuthAction("/dashboard")}
+                    onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
                   >
                     <span className={styles.freeBadge}>FREE</span>
                     <span>Attempt TechnoCAT 6.0 Mock</span>
@@ -220,8 +223,8 @@ export default function HeroSection() {
                 {/* Mockup Frame */}
                 <div
                   className={styles.videoWrapper}
-                  onClick={() => handleAuthAction("/dashboard")}
-                  title="Click to attempt mock in dashboard"
+                  onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
+                  title="Click to attempt TechnoCAT 6.0 Mock"
                 >
                   <div className={styles.videoThumb}>
                     <img
@@ -255,8 +258,8 @@ export default function HeroSection() {
                 {/* Attempt Mock Link Bar */}
                 <div
                   className={styles.attemptBar}
-                  onClick={() => handleAuthAction("/dashboard")}
-                  title="Click to attempt mock in dashboard"
+                  onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
+                  title="Click to attempt TechnoCAT 6.0 Mock"
                 >
                   <p className={styles.attemptBarText}>
                     <span>Attempt TechnoCAT 6.0 Mock Now</span>

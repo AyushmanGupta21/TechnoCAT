@@ -84,7 +84,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     links: [
       {
         label: "TechnoCAT 6.0 Full Mock",
-        href: "/dashboard",
+        href: "/browse?section=mocks&mock=latest#pyq-section",
         badge: "Free",
       },
       {

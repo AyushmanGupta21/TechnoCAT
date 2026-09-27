@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PYQ_YEARS } from "@/data/pyqData";
 import PYQYearModal from "./PYQYearModal";
 import styles from "./PYQSection.module.css";
@@ -12,12 +12,42 @@ interface PYQSectionProps {
 export default function PYQSection({ onSelectTopicCategory }: PYQSectionProps) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const checkParams = () => {
+      const params = new URLSearchParams(window.location.search);
+      const mockParam = params.get("mock") || params.get("year");
+      if (mockParam === "latest" || mockParam === "2024" || mockParam === "free") {
+        setSelectedYear(2024);
+      } else if (mockParam && !isNaN(Number(mockParam))) {
+        setSelectedYear(Number(mockParam));
+      }
+    };
+
+    checkParams();
+    window.addEventListener("popstate", checkParams);
+    window.addEventListener("hashchange", checkParams);
+    return () => {
+      window.removeEventListener("popstate", checkParams);
+      window.removeEventListener("hashchange", checkParams);
+    };
+  }, []);
+
+  const handleCloseModal = () => {
+    setSelectedYear(null);
+    if (typeof window !== "undefined" && window.location.search.includes("mock=")) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("mock");
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
   return (
     <section className={styles.pyqSection} id="pyq-section">
       <div className={styles.sectionHeaderRow}>
         <div>
-          <div className={styles.pillBadge}>★ Official CAT Archives</div>
-          <h2 className={styles.sectionTitle}>Previous Year Questions (PYQs)</h2>
+          <div className={styles.pillBadge}>★ Official CAT Full Mocks &amp; Archives</div>
+          <h2 className={styles.sectionTitle}>TechnoCAT Full Mocks &amp; Previous Year Papers</h2>
           <p className={styles.sectionSubtitle}>
             Practice with authentic CAT question papers from 2017 to 2024. Read step-by-step solutions or test your percentile in timed exam simulations.
           </p>
@@ -110,7 +140,7 @@ export default function PYQSection({ onSelectTopicCategory }: PYQSectionProps) {
         <PYQYearModal
           isOpen={true}
           year={selectedYear}
-          onClose={() => setSelectedYear(null)}
+          onClose={handleCloseModal}
         />
       )}
     </section>

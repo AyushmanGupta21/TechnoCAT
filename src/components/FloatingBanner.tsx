@@ -9,10 +9,14 @@ export default function FloatingBanner() {
   const { user, openAuthModal } = useAuth();
 
   const handleClaim = () => {
+    const dest = "/browse?section=mocks&mock=latest#pyq-section";
     if (!user || user.isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", dest);
+      }
       openAuthModal("signup");
     } else {
-      router.push("/browse?section=pyqs#pyq-section");
+      router.push(dest);
     }
   };
 

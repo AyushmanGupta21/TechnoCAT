@@ -66,9 +66,13 @@ export default function AuthModal() {
         setError(res.error || "Login failed");
       } else {
         const hasPredictorRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_predictor_pending_redirect");
+        const authRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_auth_redirect");
         if (hasPredictorRedirect) {
           sessionStorage.removeItem("technocat_predictor_pending_redirect");
           window.location.href = "/intelligence/b-school-predictor";
+        } else if (authRedirect) {
+          sessionStorage.removeItem("technocat_auth_redirect");
+          window.location.href = authRedirect;
         } else {
           window.location.href = "/dashboard";
         }
@@ -96,9 +100,13 @@ export default function AuthModal() {
         setError(res.error || "Sign up failed");
       } else {
         const hasPredictorRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_predictor_pending_redirect");
+        const authRedirect = typeof window !== "undefined" && sessionStorage.getItem("technocat_auth_redirect");
         if (hasPredictorRedirect) {
           sessionStorage.removeItem("technocat_predictor_pending_redirect");
           window.location.href = "/intelligence/b-school-predictor";
+        } else if (authRedirect) {
+          sessionStorage.removeItem("technocat_auth_redirect");
+          window.location.href = authRedirect;
         } else {
           window.location.href = "/dashboard";
         }
