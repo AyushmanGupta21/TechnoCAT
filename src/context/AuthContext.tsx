@@ -22,6 +22,8 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signup: (fullName: string, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  updateUser: (updated: Partial<UserProfile>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +55,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     checkAuth();
   }, []);
+
+  const refreshUser = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().length > 0) {
+          const data = JSON.parse(text);
+          if (data?.user) {
+            setUser(data.user);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[Auth Refresh Error]", err);
+    }
+  };
+
+  const updateUser = (updated: Partial<UserProfile>) => {
+    setUser((prev) => (prev ? { ...prev, ...updated } : null));
+  };
 
   const openAuthModal = (tab: "signin" | "signup" = "signin") => {
     setAuthModalTab(tab);
@@ -128,6 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        updateUser,
+        refreshUser,
       }}
     >
       {children}

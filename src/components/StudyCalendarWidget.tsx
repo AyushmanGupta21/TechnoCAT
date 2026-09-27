@@ -10,6 +10,7 @@ interface StudyCalendarWidgetProps {
   selectedDay: number;
   onSelectDay: (day: number) => void;
   taskCategoryMap?: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock">>;
+  isDemo?: boolean;
 }
 
 interface CalendarDate {
@@ -77,6 +78,7 @@ export default function StudyCalendarWidget({
   selectedDay,
   onSelectDay,
   taskCategoryMap,
+  isDemo = false,
 }: StudyCalendarWidgetProps) {
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -112,13 +114,15 @@ export default function StudyCalendarWidget({
 
   // 2. Current month days
   for (let d = 1; d <= daysInMonth; d++) {
-    const dots = taskCategoryMap && taskCategoryMap[d]
-      ? taskCategoryMap[d]
-      : isSeptember
-      ? defaultSeptemberDots[d]
-      : isOctober
-      ? defaultOctoberDots[d]
-      : undefined;
+    const dots = isDemo
+      ? (taskCategoryMap && taskCategoryMap[d]
+          ? taskCategoryMap[d]
+          : isSeptember
+          ? defaultSeptemberDots[d]
+          : isOctober
+          ? defaultOctoberDots[d]
+          : undefined)
+      : (taskCategoryMap && taskCategoryMap[d] ? taskCategoryMap[d] : undefined);
 
     calendarDays.push({
       day: d,

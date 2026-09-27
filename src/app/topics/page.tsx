@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
@@ -22,9 +22,11 @@ export default function TopicsListPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Topics");
   const [searchQuery, setSearchQuery] = useState("");
   const [userProgressMap, setUserProgressMap] = useState<Record<string, any>>({});
+  const [loadingProgress, setLoadingProgress] = useState(!isDemo);
 
   useEffect(() => {
     if (!isDemo) {
+      setLoadingProgress(true);
       fetch("/api/topics/progress")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
@@ -36,11 +38,24 @@ export default function TopicsListPage() {
             setUserProgressMap(map);
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => {
+          setLoadingProgress(false);
+        });
+    } else {
+      setLoadingProgress(false);
     }
   }, [isDemo, user?.id]);
 
-  const filteredTopics = TOPICS_DATA.filter((topic) => {
+  // For real users, only topics present in userProgressMap are enrolled courses!
+  const enrolledTopics = useMemo(() => {
+    if (isDemo) {
+      return TOPICS_DATA;
+    }
+    return TOPICS_DATA.filter((topic: any) => Boolean(userProgressMap[topic.id]));
+  }, [isDemo, userProgressMap]);
+
+  const filteredTopics = enrolledTopics.filter((topic: any) => {
     const matchesCategory =
       selectedCategory === "All Topics" || topic.category === selectedCategory;
     const matchesSearch =
@@ -137,8 +152,35 @@ export default function TopicsListPage() {
 
       {/* ===== MAIN TOPICS GRID SECTION ===== */}
       <main className={styles.mainContent} style={{ paddingTop: "36px", paddingBottom: "80px" }}>
-        <div className={styles.topicsGrid}>
-          {filteredTopics.map((topic) => (
+        {!isDemo && !loadingProgress && enrolledTopics.length === 0 ? (
+          <div className={styles.emptyEnrollmentCard}>
+            <div className={styles.emptyEnrollmentIconBox}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                <path d="M12 6v6" />
+                <path d="M9 9h6" />
+              </svg>
+            </div>
+            <h2 className={styles.emptyEnrollmentTitle}>You haven&apos;t enrolled in any topics yet</h2>
+            <p className={styles.emptyEnrollmentDesc}>
+              Explore our comprehensive CAT curriculum across Quantitative Aptitude, DILR, and VARC. Enroll in a course from the Browse catalog to start learning and tracking your milestone progress here.
+            </p>
+            <Link href="/browse" className={styles.emptyEnrollmentBtn}>
+              <span>Browse Catalog &amp; Enroll</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+          </div>
+        ) : filteredTopics.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748B", fontSize: "15px" }}>
+            No enrolled topics found matching your filter or search query.
+          </div>
+        ) : (
+          <div className={styles.topicsGrid}>
+            {filteredTopics.map((topic: any) => (
             <Link
               key={topic.id}
               href={`/topics/${topic.id}`}
@@ -220,6 +262,7 @@ export default function TopicsListPage() {
             </Link>
           ))}
         </div>
+      )}
       </main>
     </div>
   );

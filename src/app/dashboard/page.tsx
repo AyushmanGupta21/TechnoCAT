@@ -31,6 +31,7 @@ interface StudyTask {
 }
 
 interface DashboardData {
+  enrolledTopics?: string[];
   metrics: {
     inProgressCourses: number;
     completedCourses: number;
@@ -984,6 +985,24 @@ export default function DashboardPage() {
   const isDemo = !user || user.email === "student@technocat.edu";
   const [activeNav, setActiveNav] = useState("Dashboard");
 
+  // Live Supabase Dashboard Data State
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Dynamic enrolled topics list
+  const enrolledTopicsList = useMemo(() => {
+    if (isDemo) {
+      return ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
+    }
+    return (
+      dashboardData?.enrolledTopics ||
+      dashboardData?.detailed?.inProgressTopics?.map((t: any) => t.topic_id) ||
+      []
+    );
+  }, [isDemo, dashboardData]);
+
+  const enrolledCount = isDemo ? 3 : enrolledTopicsList.length;
+
   // Selected Agenda Modal State
   const [selectedAgenda, setSelectedAgenda] = useState<AgendaSession | null>(null);
   const [agendaReminderSaved, setAgendaReminderSaved] = useState<Record<string, boolean>>({});
@@ -1006,7 +1025,7 @@ export default function DashboardPage() {
 
   // Dynamic Agenda sessions derived from current date
   const upcomingAgenda: AgendaSession[] = useMemo(() => {
-    return [
+    const allSessions: AgendaSession[] = [
       {
         id: "agenda-qa-geo",
         title: "CAT QA: Geometry & Mensuration Masterclass",
@@ -1052,7 +1071,25 @@ export default function DashboardPage() {
         enrolledCount: 420
       }
     ];
-  }, []);
+
+    if (isDemo) {
+      return allSessions;
+    }
+
+    if (enrolledCount === 0) {
+      return [];
+    }
+
+    return allSessions.filter((session) => {
+      if (session.id === "agenda-qa-geo") {
+        return enrolledTopicsList.includes("qa-quantitative-ability");
+      }
+      if (session.id === "agenda-dilr-matrix") {
+        return enrolledTopicsList.includes("dilr-data-interpretation");
+      }
+      return false;
+    });
+  }, [isDemo, enrolledCount, enrolledTopicsList]);
 
   // Dynamic CAT Prep Notices
   const prepNotices: PrepNotice[] = useMemo(() => {
@@ -1131,9 +1168,18 @@ export default function DashboardPage() {
   };
 
   const handleAutoAssignDay = (day: number) => {
-    const newItems: ScheduleItem[] = [
-      {
-        id: "auto-" + day + "-1",
+    if (!isDemo && enrolledCount === 0) {
+      return;
+    }
+
+    const newItems: ScheduleItem[] = [];
+    const isEnrolledQA = isDemo || enrolledTopicsList.includes("qa-quantitative-ability");
+    const isEnrolledDILR = isDemo || enrolledTopicsList.includes("dilr-data-interpretation");
+    const isEnrolledVARC = isDemo || enrolledTopicsList.includes("varc-verbal-ability");
+
+    if (isEnrolledQA) {
+      newItems.push({
+        id: "auto-" + day + "-qa",
         day,
         monthIndex: selectedMonthIndex,
         year: selectedYear,
@@ -1144,9 +1190,12 @@ export default function DashboardPage() {
         title: "Arithmetic & Percentage Foundations Problem Set",
         subtitle: "Auto-assigned from Enrolled QA Course",
         isCompleted: false,
-      },
-      {
-        id: "auto-" + day + "-2",
+      });
+    }
+
+    if (isEnrolledDILR) {
+      newItems.push({
+        id: "auto-" + day + "-dilr",
         day,
         monthIndex: selectedMonthIndex,
         year: selectedYear,
@@ -1157,14 +1206,39 @@ export default function DashboardPage() {
         title: "Matrix & Grid Logic Practice Set",
         subtitle: "Auto-assigned from Enrolled DILR Course",
         isCompleted: false,
-      },
-    ];
-    setScheduleTasks((prev) => [...prev, ...newItems]);
-  };
+      });
+    }
 
-  // Live Supabase Dashboard Data State
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+    if (isEnrolledVARC && newItems.length === 0) {
+      newItems.push({
+        id: "auto-" + day + "-varc",
+        day,
+        monthIndex: selectedMonthIndex,
+        year: selectedYear,
+        timeRange: "02:00 PM",
+        duration: "40 min",
+        category: "VARC",
+        code: "CAT-VARC-S" + day,
+        title: "Reading Comprehension Strategy Set",
+        subtitle: "Auto-assigned from Enrolled VARC Course",
+        isCompleted: false,
+      });
+    }
+
+    if (newItems.length > 0) {
+      setScheduleTasks((prev) => [...prev, ...newItems]);
+      if (!isDemo && user) {
+        newItems.forEach((item) => {
+          const taskDate = `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          fetch("/api/dashboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: item.title, taskDate }),
+          }).catch(() => {});
+        });
+      }
+    }
+  };
 
   // Add Task Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -1484,6 +1558,8 @@ export default function DashboardPage() {
               onToggleTask={handleToggleTask}
               onAddTask={openAddTaskModal}
               onAutoAssignDay={handleAutoAssignDay}
+              enrolledCount={enrolledCount}
+              isDemo={isDemo}
             />
 
             {/* 2. Study Performance Chart with Side-by-Side AI Performance Analysis */}
@@ -1566,7 +1642,43 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className={styles.agendaList}>
-                {upcomingAgenda.map((item) => (
+                {upcomingAgenda.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "36px 20px", background: "#F8FAFC", borderRadius: "12px", border: "1px dashed #CBD5E1" }}>
+                    <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px auto" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                    </div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#1E293B", margin: "0 0 4px 0" }}>
+                      No Upcoming Live Classes Scheduled
+                    </h4>
+                    <p style={{ fontSize: "13px", color: "#64748B", margin: "0 0 16px 0", maxWidth: "420px", marginLeft: "auto", marginRight: "auto" }}>
+                      You haven&apos;t enrolled in any modules yet. Live masterclasses, faculty Q&amp;A sessions, and workshops will appear here once you enroll in Quantitative Aptitude, DILR, or VARC.
+                    </p>
+                    <Link
+                      href="/browse"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "8px 16px",
+                        background: "#2563EB",
+                        color: "#FFFFFF",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                      }}
+                    >
+                      <span>Browse Courses &amp; Enroll</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </Link>
+                  </div>
+                ) : (
+                  upcomingAgenda.map((item) => (
                   <div
                     key={item.id}
                     className={styles.agendaItem}
@@ -1630,7 +1742,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
 
@@ -1702,6 +1814,7 @@ export default function DashboardPage() {
               selectedDay={selectedDay}
               onSelectDay={(day) => setSelectedDay(day)}
               taskCategoryMap={taskCategoryMap}
+              isDemo={isDemo}
             />
 
             {/* 2. CAT 2026 Readiness & Weak Area Diagnostic */}

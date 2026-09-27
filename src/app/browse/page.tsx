@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
+import { pushNotification } from "@/services/notificationService";
 import PYQSection from "@/components/pyq/PYQSection";
 import PYQYearModal from "@/components/pyq/PYQYearModal";
 import styles from "./browse.module.css";
@@ -15,9 +16,10 @@ export default function BrowsePage() {
   const isDemo = !user || user.email === "student@technocat.edu";
 
   const [enrolledTopics, setEnrolledTopics] = useState<string[]>(() => {
-    return isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation"] : [];
+    return isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"] : [];
   });
 
+  const [enrollingTopicId, setEnrollingTopicId] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState("Browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchPYQModalOpen, setSearchPYQModalOpen] = useState(false);
@@ -25,21 +27,67 @@ export default function BrowsePage() {
 
   useEffect(() => {
     if (isDemo) {
-      setEnrolledTopics(["qa-quantitative-ability", "dilr-data-interpretation"]);
+      setEnrolledTopics(["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"]);
     } else {
       fetch("/api/topics/progress")
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (data?.progress && Array.isArray(data.progress)) {
-            const active = data.progress
-              .filter((p: any) => (p.progress_percent || 0) > 0 || (p.completed_lessons?.length || 0) > 0)
-              .map((p: any) => p.topic_id);
+            const active = data.progress.map((p: any) => p.topic_id);
             setEnrolledTopics(active);
           }
         })
         .catch(() => {});
     }
   }, [isDemo, user?.id]);
+
+  const handleEnroll = async (topicId: string, topicTitle: string) => {
+    if (enrolledTopics.includes(topicId)) {
+      router.push(`/topics/${topicId}`);
+      return;
+    }
+
+    if (isDemo) {
+      setEnrolledTopics((prev) => [...prev, topicId]);
+      router.push(`/topics/${topicId}`);
+      return;
+    }
+
+    setEnrollingTopicId(topicId);
+    try {
+      const res = await fetch("/api/topics/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId }),
+      });
+
+      if (res.ok) {
+        setEnrolledTopics((prev) => [...prev, topicId]);
+        pushNotification(
+          {
+            type: "milestone",
+            category: "learning",
+            title: `Enrolled: ${topicTitle}`,
+            desc: `Successfully enrolled in ${topicTitle}. You can access it anytime from My Topics!`,
+            actionUrl: `/topics/${topicId}`,
+            actionLabel: "Go to Course",
+            icon: "🎓",
+            iconBg: "#EFF6FF",
+            iconColor: "#2563EB",
+          },
+          user?.id
+        );
+        router.push(`/topics/${topicId}`);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.error || "Failed to enroll. Please try again.");
+      }
+    } catch (err) {
+      console.error("Enrollment failed:", err);
+    } finally {
+      setEnrollingTopicId(null);
+    }
+  };
 
   useEffect(() => {
     const scrollToPyq = () => {
@@ -309,12 +357,10 @@ export default function BrowsePage() {
                       ) : (
                         <button 
                           className={`${styles.enrollBtn} ${styles.btnPrimary}`}
-                          onClick={() => {
-                            // In a real app, this would hit an API to enroll
-                            router.push(`/topics/${topic.id}`);
-                          }}
+                          disabled={enrollingTopicId === topic.id}
+                          onClick={() => handleEnroll(topic.id, topic.title)}
                         >
-                          Enroll Now
+                          {enrollingTopicId === topic.id ? "Enrolling..." : "Enroll Now"}
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12" />
                             <polyline points="12 5 19 12 12 19" />

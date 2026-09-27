@@ -28,6 +28,8 @@ interface DailyStudyScheduleProps {
   onToggleTask: (id: string) => void;
   onAddTask: () => void;
   onAutoAssignDay: (day: number) => void;
+  enrolledCount?: number;
+  isDemo?: boolean;
 }
 
 export default function DailyStudySchedule({
@@ -38,6 +40,8 @@ export default function DailyStudySchedule({
   onToggleTask,
   onAddTask,
   onAutoAssignDay,
+  enrolledCount = 0,
+  isDemo = false,
 }: DailyStudyScheduleProps) {
   const [activeFilter, setActiveFilter] = useState<string>("All");
 
@@ -678,6 +682,30 @@ export default function DailyStudySchedule({
           activeFilter !== "All" && allVisibleTasks.length > 0 ? (
             <div className={styles.emptyTasks}>
               No tasks found under category &ldquo;{activeFilter}&rdquo; for {monthName} {selectedDay}.
+            </div>
+          ) : enrolledCount === 0 && !isDemo ? (
+            <div className={styles.autoPlanBox}>
+              <div style={{ padding: "10px", background: "#EFF6FF", borderRadius: "50%", color: "#2563EB", marginBottom: "4px" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <h3 className={styles.autoPlanTitle}>No Courses Enrolled Yet</h3>
+              <p className={styles.autoPlanDesc}>
+                You have not enrolled in any CAT courses yet. Browse our comprehensive curriculum and enroll in Quantitative Aptitude, DILR, or VARC so the AI schedule planner can automatically assign your daily study tasks.
+              </p>
+              <a
+                href="/browse"
+                className={styles.autoPlanBtn}
+                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}
+              >
+                <span>Browse Courses &amp; Enroll</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
             </div>
           ) : (
             <div className={styles.autoPlanBox}>

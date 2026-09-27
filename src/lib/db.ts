@@ -125,6 +125,28 @@ export async function updateProfilePassword(id: string, newPasswordHash: string)
   );
 }
 
+export async function updateProfile(id: string, updates: { fullName?: string; avatarUrl?: string | null }) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  let paramIdx = 1;
+
+  if (updates.fullName !== undefined) {
+    fields.push(`full_name = $${paramIdx++}`);
+    values.push(updates.fullName);
+  }
+  if (updates.avatarUrl !== undefined) {
+    fields.push(`avatar_url = $${paramIdx++}`);
+    values.push(updates.avatarUrl);
+  }
+
+  if (fields.length === 0) return null;
+
+  values.push(id);
+  const sql = `UPDATE public.profiles SET ${fields.join(", ")} WHERE id = $${paramIdx} RETURNING id, email, full_name, role, avatar_url, created_at`;
+  const res = await query(sql, values);
+  return res.rows[0] || null;
+}
+
 export async function createProfile(email: string, passwordHash: string, fullName: string) {
   const res = await query(
     `INSERT INTO public.profiles (email, password_hash, full_name)
@@ -189,12 +211,15 @@ export async function getDashboardData(userId: string) {
   );
 
   const rows = progressRes.rows;
-  // Count as in-progress only if progress > 0 and < 100
-  const inProgressTopics = rows.filter((r) => r.progress_percent > 0 && r.progress_percent < 100);
-  const completedTopics = rows.filter((r) => r.progress_percent === 100);
+  const enrolledTopics = rows.map((r) => r.topic_id);
+  // Real user: all enrolled topics with progress < 100% count as in-progress learning topics
+  const inProgressTopics = isDemo
+    ? rows.filter((r) => r.progress_percent > 0 && r.progress_percent < 100)
+    : rows.filter((r) => (r.progress_percent || 0) < 100);
+  const completedTopics = rows.filter((r) => (r.progress_percent || 0) === 100);
   
-  const inProgressCount = inProgressTopics.length;
-  const completedCount = completedTopics.length;
+  const inProgressCount = isDemo ? 3 : inProgressTopics.length;
+  const completedCount = isDemo ? 2 : completedTopics.length;
   const totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0);
   const totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0);
 
@@ -272,6 +297,7 @@ export async function getDashboardData(userId: string) {
 
   return {
     isDemo,
+    enrolledTopics,
     metrics: {
       inProgressCourses: inProgressCount,
       completedCourses: completedCount,
@@ -361,6 +387,24 @@ export async function getUserTopicProgress(userId: string) {
     [userId]
   );
   return res.rows || [];
+}
+
+export async function enrollUserInTopic(userId: string, topicId: string) {
+  const res = await query(
+    `INSERT INTO public.topic_progress (user_id, topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned, updated_at)
+     VALUES ($1, $2, 0, '{}'::text[], 0, 0, now())
+     ON CONFLICT (user_id, topic_id) DO NOTHING
+     RETURNING *`,
+    [userId, topicId]
+  );
+  if (res.rows.length > 0) {
+    return res.rows[0];
+  }
+  const existing = await query(
+    `SELECT * FROM public.topic_progress WHERE user_id = $1 AND topic_id = $2`,
+    [userId, topicId]
+  );
+  return existing.rows[0] || null;
 }
 
 // ── PYQ Attempts & Lockout Operations ──
