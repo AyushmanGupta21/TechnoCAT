@@ -61,7 +61,7 @@ export default function AiAnalysisPage() {
 
         {/* Breadcrumb Navigation */}
         <div className={styles.breadcrumb}>
-          <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+          <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
         </div>
 
         {/* Skeleton Hero */}
@@ -152,7 +152,7 @@ export default function AiAnalysisPage() {
 
         {/* Breadcrumb Navigation */}
         <div className={styles.breadcrumb}>
-          <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+          <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
@@ -228,7 +228,7 @@ export default function AiAnalysisPage() {
 
       {/* Breadcrumb Navigation */}
       <div className={styles.breadcrumb}>
-        <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
       </div>
 
       <section className={styles.heroSection}>
