@@ -45,15 +45,43 @@ export default function AiAnalysisPage() {
   const hasData = data?.hasData && data?.data;
   if (!hasData) {
     return (
-      <div className={styles.pageWrapper} style={{display: 'flex', flexDirection: 'column'}}>
+      <div className={styles.pageWrapper} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <header className={styles.darkHeader}>
-          <div className={styles.headerLeft}><Link href="/dashboard"><Image src="/logo.jpg" alt="TechnoCAT" width={180} height={75} className={styles.logo} /></Link></div>
+          <div className={styles.headerLeft}>
+            <Link href="/dashboard">
+              <Image src="/logo.jpg" alt="TechnoCAT" width={180} height={75} className={styles.logo} />
+            </Link>
+            <nav className={styles.mainNav}>
+              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+              <Link href="/browse" className={styles.navLink}>Browse</Link>
+              <Link href="/topics" className={styles.navLink}>My Topics</Link>
+              <Link href="/intelligence" className={`${styles.navLink} ${styles.active}`}>Intelligence Hub</Link>
+              <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
+            </nav>
+          </div>
           <PostLoginNavActions />
         </header>
-        <div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-          <h1 style={{fontSize: 28, fontWeight: 800, marginBottom: 16}}>Your AI Performance Profile Is Waiting</h1>
-          <p style={{color: '#64748B', marginBottom: 32}}>Complete your first mock test and TechnoCAT will analyze your accuracy, speed, mistakes and improvement opportunities.</p>
-          <Link href="/dashboard" className={styles.btnPrimary}>Take Your First Mock</Link>
+
+        {/* Breadcrumb Navigation */}
+        <div className={styles.breadcrumb}>
+          <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, color: '#0F172A' }}>
+            Your AI Performance Profile Is Waiting
+          </h1>
+          <p style={{ color: '#64748B', marginBottom: 32, maxWidth: 540, lineHeight: 1.6, fontSize: 15 }}>
+            Complete your first mock test and TechnoCAT will analyze your accuracy, speed, mistakes and improvement opportunities.
+          </p>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <Link href="/browse#pyq-section" className={styles.btnPrimary}>
+              Take Your First Mock
+            </Link>
+            <Link href="/intelligence" className={styles.btnSecondary} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span>← Back to Intelligence Hub</span>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -110,7 +138,10 @@ export default function AiAnalysisPage() {
         <PostLoginNavActions />
       </header>
 
-      <div className={styles.breadcrumb}>Intelligence Hub &gt; AI Performance Analysis</div>
+      {/* Breadcrumb Navigation */}
+      <div className={styles.breadcrumb}>
+        <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+      </div>
 
       <section className={styles.heroSection}>
         <div className={styles.heroLeft}>
