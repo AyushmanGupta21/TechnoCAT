@@ -6,7 +6,7 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import TopicQuizModal from "@/components/TopicQuizModal";
 import ModuleQuizModal from "@/components/ModuleQuizModal";
 import AiAdvisorCard, { ModuleProgressItem, QuizReportCardData } from "@/components/AiAdvisorCard";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { TOPICS_DATA, getTopicById, Lesson, TopicModule } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
 import VideoAskPanel from "@/components/VideoAskPanel";
@@ -70,6 +70,7 @@ function formatDurationReadable(seconds: number): string {
 }
 
 export default function TopicDetailPage() {
+  const router = useRouter();
   const { id } = useParams();
   const topicId = Array.isArray(id) ? id[0] : id || "qa-quantitative-ability";
   const { user } = useAuth();
@@ -223,7 +224,7 @@ export default function TopicDetailPage() {
     } catch {}
   }, [storageKey, topic.lessons, modulesList]);
 
-  // If real user, sync completed lessons from DB
+  // If real user, verify enrollment and sync completed lessons from DB
   useEffect(() => {
     if (!isDemo && user) {
       fetch("/api/topics/progress")
@@ -231,7 +232,12 @@ export default function TopicDetailPage() {
         .then((data) => {
           if (data?.progress && Array.isArray(data.progress)) {
             const thisTopic = data.progress.find((p: any) => p.topic_id === topic.id);
-            if (thisTopic && Array.isArray(thisTopic.completed_lessons) && thisTopic.completed_lessons.length > 0) {
+            if (!thisTopic) {
+              // Real user is NOT enrolled in this course yet! Redirect to /browse to enroll
+              router.replace("/browse");
+              return;
+            }
+            if (Array.isArray(thisTopic.completed_lessons) && thisTopic.completed_lessons.length > 0) {
               setCompletedLessonIds(thisTopic.completed_lessons);
               // Auto-advance to next uncompleted lesson if current active is completed
               const nextUncompleted = topic.lessons.find((l) => !thisTopic.completed_lessons.includes(l.id));
@@ -248,7 +254,7 @@ export default function TopicDetailPage() {
         })
         .catch(() => {});
     }
-  }, [isDemo, user, topic.id, topic.lessons, modulesList]);
+  }, [isDemo, user, topic.id, topic.lessons, modulesList, router]);
 
   const saveProgressToStorage = useCallback(
     (

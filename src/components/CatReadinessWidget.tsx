@@ -102,7 +102,7 @@ export default function CatReadinessWidget({ isDemo = true, topicProgress = [] }
           if (isDemo) {
             setIsQuizOpen(true);
           } else {
-            router.push("/browse?section=mocks#mock-section");
+            router.push("/browse?section=mocks&mock=latest#pyq-section");
           }
         }}
       >

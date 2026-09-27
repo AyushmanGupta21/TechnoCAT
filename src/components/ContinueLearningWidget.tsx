@@ -101,8 +101,8 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
     );
   }
 
-  // Real user with active progress in at least 1 topic
-  const activeTopic = topicProgress.find((t) => t.progress_percent > 0);
+  // Real user with active progress in at least 1 topic OR enrolled in a topic
+  const activeTopic = topicProgress.find((t) => t.progress_percent > 0) || topicProgress[0];
   if (activeTopic) {
     const meta = TOPIC_METADATA[activeTopic.topic_id] || TOPIC_METADATA["qa-quantitative-ability"];
     const percent = Math.min(100, Math.max(0, activeTopic.progress_percent));
@@ -116,9 +116,13 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
-            <h2 className={styles.title}>Continue Where You Left Off</h2>
+            <h2 className={styles.title}>
+              {percent > 0 ? "Continue Where You Left Off" : "Start Your Enrolled Course"}
+            </h2>
           </div>
-          <span className={styles.activeBadge}>Active Session</span>
+          <span className={styles.activeBadge}>
+            {percent > 0 ? "Active Session" : "Enrolled"}
+          </span>
         </div>
 
         <div className={styles.courseCard}>
@@ -150,7 +154,7 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
               className={styles.resumeBtn}
               onClick={() => router.push(meta.url)}
             >
-              <span>Resume Session</span>
+              <span>{percent > 0 ? "Resume Session" : "Start Course"}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -162,7 +166,7 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
     );
   }
 
-  // Real user with NO active topics yet (clean onboarding state)
+  // Real user with NO active or enrolled topics yet (clean onboarding state)
   return (
     <div className={styles.widgetBox}>
       <div className={styles.widgetHeader}>
@@ -186,7 +190,7 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
             className={styles.courseThumbnail}
           />
           <div className={styles.courseInfo}>
-            <p className={styles.courseCategory}>CAT 2026 Syllabus & Masterclasses</p>
+            <p className={styles.courseCategory}>CAT 2026 Syllabus &amp; Masterclasses</p>
             <h3 className={styles.courseTitle}>You haven&apos;t enrolled in any CAT topic yet</h3>
             <p className={styles.courseMeta}>
               Explore video modules across Quantitative Ability, DILR &amp; VARC to begin logging your progress.
@@ -202,14 +206,14 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
 
         <div className={styles.rightSection}>
           <div className={styles.nextUpBox}>
-            <span className={styles.nextUpLabel}>Recommended First Topic</span>
-            <span className={styles.nextUpTitle}>QA-1.1: Percentage Foundations</span>
+            <span className={styles.nextUpLabel}>Step 1: Enrollment</span>
+            <span className={styles.nextUpTitle}>Explore Courses &amp; Modules</span>
           </div>
           <button
             className={styles.resumeBtn}
-            onClick={() => router.push("/topics/qa-quantitative-ability")}
+            onClick={() => router.push("/browse")}
           >
-            <span>Start Topic</span>
+            <span>Browse Courses</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
