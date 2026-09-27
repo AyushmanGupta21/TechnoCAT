@@ -176,6 +176,73 @@ const BASE_NOTIFICATIONS: NotificationItem[] = [
   },
 ];
 
+const REAL_USER_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: "notif-welcome-cat2026",
+    type: "system",
+    category: "learning",
+    title: "Welcome to TechnoCAT 2026! 🚀",
+    desc: "Your adaptive learning path is ready. Start with Quantitative Ability Module 1.1 or explore the CAT curriculum.",
+    time: "5m ago",
+    timestamp: now - 5 * minute,
+    read: false,
+    actionUrl: "/topics/qa-quantitative-ability",
+    actionLabel: "Start Learning",
+    priority: "urgent",
+    icon: "🚀",
+    iconBg: "#EFF6FF",
+    iconColor: "#2563EB",
+  },
+  {
+    id: "notif-mock-live-real",
+    type: "mock",
+    category: "mocks",
+    title: "TechnoCAT 6.0 Full Mock is Live 🎯",
+    desc: "Live All-India percentile benchmark open with 20,000+ serious aspirants. Attempt in realistic exam-timer conditions.",
+    time: "2 hours ago",
+    timestamp: now - 2 * hour,
+    read: false,
+    actionUrl: "/browse#pyq-section",
+    actionLabel: "Attempt Mock",
+    priority: "urgent",
+    icon: "🎯",
+    iconBg: "#EFF6FF",
+    iconColor: "#2563EB",
+  },
+  {
+    id: "notif-diagnostic-benchmark",
+    type: "mock_pyq",
+    category: "mocks",
+    title: "Diagnostic Mock Test Ready 📊",
+    desc: "Benchmark your starting CAT percentile across QA, DILR & VARC with a comprehensive 120-minute slot simulation.",
+    time: "5 hours ago",
+    timestamp: now - 5 * hour,
+    read: false,
+    actionUrl: "/browse#pyq-section",
+    actionLabel: "Take Diagnostic",
+    priority: "normal",
+    icon: "📝",
+    iconBg: "#F0FDF4",
+    iconColor: "#16A34A",
+  },
+  {
+    id: "notif-bschool-check-real",
+    type: "bschool",
+    category: "learning",
+    title: "Target IIM Shortlist Predictor 🏛️",
+    desc: "Configure your academic profile (10th/12th/Grad) to calculate required CAT percentiles for IIM A, B, C & FMS.",
+    time: "1 day ago",
+    timestamp: now - 1 * day,
+    read: false,
+    actionUrl: "/intelligence/b-school-predictor",
+    actionLabel: "Predict Calls",
+    priority: "normal",
+    icon: "🏛️",
+    iconBg: "#ECFDF5",
+    iconColor: "#059669",
+  },
+];
+
 function getStorageKey(userId?: string): string {
   const safeId = userId || "guest";
   return `${STORAGE_KEY_PREFIX}_${safeId}`;
@@ -276,12 +343,13 @@ export function checkDailyNotifications(userId?: string): void {
  * Load all notifications for the user, applying read and dismissal states,
  * recomputing relative time dynamically.
  */
-export function loadNotifications(userId?: string): NotificationItem[] {
+export function loadNotifications(userId?: string, isDemo = true): NotificationItem[] {
   const state = getStoredState(userId);
   const readSet = new Set(state.readIds);
   const dismissedSet = new Set(state.dismissedIds);
 
-  const combined = [...state.customList, ...BASE_NOTIFICATIONS];
+  const baseNotifications = isDemo ? BASE_NOTIFICATIONS : REAL_USER_NOTIFICATIONS;
+  const combined = [...state.customList, ...baseNotifications];
 
   // Deduplicate by ID
   const map = new Map<string, NotificationItem>();

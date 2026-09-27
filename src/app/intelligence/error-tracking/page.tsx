@@ -156,82 +156,95 @@ export default function ErrorTrackingPage() {
 
       {/* Main Container */}
       <main className={styles.container}>
-        {/* Analytics & Pattern Breakdown */}
-        <div className={styles.analyticsGrid}>
-          {/* Donut Chart: Error Category Breakdown */}
-          <div className={styles.analyticsCard}>
-            <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>Why You Lost Marks</h2>
-              <span className={styles.cardBadge}>Aggregated Across Mocks</span>
-            </div>
-            <div className={styles.chartContainer}>
-              <div style={{ width: "180px", height: "180px" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={75}
-                      paddingAngle={3}
-                      dataKey="count"
-                    >
-                      {chartData.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: any, name: any, props: any) => [
-                        `${value} mistakes (${props.payload.percent}%)`,
-                        name,
-                      ]}
-                      contentStyle={{
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                        border: "1px solid #E2E8F0",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className={styles.legendList}>
-                {chartData.map((item: any) => (
-                  <div key={item.name} className={styles.legendItem}>
-                    <div>
-                      <span className={styles.legendColor} style={{ background: item.color }} />
-                      <span>{item.name}</span>
-                    </div>
-                    <span style={{ color: "#64748B" }}>{item.percent}%</span>
+        {errors.length === 0 && !loading ? (
+          <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFF", borderRadius: "18px", border: "1px dashed #CBD5E1", margin: "24px 0" }}>
+            <div style={{ fontSize: "44px", marginBottom: "16px" }}>🎯</div>
+            <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", margin: "0 0 10px 0" }}>No Mistake Patterns Logged Yet</h2>
+            <p style={{ fontSize: "14px", color: "#64748B", maxWidth: "540px", margin: "0 auto 24px auto", lineHeight: "1.6" }}>
+              TechnoCAT AI analyzes your proctored mock attempts and past CAT papers to detect calculation slips, trap options, and timing panic. Attempt your first mock or past paper to populate this dashboard!
+            </p>
+            <Link href="/browse#pyq-section" style={{ display: "inline-flex", textDecoration: "none", padding: "12px 24px", borderRadius: "8px", fontWeight: 700, color: "#fff", background: "#2563EB" }}>
+              Attempt CAT Mock or PYQ →
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Analytics & Pattern Breakdown */}
+            <div className={styles.analyticsGrid}>
+              {/* Donut Chart: Error Category Breakdown */}
+              <div className={styles.analyticsCard}>
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitle}>Why You Lost Marks</h2>
+                  <span className={styles.cardBadge}>Aggregated Across Mocks</span>
+                </div>
+                <div className={styles.chartContainer}>
+                  <div style={{ width: "180px", height: "180px" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={75}
+                          paddingAngle={3}
+                          dataKey="count"
+                        >
+                          {chartData.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value: any, name: any, props: any) => [
+                            `${value} mistakes (${props.payload.percent}%)`,
+                            name,
+                          ]}
+                          contentStyle={{
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                            border: "1px solid #E2E8F0",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
+                  <div className={styles.legendList}>
+                    {chartData.map((item: any) => (
+                      <div key={item.name} className={styles.legendItem}>
+                        <div>
+                          <span className={styles.legendColor} style={{ background: item.color }} />
+                          <span>{item.name}</span>
+                        </div>
+                        <span style={{ color: "#64748B" }}>{item.percent}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* High-Yield Actionable Traps */}
-          <div className={styles.analyticsCard}>
-            <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>High-Yield Score Recoveries</h2>
-              <span className={styles.cardBadge}>AI Priority Fixes</span>
+              {/* High-Yield Actionable Traps */}
+              <div className={styles.analyticsCard}>
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitle}>High-Yield Score Recoveries</h2>
+                  <span className={styles.cardBadge}>AI Priority Fixes</span>
+                </div>
+                <div className={styles.recoveryTipsList}>
+                  <div className={styles.tipItem}>
+                    <span className={styles.tipHighlight}>+9 Marks Recovery • QA Algebra &amp; Arithmetic</span>
+                    Eliminate square-root sign slips and reciprocal base errors. In quadratic roots, always consider negative solutions.
+                  </div>
+                  <div className={styles.tipItem}>
+                    <span className={styles.tipHighlight}>+6 Marks Recovery • DILR Set Selection</span>
+                    Two sets had &gt;6 minutes spent without yielding a single correct answer. Bail out within 3 minutes if clue parity doesn't simplify.
+                  </div>
+                  <div className={styles.tipItem}>
+                    <span className={styles.tipHighlight}>+4 Marks Recovery • VARC Reading Comprehension</span>
+                    In 'WEAKEN' questions, identify the premise vs conclusion. Do not pick options that strengthen diffusion when causality is questioned.
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className={styles.recoveryTipsList}>
-              <div className={styles.tipItem}>
-                <span className={styles.tipHighlight}>+9 Marks Recovery • QA Algebra &amp; Arithmetic</span>
-                Eliminate square-root sign slips and reciprocal base errors. In quadratic roots, always consider negative solutions.
-              </div>
-              <div className={styles.tipItem}>
-                <span className={styles.tipHighlight}>+6 Marks Recovery • DILR Set Selection</span>
-                Two sets had &gt;6 minutes spent without yielding a single correct answer. Bail out within 3 minutes if clue parity doesn't simplify.
-              </div>
-              <div className={styles.tipItem}>
-                <span className={styles.tipHighlight}>+4 Marks Recovery • VARC Reading Comprehension</span>
-                In 'WEAKEN' questions, identify the premise vs conclusion. Do not pick options that strengthen diffusion when causality is questioned.
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Filter Bar */}
         <div className={styles.filterBar}>
@@ -346,7 +359,9 @@ export default function ErrorTrackingPage() {
             ))
           )}
         </div>
-      </main>
+      </>
+    )}
+  </main>
     </div>
   );
 }

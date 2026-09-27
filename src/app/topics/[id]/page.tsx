@@ -103,17 +103,18 @@ export default function TopicDetailPage() {
     modulesList[0]?.title || "Module 1"
   );
 
-  // Completed lesson IDs: e.g. 3 videos in QA-0 (QA-0.1, QA-0.2, QA-0.3)
+  const isDemo = !user || user.email === "student@technocat.edu";
+
+  // Completed lesson IDs: e.g. 3 videos in QA-0 (QA-0.1, QA-0.2, QA-0.3) for demo user, empty for new user
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() => {
-    return topic.lessons.filter((l) => l.completed).map((l) => l.id);
+    return isDemo ? topic.lessons.filter((l) => l.completed).map((l) => l.id) : [];
   });
 
   // Module Progress state: tracks quiz scores, pass status, attempts used
-  // NOT pre-completed! Every module quiz starts as not yet taken.
   const [modulesProgress, setModulesProgress] = useState<Record<string, ModuleProgressItem>>(() => {
     const init: Record<string, ModuleProgressItem> = {};
     modulesList.forEach((mod) => {
-      const completedCount = mod.lessons.filter((l) => l.completed).length;
+      const completedCount = isDemo ? mod.lessons.filter((l) => l.completed).length : 0;
       init[mod.title] = {
         moduleTitle: mod.title,
         totalLessons: mod.lessons.length,
@@ -129,12 +130,17 @@ export default function TopicDetailPage() {
   // Grand quiz pass status
   const [grandQuizPassed, setGrandQuizPassed] = useState<boolean>(false);
 
+  // User-scoped LocalStorage key to prevent demo state bleeding into real accounts
+  const storageKey = useMemo(() => {
+    const userPrefix = user?.id || (isDemo ? "demo" : "anon");
+    return `technocat_progress_${userPrefix}_${topic.id}`;
+  }, [user?.id, isDemo, topic.id]);
+
   // LocalStorage persistence per topic
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const key = `technocat_progress_${topic.id}`;
-      const saved = localStorage.getItem(key);
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.activeModuleTitle) setActiveModuleTitle(parsed.activeModuleTitle);
@@ -160,7 +166,24 @@ export default function TopicDetailPage() {
         if (parsed.grandQuizPassed !== undefined) setGrandQuizPassed(parsed.grandQuizPassed);
       }
     } catch {}
-  }, [topic.id]);
+  }, [storageKey]);
+
+  // If real user, sync completed lessons from DB
+  useEffect(() => {
+    if (!isDemo && user) {
+      fetch("/api/topics/progress")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.progress && Array.isArray(data.progress)) {
+            const thisTopic = data.progress.find((p: any) => p.topic_id === topic.id);
+            if (thisTopic && Array.isArray(thisTopic.completed_lessons) && thisTopic.completed_lessons.length > 0) {
+              setCompletedLessonIds(thisTopic.completed_lessons);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isDemo, user, topic.id]);
 
   const saveProgressToStorage = useCallback(
     (
@@ -171,9 +194,8 @@ export default function TopicDetailPage() {
     ) => {
       if (typeof window === "undefined") return;
       try {
-        const key = `technocat_progress_${topic.id}`;
         localStorage.setItem(
-          key,
+          storageKey,
           JSON.stringify({
             activeModuleTitle: newActiveModule,
             completedLessonIds: newCompletedIds,
@@ -183,7 +205,7 @@ export default function TopicDetailPage() {
         );
       } catch {}
     },
-    [topic.id]
+    [storageKey]
   );
 
   // Accordion expanded modules state

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileByEmail, getPYQAttempts } from "@/lib/db";
+import { query, getProfileByEmail, getProfileById, getPYQAttempts } from "@/lib/db";
 
-async function resolveUserId(request: NextRequest): Promise<string | null> {
-  let userId = request.cookies.get("technocat_user_id")?.value;
-  if (!userId) {
-    const defaultUser = await getProfileByEmail("student@technocat.edu");
-    if (defaultUser) {
-      userId = defaultUser.id;
-    }
+async function resolveUser(request: NextRequest): Promise<{ userId: string | null; isDemo: boolean }> {
+  const userId = request.cookies.get("technocat_user_id")?.value;
+  if (userId) {
+    const profile = await getProfileById(userId);
+    const isDemo = profile?.email?.toLowerCase() === "student@technocat.edu";
+    return { userId, isDemo };
   }
-  return userId || null;
+  const defaultUser = await getProfileByEmail("student@technocat.edu");
+  return { userId: defaultUser?.id || null, isDemo: true };
 }
 
 export interface ErrorRecord {
@@ -181,7 +181,7 @@ const DEFAULT_ERRORS: ErrorRecord[] = [
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = await resolveUserId(request);
+    const { userId, isDemo } = await resolveUser(request);
     
     // Check if user has real PYQ attempts
     let pyqAttempts: any[] = [];
@@ -189,8 +189,8 @@ export async function GET(request: NextRequest) {
       pyqAttempts = await getPYQAttempts(userId);
     }
 
-    // Merge real attempts if present or use standard calibrated mistake set
-    const errors: ErrorRecord[] = [...DEFAULT_ERRORS];
+    // Use standard calibrated mistake set ONLY for demo account
+    const errors: ErrorRecord[] = isDemo ? [...DEFAULT_ERRORS] : [];
 
     // If user has real attempts with answers recorded, parse them
     if (pyqAttempts && pyqAttempts.length > 0) {

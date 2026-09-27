@@ -948,6 +948,9 @@ function AnalyticsPageContent() {
         <MetricInspectorModal
           metricId={inspectingMetricId}
           initialTimeframe={timeframe}
+          isDemo={isDemo}
+          userDashboard={realDashboard}
+          userAttempts={realMockAttempts}
           onClose={() => setInspectingMetricId(null)}
           onDrillAction={(topicId, topicTitle) => {
             setInspectingMetricId(null);

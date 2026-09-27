@@ -10,14 +10,36 @@ import PYQSection from "@/components/pyq/PYQSection";
 import PYQYearModal from "@/components/pyq/PYQYearModal";
 import styles from "./browse.module.css";
 
-// Assuming user is enrolled in these for mock logic
-const ENROLLED_TOPIC_IDS = ["qa-quantitative-ability", "dilr-data-interpretation"];
-
 export default function BrowsePage() {
+  const { user } = useAuth();
+  const isDemo = !user || user.email === "student@technocat.edu";
+
+  const [enrolledTopics, setEnrolledTopics] = useState<string[]>(() => {
+    return isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation"] : [];
+  });
+
   const [activeNav, setActiveNav] = useState("Browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchPYQModalOpen, setSearchPYQModalOpen] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (isDemo) {
+      setEnrolledTopics(["qa-quantitative-ability", "dilr-data-interpretation"]);
+    } else {
+      fetch("/api/topics/progress")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.progress && Array.isArray(data.progress)) {
+            const active = data.progress
+              .filter((p: any) => (p.progress_percent || 0) > 0 || (p.completed_lessons?.length || 0) > 0)
+              .map((p: any) => p.topic_id);
+            setEnrolledTopics(active);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isDemo, user?.id]);
 
   useEffect(() => {
     const scrollToPyq = () => {
@@ -243,7 +265,7 @@ export default function BrowsePage() {
         ) : (
           <div className={styles.topicsGrid}>
             {filteredTopics.map(topic => {
-              const isEnrolled = ENROLLED_TOPIC_IDS.includes(topic.id);
+              const isEnrolled = enrolledTopics.includes(topic.id);
 
               return (
                 <div key={topic.id} className={styles.topicCard}>

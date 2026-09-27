@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
@@ -17,9 +17,28 @@ const categories = [
 
 export default function TopicsListPage() {
   const { user, logout } = useAuth();
+  const isDemo = !user || user.email === "student@technocat.edu";
   const [activeNav, setActiveNav] = useState("My Topics");
   const [selectedCategory, setSelectedCategory] = useState("All Topics");
   const [searchQuery, setSearchQuery] = useState("");
+  const [userProgressMap, setUserProgressMap] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!isDemo) {
+      fetch("/api/topics/progress")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.progress && Array.isArray(data.progress)) {
+            const map: Record<string, any> = {};
+            data.progress.forEach((p: any) => {
+              map[p.topic_id] = p;
+            });
+            setUserProgressMap(map);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isDemo, user?.id]);
 
   const filteredTopics = TOPICS_DATA.filter((topic) => {
     const matchesCategory =
@@ -163,28 +182,40 @@ export default function TopicsListPage() {
                 </div>
 
                 {/* Progress Section */}
-                <div className={styles.progressSection}>
-                  <div className={styles.progressHeader}>
-                    <span className={styles.progressLabel}>
-                      {topic.completedLessonsCount}/{topic.totalLessons} Lessons
-                    </span>
-                    <span className={styles.progressPercent}>{topic.progressPercent}%</span>
-                  </div>
-                  <div className={styles.progressBarBg}>
-                    <div
-                      className={styles.progressBarFill}
-                      style={{ width: `${topic.progressPercent}%` }}
-                    />
-                  </div>
+                {(() => {
+                  const userProgress = userProgressMap[topic.id];
+                  const progressPercent = isDemo
+                    ? topic.progressPercent
+                    : (userProgress ? userProgress.progress_percent : 0);
+                  const completedLessons = isDemo
+                    ? topic.completedLessonsCount
+                    : (userProgress?.completed_lessons?.length || 0);
 
-                  <div className={styles.cardActionBtn}>
-                    <span>Continue Learning</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </div>
-                </div>
+                  return (
+                    <div className={styles.progressSection}>
+                      <div className={styles.progressHeader}>
+                        <span className={styles.progressLabel}>
+                          {completedLessons}/{topic.totalLessons} Lessons
+                        </span>
+                        <span className={styles.progressPercent}>{progressPercent}%</span>
+                      </div>
+                      <div className={styles.progressBarBg}>
+                        <div
+                          className={styles.progressBarFill}
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+
+                      <div className={styles.cardActionBtn}>
+                        <span>{progressPercent > 0 ? "Continue Learning" : "Start Topic"}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </Link>
           ))}

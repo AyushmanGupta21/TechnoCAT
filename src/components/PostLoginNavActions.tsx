@@ -32,6 +32,8 @@ export default function PostLoginNavActions() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  const isDemo = !user || user.email === "student@technocat.edu";
+
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<NotificationCategory>("all");
 
@@ -43,7 +45,7 @@ export default function PostLoginNavActions() {
     checkDailyNotifications(user?.id);
 
     const refresh = () => {
-      setNotifications(loadNotifications(user?.id));
+      setNotifications(loadNotifications(user?.id, isDemo));
     };
 
     refresh();
@@ -57,7 +59,7 @@ export default function PostLoginNavActions() {
       window.removeEventListener("technocat_notifications_updated", refresh);
       clearInterval(interval);
     };
-  }, [user?.id]);
+  }, [user?.id, isDemo]);
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => !n.read).length;
@@ -88,7 +90,6 @@ export default function PostLoginNavActions() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isDemo = !user || user.email === "student@technocat.edu";
   const displayName = user?.fullName || (isDemo ? "Sabrina Gomez" : "Student");
   const firstName = displayName.split(" ")[0];
 

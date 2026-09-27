@@ -353,6 +353,16 @@ export async function updateLessonCompletion(userId: string, topicId: string, le
   return upsert.rows[0];
 }
 
+export async function getUserTopicProgress(userId: string) {
+  const res = await query(
+    `SELECT topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned 
+     FROM public.topic_progress 
+     WHERE user_id = $1`,
+    [userId]
+  );
+  return res.rows || [];
+}
+
 // ── PYQ Attempts & Lockout Operations ──
 export async function savePYQAttempt(attempt: {
   userId: string;
