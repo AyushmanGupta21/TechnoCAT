@@ -43,6 +43,14 @@
   user-select: none;
   line-height: 1;
   gap: 0;
+  width: 75px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1150px) {
+  .brandLogo {
+    width: 65px;
+  }
 }
 
 .logoTechno {
@@ -1038,4 +1046,16 @@
   font-weight: 500;
 }
 
-.logoImage { height: 75px; width: auto; display: block; }
+.logoImage {
+  height: 75px;
+  width: 75px;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 1150px) {
+  .logoImage {
+    height: 65px;
+    width: 65px;
+  }
+}

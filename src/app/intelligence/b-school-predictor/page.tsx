@@ -146,19 +146,23 @@ export default function BSchoolPredictorPage() {
     <div className={styles.pageWrapper}>
       {/* Sticky App Header */}
       <header className={styles.darkHeader}>
-        <div className={styles.headerLeft}>
-          <Link href="/dashboard">
-            <Image src="/logo.jpg" alt="TechnoCAT Logo" width={180} height={75} className={styles.logo} />
-          </Link>
-          <nav className={styles.mainNav}>
-            <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-            <Link href="/browse" className={styles.navLink}>Browse</Link>
-            <Link href="/topics" className={styles.navLink}>My Topics</Link>
-            <Link href="/intelligence" className={`${styles.navLink} ${styles.active}`}>Intelligence Hub</Link>
-            <Link href="#!" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
+        <div className={styles.headerInner}>
+          <nav className={styles.topNav} aria-label="B-School Predictor Navigation">
+            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+            </Link>
+
+            <div className={styles.navLinks}>
+              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+              <Link href="/browse" className={styles.navLink}>Browse</Link>
+              <Link href="/topics" className={styles.navLink}>My Topics</Link>
+              <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
+              <Link href="#" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
+            </div>
+
+            <PostLoginNavActions />
           </nav>
         </div>
-        <PostLoginNavActions />
       </header>
 
       {/* Breadcrumb */}

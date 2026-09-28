@@ -40,6 +40,7 @@
   user-select: none;
   line-height: 1;
   gap: 0;
+  width: 75px;
   flex-shrink: 0;
   transition: opacity 0.2s;
 }
@@ -48,15 +49,23 @@
   opacity: 0.9;
 }
 
+@media (max-width: 1150px) {
+  .brandLogo {
+    width: 65px;
+  }
+}
+
 .logoImage {
   height: 75px;
-  width: auto;
+  width: 75px;
+  object-fit: contain;
   display: block;
 }
 
 @media (max-width: 1150px) {
   .logoImage {
     height: 65px;
+    width: 65px;
   }
 }
 

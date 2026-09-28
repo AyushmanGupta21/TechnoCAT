@@ -1671,34 +1671,10 @@ export default function TopicDetailPage() {
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Topic Detail Navigation">
-            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-              <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
-              </Link>
-              <Link
-                href="/topics"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  color: "#2563EB",
-                  textDecoration: "none",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  padding: "6px 12px",
-                  background: "#F0F9FF",
-                  border: "1px solid #E0F2FE",
-                  borderRadius: "8px",
-                  transition: "all 0.2s",
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-                Back to My Topics
-              </Link>
-            </div>
+            {/* Brand Logo */}
+            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+            </Link>
 
             <div className={styles.navLinks}>
               {[
@@ -1729,7 +1705,32 @@ export default function TopicDetailPage() {
 
       {/* ===== SUBHEADER: BREADCRUMBS & MAIN TOPIC TITLE ===== */}
       <section className={styles.subHeader}>
-        <div className={styles.pillBadge}>★ {topic.category || "CAT Preparation"} • Curriculum</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "8px" }}>
+          <div className={styles.pillBadge}>★ {topic.category || "CAT Preparation"} • Curriculum</div>
+          <Link
+            href="/topics"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              color: "#2563EB",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: 600,
+              padding: "6px 14px",
+              background: "#F0F9FF",
+              border: "1px solid #BAE6FD",
+              borderRadius: "8px",
+              transition: "all 0.2s",
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to My Topics
+          </Link>
+        </div>
         <div className={styles.breadcrumb}>
           <Link href="/topics" className={styles.breadcrumbLink}>
             My Topics
