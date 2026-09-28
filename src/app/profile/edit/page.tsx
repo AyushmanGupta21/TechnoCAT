@@ -5,7 +5,15 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import styles from "../../dashboard/dashboard.module.css";
+import styles from "./edit-profile.module.css";
+
+const navLinks = [
+  { name: "Dashboard", href: "/dashboard" },
+  { name: "Browse", href: "/dashboard#browse" },
+  { name: "My Topics", href: "/topics" },
+  { name: "Intelligence Hub", href: "/intelligence" },
+  { name: "Mock Viva Prep", href: "/dashboard#viva" },
+];
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -14,11 +22,12 @@ export default function EditProfilePage() {
 
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
-  // Derive initial names
+  // Form states
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [targetYear, setTargetYear] = useState("CAT 2026");
+  const [dreamSchool, setDreamSchool] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -28,7 +37,7 @@ export default function EditProfilePage() {
       const parts = (user.fullName || "").trim().split(/\s+/);
       setFirstName(parts[0] || "");
       setLastName(parts.slice(1).join(" ") || "");
-      
+
       const isHardcodedDemoAvatar = user.avatarUrl?.includes("photo-1494790108377");
       if (isDemo) {
         setAvatarPreview(user.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
@@ -41,11 +50,15 @@ export default function EditProfilePage() {
         if (savedPhone) setPhone(savedPhone);
         const savedTarget = localStorage.getItem(`technocat_target_year_${user.id}`);
         if (savedTarget) setTargetYear(savedTarget);
+        const savedDream = localStorage.getItem(`technocat_dream_school_${user.id}`);
+        if (savedDream) setDreamSchool(savedDream);
       } catch {}
     } else if (isDemo) {
       setFirstName("Sabrina");
       setLastName("Gomez");
       setPhone("+91 98765 43210");
+      setTargetYear("CAT 2026");
+      setDreamSchool("IIM Ahmedabad");
       setAvatarPreview("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
     }
   }, [user, isDemo]);
@@ -56,15 +69,20 @@ export default function EditProfilePage() {
     const ln = lastName.trim();
     if (fn && ln) return (fn[0] + ln[0]).toUpperCase();
     if (fn) return fn.slice(0, 2).toUpperCase();
-    return "U";
+    return "TC";
   }, [firstName, lastName]);
+
+  const fullNameDisplay = useMemo(() => {
+    const combined = `${firstName.trim()} ${lastName.trim()}`.trim();
+    return combined || (isDemo ? "Sabrina Gomez" : "CAT Aspirant");
+  }, [firstName, lastName, isDemo]);
 
   const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setFeedback({ type: "error", message: "Please select an image file (PNG, JPG, WebP)." });
+      setFeedback({ type: "error", message: "Please select an image file (PNG, JPG, or WebP)." });
       return;
     }
 
@@ -77,7 +95,6 @@ export default function EditProfilePage() {
     reader.onload = (uploadEvent) => {
       const img = new Image();
       img.onload = () => {
-        // Optimize & center-crop to 256x256 using an offscreen canvas
         const canvas = document.createElement("canvas");
         const cropSize = Math.min(img.width, img.height);
         canvas.width = 256;
@@ -132,30 +149,29 @@ export default function EditProfilePage() {
         throw new Error(errData.error || "Failed to update profile.");
       }
 
-      const data = await res.json();
-      
-      // Update local storage for supplementary profile fields
-      if (user?.id) {
-        try {
-          localStorage.setItem(`technocat_phone_${user.id}`, phone);
-          localStorage.setItem(`technocat_target_year_${user.id}`, targetYear);
-        } catch {}
-      }
+      // Update supplementary profile fields in local storage
+      const uid = user?.id || (isDemo ? "demo-student" : "current");
+      try {
+        localStorage.setItem(`technocat_phone_${uid}`, phone);
+        localStorage.setItem(`technocat_target_year_${uid}`, targetYear);
+        localStorage.setItem(`technocat_dream_school_${uid}`, dreamSchool);
+      } catch {}
 
-      // Update AuthContext so navbar and app re-render instantly with new name and avatar
+      // Update AuthContext so navbar and user badge re-render immediately
       updateUser?.({
         fullName: fullTrimmedName,
         avatarUrl: avatarPreview || undefined,
       });
 
-      // Dispatch event for other components
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("technocat_profile_updated", {
-          detail: { fullName: fullTrimmedName, avatarUrl: avatarPreview }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("technocat_profile_updated", {
+            detail: { fullName: fullTrimmedName, avatarUrl: avatarPreview },
+          })
+        );
       }
 
-      setFeedback({ type: "success", message: "Your profile has been updated successfully!" });
+      setFeedback({ type: "success", message: "Profile details saved successfully!" });
     } catch (err: any) {
       console.error("Profile save error:", err);
       setFeedback({ type: "error", message: err.message || "Something went wrong while saving." });
@@ -165,347 +181,458 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className={styles.dashboardWrapper}>
-      {/* ===== DARK HEADER SECTION ===== */}
+    <div className={styles.pageWrapper}>
+      {/* ===== HEADER & TOP NAVIGATION ===== */}
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Settings Navigation">
-            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-              <Link href="/dashboard" className={styles.brandLogo} title="Back to Dashboard">
-                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
-              </Link>
-              
-              <Link
-                href="/dashboard"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  color: "#2563EB",
-                  textDecoration: "none",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  padding: "6px 12px",
-                  background: "#F0F9FF",
-                  border: "1px solid #E0F2FE",
-                  borderRadius: "8px",
-                  transition: "all 0.2s"
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-                Back to Dashboard
-              </Link>
+          <nav className={styles.topNav} aria-label="Main Navigation">
+            <Link href="/dashboard" className={styles.brandLogo} title="TechnoCAT Dashboard">
+              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+            </Link>
+
+            <div className={styles.navLinks}>
+              {navLinks.map((item) => (
+                <Link key={item.name} href={item.href} className={styles.navLink}>
+                  {item.name}
+                </Link>
+              ))}
             </div>
 
             <PostLoginNavActions />
           </nav>
+
+          {/* Breadcrumb & Hero Heading */}
+          <div className={styles.heroRow}>
+            <div className={styles.badgeRow}>
+              <span className={styles.badgeLabel}>★ Profile &amp; Aspirant Settings</span>
+              {isDemo && (
+                <span className={styles.demoPill}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                  Demo Showcase Account
+                </span>
+              )}
+            </div>
+
+            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+              <Link href="/dashboard" className={styles.breadcrumbLink}>
+                Dashboard
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>Edit Profile</span>
+            </nav>
+
+            <div>
+              <h1 className={styles.heroHeading}>
+                Edit Aspirant <span className={styles.heroHighlight}>Profile</span>
+              </h1>
+              <p className={styles.heroSubtitle}>
+                Keep your aspirant credentials, target exam year, and contact details up to date to personalize your CAT preparation journey.
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* ===== MAIN CONTENT ===== */}
-      <main className={styles.mainContent} style={{ maxWidth: "800px", margin: "0 auto", marginTop: "32px", width: "100%", padding: "0 20px 60px" }}>
-        <div className={styles.cardBox} style={{ padding: "32px", background: "#FFFFFF", borderRadius: "16px", border: "1px solid #E2E8F0", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-            <div>
-              <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#1E293B", margin: 0 }}>Edit Profile</h1>
-              <p style={{ fontSize: "14px", color: "#64748B", margin: "4px 0 0 0" }}>
-                Update your personal information, profile photo, and CAT prep details.
-              </p>
-            </div>
-            {isDemo && (
-              <span style={{ fontSize: "12px", fontWeight: "600", padding: "4px 10px", background: "#FEF3C7", color: "#B45309", borderRadius: "6px" }}>
-                Demo Showcase Profile
-              </span>
-            )}
-          </div>
-
-          {/* Feedback Banner */}
-          {feedback && (
-            <div
-              style={{
-                padding: "12px 16px",
-                borderRadius: "8px",
-                fontSize: "14px",
-                marginBottom: "24px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                background: feedback.type === "success" ? "#F0FDF4" : "#FEF2F2",
-                border: feedback.type === "success" ? "1px solid #BBF7D0" : "1px solid #FECACA",
-                color: feedback.type === "success" ? "#166534" : "#991B1B",
-              }}
-            >
-              {feedback.type === "success" ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-              )}
-              {feedback.message}
-            </div>
-          )}
-
-          <form onSubmit={handleSaveChanges} style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-            {/* Avatar Section */}
-            <div style={{ display: "flex", alignItems: "center", gap: "24px", paddingBottom: "24px", borderBottom: "1px solid #E2E8F0" }}>
+      {/* ===== MAIN CONTENT GRID ===== */}
+      <main className={styles.mainContent}>
+        <div className={styles.profileLayoutGrid}>
+          {/* Left Column: Profile Card */}
+          <aside className={styles.sidebarCard}>
+            <div className={styles.sidebarAvatarWrap}>
               {avatarPreview ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  style={{
-                    width: "88px",
-                    height: "88px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "3px solid #E0F2FE",
-                    boxShadow: "0 2px 8px rgba(37,99,235,0.12)"
-                  }}
-                />
+                <img src={avatarPreview} alt={fullNameDisplay} className={styles.sidebarAvatar} />
               ) : (
-                <div
-                  style={{
-                    width: "88px",
-                    height: "88px",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #2563EB, #7C3AED)",
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "28px",
-                    fontWeight: "700",
-                    border: "3px solid #E0F2FE",
-                    boxShadow: "0 2px 8px rgba(37,99,235,0.15)"
-                  }}
-                >
-                  {userInitials}
+                <div className={styles.sidebarAvatarFallback}>{userInitials}</div>
+              )}
+              <span className={styles.sidebarStatusBadge} title="Active Status" />
+            </div>
+
+            <h2 className={styles.sidebarName}>{fullNameDisplay}</h2>
+            <p className={styles.sidebarEmail}>{user?.email || (isDemo ? "student@technocat.edu" : "aspirant@technocat.edu")}</p>
+
+            <div className={styles.sidebarBadgeList}>
+              <span className={styles.sidebarPill}>{targetYear}</span>
+              <span className={styles.sidebarPill} style={{ background: "#FDF2F8", color: "#BE185D", borderColor: "#FBCFE8" }}>
+                CAT Aspirant
+              </span>
+            </div>
+
+            <div className={styles.sidebarDivider} />
+
+            <div className={styles.sidebarMetaList}>
+              <div className={styles.sidebarMetaItem}>
+                <span className={styles.sidebarMetaLabel}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Target Exam
+                </span>
+                <span className={styles.sidebarMetaValue}>{targetYear}</span>
+              </div>
+
+              <div className={styles.sidebarMetaItem}>
+                <span className={styles.sidebarMetaLabel}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  Account Tier
+                </span>
+                <span className={styles.sidebarMetaValue} style={{ color: "#2563EB" }}>
+                  {isDemo ? "Demo Scholar" : "CAT Pro Scholar"}
+                </span>
+              </div>
+
+              <div className={styles.sidebarMetaItem}>
+                <span className={styles.sidebarMetaLabel}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  Verification
+                </span>
+                <span className={styles.sidebarMetaValue} style={{ color: "#059669" }}>
+                  Verified Student
+                </span>
+              </div>
+
+              {dreamSchool && (
+                <div className={styles.sidebarMetaItem}>
+                  <span className={styles.sidebarMetaLabel}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 21h18" />
+                      <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                      <line x1="9" y1="9" x2="9" y2="9.01" />
+                      <line x1="9" y1="13" x2="9" y2="13.01" />
+                      <line x1="9" y1="17" x2="9" y2="17.01" />
+                      <line x1="15" y1="9" x2="15" y2="9.01" />
+                      <line x1="15" y1="13" x2="15" y2="13.01" />
+                      <line x1="15" y1="17" x2="15" y2="17.01" />
+                    </svg>
+                    Dream School
+                  </span>
+                  <span className={styles.sidebarMetaValue} style={{ textAlign: "right", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {dreamSchool}
+                  </span>
                 </div>
               )}
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/png, image/jpeg, image/jpg, image/webp"
-                style={{ display: "none" }}
-                onChange={handleImageFileSelect}
-              />
-
-              <div>
-                <h3 style={{ fontSize: "15px", fontWeight: "600", color: "#334155", margin: "0 0 4px 0" }}>Profile Picture</h3>
-                <p style={{ fontSize: "12px", color: "#64748B", margin: "0 0 12px 0" }}>
-                  Upload a photo (PNG, JPG or WebP up to 5MB). Photo will be centered and cropped.
-                </p>
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      padding: "8px 16px",
-                      background: "#2563EB",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    {avatarPreview ? "Change Photo" : "Upload Photo"}
-                  </button>
-
-                  {avatarPreview && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      style={{
-                        padding: "8px 16px",
-                        background: "#F1F5F9",
-                        color: "#475569",
-                        border: "1px solid #CBD5E1",
-                        borderRadius: "8px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        fontSize: "13px"
-                      }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
 
-            {/* Personal Details */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#1E293B", margin: 0 }}>
-                Personal Information
-              </h3>
+            <div className={styles.sidebarDivider} />
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "600", color: "#475569" }}>First Name *</label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "1px solid #CBD5E1",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#1E293B",
-                      transition: "border 0.2s"
-                    }}
-                  />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "600", color: "#475569" }}>Last Name</label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "1px solid #CBD5E1",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#1E293B"
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "600", color: "#475569" }}>
-                    Email Address <span style={{ fontSize: "11px", color: "#94A3B8" }}>(Registered ID)</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={user?.email || (isDemo ? "student@technocat.edu" : "")}
-                    disabled
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "1px solid #E2E8F0",
-                      background: "#F8FAFC",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#64748B",
-                      cursor: "not-allowed"
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "600", color: "#475569" }}>Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "1px solid #CBD5E1",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#1E293B"
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#475569" }}>Target Examination Year</label>
-                <select
-                  value={targetYear}
-                  onChange={(e) => setTargetYear(e.target.value)}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    border: "1px solid #CBD5E1",
-                    outline: "none",
-                    fontSize: "14px",
-                    color: "#1E293B",
-                    background: "#FFFFFF"
-                  }}
-                >
-                  <option value="CAT 2025">CAT 2025</option>
-                  <option value="CAT 2026">CAT 2026 (Recommended)</option>
-                  <option value="CAT 2027">CAT 2027</option>
-                  <option value="XAT / OMETs 2026">XAT / OMETs 2026</option>
-                </select>
-              </div>
+            <div className={styles.sidebarLinks}>
+              <Link href="/settings" className={styles.sidebarLinkBtn}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Account &amp; Security Settings
+              </Link>
+              <Link href="/dashboard" className={styles.sidebarLinkBtn}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                Return to Dashboard
+              </Link>
             </div>
+          </aside>
 
-            {/* Actions */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px", paddingTop: "20px", borderTop: "1px solid #E2E8F0" }}>
-              <button
-                type="button"
-                onClick={() => router.push("/dashboard")}
-                style={{
-                  padding: "10px 20px",
-                  background: "white",
-                  color: "#475569",
-                  border: "1px solid #CBD5E1",
-                  borderRadius: "8px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  fontSize: "14px"
-                }}
+          {/* Right Column: Form Card */}
+          <div className={styles.formCard}>
+            {feedback && (
+              <div
+                className={`${styles.alertBanner} ${
+                  feedback.type === "success" ? styles.alertSuccess : styles.alertError
+                }`}
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                style={{
-                  padding: "10px 24px",
-                  background: isSubmitting ? "#93C5FD" : "#2563EB",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontWeight: "600",
-                  cursor: isSubmitting ? "not-allowed" : "pointer",
-                  fontSize: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={styles.spinnerIcon}>
-                      <line x1="12" y1="2" x2="12" y2="6" />
-                      <line x1="12" y1="18" x2="12" y2="22" />
-                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-                      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-                      <line x1="2" y1="12" x2="6" y2="12" />
-                      <line x1="18" y1="12" x2="22" y2="12" />
-                    </svg>
-                    Saving...
-                  </>
+                {feedback.type === "success" ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 ) : (
-                  "Save Changes"
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
                 )}
-              </button>
-            </div>
-          </form>
+                <span>{feedback.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveChanges}>
+              {/* Photo Section */}
+              <div className={styles.sectionGroup}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="13" r="4" />
+                    </svg>
+                    Profile Photo
+                  </h3>
+                  <p className={styles.sectionSubtitle}>
+                    Upload a high-resolution photo (PNG, JPG, or WebP up to 5MB). Photo will be centered and cropped into a circle.
+                  </p>
+                </div>
+
+                <div className={styles.avatarUploadRow}>
+                  <div className={styles.avatarPreviewContainer}>
+                    {avatarPreview ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={avatarPreview} alt="Avatar Preview" className={styles.avatarImage} />
+                    ) : (
+                      <div className={styles.avatarFallback}>{userInitials}</div>
+                    )}
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/png, image/jpeg, image/jpg, image/webp"
+                    style={{ display: "none" }}
+                    onChange={handleImageFileSelect}
+                  />
+
+                  <div className={styles.avatarActions}>
+                    <div className={styles.avatarBtnGroup}>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={styles.uploadBtn}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        {avatarPreview ? "Upload New Photo" : "Upload Photo"}
+                      </button>
+
+                      {avatarPreview && (
+                        <button type="button" onClick={handleRemovePhoto} className={styles.removeBtn}>
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
+                    <p className={styles.avatarHelpText}>
+                      We recommend a square image with your face clearly visible for mentor evaluations.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div className={styles.sectionGroup}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Personal Information
+                  </h3>
+                  <p className={styles.sectionSubtitle}>
+                    This name will appear on your mock test report cards, performance leaderboards, and completion badges.
+                  </p>
+                </div>
+
+                <div className={styles.formRowGrid}>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>
+                      First Name <span className={styles.inputRequired}>*</span>
+                    </label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="e.g. Sabrina"
+                        required
+                        className={styles.textInput}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Last Name</label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="e.g. Gomez"
+                        className={styles.textInput}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className={styles.sectionGroup}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    Contact &amp; Verification
+                  </h3>
+                  <p className={styles.sectionSubtitle}>
+                    Your primary registered communication channels for notifications and exam updates.
+                  </p>
+                </div>
+
+                <div className={styles.formRowGrid}>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>
+                      <span>Email Address</span>
+                      <span className={styles.verifiedBadge}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Verified
+                      </span>
+                    </label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                      <input
+                        type="email"
+                        value={user?.email || (isDemo ? "student@technocat.edu" : "")}
+                        disabled
+                        className={`${styles.textInput} ${styles.textInputDisabled}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Phone Number</label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      <input
+                        type="tel"
+                        placeholder="+91 98765 43210"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className={styles.textInput}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CAT Aspirant Goals */}
+              <div className={styles.sectionGroup}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    Aspirant Target &amp; B-School Goals
+                  </h3>
+                  <p className={styles.sectionSubtitle}>
+                    Helps the AI Intelligence Hub calibrate question difficulty and percentile projections.
+                  </p>
+                </div>
+
+                <div className={styles.formRowGrid}>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Target Examination Year</label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      <select
+                        value={targetYear}
+                        onChange={(e) => setTargetYear(e.target.value)}
+                        className={styles.selectInput}
+                      >
+                        <option value="CAT 2025">CAT 2025 (Nov 2025)</option>
+                        <option value="CAT 2026">CAT 2026 (Recommended Cohort)</option>
+                        <option value="CAT 2027">CAT 2027 (Foundation)</option>
+                        <option value="XAT / OMETs 2026">XAT / OMETs 2026</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Dream B-School Goal</label>
+                    <div className={styles.inputWrapper}>
+                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 21h18" />
+                        <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                        <line x1="9" y1="9" x2="9" y2="9.01" />
+                        <line x1="9" y1="13" x2="9" y2="13.01" />
+                        <line x1="15" y1="9" x2="15" y2="9.01" />
+                        <line x1="15" y1="13" x2="15" y2="13.01" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={dreamSchool}
+                        onChange={(e) => setDreamSchool(e.target.value)}
+                        placeholder="e.g. IIM Ahmedabad, IIM Bangalore, FMS Delhi"
+                        className={styles.textInput}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar */}
+              <div className={styles.actionBar}>
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard")}
+                  className={styles.cancelBtn}
+                >
+                  Cancel
+                </button>
+
+                <button type="submit" disabled={isSubmitting} className={styles.saveBtn}>
+                  {isSubmitting ? (
+                    <>
+                      <div className={styles.spinner} />
+                      Saving Changes...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                      </svg>
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </main>
     </div>
