@@ -86,8 +86,8 @@
 .mainNavInner {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0 24px;
-  min-height: 70px;
+  padding: 12px 24px;
+  min-height: 75px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -114,6 +114,7 @@
   align-items: center;
   flex-shrink: 0;
   width: 75px;
+  height: 75px;
 }
 
 .logoImage {
@@ -121,16 +122,6 @@
   width: 75px;
   object-fit: contain;
   display: block;
-}
-
-@media (max-width: 1150px) {
-  .logoLink {
-    width: 65px;
-  }
-  .logoImage {
-    height: 65px;
-    width: 65px;
-  }
 }
 
 

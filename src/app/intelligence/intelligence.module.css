@@ -24,22 +24,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0;
-  min-height: 70px;
+  padding: 12px 0;
+  min-height: 75px;
   border-bottom: 1px solid #F0F9FF;
+}
+
+@media (min-width: 768px) {
+  .topNav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
 }
 
 .brandLogo {
   display: inline-flex;
+  align-items: center;
   text-decoration: none;
   width: 75px;
+  height: 75px;
   flex-shrink: 0;
-}
-
-@media (max-width: 1150px) {
-  .brandLogo {
-    width: 65px;
-  }
+  justify-self: start;
 }
 
 .logoImage {
@@ -49,17 +54,11 @@
   display: block;
 }
 
-@media (max-width: 1150px) {
-  .logoImage {
-    height: 65px;
-    width: 65px;
-  }
-}
-
 .navLinks {
   display: none;
   align-items: center;
   gap: 28px;
+  justify-self: center;
 }
 
 @media (min-width: 768px) {
@@ -69,6 +68,7 @@
 }
 
 .navLink {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #64748B;
   font-size: 14px;
   font-weight: 500;
@@ -79,6 +79,7 @@
   gap: 4px;
   position: relative;
   padding: 8px 0;
+  white-space: nowrap;
 }
 
 .navLink:hover {
@@ -86,6 +87,7 @@
 }
 
 .navLinkActive {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #2563EB;
   font-weight: 600;
 }
