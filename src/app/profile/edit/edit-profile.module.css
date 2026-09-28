@@ -32,8 +32,15 @@
 
 .brandLogo {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   text-decoration: none;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  user-select: none;
+  line-height: 1;
+  gap: 0;
+  flex-shrink: 0;
   transition: opacity 0.2s;
 }
 
@@ -42,9 +49,15 @@
 }
 
 .logoImage {
-  height: 52px;
+  height: 75px;
   width: auto;
   display: block;
+}
+
+@media (max-width: 1150px) {
+  .logoImage {
+    height: 65px;
+  }
 }
 
 .navLinks {

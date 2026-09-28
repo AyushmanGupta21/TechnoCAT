@@ -40,6 +40,12 @@
   display: block;
 }
 
+@media (max-width: 1150px) {
+  .logoImage {
+    height: 65px;
+  }
+}
+
 .navLinks {
   display: none;
   align-items: center;

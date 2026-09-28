@@ -1326,3 +1326,8 @@
 }
 
 .logoImage { height: 75px; width: auto; display: block; }
+@media (max-width: 1150px) {
+  .logoImage {
+    height: 65px;
+  }
+}

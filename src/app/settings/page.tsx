@@ -1,29 +1,38 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./settings.module.css";
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
-  { name: "Browse", href: "/dashboard#browse" },
+  { name: "Browse", href: "/browse" },
   { name: "My Topics", href: "/topics" },
   { name: "Intelligence Hub", href: "/intelligence" },
-  { name: "Mock Viva Prep", href: "/dashboard#viva" },
+  { name: "Mock Viva Prep", href: "#" },
 ];
 
 type SettingsTab = "notifications" | "exam" | "security";
 
-export default function SettingsPage() {
+function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   const [activeTab, setActiveTab] = useState<SettingsTab>("notifications");
   const [justSaved, setJustSaved] = useState(false);
+
+  // Sync tab with URL query param (?tab=notifications | exam | security)
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") as SettingsTab | null;
+    if (tabParam && ["notifications", "exam", "security"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   // Notification settings
   const [emailNotif, setEmailNotif] = useState(true);
@@ -150,13 +159,20 @@ export default function SettingsPage() {
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
-            <Link href="/dashboard" className={styles.brandLogo} title="TechnoCAT Dashboard">
+            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
               <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
             </Link>
 
             <div className={styles.navLinks}>
               {navLinks.map((item) => (
-                <Link key={item.name} href={item.href} className={styles.navLink}>
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => {
+                    if (item.href === "#") e.preventDefault();
+                  }}
+                  className={styles.navLink}
+                >
                   {item.name}
                 </Link>
               ))}
@@ -933,5 +949,13 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SettingsContent />
+    </Suspense>
   );
 }

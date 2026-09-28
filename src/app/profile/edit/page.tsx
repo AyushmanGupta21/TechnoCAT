@@ -9,10 +9,10 @@ import styles from "./edit-profile.module.css";
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
-  { name: "Browse", href: "/dashboard#browse" },
+  { name: "Browse", href: "/browse" },
   { name: "My Topics", href: "/topics" },
   { name: "Intelligence Hub", href: "/intelligence" },
-  { name: "Mock Viva Prep", href: "/dashboard#viva" },
+  { name: "Mock Viva Prep", href: "#" },
 ];
 
 export default function EditProfilePage() {
@@ -186,13 +186,20 @@ export default function EditProfilePage() {
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
-            <Link href="/dashboard" className={styles.brandLogo} title="TechnoCAT Dashboard">
+            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
               <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
             </Link>
 
             <div className={styles.navLinks}>
               {navLinks.map((item) => (
-                <Link key={item.name} href={item.href} className={styles.navLink}>
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => {
+                    if (item.href === "#") e.preventDefault();
+                  }}
+                  className={styles.navLink}
+                >
                   {item.name}
                 </Link>
               ))}
