@@ -480,8 +480,9 @@ export default function ErrorTrackingPage() {
                 ✕
               </button>
 
-              {/* 1. MISTAKES LOGGED MODAL */}
-              {selectedStatModal === "mistakesLogged" && (
+              <div className={styles.statModalScrollContent}>
+                {/* 1. MISTAKES LOGGED MODAL */}
+                {selectedStatModal === "mistakesLogged" && (
                 <>
                   <div className={styles.statModalHeader}>
                     <div className={styles.statModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
@@ -893,6 +894,7 @@ export default function ErrorTrackingPage() {
                   )}
                 </>
               )}
+              </div>
             </div>
           </div>
         );

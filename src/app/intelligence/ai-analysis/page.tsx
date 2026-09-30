@@ -995,7 +995,8 @@ export default function AiAnalysisPage() {
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
             <button className={styles.modalClose} onClick={() => setShowPlanModal(false)} aria-label="Close modal">&times;</button>
             
-            <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
+            <div className={styles.modalBoxContent}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
               <span style={{fontSize: '24px'}}>🎯</span>
               <h3 style={{fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0}}>Your AI Improvement Plan</h3>
             </div>
@@ -1096,6 +1097,7 @@ export default function AiAnalysisPage() {
                 {completedTasks.length === 3 ? 'Done' : 'Save & Continue'}
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1182,8 +1184,9 @@ export default function AiAnalysisPage() {
                 ✕
               </button>
 
-              {/* 1. ACCURACY POPUP (Blue Theme) */}
-              {selectedMetric === "accuracy" && (
+              <div className={styles.metricModalScrollContent}>
+                {/* 1. ACCURACY POPUP (Blue Theme) */}
+                {selectedMetric === "accuracy" && (
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
@@ -1775,6 +1778,7 @@ export default function AiAnalysisPage() {
                   )}
                 </>
               )}
+              </div>
             </div>
           </div>
         );
@@ -1851,8 +1855,9 @@ export default function AiAnalysisPage() {
                 ✕
               </button>
 
-              {/* POPUP 1 — REDUCE CARELESS ERRORS */}
-              {selectedOpportunity === "carelessErrors" && (
+              <div className={styles.metricModalScrollContent}>
+                {/* POPUP 1 — REDUCE CARELESS ERRORS */}
+                {selectedOpportunity === "carelessErrors" && (
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
@@ -2317,6 +2322,7 @@ export default function AiAnalysisPage() {
                   )}
                 </>
               )}
+              </div>
             </div>
           </div>
         );

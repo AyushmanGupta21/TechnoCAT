@@ -1052,12 +1052,13 @@
 
 .modalContent {
   background: #FFFFFF;
-  border-radius: 18px;
+  border-radius: 28px;
   max-width: 440px;
   width: 100%;
-  padding: 26px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  border: 1px solid #E5E7EB;
+  padding: 28px;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22);
+  border: 1.5px solid #E0F2FE;
+  overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

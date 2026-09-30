@@ -57,27 +57,29 @@ export default function CardInfoModal({ isOpen, onClose, data }: CardInfoModalPr
           </svg>
         </button>
 
-        <div className={styles.headerBand}>
-          {data.badge && <span className={styles.badge}>{data.badge}</span>}
-          <h3 className={styles.title}>{data.title}</h3>
-        </div>
+        <div className={styles.modalScrollArea}>
+          <div className={styles.headerBand}>
+            {data.badge && <span className={styles.badge}>{data.badge}</span>}
+            <h3 className={styles.title}>{data.title}</h3>
+          </div>
 
-        <div className={styles.modalBody}>
-          <p className={styles.description}>{data.description}</p>
+          <div className={styles.modalBody}>
+            <p className={styles.description}>{data.description}</p>
 
-          {data.highlights && data.highlights.length > 0 && (
-            <div className={styles.highlightsList}>
-              {data.highlights.map((item, idx) => (
-                <div key={idx} className={styles.highlightItem}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles.checkIcon}>
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
+            {data.highlights && data.highlights.length > 0 && (
+              <div className={styles.highlightsList}>
+                {data.highlights.map((item, idx) => (
+                  <div key={idx} className={styles.highlightItem}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles.checkIcon}>
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.footerActions}>

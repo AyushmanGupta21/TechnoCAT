@@ -316,8 +316,72 @@
 
 /* Improvement Plan Modal */
 .modalOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modalBox { background: #FFFFFF; border-radius: 24px; max-width: 620px; width: 100%; padding: 32px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); position: relative; }
-.modalClose { position: absolute; top: 20px; right: 20px; border: none; background: #F1F5F9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.modalBox {
+  background: #FFFFFF;
+  border-radius: 28px;
+  max-width: 620px;
+  width: 100%;
+  max-height: 88vh;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22);
+  border: 1.5px solid #E0F2FE;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalBoxContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.modalBoxContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalBoxContent::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 16px 0;
+}
+
+.modalBoxContent::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+.modalBoxContent::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.modalClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.modalClose:hover {
+  background: #EFF6FF;
+  border-color: #BAE6FD;
+  color: #0284C7;
+}
 .planProgressBar { height: 8px; background: #F1F5F9; border-radius: 10px; overflow: hidden; margin: 16px 0 24px 0; }
 .planProgressFill { height: 100%; background: linear-gradient(90deg, #2563EB 0%, #10B981 100%); transition: width 0.3s ease; }
 .planStepsList { display: flex; flex-direction: column; gap: 16px; }
@@ -376,16 +440,44 @@
 
 .metricModalCard {
   background: #FFFFFF;
-  border-radius: 22px;
-  max-width: 560px;
+  border-radius: 28px;
+  max-width: 580px;
   width: 100%;
-  padding: 28px 30px;
-  border: 1px solid #E0F2FE;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16), 0 4px 20px rgba(14, 165, 233, 0.08);
+  border: 1.5px solid #E0F2FE;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22), 0 4px 20px rgba(14, 165, 233, 0.08);
   position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   animation: metricModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.metricModalScrollContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 30px 30px 28px 30px;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.metricModalScrollContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.metricModalScrollContent::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 16px 0;
+}
+
+.metricModalScrollContent::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+.metricModalScrollContent::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 @keyframes metricOverlayFadeIn {
@@ -406,13 +498,13 @@
 
 .metricModalClose {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   border: 1px solid #E2E8F0;
   background: #F8FAFC;
   color: #475569;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 14px;
@@ -421,6 +513,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  z-index: 20;
 }
 
 .metricModalClose:hover {
@@ -434,7 +527,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
-  padding-right: 36px;
+  padding-right: 44px;
 }
 
 .metricModalIcon {
@@ -585,7 +678,7 @@
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
   border-left: 4px solid #2563EB;
-  border-radius: 10px 14px 14px 10px;
+  border-radius: 14px;
   padding: 12px 15px;
   font-size: 13px;
   color: #334155;
@@ -609,7 +702,7 @@
 .metricTopicTierBox {
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -671,7 +764,7 @@
 .metricValueCard {
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -716,7 +809,7 @@
   line-height: 1.45;
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 10px 14px;
 }
 
@@ -747,7 +840,7 @@
 .metricEmptyState {
   background: #F8FAFC;
   border: 1px dashed #BAE6FD;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 28px 20px;
   text-align: center;
   color: #475569;
@@ -763,10 +856,12 @@
   }
   .metricModalCard {
     max-width: 100%;
-    border-radius: 24px 24px 0 0;
-    padding: 24px 20px 28px 20px;
+    border-radius: 28px 28px 0 0;
     max-height: 88vh;
     animation: metricBottomSheetIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .metricModalScrollContent {
+    padding: 24px 20px 28px 20px;
   }
   .metricHeroStatBox {
     flex-direction: column;

@@ -12,14 +12,15 @@
 
 .modalContent {
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 26px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1.5px solid #E0F2FE;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -30,6 +31,7 @@
   align-items: center;
   justify-content: space-between;
   background: #F8FAFC;
+  border-radius: 26px 26px 0 0;
 }
 
 .modalTitle {
