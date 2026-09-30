@@ -16,7 +16,7 @@ export default function AiAnalysisPage() {
   const [journeyTab, setJourneyTab] = useState('Score');
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [completedTasks, setCompletedTasks] = useState<number[]>([1]);
-  const [selectedMetric, setSelectedMetric] = useState<"accuracy" | "speed" | "consistency" | null>(null);
+  const [selectedMetric, setSelectedMetric] = useState<"accuracy" | "speed" | "consistency" | "conceptStrength" | "questionSelection" | null>(null);
 
   const toggleTask = (id: number) => {
     setCompletedTasks(prev => 
@@ -415,24 +415,31 @@ export default function AiAnalysisPage() {
           </div>
           <div className={styles.dnaGrid}>
             {[
-              {l: 'Accuracy', key: 'accuracy' as const, i: '🎯', v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', m: 'Maintain current level'},
-              {l: 'Speed', key: 'speed' as const, i: '⚡', v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', m: 'Focus on time management'},
-              {l: 'Consistency', key: 'consistency' as const, i: '🛡️', v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', m: 'Keep up the momentum'},
-              {l: 'Concept Strength', key: null, i: '📚', v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', m: 'Review weak topics'},
-              {l: 'Question Selection', key: null, i: '🎯', v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', m: 'Avoid low-value questions'}
+              {l: 'Accuracy', key: 'accuracy' as const, i: '🎯', v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', glow: 'rgba(37, 99, 235, 0.14)', ring: 'rgba(37, 99, 235, 0.12)', soft: '#EFF6FF', m: 'Maintain current level'},
+              {l: 'Speed', key: 'speed' as const, i: '⚡', v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', glow: 'rgba(16, 185, 129, 0.14)', ring: 'rgba(16, 185, 129, 0.12)', soft: '#F0FDF4', m: 'Focus on time management'},
+              {l: 'Consistency', key: 'consistency' as const, i: '🛡️', v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.14)', ring: 'rgba(139, 92, 246, 0.12)', soft: '#F5F3FF', m: 'Keep up the momentum'},
+              {l: 'Concept Strength', key: 'conceptStrength' as const, i: '📚', v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', glow: 'rgba(217, 70, 239, 0.14)', ring: 'rgba(217, 70, 239, 0.12)', soft: '#FDF4FF', m: 'Review weak topics'},
+              {l: 'Question Selection', key: 'questionSelection' as const, i: '🎯', v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', glow: 'rgba(14, 165, 233, 0.14)', ring: 'rgba(14, 165, 233, 0.12)', soft: '#F0F9FF', m: 'Avoid low-value questions'}
             ].map((dna, i) => (
               <div
                 key={i}
-                className={`${styles.dnaCard} ${dna.key ? styles.dnaCardClickable : ''}`}
-                onClick={dna.key ? () => setSelectedMetric(dna.key) : undefined}
-                onKeyDown={dna.key ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric(dna.key); } } : undefined}
-                role={dna.key ? "button" : undefined}
-                tabIndex={dna.key ? 0 : undefined}
+                className={`${styles.dnaCard} ${styles.dnaCardClickable}`}
+                style={{
+                  '--dna-accent': dna.c,
+                  '--dna-glow': dna.glow,
+                  '--dna-ring': dna.ring,
+                  '--dna-soft': dna.soft,
+                } as React.CSSProperties}
+                onClick={() => setSelectedMetric(dna.key)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric(dna.key); } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open ${dna.l} details`}
               >
                 <div className={styles.dnaTopBorder} style={{background: dna.c}}></div>
                 <div className={styles.dnaHeader}>
                   <div className={styles.dnaLbl}><span style={{color: dna.c}}>{dna.i}</span> {dna.l}</div>
-                  <span className={styles.dnaInfoIcon}>ⓘ</span>
+                  <span className={styles.dnaInfoIcon} aria-hidden="true">ⓘ</span>
                 </div>
                 <div className={styles.dnaVal}>{dna.v}%</div>
                 <div className={styles.dnaStat} style={{color: dna.c}}>{dna.s}</div>
@@ -1050,7 +1057,7 @@ export default function AiAnalysisPage() {
         </div>
       )}
 
-      {/* Metric Detail Popup Modal (Accuracy / Speed / Consistency) */}
+      {/* Metric Detail Popup Modal (All 5 Performance DNA Cards) */}
       {selectedMetric && (() => {
         const hasMockHistory = Array.isArray(d?.trend) && d.trend.length > 0;
 
@@ -1063,19 +1070,19 @@ export default function AiAnalysisPage() {
             section: "VARC",
             label: d?.topics?.VARC?.[0]?.avgTime || "1m 45s",
             seconds: parseTimeStr(d?.topics?.VARC?.[0]?.avgTime || "1m 45s") || 105,
-            color: "#0EA5E9"
+            color: "#10B981"
           },
           {
             section: "DILR",
             label: "2m 40s",
             seconds: 160,
-            color: "#2563EB"
+            color: "#059669"
           },
           {
             section: "QA",
             label: "2m 10s",
             seconds: 130,
-            color: "#06B6D4"
+            color: "#34D399"
           }
         ];
 
@@ -1093,6 +1100,23 @@ export default function AiAnalysisPage() {
                 { name: "Mock 4", score: Number(d.trend[0].score) || 72 }
               ]
             : [];
+
+        const allTopics: Array<{ name: string; section: string; status: string; accuracy: number }> = [
+          ...(d?.topics?.VARC || []).map((t: any) => ({ ...t, section: "VARC" })),
+          ...(d?.topics?.DILR || []).map((t: any) => ({ ...t, section: "DILR" })),
+          ...(d?.topics?.QA || []).map((t: any) => ({ ...t, section: "QA" }))
+        ];
+
+        const strongTopics = allTopics.filter((t) => t.accuracy >= 80);
+        const moderateTopics = allTopics.filter((t) => t.accuracy >= 55 && t.accuracy < 80);
+        const weakTopics = allTopics.filter((t) => t.accuracy < 55);
+
+        const wrongSelectionMistake = (d?.mistakesMap || []).find(
+          (m: any) => m.category === "Wrong Selection"
+        );
+        const lowValuePct = wrongSelectionMistake?.percent ?? 18;
+        const highValuePct = d?.dna?.questionSelection?.value ?? 55;
+        const mediumValuePct = Math.max(10, 100 - highValuePct - lowValuePct);
 
         return (
           <div
@@ -1115,6 +1139,7 @@ export default function AiAnalysisPage() {
                 ✕
               </button>
 
+              {/* 1. ACCURACY POPUP (Blue Theme) */}
               {selectedMetric === "accuracy" && (
                 <>
                   <div className={styles.metricModalHeader}>
@@ -1122,7 +1147,7 @@ export default function AiAnalysisPage() {
                       🎯
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Accuracy
+                      Accuracy Details
                     </h3>
                   </div>
                   <p className={styles.metricModalDesc}>
@@ -1131,14 +1156,22 @@ export default function AiAnalysisPage() {
 
                   {!hasMockHistory ? (
                     <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Accuracy insights.
+                      Complete a mock to unlock detailed Performance DNA insights.
                     </div>
                   ) : (
                     <>
-                      <div className={styles.metricHeroStatBox}>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%)",
+                          borderColor: "#BFDBFE"
+                        }}
+                      >
                         <div className={styles.metricHeroStatLeft}>
                           <span className={styles.metricHeroStatLabel}>Current Accuracy</span>
-                          <span className={styles.metricHeroStatValue}>{d.dna?.accuracy?.value ?? 78}%</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#1D4ED8" }}>
+                            {d.dna?.accuracy?.value ?? 78}%
+                          </span>
                         </div>
                         <span className={styles.metricImprovementBadge}>
                           ↑ +4% vs last 3 mocks
@@ -1150,13 +1183,15 @@ export default function AiAnalysisPage() {
                         <div className={styles.metricSecList}>
                           {[
                             { name: "VARC", val: varcAcc, color: "#2563EB" },
-                            { name: "DILR", val: dilrAcc, color: "#0EA5E9" },
-                            { name: "QA", val: qaAcc, color: "#06B6D4" }
+                            { name: "DILR", val: dilrAcc, color: "#3B82F6" },
+                            { name: "QA", val: qaAcc, color: "#60A5FA" }
                           ].map((sec) => (
                             <div key={sec.name} className={styles.metricSecItem}>
                               <div className={styles.metricSecRowTop}>
                                 <span>{sec.name}</span>
-                                <span className={styles.metricSecVal}>{sec.val}%</span>
+                                <span className={styles.metricSecVal} style={{ color: "#2563EB" }}>
+                                  {sec.val}%
+                                </span>
                               </div>
                               <div className={styles.metricSecBar}>
                                 <div
@@ -1170,7 +1205,25 @@ export default function AiAnalysisPage() {
                       </div>
 
                       <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Improvement Tips</h4>
+                        <h4 className={styles.metricBlockTitle}>Key Insights</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#2563EB", background: "#F8FAFC" }}
+                        >
+                          <div>
+                            <strong>{d.dna?.accuracy?.interpretation || "Strong — maintain current level"}:</strong>{" "}
+                            {d.dna?.accuracy?.insight || "You rarely make careless errors when you know the concept."}
+                          </div>
+                          {d.diagnosis?.well && (
+                            <div style={{ color: "#475569", fontSize: "12.5px" }}>
+                              • {d.diagnosis.well}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Improvement Suggestions</h4>
                         <ol className={styles.metricTipsList}>
                           {[
                             "Avoid blind guessing to reduce negative marking",
@@ -1179,7 +1232,12 @@ export default function AiAnalysisPage() {
                             "Prioritize high-confidence questions first"
                           ].map((tip, idx) => (
                             <li key={idx} className={styles.metricTipItem}>
-                              <span className={styles.metricTipNum}>{idx + 1}</span>
+                              <span
+                                className={styles.metricTipNum}
+                                style={{ background: "#DBEAFE", color: "#1D4ED8" }}
+                              >
+                                {idx + 1}
+                              </span>
                               <span>{tip}</span>
                             </li>
                           ))}
@@ -1190,10 +1248,11 @@ export default function AiAnalysisPage() {
                 </>
               )}
 
+              {/* 2. SPEED POPUP (Green Theme) */}
               {selectedMetric === "speed" && (
                 <>
                   <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#F0FDF4", color: "#10B981" }}>
+                    <div className={styles.metricModalIcon} style={{ background: "#ECFDF5", color: "#059669" }}>
                       ⚡
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
@@ -1206,14 +1265,22 @@ export default function AiAnalysisPage() {
 
                   {!hasMockHistory ? (
                     <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Speed insights.
+                      Complete a mock to unlock detailed Performance DNA insights.
                     </div>
                   ) : (
                     <>
-                      <div className={styles.metricHeroStatBox}>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #ECFDF5 0%, #F8FAFC 100%)",
+                          borderColor: "#A7F3D0"
+                        }}
+                      >
                         <div className={styles.metricHeroStatLeft}>
                           <span className={styles.metricHeroStatLabel}>Current Speed</span>
-                          <span className={styles.metricHeroStatValue}>{d.dna?.speed?.value ?? 61}%</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#059669" }}>
+                            {d.dna?.speed?.value ?? 61}%
+                          </span>
                         </div>
                         <span className={styles.metricImprovementBadge}>
                           ↑ +5% vs last 3 mocks
@@ -1226,8 +1293,10 @@ export default function AiAnalysisPage() {
                           {speedComparisonData.map((sec) => (
                             <div key={sec.section} className={styles.metricSecItem}>
                               <div className={styles.metricSecRowTop}>
-                                <span>{sec.section}</span>
-                                <span className={styles.metricSecVal}>{sec.label}</span>
+                                <span>{sec.section} time</span>
+                                <span className={styles.metricSecVal} style={{ color: "#059669" }}>
+                                  {sec.label}
+                                </span>
                               </div>
                               <div className={styles.metricSecBar}>
                                 <div
@@ -1253,7 +1322,10 @@ export default function AiAnalysisPage() {
                             "Learn when to skip and move on"
                           ].map((tip, idx) => (
                             <li key={idx} className={styles.metricTipItem}>
-                              <span className={styles.metricTipDot} />
+                              <span
+                                className={styles.metricTipDot}
+                                style={{ background: "#10B981" }}
+                              />
                               <span>{tip}</span>
                             </li>
                           ))}
@@ -1264,6 +1336,7 @@ export default function AiAnalysisPage() {
                 </>
               )}
 
+              {/* 3. CONSISTENCY POPUP (Purple Theme) */}
               {selectedMetric === "consistency" && (
                 <>
                   <div className={styles.metricModalHeader}>
@@ -1280,18 +1353,39 @@ export default function AiAnalysisPage() {
 
                   {!hasMockHistory ? (
                     <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Consistency insights.
+                      Complete a mock to unlock detailed Performance DNA insights.
                     </div>
                   ) : (
                     <>
-                      <div className={styles.metricHeroStatBox}>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #F5F3FF 0%, #F8FAFC 100%)",
+                          borderColor: "#DDD6FE"
+                        }}
+                      >
                         <div className={styles.metricHeroStatLeft}>
                           <span className={styles.metricHeroStatLabel}>Current Consistency</span>
-                          <span className={styles.metricHeroStatValue}>{d.dna?.consistency?.value ?? 72}%</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#7C3AED" }}>
+                            {d.dna?.consistency?.value ?? 72}%
+                          </span>
                         </div>
                         <span className={styles.metricImprovementBadge}>
                           ↑ +6% vs last 3 mocks
                         </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Performance Stability</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#8B5CF6", background: "#FAF5FF" }}
+                        >
+                          <div>
+                            <strong>{d.dna?.consistency?.interpretation || "Moderately stable"}:</strong>{" "}
+                            {d.dna?.consistency?.insight || "Your VARC scores vary depending on the passage genre."}
+                          </div>
+                        </div>
                       </div>
 
                       <div className={styles.metricBlock}>
@@ -1319,21 +1413,21 @@ export default function AiAnalysisPage() {
                               <Tooltip
                                 contentStyle={{
                                   background: "#FFFFFF",
-                                  border: "1px solid #BAE6FD",
+                                  border: "1px solid #DDD6FE",
                                   borderRadius: "10px",
                                   fontSize: "12px",
                                   fontWeight: 600,
-                                  boxShadow: "0 8px 20px rgba(14, 165, 233, 0.1)"
+                                  boxShadow: "0 8px 20px rgba(139, 92, 246, 0.12)"
                                 }}
                                 formatter={(val: any) => [`${val}`, "Score"]}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="score"
-                                stroke="#0EA5E9"
+                                stroke="#8B5CF6"
                                 strokeWidth={3}
-                                dot={{ r: 4, fill: "#2563EB", strokeWidth: 2, stroke: "#FFFFFF" }}
-                                activeDot={{ r: 6, fill: "#0284C7" }}
+                                dot={{ r: 4, fill: "#7C3AED", strokeWidth: 2, stroke: "#FFFFFF" }}
+                                activeDot={{ r: 6, fill: "#6D28D9" }}
                               />
                             </LineChart>
                           </ResponsiveContainer>
@@ -1350,7 +1444,285 @@ export default function AiAnalysisPage() {
                             "Focus on maintaining stable accuracy"
                           ].map((tip, idx) => (
                             <li key={idx} className={styles.metricTipItem}>
-                              <span className={styles.metricTipDot} />
+                              <span
+                                className={styles.metricTipDot}
+                                style={{ background: "#8B5CF6" }}
+                              />
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* 4. CONCEPT STRENGTH POPUP (Pink/Purple Theme) */}
+              {selectedMetric === "conceptStrength" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#FDF4FF", color: "#D946EF" }}>
+                      📚
+                    </div>
+                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
+                      Concept Strength
+                    </h3>
+                  </div>
+                  <p className={styles.metricModalDesc}>
+                    Concept Strength measures your foundational mastery across core CAT topics in VARC, DILR, and QA.
+                  </p>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock to unlock detailed Performance DNA insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #FDF4FF 0%, #F8FAFC 100%)",
+                          borderColor: "#F5D0FE"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Overall Concept Strength</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#C026D3" }}>
+                            {d.dna?.conceptStrength?.value ?? 85}%
+                          </span>
+                        </div>
+                        <span
+                          className={styles.metricImprovementBadge}
+                          style={{ background: "#FDF4FF", color: "#A21CAF", borderColor: "#F0ABFC" }}
+                        >
+                          ✦ {d.dna?.conceptStrength?.interpretation || "Excellent foundation"}
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Topic-wise Strength</h4>
+                        <div className={styles.metricTopicTierGrid}>
+                          <div className={styles.metricTopicTierBox}>
+                            <div className={styles.metricTopicTierLabel} style={{ color: "#059669" }}>
+                              <span>●</span> Strong Topics
+                            </div>
+                            <div className={styles.metricTopicPillList}>
+                              {strongTopics.map((t) => (
+                                <div
+                                  key={t.name}
+                                  className={styles.metricTopicPill}
+                                  style={{ background: "#ECFDF5", color: "#065F46" }}
+                                >
+                                  <span>{t.name}</span>
+                                  <strong>{t.accuracy}%</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className={styles.metricTopicTierBox}>
+                            <div className={styles.metricTopicTierLabel} style={{ color: "#2563EB" }}>
+                              <span>●</span> Moderate Topics
+                            </div>
+                            <div className={styles.metricTopicPillList}>
+                              {moderateTopics.map((t) => (
+                                <div
+                                  key={t.name}
+                                  className={styles.metricTopicPill}
+                                  style={{ background: "#EFF6FF", color: "#1E40AF" }}
+                                >
+                                  <span>{t.name}</span>
+                                  <strong>{t.accuracy}%</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className={styles.metricTopicTierBox}>
+                            <div className={styles.metricTopicTierLabel} style={{ color: "#DC2626" }}>
+                              <span>●</span> Weak Topics
+                            </div>
+                            <div className={styles.metricTopicPillList}>
+                              {weakTopics.map((t) => (
+                                <div
+                                  key={t.name}
+                                  className={styles.metricTopicPill}
+                                  style={{ background: "#FEF2F2", color: "#991B1B" }}
+                                >
+                                  <span>{t.name}</span>
+                                  <strong>{t.accuracy}%</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Recommended Topics to Revise</h4>
+                        <div className={styles.metricReviseChips}>
+                          {weakTopics.map((t) => (
+                            <span key={t.name} className={styles.metricReviseChip}>
+                              📌 {t.name} ({t.section})
+                            </span>
+                          ))}
+                          <span className={styles.metricReviseChip}>
+                            📌 Permutations &amp; Combinations (QA)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Improvement Tips</h4>
+                        <ul className={styles.metricTipsList}>
+                          {[
+                            "Revise core formulas and conceptual shortcuts for weak QA topics",
+                            "Solve 15–20 untimed foundational questions before attempting timed sets",
+                            "Maintain a concept formula & logic notebook for recurring errors",
+                            "Pair strong topics (Arithmetic, RC) with targeted revision on Algebra"
+                          ].map((tip, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipDot}
+                                style={{ background: "#D946EF" }}
+                              />
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* 5. QUESTION SELECTION POPUP (Blue/Cyan Theme) */}
+              {selectedMetric === "questionSelection" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
+                      🎯
+                    </div>
+                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
+                      Question Selection
+                    </h3>
+                  </div>
+                  <p className={styles.metricModalDesc}>
+                    Question Selection evaluates how effectively you identify and attempt high-reward questions while skipping time traps.
+                  </p>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock to unlock detailed Performance DNA insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #E0F2FE 0%, #F8FAFC 100%)",
+                          borderColor: "#BAE6FD"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Current Selection Score</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#0284C7" }}>
+                            {d.dna?.questionSelection?.value ?? 55}%
+                          </span>
+                        </div>
+                        <span
+                          className={styles.metricImprovementBadge}
+                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC" }}
+                        >
+                          ⚡ Efficiency: {d.dna?.questionSelection?.value ?? 55}%
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Question Selection Breakdown</h4>
+                        <div className={styles.metricValueGrid}>
+                          <div
+                            className={styles.metricValueCard}
+                            style={{ borderColor: "#A7F3D0", background: "#F0FDF4" }}
+                          >
+                            <span className={styles.metricValueCardTitle} style={{ color: "#059669" }}>
+                              High-Value Questions
+                            </span>
+                            <span className={styles.metricValueCardStat} style={{ color: "#065F46" }}>
+                              {highValuePct}%
+                            </span>
+                            <span className={styles.metricValueCardSub}>
+                              High-accuracy sitters solved within optimal time
+                            </span>
+                          </div>
+
+                          <div
+                            className={styles.metricValueCard}
+                            style={{ borderColor: "#BAE6FD", background: "#F0F9FF" }}
+                          >
+                            <span className={styles.metricValueCardTitle} style={{ color: "#0284C7" }}>
+                              Medium-Value Questions
+                            </span>
+                            <span className={styles.metricValueCardStat} style={{ color: "#0C4A6E" }}>
+                              {mediumValuePct}%
+                            </span>
+                            <span className={styles.metricValueCardSub}>
+                              Moderate difficulty sets requiring 2–3 mins
+                            </span>
+                          </div>
+
+                          <div
+                            className={styles.metricValueCard}
+                            style={{ borderColor: "#FECACA", background: "#FEF2F2" }}
+                          >
+                            <span className={styles.metricValueCardTitle} style={{ color: "#DC2626" }}>
+                              Low-Value Questions
+                            </span>
+                            <span className={styles.metricValueCardStat} style={{ color: "#991B1B" }}>
+                              {lowValuePct}%
+                            </span>
+                            <span className={styles.metricValueCardSub}>
+                              Time traps with &lt;30% historical accuracy
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Question Selection Efficiency &amp; Recommended Strategy</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#0EA5E9", background: "#F0F9FF" }}
+                        >
+                          <div>
+                            <strong>Efficiency Insight:</strong>{" "}
+                            {d.dna?.questionSelection?.insight ||
+                              "You often pick the hardest DILR set first, draining time."}
+                          </div>
+                          <div>
+                            <strong>Recommended Strategy:</strong>{" "}
+                            {d.diagnosis?.improveFastest ||
+                              "Target DILR set selection to avoid 10-minute traps."}{" "}
+                            Use a Two-Round Scanning approach—lock in familiar sitters first before attempting complex multi-step problems.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve Question Selection</h4>
+                        <ul className={styles.metricTipsList}>
+                          {[
+                            "Scan all DILR sets for 3 minutes before committing to your first set",
+                            "Use a strict 90-second bailout rule on unfamiliar QA algebra problems",
+                            "Prioritize high-confidence sitters in Round 1 to secure sectional cutoffs",
+                            "Avoid ego-solving low-value trap questions with <30% success rate"
+                          ].map((tip, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipDot}
+                                style={{ background: "#0EA5E9" }}
+                              />
                               <span>{tip}</span>
                             </li>
                           ))}
