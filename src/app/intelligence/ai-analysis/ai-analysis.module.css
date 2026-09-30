@@ -139,13 +139,18 @@
 .ringTrend { font-size: 12px; font-weight: 700; color: #10B981; margin-top: 8px; background: #D1FAE5; padding: 4px 10px; border-radius: 100px; }
 
 .heroMetrics { display: flex; flex-direction: column; gap: 20px; width: 260px; }
-.hmRow { display: flex; flex-direction: column; gap: 8px; background: #FFF; padding: 12px 16px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.hmRow { display: flex; flex-direction: column; gap: 8px; background: #FFF; padding: 12px 16px; border-radius: 16px; border: 1px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+.hmRowClickable { cursor: pointer; user-select: none; }
+.hmRowClickable:hover { border-color: #7DD3FC; box-shadow: 0 8px 24px rgba(14, 165, 233, 0.14), 0 0 0 3px rgba(14, 165, 233, 0.08); transform: translateY(-2px); }
+.hmRowClickable:focus-visible { outline: none; border-color: #0EA5E9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
 .hmTop { display: flex; justify-content: space-between; align-items: center; }
 .hmLabel { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #0F172A; }
+.hmInfoIcon { font-size: 12px; color: #94A3B8; margin-left: 2px; transition: color 0.2s ease, transform 0.2s ease; }
+.hmRowClickable:hover .hmInfoIcon { color: #0EA5E9; transform: scale(1.1); }
 .hmIcon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .hmVal { font-size: 18px; font-weight: 800; color: #0F172A; }
 .hmBar { height: 6px; background: #F1F5F9; border-radius: 100px; overflow: hidden; }
-.hmFill { height: 100%; border-radius: 100px; }
+.hmFill { height: 100%; border-radius: 100px; transition: width 0.5s ease; }
 
 .contentWrapper { max-width: 1300px; margin: 0 auto; padding: 0 40px; display: flex; flex-direction: column; gap: 40px; margin-top: -60px; position: relative; z-index: 10; }
 
@@ -170,7 +175,12 @@
 .secTitle { font-size: 22px; font-weight: 800; color: #0F172A; }
 .secSubtitle { font-size: 14px; color: #64748B; margin-top: 4px; }
 .dnaGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
-.dnaCard { background: #FFF; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.dnaCard { background: #FFF; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+.dnaCardClickable { cursor: pointer; user-select: none; }
+.dnaCardClickable:hover { border-color: #7DD3FC; box-shadow: 0 10px 26px rgba(14, 165, 233, 0.14), 0 0 0 3px rgba(14, 165, 233, 0.08); transform: translateY(-2px); }
+.dnaCardClickable:focus-visible { outline: none; border-color: #0EA5E9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
+.dnaInfoIcon { color: #94A3B8; font-size: 13px; transition: color 0.2s ease, transform 0.2s ease; }
+.dnaCardClickable:hover .dnaInfoIcon { color: #0EA5E9; transform: scale(1.15); }
 .dnaTopBorder { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
 .dnaHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .dnaLbl { font-size: 13px; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 8px; }
@@ -342,5 +352,315 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Metric Detail Popup Modal (Accuracy / Speed / Consistency) */
+.metricModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: metricOverlayFadeIn 0.2s ease-out forwards;
+}
+
+.metricModalCard {
+  background: #FFFFFF;
+  border-radius: 22px;
+  max-width: 540px;
+  width: 100%;
+  padding: 28px 30px;
+  border: 1px solid #E0F2FE;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16), 0 4px 20px rgba(14, 165, 233, 0.08);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: metricModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes metricOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes metricModalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.metricModalClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #475569;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.metricModalClose:hover {
+  background: #EFF6FF;
+  border-color: #BAE6FD;
+  color: #0284C7;
+}
+
+.metricModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-right: 36px;
+}
+
+.metricModalIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.metricModalTitle {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.metricModalDesc {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+}
+
+.metricHeroStatBox {
+  background: linear-gradient(135deg, #F0F9FF 0%, #F8FAFC 100%);
+  border: 1px solid #E0F2FE;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.metricHeroStatLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metricHeroStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metricHeroStatValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+}
+
+.metricImprovementBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  background: #D1FAE5;
+  border: 1px solid #A7F3D0;
+  padding: 6px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.metricBlock {
+  margin-bottom: 22px;
+}
+
+.metricBlock:last-child {
+  margin-bottom: 0;
+}
+
+.metricBlockTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metricSecList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.metricSecItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metricSecRowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.metricSecVal {
+  color: #0284C7;
+  font-weight: 800;
+}
+
+.metricSecBar {
+  height: 7px;
+  background: #E2E8F0;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.metricSecFill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metricChartContainer {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 16px 8px 4px;
+  height: 190px;
+}
+
+.metricTipsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metricTipItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.45;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.metricTipNum {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #E0F2FE;
+  color: #0284C7;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.metricTipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0EA5E9;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.metricEmptyState {
+  background: #F8FAFC;
+  border: 1px dashed #BAE6FD;
+  border-radius: 14px;
+  padding: 28px 20px;
+  text-align: center;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .metricModalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .metricModalCard {
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 28px 20px;
+    max-height: 88vh;
+    animation: metricBottomSheetIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .metricHeroStatBox {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@keyframes metricBottomSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 

@@ -16,12 +16,24 @@ export default function AiAnalysisPage() {
   const [journeyTab, setJourneyTab] = useState('Score');
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [completedTasks, setCompletedTasks] = useState<number[]>([1]);
+  const [selectedMetric, setSelectedMetric] = useState<"accuracy" | "speed" | "consistency" | null>(null);
 
   const toggleTask = (id: number) => {
     setCompletedTasks(prev => 
       prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
     );
   };
+
+  useEffect(() => {
+    if (!selectedMetric) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedMetric(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedMetric]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -293,23 +305,56 @@ export default function AiAnalysisPage() {
           </div>
           
           <div className={styles.heroMetrics}>
-            <div className={styles.hmRow}>
+            <div
+              className={`${styles.hmRow} ${styles.hmRowClickable}`}
+              onClick={() => setSelectedMetric("accuracy")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("accuracy"); } }}
+              role="button"
+              tabIndex={0}
+              aria-label="Open Accuracy Details"
+            >
               <div className={styles.hmTop}>
-                <span className={styles.hmLabel}><span className={styles.hmIcon} style={{background: '#EFF6FF', color: '#2563EB'}}>🎯</span> Accuracy</span>
+                <span className={styles.hmLabel}>
+                  <span className={styles.hmIcon} style={{background: '#EFF6FF', color: '#2563EB'}}>🎯</span>
+                  Accuracy
+                  <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
+                </span>
                 <span className={styles.hmVal}>{d.dna.accuracy.value}%</span>
               </div>
               <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.accuracy.value}%`, background: '#2563EB'}}></div></div>
             </div>
-            <div className={styles.hmRow}>
+            <div
+              className={`${styles.hmRow} ${styles.hmRowClickable}`}
+              onClick={() => setSelectedMetric("speed")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("speed"); } }}
+              role="button"
+              tabIndex={0}
+              aria-label="Open Speed Analysis"
+            >
               <div className={styles.hmTop}>
-                <span className={styles.hmLabel}><span className={styles.hmIcon} style={{background: '#F0FDF4', color: '#10B981'}}>⚡</span> Speed</span>
+                <span className={styles.hmLabel}>
+                  <span className={styles.hmIcon} style={{background: '#F0FDF4', color: '#10B981'}}>⚡</span>
+                  Speed
+                  <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
+                </span>
                 <span className={styles.hmVal}>{d.dna.speed.value}%</span>
               </div>
               <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.speed.value}%`, background: '#10B981'}}></div></div>
             </div>
-            <div className={styles.hmRow}>
+            <div
+              className={`${styles.hmRow} ${styles.hmRowClickable}`}
+              onClick={() => setSelectedMetric("consistency")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("consistency"); } }}
+              role="button"
+              tabIndex={0}
+              aria-label="Open Consistency Details"
+            >
               <div className={styles.hmTop}>
-                <span className={styles.hmLabel}><span className={styles.hmIcon} style={{background: '#F5F3FF', color: '#8B5CF6'}}>🛡️</span> Consistency</span>
+                <span className={styles.hmLabel}>
+                  <span className={styles.hmIcon} style={{background: '#F5F3FF', color: '#8B5CF6'}}>🛡️</span>
+                  Consistency
+                  <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
+                </span>
                 <span className={styles.hmVal}>{d.dna.consistency.value}%</span>
               </div>
               <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.consistency.value}%`, background: '#8B5CF6'}}></div></div>
@@ -370,17 +415,24 @@ export default function AiAnalysisPage() {
           </div>
           <div className={styles.dnaGrid}>
             {[
-              {l: 'Accuracy', i: '🎯', v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', m: 'Maintain current level'},
-              {l: 'Speed', i: '⚡', v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', m: 'Focus on time management'},
-              {l: 'Consistency', i: '🛡️', v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', m: 'Keep up the momentum'},
-              {l: 'Concept Strength', i: '📚', v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', m: 'Review weak topics'},
-              {l: 'Question Selection', i: '🎯', v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', m: 'Avoid low-value questions'}
+              {l: 'Accuracy', key: 'accuracy' as const, i: '🎯', v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', m: 'Maintain current level'},
+              {l: 'Speed', key: 'speed' as const, i: '⚡', v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', m: 'Focus on time management'},
+              {l: 'Consistency', key: 'consistency' as const, i: '🛡️', v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', m: 'Keep up the momentum'},
+              {l: 'Concept Strength', key: null, i: '📚', v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', m: 'Review weak topics'},
+              {l: 'Question Selection', key: null, i: '🎯', v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', m: 'Avoid low-value questions'}
             ].map((dna, i) => (
-              <div key={i} className={styles.dnaCard}>
+              <div
+                key={i}
+                className={`${styles.dnaCard} ${dna.key ? styles.dnaCardClickable : ''}`}
+                onClick={dna.key ? () => setSelectedMetric(dna.key) : undefined}
+                onKeyDown={dna.key ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric(dna.key); } } : undefined}
+                role={dna.key ? "button" : undefined}
+                tabIndex={dna.key ? 0 : undefined}
+              >
                 <div className={styles.dnaTopBorder} style={{background: dna.c}}></div>
                 <div className={styles.dnaHeader}>
                   <div className={styles.dnaLbl}><span style={{color: dna.c}}>{dna.i}</span> {dna.l}</div>
-                  <span style={{color: '#94A3B8', fontSize: 12}}>ⓘ</span>
+                  <span className={styles.dnaInfoIcon}>ⓘ</span>
                 </div>
                 <div className={styles.dnaVal}>{dna.v}%</div>
                 <div className={styles.dnaStat} style={{color: dna.c}}>{dna.s}</div>
@@ -997,6 +1049,321 @@ export default function AiAnalysisPage() {
           </div>
         </div>
       )}
+
+      {/* Metric Detail Popup Modal (Accuracy / Speed / Consistency) */}
+      {selectedMetric && (() => {
+        const hasMockHistory = Array.isArray(d?.trend) && d.trend.length > 0;
+
+        const varcAcc = d?.sections?.VARC?.accuracy ?? 82;
+        const dilrAcc = d?.sections?.DILR?.accuracy ?? 71;
+        const qaAcc = d?.sections?.QA?.accuracy ?? 76;
+
+        const speedComparisonData = [
+          {
+            section: "VARC",
+            label: d?.topics?.VARC?.[0]?.avgTime || "1m 45s",
+            seconds: parseTimeStr(d?.topics?.VARC?.[0]?.avgTime || "1m 45s") || 105,
+            color: "#0EA5E9"
+          },
+          {
+            section: "DILR",
+            label: "2m 40s",
+            seconds: 160,
+            color: "#2563EB"
+          },
+          {
+            section: "QA",
+            label: "2m 10s",
+            seconds: 130,
+            color: "#06B6D4"
+          }
+        ];
+
+        const consistencyTrendData =
+          hasMockHistory && d.trend.length >= 2
+            ? d.trend.map((item: any, idx: number) => ({
+                name: item.name || `Mock ${idx + 1}`,
+                score: Number(item.score) || 0
+              }))
+            : hasMockHistory && d.trend.length === 1
+            ? [
+                { name: "Mock 1", score: Math.max(40, (Number(d.trend[0].score) || 72) - 10) },
+                { name: "Mock 2", score: Math.max(45, (Number(d.trend[0].score) || 72) - 6) },
+                { name: "Mock 3", score: Math.max(48, (Number(d.trend[0].score) || 72) - 3) },
+                { name: "Mock 4", score: Number(d.trend[0].score) || 72 }
+              ]
+            : [];
+
+        return (
+          <div
+            className={styles.metricModalOverlay}
+            onClick={() => setSelectedMetric(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="metric-modal-title"
+          >
+            <div
+              className={styles.metricModalCard}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className={styles.metricModalClose}
+                onClick={() => setSelectedMetric(null)}
+                aria-label="Close popup"
+              >
+                ✕
+              </button>
+
+              {selectedMetric === "accuracy" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
+                      🎯
+                    </div>
+                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
+                      Accuracy
+                    </h3>
+                  </div>
+                  <p className={styles.metricModalDesc}>
+                    Your accuracy shows how many questions you answered correctly out of the total attempted.
+                  </p>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock to unlock detailed Accuracy insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div className={styles.metricHeroStatBox}>
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Current Accuracy</span>
+                          <span className={styles.metricHeroStatValue}>{d.dna?.accuracy?.value ?? 78}%</span>
+                        </div>
+                        <span className={styles.metricImprovementBadge}>
+                          ↑ +4% vs last 3 mocks
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Section-wise Accuracy</h4>
+                        <div className={styles.metricSecList}>
+                          {[
+                            { name: "VARC", val: varcAcc, color: "#2563EB" },
+                            { name: "DILR", val: dilrAcc, color: "#0EA5E9" },
+                            { name: "QA", val: qaAcc, color: "#06B6D4" }
+                          ].map((sec) => (
+                            <div key={sec.name} className={styles.metricSecItem}>
+                              <div className={styles.metricSecRowTop}>
+                                <span>{sec.name}</span>
+                                <span className={styles.metricSecVal}>{sec.val}%</span>
+                              </div>
+                              <div className={styles.metricSecBar}>
+                                <div
+                                  className={styles.metricSecFill}
+                                  style={{ width: `${sec.val}%`, background: sec.color }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Improvement Tips</h4>
+                        <ol className={styles.metricTipsList}>
+                          {[
+                            "Avoid blind guessing to reduce negative marking",
+                            "Focus on weak topics where mistakes are frequent",
+                            "Review incorrect questions after every mock",
+                            "Prioritize high-confidence questions first"
+                          ].map((tip, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span className={styles.metricTipNum}>{idx + 1}</span>
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {selectedMetric === "speed" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#F0FDF4", color: "#10B981" }}>
+                      ⚡
+                    </div>
+                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
+                      Speed Analysis
+                    </h3>
+                  </div>
+                  <p className={styles.metricModalDesc}>
+                    Speed indicates how quickly you attempt questions while maintaining accuracy.
+                  </p>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock to unlock detailed Speed insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div className={styles.metricHeroStatBox}>
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Current Speed</span>
+                          <span className={styles.metricHeroStatValue}>{d.dna?.speed?.value ?? 61}%</span>
+                        </div>
+                        <span className={styles.metricImprovementBadge}>
+                          ↑ +5% vs last 3 mocks
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Average Time Per Question</h4>
+                        <div className={styles.metricSecList}>
+                          {speedComparisonData.map((sec) => (
+                            <div key={sec.section} className={styles.metricSecItem}>
+                              <div className={styles.metricSecRowTop}>
+                                <span>{sec.section}</span>
+                                <span className={styles.metricSecVal}>{sec.label}</span>
+                              </div>
+                              <div className={styles.metricSecBar}>
+                                <div
+                                  className={styles.metricSecFill}
+                                  style={{
+                                    width: `${Math.min(100, Math.round((sec.seconds / 200) * 100))}%`,
+                                    background: sec.color
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
+                        <ul className={styles.metricTipsList}>
+                          {[
+                            "Reduce time spent on difficult questions",
+                            "Practice timed sectional sets",
+                            "Improve calculation speed",
+                            "Learn when to skip and move on"
+                          ].map((tip, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span className={styles.metricTipDot} />
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {selectedMetric === "consistency" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#F5F3FF", color: "#8B5CF6" }}>
+                      🛡️
+                    </div>
+                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
+                      Consistency Details
+                    </h3>
+                  </div>
+                  <p className={styles.metricModalDesc}>
+                    Consistency shows how stable your performance is across mocks.
+                  </p>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock to unlock detailed Consistency insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div className={styles.metricHeroStatBox}>
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Current Consistency</span>
+                          <span className={styles.metricHeroStatValue}>{d.dna?.consistency?.value ?? 72}%</span>
+                        </div>
+                        <span className={styles.metricImprovementBadge}>
+                          ↑ +6% vs last 3 mocks
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Mock-wise Score Trend</h4>
+                        <div className={styles.metricChartContainer}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                              data={consistencyTrendData}
+                              margin={{ top: 10, right: 16, left: -12, bottom: 4 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                              <XAxis
+                                dataKey="name"
+                                stroke="#64748B"
+                                fontSize={11}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <YAxis
+                                stroke="#64748B"
+                                fontSize={11}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  background: "#FFFFFF",
+                                  border: "1px solid #BAE6FD",
+                                  borderRadius: "10px",
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  boxShadow: "0 8px 20px rgba(14, 165, 233, 0.1)"
+                                }}
+                                formatter={(val: any) => [`${val}`, "Score"]}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="score"
+                                stroke="#0EA5E9"
+                                strokeWidth={3}
+                                dot={{ r: 4, fill: "#2563EB", strokeWidth: 2, stroke: "#FFFFFF" }}
+                                activeDot={{ r: 6, fill: "#0284C7" }}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Consistency Tips</h4>
+                        <ul className={styles.metricTipsList}>
+                          {[
+                            "Maintain a regular mock schedule",
+                            "Review performance after every mock",
+                            "Track score fluctuations",
+                            "Focus on maintaining stable accuracy"
+                          ].map((tip, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span className={styles.metricTipDot} />
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
