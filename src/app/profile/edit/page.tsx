@@ -45,14 +45,32 @@ export default function EditProfilePage() {
         setAvatarPreview(isHardcodedDemoAvatar ? "" : (user.avatarUrl || ""));
       }
 
-      try {
-        const savedPhone = localStorage.getItem(`technocat_phone_${user.id}`);
-        if (savedPhone) setPhone(savedPhone);
-        const savedTarget = localStorage.getItem(`technocat_target_year_${user.id}`);
-        if (savedTarget) setTargetYear(savedTarget);
-        const savedDream = localStorage.getItem(`technocat_dream_school_${user.id}`);
-        if (savedDream) setDreamSchool(savedDream);
-      } catch {}
+      if (user.phone) {
+        setPhone(user.phone);
+      } else {
+        try {
+          const savedPhone = localStorage.getItem(`technocat_phone_${user.id}`);
+          if (savedPhone) setPhone(savedPhone);
+        } catch {}
+      }
+
+      if (user.targetYear) {
+        setTargetYear(user.targetYear);
+      } else {
+        try {
+          const savedTarget = localStorage.getItem(`technocat_target_year_${user.id}`);
+          if (savedTarget) setTargetYear(savedTarget);
+        } catch {}
+      }
+
+      if (user.dreamSchool) {
+        setDreamSchool(user.dreamSchool);
+      } else {
+        try {
+          const savedDream = localStorage.getItem(`technocat_dream_school_${user.id}`);
+          if (savedDream) setDreamSchool(savedDream);
+        } catch {}
+      }
     } else if (isDemo) {
       setFirstName("Sabrina");
       setLastName("Gomez");
@@ -141,6 +159,9 @@ export default function EditProfilePage() {
         body: JSON.stringify({
           fullName: fullTrimmedName,
           avatarUrl: avatarPreview || null,
+          phone,
+          targetYear,
+          dreamSchool,
         }),
       });
 
@@ -149,7 +170,7 @@ export default function EditProfilePage() {
         throw new Error(errData.error || "Failed to update profile.");
       }
 
-      // Update supplementary profile fields in local storage
+      // Update supplementary profile fields in local storage as fast client fallback
       const uid = user?.id || (isDemo ? "demo-student" : "current");
       try {
         localStorage.setItem(`technocat_phone_${uid}`, phone);
@@ -157,10 +178,13 @@ export default function EditProfilePage() {
         localStorage.setItem(`technocat_dream_school_${uid}`, dreamSchool);
       } catch {}
 
-      // Update AuthContext so navbar and user badge re-render immediately
+      // Update AuthContext so navbar, user badge, and all pages re-render immediately
       updateUser?.({
         fullName: fullTrimmedName,
         avatarUrl: avatarPreview || undefined,
+        phone,
+        targetYear,
+        dreamSchool,
       });
 
       if (typeof window !== "undefined") {

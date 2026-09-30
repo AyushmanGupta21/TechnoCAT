@@ -29,6 +29,10 @@ export async function GET(request: NextRequest) {
         fullName: user.full_name,
         role: user.role,
         avatarUrl: user.avatar_url,
+        phone: user.phone || "",
+        targetYear: user.target_year || "CAT 2026",
+        dreamSchool: user.dream_school || "",
+        preferences: user.preferences || {},
         isGuest: isDemo,
       },
     });
@@ -46,9 +50,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, avatarUrl } = body;
+    const { fullName, avatarUrl, phone, targetYear, dreamSchool, preferences } = body;
 
-    const updates: { fullName?: string; avatarUrl?: string | null } = {};
+    const updates: {
+      fullName?: string;
+      avatarUrl?: string | null;
+      phone?: string;
+      targetYear?: string;
+      dreamSchool?: string;
+      preferences?: any;
+    } = {};
 
     if (typeof fullName === "string" && fullName.trim().length > 0) {
       updates.fullName = fullName.trim();
@@ -57,6 +68,22 @@ export async function POST(request: NextRequest) {
     if (avatarUrl !== undefined) {
       // Allow valid image URL / data URL or null to remove
       updates.avatarUrl = avatarUrl ? String(avatarUrl) : null;
+    }
+
+    if (phone !== undefined) {
+      updates.phone = String(phone).trim();
+    }
+
+    if (targetYear !== undefined) {
+      updates.targetYear = String(targetYear).trim();
+    }
+
+    if (dreamSchool !== undefined) {
+      updates.dreamSchool = String(dreamSchool).trim();
+    }
+
+    if (preferences !== undefined) {
+      updates.preferences = preferences;
     }
 
     const updatedUser = await updateProfile(userId, updates);
@@ -70,6 +97,10 @@ export async function POST(request: NextRequest) {
             fullName: updatedUser.full_name,
             role: updatedUser.role,
             avatarUrl: updatedUser.avatar_url,
+            phone: updatedUser.phone || "",
+            targetYear: updatedUser.target_year || "CAT 2026",
+            dreamSchool: updatedUser.dream_school || "",
+            preferences: updatedUser.preferences || {},
           }
         : null,
     });

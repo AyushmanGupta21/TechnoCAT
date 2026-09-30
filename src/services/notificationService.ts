@@ -351,10 +351,31 @@ export function loadNotifications(userId?: string, isDemo = true): NotificationI
   const baseNotifications = isDemo ? BASE_NOTIFICATIONS : REAL_USER_NOTIFICATIONS;
   const combined = [...state.customList, ...baseNotifications];
 
-  // Deduplicate by ID
+  // Read user notification preferences
+  let notifPrefs = { streakNotif: true, revisionNotif: true, mockAlerts: true, milestoneNotif: true };
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(`technocat_settings_${userId || "guest"}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (typeof parsed.streakNotif === "boolean") notifPrefs.streakNotif = parsed.streakNotif;
+        if (typeof parsed.revisionNotif === "boolean") notifPrefs.revisionNotif = parsed.revisionNotif;
+        if (typeof parsed.mockAlerts === "boolean") notifPrefs.mockAlerts = parsed.mockAlerts;
+        if (typeof parsed.milestoneNotif === "boolean") notifPrefs.milestoneNotif = parsed.milestoneNotif;
+      }
+    } catch {}
+  }
+
+  // Deduplicate by ID and apply preference filter
   const map = new Map<string, NotificationItem>();
   for (const item of combined) {
-    if (!dismissedSet.has(item.id) && !map.has(item.id)) {
+    if (dismissedSet.has(item.id)) continue;
+    if (item.type === "streak_alert" && !notifPrefs.streakNotif) continue;
+    if (item.type === "revision" && !notifPrefs.revisionNotif) continue;
+    if ((item.type === "mock" || item.type === "mock_pyq") && !notifPrefs.mockAlerts) continue;
+    if ((item.type === "milestone" || item.type === "quiz") && !notifPrefs.milestoneNotif) continue;
+
+    if (!map.has(item.id)) {
       map.set(item.id, {
         ...item,
         time: formatRelativeTime(item.timestamp),

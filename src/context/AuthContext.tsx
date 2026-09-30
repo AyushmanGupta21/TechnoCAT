@@ -9,6 +9,10 @@ export interface UserProfile {
   fullName: string;
   role: string;
   avatarUrl?: string;
+  phone?: string;
+  targetYear?: string;
+  dreamSchool?: string;
+  preferences?: Record<string, any>;
   isGuest?: boolean;
 }
 

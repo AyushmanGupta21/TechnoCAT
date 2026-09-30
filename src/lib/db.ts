@@ -96,7 +96,7 @@ export async function query<T = any>(text: string, params?: any[]): Promise<{ ro
 // ── User / Profiles Helpers ──
 export async function getProfileByEmail(email: string) {
   const res = await query(
-    `SELECT id, email, password_hash, full_name, role, avatar_url, created_at 
+    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, created_at 
      FROM public.profiles 
      WHERE LOWER(email) = LOWER($1) 
      LIMIT 1`,
@@ -107,7 +107,7 @@ export async function getProfileByEmail(email: string) {
 
 export async function getProfileById(id: string) {
   const res = await query(
-    `SELECT id, email, full_name, role, avatar_url, created_at 
+    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, created_at 
      FROM public.profiles 
      WHERE id = $1 
      LIMIT 1`,
@@ -125,7 +125,17 @@ export async function updateProfilePassword(id: string, newPasswordHash: string)
   );
 }
 
-export async function updateProfile(id: string, updates: { fullName?: string; avatarUrl?: string | null }) {
+export async function updateProfile(
+  id: string,
+  updates: {
+    fullName?: string;
+    avatarUrl?: string | null;
+    phone?: string;
+    targetYear?: string;
+    dreamSchool?: string;
+    preferences?: any;
+  }
+) {
   const fields: string[] = [];
   const values: any[] = [];
   let paramIdx = 1;
@@ -138,13 +148,45 @@ export async function updateProfile(id: string, updates: { fullName?: string; av
     fields.push(`avatar_url = $${paramIdx++}`);
     values.push(updates.avatarUrl);
   }
+  if (updates.phone !== undefined) {
+    fields.push(`phone = $${paramIdx++}`);
+    values.push(updates.phone);
+  }
+  if (updates.targetYear !== undefined) {
+    fields.push(`target_year = $${paramIdx++}`);
+    values.push(updates.targetYear);
+  }
+  if (updates.dreamSchool !== undefined) {
+    fields.push(`dream_school = $${paramIdx++}`);
+    values.push(updates.dreamSchool);
+  }
+  if (updates.preferences !== undefined) {
+    fields.push(`preferences = $${paramIdx++}`);
+    values.push(JSON.stringify(updates.preferences));
+  }
 
   if (fields.length === 0) return null;
 
   values.push(id);
-  const sql = `UPDATE public.profiles SET ${fields.join(", ")} WHERE id = $${paramIdx} RETURNING id, email, full_name, role, avatar_url, created_at`;
+  const sql = `UPDATE public.profiles SET ${fields.join(", ")} WHERE id = $${paramIdx} RETURNING id, email, full_name, role, avatar_url, phone, target_year, dream_school, preferences, created_at`;
   const res = await query(sql, values);
   return res.rows[0] || null;
+}
+
+export async function deleteProfile(id: string) {
+  try {
+    await query(`DELETE FROM public.topic_progress WHERE user_id = $1`, [id]).catch(() => {});
+    await query(`DELETE FROM public.study_tasks WHERE user_id = $1`, [id]).catch(() => {});
+    await query(`DELETE FROM public.study_sessions WHERE user_id = $1`, [id]).catch(() => {});
+    await query(`DELETE FROM public.pyq_attempts WHERE user_id = $1`, [id]).catch(() => {});
+    await query(`DELETE FROM public.user_course_enrollments WHERE user_id = $1`, [id]).catch(() => {});
+    await query(`DELETE FROM public.user_module_progress WHERE user_id = $1`, [id]).catch(() => {});
+  } catch (err) {
+    console.warn("[DeleteProfile non-fatal cleanup warning]", err);
+  }
+
+  const res = await query(`DELETE FROM public.profiles WHERE id = $1 RETURNING id`, [id]);
+  return Boolean(res.rowCount && res.rowCount > 0);
 }
 
 export async function createProfile(email: string, passwordHash: string, fullName: string) {

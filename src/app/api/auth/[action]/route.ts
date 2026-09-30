@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getProfileByEmail, getProfileById, createProfile, updateProfilePassword } from "@/lib/db";
+import { getProfileByEmail, getProfileById, createProfile, updateProfilePassword, deleteProfile } from "@/lib/db";
 
 export async function POST(
   request: NextRequest,
@@ -53,6 +53,10 @@ export async function POST(
           fullName: user.full_name,
           role: user.role,
           avatarUrl: user.avatar_url,
+          phone: user.phone || "",
+          targetYear: user.target_year || "CAT 2026",
+          dreamSchool: user.dream_school || "",
+          preferences: user.preferences || {},
         },
       });
 
@@ -102,6 +106,10 @@ export async function POST(
           fullName: newUser.full_name,
           role: newUser.role,
           avatarUrl: newUser.avatar_url,
+          phone: "",
+          targetYear: "CAT 2026",
+          dreamSchool: "",
+          preferences: {},
         },
       });
 
@@ -111,6 +119,77 @@ export async function POST(
         maxAge: 60 * 60 * 24 * 7,
       });
 
+      return response;
+    }
+
+    if (action === "change-password") {
+      const userId = request.cookies.get("technocat_user_id")?.value;
+      if (!userId) {
+        return NextResponse.json({ error: "Please sign in to change your password." }, { status: 401 });
+      }
+
+      const user = await getProfileById(userId);
+      if (!user) {
+        return NextResponse.json({ error: "User not found." }, { status: 404 });
+      }
+
+      if (user.email.toLowerCase() === "student@technocat.edu") {
+        return NextResponse.json(
+          { error: "Demo showcase account is protected and cannot change passwords." },
+          { status: 403 }
+        );
+      }
+
+      const { currentPassword, newPassword } = await request.json();
+      if (!currentPassword || !newPassword) {
+        return NextResponse.json({ error: "Current password and new password are required." }, { status: 400 });
+      }
+
+      if (newPassword.length < 6) {
+        return NextResponse.json({ error: "New password must be at least 6 characters long." }, { status: 400 });
+      }
+
+      const storedHash = user.password_hash || "";
+      let isMatch = false;
+
+      if (storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$")) {
+        isMatch = await bcrypt.compare(currentPassword, storedHash);
+      } else {
+        isMatch = storedHash === currentPassword;
+      }
+
+      if (!isMatch) {
+        return NextResponse.json({ error: "Current password does not match our records." }, { status: 400 });
+      }
+
+      const newHash = await bcrypt.hash(newPassword, 10);
+      await updateProfilePassword(userId, newHash);
+
+      return NextResponse.json({ success: true, message: "Password updated successfully!" });
+    }
+
+    if (action === "delete-account") {
+      const userId = request.cookies.get("technocat_user_id")?.value;
+      if (!userId) {
+        return NextResponse.json({ error: "Please sign in to delete your account." }, { status: 401 });
+      }
+
+      const user = await getProfileById(userId);
+      if (!user) {
+        return NextResponse.json({ error: "User not found." }, { status: 404 });
+      }
+
+      if (user.email.toLowerCase() === "student@technocat.edu") {
+        return NextResponse.json(
+          { error: "Demo showcase accounts cannot be deleted as they are shared sandbox environments." },
+          { status: 403 }
+        );
+      }
+
+      await deleteProfile(userId);
+
+      const response = NextResponse.json({ success: true, message: "Account deleted successfully." });
+      response.cookies.delete("technocat_user_id");
       return response;
     }
 
@@ -146,6 +225,10 @@ export async function GET(
           fullName: defaultUser.full_name,
           role: defaultUser.role,
           avatarUrl: defaultUser.avatar_url,
+          phone: defaultUser.phone || "+91 98765 43210",
+          targetYear: defaultUser.target_year || "CAT 2026",
+          dreamSchool: defaultUser.dream_school || "IIM Ahmedabad",
+          preferences: defaultUser.preferences || {},
           isGuest: true,
         } : null,
       });
@@ -163,6 +246,10 @@ export async function GET(
         fullName: user.full_name,
         role: user.role,
         avatarUrl: user.avatar_url,
+        phone: user.phone || "",
+        targetYear: user.target_year || "CAT 2026",
+        dreamSchool: user.dream_school || "",
+        preferences: user.preferences || {},
         isGuest: false,
       },
     });

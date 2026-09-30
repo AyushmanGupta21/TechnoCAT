@@ -5,6 +5,7 @@ import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/d
 import { notifyQuizCompleted } from "@/services/notificationService";
 import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
+import { useAuth } from "@/context/AuthContext";
 
 interface ModuleQuizModalProps {
   isOpen: boolean;
@@ -70,6 +71,137 @@ export default function ModuleQuizModal({
     description: string;
     strikesCount?: number;
   } | null>(null);
+
+  // Authenticated User Exam Environment Preferences
+  const { user } = useAuth();
+  const [examPrefs, setExamPrefs] = useState({
+    ionCalculator: true,
+    compactPalette: false,
+    highContrast: false,
+    timerAlerts: true,
+  });
+
+  // TCS iON On-Screen Calculator State
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [calcInput, setCalcInput] = useState("0");
+  const [calcMemory, setCalcMemory] = useState<number | null>(null);
+  const [calcOp, setCalcOp] = useState<string | null>(null);
+  const [calcClearNext, setCalcClearNext] = useState(false);
+
+  useEffect(() => {
+    const loadPrefs = () => {
+      try {
+        const uid = user?.id || "demo-student";
+        const raw = localStorage.getItem(`technocat_settings_${uid}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setExamPrefs((prev) => ({
+            ...prev,
+            ionCalculator: parsed.ionCalculator ?? prev.ionCalculator,
+            compactPalette: parsed.compactPalette ?? prev.compactPalette,
+            highContrast: parsed.highContrast ?? prev.highContrast,
+            timerAlerts: parsed.timerAlerts ?? prev.timerAlerts,
+          }));
+        } else if (user && user.preferences) {
+          const userPrefs = user.preferences;
+          setExamPrefs((prev) => ({
+            ...prev,
+            ionCalculator: userPrefs.ionCalculator ?? prev.ionCalculator,
+            compactPalette: userPrefs.compactPalette ?? prev.compactPalette,
+            highContrast: userPrefs.highContrast ?? prev.highContrast,
+            timerAlerts: userPrefs.timerAlerts ?? prev.timerAlerts,
+          }));
+        }
+      } catch {}
+    };
+
+    loadPrefs();
+
+    const handleUpdate = (e: any) => {
+      if (e.detail) {
+        setExamPrefs((prev) => ({
+          ...prev,
+          ionCalculator: e.detail.ionCalculator ?? prev.ionCalculator,
+          compactPalette: e.detail.compactPalette ?? prev.compactPalette,
+          highContrast: e.detail.highContrast ?? prev.highContrast,
+          timerAlerts: e.detail.timerAlerts ?? prev.timerAlerts,
+        }));
+      }
+    };
+    window.addEventListener("technocat_exam_settings_updated", handleUpdate);
+    return () => window.removeEventListener("technocat_exam_settings_updated", handleUpdate);
+  }, [user]);
+
+  const handleCalcDigit = (digit: string) => {
+    if (calcClearNext) {
+      setCalcInput(digit === "." ? "0." : digit);
+      setCalcClearNext(false);
+    } else {
+      if (digit === "." && calcInput.includes(".")) return;
+      setCalcInput(calcInput === "0" && digit !== "." ? digit : calcInput + digit);
+    }
+  };
+
+  const executeCalc = (a: number, b: number, op: string): number => {
+    switch (op) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "×":
+      case "*": return a * b;
+      case "÷":
+      case "/": return b !== 0 ? a / b : 0;
+      default: return b;
+    }
+  };
+
+  const handleCalcOp = (op: string) => {
+    const current = parseFloat(calcInput);
+    if (isNaN(current)) return;
+    if (calcMemory === null) {
+      setCalcMemory(current);
+    } else if (calcOp) {
+      const res = executeCalc(calcMemory, current, calcOp);
+      setCalcMemory(res);
+      setCalcInput(String(Number(res.toFixed(6))));
+    }
+    setCalcOp(op);
+    setCalcClearNext(true);
+  };
+
+  const handleCalcEquals = () => {
+    if (calcOp && calcMemory !== null) {
+      const current = parseFloat(calcInput);
+      if (isNaN(current)) return;
+      const res = executeCalc(calcMemory, current, calcOp);
+      setCalcInput(String(Number(res.toFixed(6))));
+      setCalcMemory(null);
+      setCalcOp(null);
+      setCalcClearNext(true);
+    }
+  };
+
+  const handleCalcClear = () => {
+    setCalcInput("0");
+    setCalcMemory(null);
+    setCalcOp(null);
+    setCalcClearNext(false);
+  };
+
+  const handleCalcBackspace = () => {
+    if (calcClearNext || calcInput.length <= 1) {
+      setCalcInput("0");
+    } else {
+      setCalcInput(calcInput.slice(0, -1));
+    }
+  };
+
+  const handleCalcSqrt = () => {
+    const current = parseFloat(calcInput);
+    if (!isNaN(current) && current >= 0) {
+      setCalcInput(String(Number(Math.sqrt(current).toFixed(6))));
+      setCalcClearNext(true);
+    }
+  };
 
   const handleSafeClose = useCallback(() => {
     if (!isSubmitted) {
@@ -440,7 +572,7 @@ export default function ModuleQuizModal({
       onPaste={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
-      <div className={styles.modalBox}>
+      <div className={`${styles.modalBox} ${examPrefs.highContrast ? styles.highContrastExam : ""}`}>
         {/* Real-time Proctoring Warning Banner */}
         {proctorAlert && (
           <div className={styles.proctorWarningBanner}>
@@ -471,6 +603,28 @@ export default function ModuleQuizModal({
           </div>
 
           <div className={styles.headerRight}>
+            {!isSubmitted && examPrefs.ionCalculator && (
+              <button
+                type="button"
+                className={styles.calculatorToggleBtn}
+                onClick={() => setShowCalculator((prev) => !prev)}
+                title="TCS iON On-Screen Calculator"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="4" y="2" width="16" height="20" rx="2" />
+                  <line x1="8" y1="6" x2="16" y2="6" />
+                  <line x1="16" y1="14" x2="16" y2="18" />
+                  <path d="M16 10h.01" />
+                  <path d="M12 10h.01" />
+                  <path d="M8 10h.01" />
+                  <path d="M12 14h.01" />
+                  <path d="M8 14h.01" />
+                  <path d="M12 18h.01" />
+                  <path d="M8 18h.01" />
+                </svg>
+                <span>{showCalculator ? "Hide Calc" : "Calculator"}</span>
+              </button>
+            )}
             {onBackToAttempts && isSubmitted && (
               <button
                 type="button"
@@ -487,8 +641,10 @@ export default function ModuleQuizModal({
             )}
             {!isSubmitted && (
               <div
-                className={`${styles.timerBadge} ${timeLeft < 120 ? styles.timerDanger : ""}`}
-                title="Time Remaining"
+                className={`${styles.timerBadge} ${timeLeft < 120 ? styles.timerDanger : ""} ${
+                  examPrefs.timerAlerts && timeLeft <= 300 && timeLeft > 0 ? styles.timerPulseWarning : ""
+                }`}
+                title={timeLeft <= 300 && examPrefs.timerAlerts ? "Warning: Under 5 minutes remaining!" : "Time Remaining"}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="12" cy="12" r="10" />
@@ -537,6 +693,49 @@ export default function ModuleQuizModal({
           </div>
         </div>
 
+        {/* TCS iON Popover Calculator */}
+        {showCalculator && !isSubmitted && examPrefs.ionCalculator && (
+          <div className={styles.calcModalOverlay}>
+            <div className={styles.calcHeader}>
+              <span className={styles.calcTitle}>TCS iON Calculator</span>
+              <button
+                type="button"
+                className={styles.calcCloseBtn}
+                onClick={() => setShowCalculator(false)}
+                title="Close Calculator"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.calcScreen}>{calcInput}</div>
+            <div className={styles.calcGrid}>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnClear}`} onClick={handleCalcClear}>C</button>
+              <button type="button" className={styles.calcBtn} onClick={handleCalcBackspace}>⌫</button>
+              <button type="button" className={styles.calcBtn} onClick={handleCalcSqrt}>√</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("÷")}>÷</button>
+
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("7")}>7</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("8")}>8</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("9")}>9</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("×")}>×</button>
+
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("4")}>4</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("5")}>5</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("6")}>6</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("-")}>-</button>
+
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("1")}>1</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("2")}>2</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("3")}>3</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("+")}>+</button>
+
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("0")}>0</button>
+              <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit(".")}>.</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} style={{ gridColumn: "span 2" }} onClick={handleCalcEquals}>=</button>
+            </div>
+          </div>
+        )}
+
         {!isSubmitted ? (
           <>
             {/* Question Tracker & Rules Bar */}
@@ -574,7 +773,7 @@ export default function ModuleQuizModal({
             </div>
 
             {/* Quick Question Pills Navigator */}
-            <div className={styles.pillsRow}>
+            <div className={`${styles.pillsRow} ${examPrefs.compactPalette ? styles.compactPillsRow : ""}`}>
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIdx;
                 const isAnswered = selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== "";
