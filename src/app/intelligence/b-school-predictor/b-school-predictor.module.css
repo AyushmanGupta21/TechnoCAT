@@ -239,69 +239,369 @@
   gap: 36px;
 }
 
-/* Split Profile Grid */
+/* Split Profile Grid (~55% / 45% on desktop) */
 .splitGrid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: 1.2fr 1fr;
   gap: 28px;
+  align-items: stretch;
 }
 
 .card {
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 20px;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 24px;
   padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 12px 36px rgba(37, 99, 235, 0.06), 0 2px 10px rgba(14, 165, 233, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.credentialsCard {
+  background:
+    radial-gradient(ellipse 360px 160px at 96% 2%, rgba(186, 230, 253, 0.45) 0%, rgba(255, 255, 255, 0) 75%),
+    linear-gradient(180deg, #F8FBFF 0%, #FFFFFF 22%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.strengthMeterCard {
+  background:
+    radial-gradient(ellipse 320px 140px at 10% 0%, rgba(224, 242, 254, 0.35) 0%, rgba(255, 255, 255, 0) 75%),
+    #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.strengthPulse {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.14), 0 14px 36px rgba(37, 99, 235, 0.12);
+}
+
+/* Card Headers */
+.leftCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.rightCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.leftHeaderMain {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerIconBox {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #E0F2FE 0%, #DBEAFE 100%);
+  border: 1px solid #BAE6FD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .cardTitle {
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 800;
   color: #0F172A;
-  margin-bottom: 6px;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.titleAccent {
+  color: #1D4ED8;
 }
 
 .cardSubtitle {
-  font-size: 13px;
+  font-size: 12.5px;
   color: #64748B;
-  margin-bottom: 24px;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-/* Form Controls */
+/* Top-Right Decorative Target & Callout in Left Card */
+.cornerDecor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-top: -6px;
+}
+
+.cornerTargetGraphic {
+  filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.16));
+  margin-right: 4px;
+}
+
+.cornerFloatingTag {
+  margin-top: -8px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%);
+  border: 1px solid #BFDBFE;
+  border-radius: 12px;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.cornerFloatingTag span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563EB;
+  line-height: 1.2;
+}
+
+.cornerFloatingTag small {
+  font-size: 9px;
+  font-weight: 600;
+  color: #3B82F6;
+  line-height: 1.2;
+}
+
+/* Live Analysis Pill in Right Card */
+.liveAnalysisBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 13px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Percentile & WorkEx Slider Sections */
+.percentileSectionBox {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 16px 20px 14px 20px;
+  margin-bottom: 16px;
+}
+
+.workExSectionBox {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 14px 20px 14px 20px;
+  margin-top: 14px;
+  margin-bottom: 18px;
+}
+
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .labelRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.labelWithInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.workExIconBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.infoIconCircle {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1.5px solid #60A5FA;
+  color: #2563EB;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  background: #EFF6FF;
+  line-height: 1;
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #334155;
+  color: #0F172A;
+  display: block;
+  margin-bottom: 6px;
 }
 
 .sliderValue {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 800;
-  color: #2563EB;
+  color: #1D4ED8;
   background: #EFF6FF;
-  padding: 2px 10px;
-  border-radius: 12px;
+  border: 1px solid #BFDBFE;
+  padding: 4px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.sliderTrackWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .slider {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 5px;
+  height: 8px;
+  border-radius: 999px;
   background: #E2E8F0;
   outline: none;
   cursor: pointer;
-  accent-color: #2563EB;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 30%, #2563EB 34%);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.6);
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 30%, #2563EB 34%);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+}
+
+.sliderScaleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.sliderScaleRow span {
+  position: relative;
+  padding-top: 5px;
+}
+
+.sliderScaleRow span::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 4px;
+  background: #CBD5E1;
+}
+
+/* 2-Column Profile Fields Grid */
+.credentialsFieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fieldCard {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.fieldCard:focus-within {
+  border-color: #93C5FD;
+  background: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.05);
+}
+
+.fieldCardIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.fieldCardBody {
+  flex: 1;
+  min-width: 0;
 }
 
 .inputGrid {
@@ -312,120 +612,440 @@
 
 .inputField {
   width: 100%;
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 10px;
   border: 1px solid #CBD5E1;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
   color: #0F172A;
   outline: none;
-  background: #F8FAFC;
+  background: #FFFFFF;
   transition: border-color 0.2s;
 }
 
 .inputField:focus {
   border-color: #2563EB;
+}
+
+.percentInputBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  padding: 7px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.percentInputBox:focus-within {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.inputFieldClean {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  width: 100%;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.percentSuffix {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  white-space: nowrap;
+  margin-left: 8px;
 }
 
 .selectField {
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 10px;
   border: 1px solid #CBD5E1;
   font-size: 13px;
   font-weight: 600;
   color: #0F172A;
-  background: #F8FAFC;
+  background: #FFFFFF;
   outline: none;
   cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Right Gauge Panel */
-.gaugeBox {
+.selectField:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* Primary Action Button */
+.recalcBtn {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 22px;
+  background: linear-gradient(90deg, #1D4ED8 0%, #2563EB 48%, #0EA5E9 100%);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 0;
-  border-bottom: 1px solid #F1F5F9;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
 
-.percentileCircle {
-  width: 160px;
-  height: 160px;
+.recalcBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(14, 165, 233, 0.34);
+  filter: brightness(1.03);
+}
+
+.recalcBtn:active {
+  transform: translateY(0);
+}
+
+.recalcBtnIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recalcBtnArrow {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* Right Card: Circular Gauge + Insights Row */
+.meterAndInsightsGrid {
+  display: grid;
+  grid-template-columns: 215px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.gaugeWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeOuterRing {
+  position: relative;
+  width: 210px;
+  height: 210px;
   border-radius: 50%;
-  background: radial-gradient(circle, #FFFFFF 60%, #EFF6FF 100%);
-  border: 8px solid #2563EB;
+  background: radial-gradient(circle, #FFFFFF 58%, #F8FAFC 100%);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.14), inset 0 0 18px rgba(224, 242, 254, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gaugeMedalBadge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.gaugeInnerContent {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
-  margin-bottom: 16px;
+  text-align: center;
+  padding: 12px;
 }
 
 .percentileNumber {
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 800;
   color: #0F172A;
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .percentileLabel {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 4px;
+  letter-spacing: 0.06em;
+  margin-top: 5px;
+  margin-bottom: 9px;
 }
 
 .profileRatingBadge {
-  background: #ECFDF5;
-  color: #059669;
+  background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 100%);
+  color: #047857;
   border: 1px solid #A7F3D0;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 20px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
+  max-width: 148px;
+}
+
+.ratingPrimaryText {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #047857;
+}
+
+.ratingSecondaryText {
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+}
+
+/* 4 Profile Insights Stack */
+.insightsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.insightItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 13px;
+  border: 1px solid transparent;
+}
+
+.insightPurple {
+  background: #F5F3FF;
+  border-color: #EDE9FE;
+}
+
+.insightBlue {
+  background: #EFF6FF;
+  border-color: #DBEAFE;
+}
+
+.insightGreen {
+  background: #ECFDF5;
+  border-color: #D1FAE5;
+}
+
+.insightOrange {
+  background: #FFFBEB;
+  border-color: #FEF3C7;
+}
+
+.insightIconBox {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
+}
+
+.insightTitle {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.insightPurple .insightTitle {
+  color: #312E81;
+}
+
+.insightBlue .insightTitle {
+  color: #1E3A8A;
+}
+
+.insightGreen .insightTitle {
+  color: #064E3B;
+}
+
+.insightOrange .insightTitle {
+  color: #78350F;
+}
+
+.insightDesc {
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.35;
+}
+
+/* Key Evaluation Factors Section */
+.evaluationFactorsCard {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 15px 16px;
+}
+
+.evalFactorsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.evalFactorsTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.evalFactorsSub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748B;
 }
 
 .metricsList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
   width: 100%;
-  margin-top: 16px;
 }
 
 .metricRow {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(165px, 1.25fr) 1fr auto;
   align-items: center;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #334155;
-  padding: 8px 12px;
-  background: #F8FAFC;
-  border-radius: 8px;
+  color: #1E293B;
+  padding: 9px 12px;
+  background: #FFFFFF;
+  border: 1px solid #E8EEF6;
+  border-radius: 12px;
+}
+
+.metricLeft {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.metricIconBlue {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metricIconOrange {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metricBarTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #EFF6FF;
+  overflow: hidden;
+}
+
+.metricBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #BFDBFE 0%, #93C5FD 100%);
+  transition: width 0.35s ease;
 }
 
 .metricVal {
-  color: #2563EB;
-  font-weight: 700;
+  color: #1D4ED8;
+  font-weight: 800;
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-align: right;
 }
 
+/* Target Improvement Tip Box */
 .whatIfBox {
-  margin-top: 20px;
-  background: #FEF3C7;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
   border: 1px solid #FDE68A;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 14px 16px;
-  font-size: 13px;
-  color: #92400E;
+  font-size: 12.5px;
+  color: #78350F;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.whatIfBulb {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.whatIfText {
+  flex: 1;
+}
+
+.whatIfAccent {
+  color: #B45309;
+  font-weight: 800;
+}
+
+.whatIfChartGraphic {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 /* Results & College Cards */
@@ -780,6 +1400,12 @@
   font-weight: 600;
 }
 
+@media (max-width: 1080px) {
+  .splitGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .heroSection {
     padding: 24px 20px;
@@ -793,7 +1419,23 @@
   .collegeGrid {
     grid-template-columns: 1fr;
   }
-  .inputGrid {
+  .inputGrid,
+  .credentialsFieldsGrid {
+    grid-template-columns: 1fr;
+  }
+  .meterAndInsightsGrid {
+    grid-template-columns: 1fr;
+  }
+  .cornerDecor {
+    display: none;
+  }
+  .metricRow {
+    grid-template-columns: 1fr auto;
+  }
+  .metricBarTrack {
+    display: none;
+  }
+  .infoTiersGrid {
     grid-template-columns: 1fr;
   }
 }
