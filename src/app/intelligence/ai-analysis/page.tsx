@@ -17,6 +17,7 @@ export default function AiAnalysisPage() {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [completedTasks, setCompletedTasks] = useState<number[]>([1]);
   const [selectedMetric, setSelectedMetric] = useState<"accuracy" | "speed" | "consistency" | "conceptStrength" | "questionSelection" | null>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<"carelessErrors" | "dilrAccuracy" | "questionSelection" | "qaSpeed" | null>(null);
 
   const toggleTask = (id: number) => {
     setCompletedTasks(prev => 
@@ -25,15 +26,16 @@ export default function AiAnalysisPage() {
   };
 
   useEffect(() => {
-    if (!selectedMetric) return;
+    if (!selectedMetric && !selectedOpportunity) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSelectedMetric(null);
+        setSelectedOpportunity(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedMetric]);
+  }, [selectedMetric, selectedOpportunity]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -883,12 +885,53 @@ export default function AiAnalysisPage() {
             <div className={styles.lcSubtitle}>Estimated opportunity based on your previous attempts</div>
             <div className={styles.oppList}>
               {[
-                {i: '🎯', c: '#D1FAE5', tc: '#059669', n: 'Reduce careless errors', m: '+8 marks'},
-                {i: '🧩', c: '#FEF3C7', tc: '#D97706', n: 'Improve DILR accuracy', m: '+6 marks'},
-                {i: '⚙️', c: '#F3E8FF', tc: '#7E22CE', n: 'Better question selection', m: '+4 marks'},
-                {i: '⚡', c: '#E0F2FE', tc: '#0369A1', n: 'Increase QA speed', m: '+3 marks'},
+                {
+                  key: 'carelessErrors' as const,
+                  i: '🎯',
+                  c: '#D1FAE5',
+                  tc: '#059669',
+                  n: 'Reduce careless errors',
+                  m: `+${d?.opportunities?.[0]?.marks ?? 8} marks`
+                },
+                {
+                  key: 'dilrAccuracy' as const,
+                  i: '🧩',
+                  c: '#FEF3C7',
+                  tc: '#D97706',
+                  n: 'Improve DILR accuracy',
+                  m: `+${d?.opportunities?.[1]?.marks ?? 6} marks`
+                },
+                {
+                  key: 'questionSelection' as const,
+                  i: '⚙️',
+                  c: '#F3E8FF',
+                  tc: '#7E22CE',
+                  n: 'Better question selection',
+                  m: `+${d?.opportunities?.[2]?.marks ?? 4} marks`
+                },
+                {
+                  key: 'qaSpeed' as const,
+                  i: '⚡',
+                  c: '#E0F2FE',
+                  tc: '#0369A1',
+                  n: 'Increase QA speed',
+                  m: `+${d?.opportunities?.[3]?.marks ?? Math.max(3, Math.round(((d?.sections?.QA?.avgTimeSec ?? 160) - 120) / 13))} marks`
+                },
               ].map((opp, i) => (
-                <div key={i} className={styles.oppRow}>
+                <div
+                  key={i}
+                  className={styles.oppRow}
+                  onClick={() => setSelectedOpportunity(opp.key)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedOpportunity(opp.key);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View details for ${opp.n} (${opp.m})`}
+                >
                   <div className={styles.oppIcon} style={{background: opp.c, color: opp.tc}}>{opp.i}</div>
                   <div className={styles.oppName}>{opp.n}</div>
                   <div className={styles.oppMarks}>{opp.m}</div>
@@ -1727,6 +1770,548 @@ export default function AiAnalysisPage() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Where Can You Gain Marks? — Opportunity Detail Popup Modal */}
+      {selectedOpportunity && (() => {
+        const hasMockHistory = Array.isArray(d?.trend) && d.trend.length > 0;
+
+        // 1. Reduce Careless Errors real metrics
+        const carelessGain = d?.opportunities?.[0]?.marks ?? 8;
+        const carelessMistakeObj = (d?.mistakesMap || []).find((m: any) => m.category === "Careless Mistake");
+        const calcMistakeObj = (d?.mistakesMap || []).find((m: any) => m.category === "Calculation Error");
+        const carelessPct = carelessMistakeObj?.percent ?? 15;
+        const calcPct = calcMistakeObj?.percent ?? 17;
+        const combinedCarelessPct = carelessPct + calcPct;
+        const carelessQuestionsCount = Math.max(2, Math.round(42 * (combinedCarelessPct / 100)));
+        const currentAccVal = d?.dna?.accuracy?.value ?? 78;
+        const accuracyImpactPct = Math.max(4, Math.round(combinedCarelessPct * 0.25));
+
+        // 2. Improve DILR Accuracy real metrics
+        const dilrGain = d?.opportunities?.[1]?.marks ?? 6;
+        const dilrAcc = d?.sections?.DILR?.accuracy ?? 75;
+        const dilrAttempted = d?.sections?.DILR?.attemptRate ?? 12;
+        const dilrSetsAttempted = Math.max(2, Math.round(dilrAttempted / 4));
+        const dilrCorrect = Math.round((dilrAttempted * dilrAcc) / 100);
+        const dilrIncorrect = Math.max(1, dilrAttempted - dilrCorrect);
+        const dilrAvgSetTime = d?.topics?.DILR?.[0]?.avgTime || "6m 20s";
+
+        // 3. Better Question Selection real metrics
+        const selectionGain = d?.opportunities?.[2]?.marks ?? 4;
+        const wrongSelObj = (d?.mistakesMap || []).find((m: any) => m.category === "Wrong Selection");
+        const lowValuePct = wrongSelObj?.percent ?? 18;
+        const selectionScore = d?.dna?.questionSelection?.value ?? 55;
+        const highValuePct = selectionScore;
+        const mediumValuePct = Math.max(10, 100 - highValuePct - lowValuePct);
+        const totalAttempted =
+          (d?.sections?.VARC?.attemptRate ?? 15) +
+          (d?.sections?.DILR?.attemptRate ?? 12) +
+          (d?.sections?.QA?.attemptRate ?? 21);
+        const totalSkipped = Math.max(0, 66 - totalAttempted);
+
+        // 4. Increase QA Speed real metrics
+        const qaSpeedGain =
+          d?.opportunities?.[3]?.marks ??
+          Math.max(3, Math.round(((d?.sections?.QA?.avgTimeSec ?? 160) - 120) / 13));
+        const qaAvgSec = d?.sections?.QA?.avgTimeSec ?? 160;
+        const qaAvgMin = Math.floor(qaAvgSec / 60);
+        const qaAvgRemSec = qaAvgSec % 60;
+        const qaAvgFormatted = `${qaAvgMin}m ${qaAvgRemSec}s`;
+        const qaTopics = d?.topics?.QA || [];
+        const slowestQaTopic =
+          qaTopics.find((t: any) => t.status === "Critical" || t.name === "Algebra") ||
+          qaTopics[1] || { name: "Algebra", avgTime: "3m 40s", accuracy: 30 };
+
+        return (
+          <div
+            className={styles.metricModalOverlay}
+            onClick={() => setSelectedOpportunity(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="opp-modal-title"
+          >
+            <div
+              className={styles.metricModalCard}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className={styles.metricModalClose}
+                onClick={() => setSelectedOpportunity(null)}
+                aria-label="Close popup"
+              >
+                ✕
+              </button>
+
+              {/* POPUP 1 — REDUCE CARELESS ERRORS */}
+              {selectedOpportunity === "carelessErrors" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
+                      🎯
+                    </div>
+                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
+                      Reduce Careless Errors
+                    </h3>
+                  </div>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #ECFDF5 0%, #F8FAFC 100%)",
+                          borderColor: "#A7F3D0",
+                          marginTop: "12px"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#059669" }}>
+                            +{carelessGain} marks
+                          </span>
+                        </div>
+                        <span className={styles.metricImprovementBadge}>
+                          🎯 High-Impact Quick Win
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#059669", background: "#F0FDF4" }}
+                        >
+                          “You are losing marks from avoidable mistakes even when you understand the underlying concept.”
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
+                        <div className={styles.oppDataList}>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Careless mistakes from previous attempts</span>
+                            <span className={styles.oppDataVal} style={{ color: "#059669" }}>
+                              {combinedCarelessPct}% of total mistakes
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Questions affected</span>
+                            <span className={styles.oppDataVal}>
+                              {carelessQuestionsCount} questions ({carelessPct}% reading + {calcPct}% calculation)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Accuracy impact</span>
+                            <span className={styles.oppDataVal}>
+                              -{accuracyImpactPct}% drag (Can lift accuracy from {currentAccVal}% → {Math.min(96, currentAccVal + accuracyImpactPct)}%)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Recent trend</span>
+                            <span className={styles.oppDataVal}>
+                              {carelessMistakeObj?.insight || "Misreading 'except' or 'not' & final-step QA errors"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
+                        <ol className={styles.metricTipsList}>
+                          {[
+                            "Slow down during the final step of calculation.",
+                            "Recheck units, signs and values.",
+                            "Spend the final few seconds reviewing marked answers.",
+                            "Maintain an error log for repeated mistakes."
+                          ].map((step, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipNum}
+                                style={{ background: "#D1FAE5", color: "#059669" }}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className={styles.oppModalCtaWrap}>
+                        <Link
+                          href="/intelligence/error-tracking"
+                          className={styles.oppModalCtaBtn}
+                          style={{ background: "linear-gradient(135deg, #059669 0%, #10B981 100%)" }}
+                        >
+                          Review My Mistakes &rarr;
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* POPUP 2 — IMPROVE DILR ACCURACY */}
+              {selectedOpportunity === "dilrAccuracy" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#FEF3C7", color: "#D97706" }}>
+                      🧩
+                    </div>
+                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
+                      Improve DILR Accuracy
+                    </h3>
+                  </div>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #FFFBEB 0%, #F8FAFC 100%)",
+                          borderColor: "#FDE68A",
+                          marginTop: "12px"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#D97706" }}>
+                            +{dilrGain} marks
+                          </span>
+                        </div>
+                        <span
+                          className={styles.metricImprovementBadge}
+                          style={{ background: "#FEF3C7", color: "#B45309", borderColor: "#FDE68A" }}
+                        >
+                          🧩 Sectional Score Booster
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#D97706", background: "#FFFBEB" }}
+                        >
+                          “Improving accuracy in DILR sets can significantly increase your overall score.”
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
+                        <div className={styles.oppDataList}>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Current DILR accuracy</span>
+                            <span className={styles.oppDataVal} style={{ color: "#D97706" }}>
+                              {dilrAcc}%
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Attempted questions / sets</span>
+                            <span className={styles.oppDataVal}>
+                              {dilrAttempted} questions ({dilrSetsAttempted} sets attempted)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Correct vs incorrect</span>
+                            <span className={styles.oppDataVal}>
+                              {dilrCorrect} Correct vs {dilrIncorrect} Incorrect
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Average time per set</span>
+                            <span className={styles.oppDataVal}>
+                              {dilrAvgSetTime} (Arrangements) – {d?.topics?.DILR?.[1]?.avgTime || "8m 15s"} (Games)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
+                        <ol className={styles.metricTipsList}>
+                          {[
+                            "Practice set selection.",
+                            "Identify the easiest set first.",
+                            "Avoid spending too long on low-return sets.",
+                            "Review incorrect sets after every mock."
+                          ].map((step, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipNum}
+                                style={{ background: "#FEF3C7", color: "#B45309" }}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className={styles.oppModalCtaWrap}>
+                        <Link
+                          href="/topics/dilr-data-interpretation"
+                          className={styles.oppModalCtaBtn}
+                          style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)" }}
+                        >
+                          Practice DILR &rarr;
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* POPUP 3 — BETTER QUESTION SELECTION */}
+              {selectedOpportunity === "questionSelection" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#F3E8FF", color: "#7E22CE" }}>
+                      ⚙️
+                    </div>
+                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
+                      Better Question Selection
+                    </h3>
+                  </div>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #FAF5FF 0%, #F8FAFC 100%)",
+                          borderColor: "#E9D5FF",
+                          marginTop: "12px"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#7E22CE" }}>
+                            +{selectionGain} marks
+                          </span>
+                        </div>
+                        <span
+                          className={styles.metricImprovementBadge}
+                          style={{ background: "#F3E8FF", color: "#7E22CE", borderColor: "#D8B4FE" }}
+                        >
+                          ⚙️ Smart Attempt Strategy
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#7E22CE", background: "#FAF5FF" }}
+                        >
+                          “Choosing the right questions can improve your score without requiring you to solve more questions.”
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
+                        <div className={styles.oppDataList}>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>High-value questions</span>
+                            <span className={styles.oppDataVal} style={{ color: "#059669" }}>
+                              {highValuePct}% (High-confidence sitters)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Medium-value questions</span>
+                            <span className={styles.oppDataVal} style={{ color: "#2563EB" }}>
+                              {mediumValuePct}% (Moderate time investment)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Low-value questions</span>
+                            <span className={styles.oppDataVal} style={{ color: "#DC2626" }}>
+                              {lowValuePct}% (&lt;30% historical success rate traps)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Selection accuracy</span>
+                            <span className={styles.oppDataVal}>
+                              {selectionScore}% ({d?.dna?.questionSelection?.interpretation || "Needs Work"})
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Questions skipped vs attempted</span>
+                            <span className={styles.oppDataVal}>
+                              {totalSkipped} Skipped vs {totalAttempted} Attempted (of 66)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
+                        <ol className={styles.metricTipsList}>
+                          {[
+                            "Identify easy/high-confidence questions first.",
+                            "Avoid time-consuming questions early.",
+                            "Learn to recognize question patterns quickly.",
+                            "Practice timed selection drills."
+                          ].map((step, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipNum}
+                                style={{ background: "#F3E8FF", color: "#7E22CE" }}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className={styles.oppModalCtaWrap}>
+                        <Link
+                          href="/browse#pyq-section"
+                          className={styles.oppModalCtaBtn}
+                          style={{ background: "linear-gradient(135deg, #7E22CE 0%, #9333EA 100%)" }}
+                        >
+                          Practice Question Selection &rarr;
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* POPUP 4 — INCREASE QA SPEED */}
+              {selectedOpportunity === "qaSpeed" && (
+                <>
+                  <div className={styles.metricModalHeader}>
+                    <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0369A1" }}>
+                      ⚡
+                    </div>
+                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
+                      Increase QA Speed
+                    </h3>
+                  </div>
+
+                  {!hasMockHistory ? (
+                    <div className={styles.metricEmptyState}>
+                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className={styles.metricHeroStatBox}
+                        style={{
+                          background: "linear-gradient(135deg, #F0F9FF 0%, #F8FAFC 100%)",
+                          borderColor: "#BAE6FD",
+                          marginTop: "12px"
+                        }}
+                      >
+                        <div className={styles.metricHeroStatLeft}>
+                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
+                          <span className={styles.metricHeroStatValue} style={{ color: "#0369A1" }}>
+                            +{qaSpeedGain} marks
+                          </span>
+                        </div>
+                        <span
+                          className={styles.metricImprovementBadge}
+                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC" }}
+                        >
+                          ⚡ Attempt Rate Optimizer
+                        </span>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
+                        <div
+                          className={styles.metricInsightCallout}
+                          style={{ borderLeftColor: "#0284C7", background: "#F0F9FF" }}
+                        >
+                          “Reducing the time spent on solvable QA questions can increase your overall attempt rate.”
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
+                        <div className={styles.oppDataList}>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Average QA time per question</span>
+                            <span className={styles.oppDataVal} style={{ color: "#0369A1" }}>
+                              {qaAvgFormatted}
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Current vs target time</span>
+                            <span className={styles.oppDataVal}>
+                              {qaAvgFormatted} (Current) vs 1m 45s (Target)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Slowest topic</span>
+                            <span className={styles.oppDataVal} style={{ color: "#DC2626" }}>
+                              {slowestQaTopic.name} ({slowestQaTopic.avgTime}/q, {slowestQaTopic.accuracy}% accuracy)
+                            </span>
+                          </div>
+                          <div className={styles.oppDataRow}>
+                            <span className={styles.oppDataLabel}>Recent speed trend</span>
+                            <span className={styles.oppDataVal}>
+                              {d?.diagnosis?.holdingBack || "Spending 3m+ on difficult QA algebra questions."}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
+                        <ol className={styles.metricTipsList}>
+                          {[
+                            "Practice timed QA sets.",
+                            "Improve calculation speed.",
+                            "Memorize useful formulas and shortcuts.",
+                            "Skip questions that exceed your time threshold."
+                          ].map((step, idx) => (
+                            <li key={idx} className={styles.metricTipItem}>
+                              <span
+                                className={styles.metricTipNum}
+                                style={{ background: "#E0F2FE", color: "#0369A1" }}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className={styles.oppModalCtaWrap}>
+                        <Link
+                          href="/topics/qa-quantitative-ability"
+                          className={styles.oppModalCtaBtn}
+                          style={{ background: "linear-gradient(135deg, #0284C7 0%, #2563EB 100%)" }}
+                        >
+                          Practice Timed QA &rarr;
+                        </Link>
                       </div>
                     </>
                   )}
