@@ -137,14 +137,23 @@
   letter-spacing: 0.02em;
   background: linear-gradient(to bottom, #F4FAFF, #F0F9FF);
   border-bottom: 1px solid #E0F2FE;
+  margin: 0;
+  position: relative;
+  z-index: 20;
 }
 
-.breadcrumb a {
+.breadcrumb a,
+.breadcrumbLink {
   color: #2563EB;
+  font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.breadcrumb a:hover {
+.breadcrumb a:hover,
+.breadcrumbLink:hover {
+  color: #1D4ED8;
   text-decoration: underline;
 }
 

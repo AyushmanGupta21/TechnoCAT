@@ -216,7 +216,7 @@ export default function BSchoolPredictorPage() {
 
       {/* Breadcrumb */}
       <div className={styles.breadcrumb}>
-        <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>B-School Predictor &amp; Admission Engine</span>
+        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>B-School Predictor &amp; Admission Engine</span>
       </div>
 
       {/* Hero Section */}

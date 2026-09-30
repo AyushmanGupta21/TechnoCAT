@@ -61,8 +61,29 @@
   letter-spacing: -0.03em;
 }
 
-.backDashboardBtn {
+.topNavLeft {
   display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.backNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.backNavDivider {
+  color: #CBD5E1;
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.backDashboardBtn {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   color: #2563EB;
@@ -73,6 +94,7 @@
   background: #F0F9FF;
   border: 1px solid #E0F2FE;
   border-radius: 8px;
+  white-space: nowrap;
   transition: all 0.2s;
 }
 
@@ -80,6 +102,26 @@
   background: #E0F2FE;
   color: #1D4ED8;
   border-color: #BAE6FD;
+}
+
+@media (max-width: 640px) {
+  .topNav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topNavLeft {
+    gap: 12px;
+  }
+  .backNavGroup {
+    gap: 8px;
+  }
+  .backNavDivider {
+    display: none;
+  }
+  .backDashboardBtn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
 }
 
 /* Header Content */

@@ -146,7 +146,7 @@ export default function ErrorTrackingPage() {
 
       {/* Breadcrumb Navigation */}
       <div className={styles.breadcrumb}>
-        <Link href="/intelligence">Intelligence Hub</Link> &gt; <span>Error Tracking &amp; Mistake Intelligence</span>
+        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>Error Tracking &amp; Mistake Intelligence</span>
       </div>
 
       {/* Hero Section */}

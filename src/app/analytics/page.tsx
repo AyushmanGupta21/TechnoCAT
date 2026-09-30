@@ -269,17 +269,27 @@ function AnalyticsPageContent() {
         <div className={styles.headerInner}>
           {/* Top Navigation Bar */}
           <nav className={styles.topNav} aria-label="Analytics Navigation">
-            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <div className={styles.topNavLeft}>
               <Link href="/dashboard" className={styles.brandLogo} title="Back to TechnoCAT Home">
                 <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
               </Link>
-              <Link href="/dashboard" className={styles.backDashboardBtn}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-                Back to Dashboard
-              </Link>
+              <div className={styles.backNavGroup}>
+                <Link href="/dashboard" className={styles.backDashboardBtn}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                  </svg>
+                  Back to Dashboard
+                </Link>
+                <span className={styles.backNavDivider} aria-hidden="true">|</span>
+                <Link href="/intelligence" className={styles.backDashboardBtn}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                  </svg>
+                  Back to Intelligence Hub
+                </Link>
+              </div>
             </div>
 
             <PostLoginNavActions />
