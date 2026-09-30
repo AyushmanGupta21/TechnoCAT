@@ -329,7 +329,7 @@ export default function WhyStandOutSection() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("technocat_auth_redirect", href);
       }
-      openAuthModal("signup");
+      openAuthModal("signin");
     } else {
       router.push(href);
     }

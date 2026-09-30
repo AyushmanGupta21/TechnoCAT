@@ -180,10 +180,13 @@ const features = [
 export default function FeaturesSection() {
   const { user, openAuthModal } = useAuth();
 
-  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (!user || user.isGuest) {
       e.preventDefault();
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", href);
+      }
+      openAuthModal("signin");
     }
   };
 
@@ -226,7 +229,7 @@ export default function FeaturesSection() {
             <Link 
               href={feature.href} 
               key={index} 
-              onClick={handleCardClick}
+              onClick={(e) => handleCardClick(e, feature.href)}
               className={`${styles.featureCard} ${feature.colorClass} ${feature.isRow ? styles.cardRow : ''}`}
             >
               <div className={styles.cardBgShape}></div>

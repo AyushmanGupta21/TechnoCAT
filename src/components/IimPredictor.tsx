@@ -51,7 +51,7 @@ export default function IimPredictor() {
     }
 
     if (!user || user.isGuest) {
-      openAuthModal("signup");
+      openAuthModal("signin");
     } else {
       const params = new URLSearchParams();
       if (tenth) params.set("tenth", tenth);

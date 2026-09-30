@@ -14,7 +14,7 @@ export default function FloatingBanner() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("technocat_auth_redirect", dest);
       }
-      openAuthModal("signup");
+      openAuthModal("signin");
     } else {
       router.push(dest);
     }

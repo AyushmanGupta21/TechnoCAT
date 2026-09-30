@@ -136,11 +136,11 @@ const NAV_CATEGORIES: NavCategory[] = [
 ];
 
 const UTILITY_LINKS = [
-  { label: "Predict your BSchool", href: "/intelligence/b-school-predictor" },
+  { label: "Predict your BSchool", href: "/intelligence/b-school-predictor", requiresAuth: true },
   { label: "Free CAT Daily Target", href: "/dashboard", requiresAuth: true },
   { label: "Free CAT Study Material!", href: "/browse", requiresAuth: true },
   { label: "SOP Generator", href: "#", isModal: true },
-  { label: "CAT Score Calculator", href: "/intelligence/ai-analysis" },
+  { label: "CAT Score Calculator", href: "/intelligence/ai-analysis", requiresAuth: true },
 ];
 
 export default function Navbar() {
@@ -169,10 +169,13 @@ export default function Navbar() {
           "Extensive archive of previous GD-PI questions and alumni transcripts",
           "Automated suggestions for highlighting academic and work experience achievements"
         ],
-        primaryBtnText: "Unlock SOP Studio with Sign Up",
+        primaryBtnText: "Unlock SOP Studio with Login",
         onPrimaryClick: () => {
           if (!user || user.isGuest) {
-            openAuthModal("signup");
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("technocat_auth_redirect", "/intelligence");
+            }
+            openAuthModal("signin");
           } else {
             router.push("/intelligence");
           }
@@ -183,7 +186,10 @@ export default function Navbar() {
 
     if (link.requiresAuth && (!user || user.isGuest)) {
       e.preventDefault();
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", link.href);
+      }
+      openAuthModal("signin");
       return;
     }
   };
@@ -239,12 +245,15 @@ export default function Navbar() {
     onClose: () => void
   ) => {
     const isHash = link.href.startsWith("/#") || link.href.startsWith("#");
-    const needsAuth = (catId === "courses" || catId === "mocks" || catId === "past-papers") && !isHash;
+    const needsAuth = !isHash;
 
     if (needsAuth && (!user || user.isGuest)) {
       e.preventDefault();
       onClose();
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", link.href);
+      }
+      openAuthModal("signin");
       return;
     }
 
@@ -769,8 +778,17 @@ export default function Navbar() {
             </a>
 
             <Link
-              href="/cat-prep-app"
-              onClick={closeDrawer}
+              href="/dashboard"
+              onClick={(e) => {
+                closeDrawer();
+                if (!user || user.isGuest) {
+                  e.preventDefault();
+                  if (typeof window !== "undefined") {
+                    sessionStorage.setItem("technocat_auth_redirect", "/dashboard");
+                  }
+                  openAuthModal("signin");
+                }
+              }}
               className={styles.drawerDownloadBtn}
             >
               <svg

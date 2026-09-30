@@ -125,7 +125,10 @@ export default function WhatYouGetSection() {
     }
 
     if (!user || user.isGuest) {
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", route);
+      }
+      openAuthModal("signin");
       return;
     }
 

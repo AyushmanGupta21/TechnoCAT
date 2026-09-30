@@ -10,7 +10,10 @@ export default function CommunitySection() {
 
   const handleCommunityAction = () => {
     if (!user || user.isGuest) {
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
+      }
+      openAuthModal("signin");
     } else {
       router.push("/intelligence/community");
     }

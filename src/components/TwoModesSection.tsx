@@ -10,7 +10,7 @@ export default function TwoModesSection() {
   const handleModeClick = (e: React.MouseEvent) => {
     if (!user || user.isGuest) {
       e.preventDefault();
-      openAuthModal("signup");
+      openAuthModal("signin");
     }
   };
 

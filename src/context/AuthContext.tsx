@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 export interface UserProfile {
   id: string;
@@ -30,6 +31,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -57,6 +60,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     checkAuth();
   }, []);
+
+  const isPublicRoute = pathname === "/";
+  const isAuthenticated = Boolean(user && !user.isGuest);
+
+  // Strict route guard: no one can enter internal/dashboard pages without logging in
+  useEffect(() => {
+    if (!loading && !isPublicRoute && !isAuthenticated && !isLoggingOut) {
+      if (typeof window !== "undefined") {
+        const fullTarget =
+          window.location.pathname + window.location.search + window.location.hash;
+        if (fullTarget && fullTarget !== "/") {
+          sessionStorage.setItem("technocat_auth_redirect", fullTarget);
+        }
+      }
+      setAuthModalTab("signin");
+      setIsAuthModalOpen(true);
+      router.replace("/");
+    }
+  }, [loading, isPublicRoute, isAuthenticated, isLoggingOut, router]);
 
   const refreshUser = async () => {
     try {
@@ -101,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || "Login failed" };
       }
 
-      setUser(data.user);
+      setUser({ ...data.user, isGuest: false });
       closeAuthModal();
       return { success: true };
     } catch (err: any) {
@@ -122,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || "Signup failed" };
       }
 
-      setUser(data.user);
+      setUser({ ...data.user, isGuest: false });
       closeAuthModal();
       return { success: true };
     } catch (err: any) {
@@ -147,6 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const shouldBlockProtectedView = !isPublicRoute && (loading || !isAuthenticated);
+
   return (
     <AuthContext.Provider
       value={{
@@ -165,7 +189,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser,
       }}
     >
-      {children}
+      {shouldBlockProtectedView ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#FFFFFF",
+            zIndex: 9999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "14px",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              border: "3px solid #E2E8F0",
+              borderTopColor: "#2563EB",
+              borderRadius: "50%",
+              animation: "authLogoutSpin 0.7s linear infinite",
+            }}
+          />
+          <style>{`@keyframes authLogoutSpin { to { transform: rotate(360deg); } }`}</style>
+          <span
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#64748B",
+              fontFamily: "system-ui, -apple-system, sans-serif",
+            }}
+          >
+            {loading ? "Checking authentication..." : "Redirecting to login..."}
+          </span>
+        </div>
+      ) : (
+        children
+      )}
       {isLoggingOut && (
         <div
           style={{

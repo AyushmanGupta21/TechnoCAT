@@ -16,7 +16,7 @@ export default function HeroSection() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("technocat_auth_redirect", destination);
       }
-      openAuthModal("signup");
+      openAuthModal("signin");
     } else {
       router.push(destination);
     }

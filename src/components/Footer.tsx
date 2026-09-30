@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./Footer.module.css";
 
 interface FooterLinkItem {
@@ -158,7 +159,38 @@ const footerLinks: { heading: string; links: FooterLinkItem[] }[] = [
 
 export default function Footer() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
   const [selectedLabel, setSelectedLabel] = useState<string>("FAQs");
+
+  const handleFooterLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: FooterLinkItem) => {
+    setSelectedLabel(link.label);
+    const isHash = link.href.startsWith("/#") || link.href.startsWith("#");
+
+    if (!isHash) {
+      if (!user || user.isGuest) {
+        e.preventDefault();
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("technocat_auth_redirect", link.href);
+        }
+        openAuthModal("signin");
+        return;
+      }
+      e.preventDefault();
+      router.push(link.href);
+      return;
+    }
+
+    if (typeof window !== "undefined" && pathname === "/") {
+      const hash = link.href.replace(/^\/?#/, "");
+      const el = document.getElementById(hash);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: "smooth" });
+        window.history.pushState(null, "", `#${hash}`);
+      }
+    }
+  };
 
   useEffect(() => {
     const syncActiveFromLocation = () => {
@@ -221,7 +253,7 @@ export default function Footer() {
             {/* Social icons */}
             <div className={styles.socialRow}>
               {["facebook", "instagram", "youtube", "linkedin"].map((s) => (
-                <a key={s} href="#" className={styles.socialIcon} aria-label={s}>
+                <a key={s} href="#" onClick={(e) => e.preventDefault()} className={styles.socialIcon} aria-label={s}>
                   {s === "facebook" && (
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                   )}
@@ -251,7 +283,7 @@ export default function Footer() {
                       <li key={link.label}>
                         <a
                           href={link.href}
-                          onClick={() => setSelectedLabel(link.label)}
+                          onClick={(e) => handleFooterLinkClick(e, link)}
                           className={`${styles.link} ${isActive ? styles.linkActive : ""}`}
                           aria-current={isActive ? "page" : undefined}
                         >

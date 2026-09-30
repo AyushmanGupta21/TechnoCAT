@@ -52,7 +52,10 @@ export default function PricingSection() {
 
   const handlePlanClick = (plan: typeof plans[0]) => {
     if (!user || user.isGuest) {
-      openAuthModal("signup");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/dashboard");
+      }
+      openAuthModal("signin");
       return;
     }
 
