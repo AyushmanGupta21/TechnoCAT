@@ -589,14 +589,6 @@ export default function LearningCommunityPage() {
             </div>
           </div>
 
-          <div className={styles.heroCenterIllustration}>
-            <img
-              src="/community/hero-students.png"
-              alt="CAT aspirants discussing"
-              className={styles.heroStudentsImg}
-            />
-          </div>
-
           <div className={styles.heroRightCallout}>
             <img
               src="/community/hero-target-badge.png"
