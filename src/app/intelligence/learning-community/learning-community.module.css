@@ -2113,3 +2113,525 @@
     padding: 20px;
   }
 }
+
+/* ==================================================
+   17. Community Stats Interactive Detail Popups
+   ================================================== */
+
+.statBoxClickable {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border: 1.5px solid transparent;
+  outline: none;
+  user-select: none;
+}
+
+.statBoxClickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.statBoxClickable:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+/* Stat Popover Modal & Mobile Bottom Sheet */
+.statPopoverOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeOverlay 0.18s ease-out;
+}
+
+.statPopoverCard {
+  background: #FFFFFF;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  animation: scaleStatModal 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleStatModal {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.statPopoverHeader {
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #F8FAFF 0%, #EFF6FF 100%);
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statPopoverHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.statPopoverIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.statPopoverTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.statPopoverSub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  margin: 2px 0 0 0;
+}
+
+.statPopoverCloseBtn {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.16s ease;
+}
+
+.statPopoverCloseBtn:hover {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+.statPopoverBody {
+  padding: 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Big Stat Highlight Box */
+.statHighlightBox {
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statHighlightNumberRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.statHighlightNumber {
+  font-size: 32px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.statGrowthBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.statGrowthBadgeGreen {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.statGrowthBadgeBlue {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.statGrowthBadgeAmber {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.statHighlightDesc {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Mini Chart Section */
+.statSectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statSectionHeading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+  margin: 0;
+}
+
+.miniTrendChartWrap {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 12px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.miniTrendChartSvg {
+  width: 100%;
+  height: 80px;
+  overflow: visible;
+  display: block;
+}
+
+.miniTrendLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  padding-top: 4px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* Feature/Key Metric Chips */
+.statChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Topic Bar Distribution */
+.topicDistList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topicDistRow {
+  display: grid;
+  grid-template-columns: 130px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+}
+
+.topicDistName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topicDistBarBg {
+  height: 8px;
+  background: #F1F5F9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.topicDistBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563EB 0%, #38BDF8 100%);
+}
+
+.topicDistCount {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748B;
+  text-align: right;
+}
+
+/* Solutions Activity & Solved List */
+.speedBarWrap {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.speedBarTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.speedBarFillRow {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.speedSegment1 {
+  width: 54%;
+  background: #10B981;
+}
+
+.speedSegment2 {
+  width: 34%;
+  background: #3B82F6;
+}
+
+.speedSegment3 {
+  width: 12%;
+  background: #F59E0B;
+}
+
+.speedLegendRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  padding-top: 2px;
+}
+
+.recentSolvedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recentSolvedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.recentSolvedTitle {
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recentSolvedTime {
+  font-size: 11px;
+  font-weight: 700;
+  color: #10B981;
+  background: #ECFDF5;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Donut Chart / Circular Ring for Helpful Rate */
+.helpfulRateDonutCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.donutSvgWrap {
+  width: 90px;
+  height: 90px;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutSvg {
+  width: 90px;
+  height: 90px;
+  transform: rotate(-90deg);
+}
+
+.donutCenterText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutPercent {
+  font-size: 20px;
+  font-weight: 900;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.donutLabel {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #059669;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.helpfulRateInfoSide {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.helpfulRateScore {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.helpfulRateDesc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.statPopoverFooter {
+  padding: 14px 22px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statPopoverFooterBtn {
+  background: transparent;
+  border: none;
+  color: #2563EB;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.18s ease;
+}
+
+.statPopoverFooterBtn:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+/* Mobile Bottom Sheet Adaptation */
+@media (max-width: 640px) {
+  .statPopoverOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .statPopoverCard {
+    max-width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    max-height: 84vh;
+    animation: slideUpStatSheet 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpStatSheet {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .topicDistRow {
+    grid-template-columns: 100px 1fr 50px;
+    gap: 8px;
+  }
+}
+

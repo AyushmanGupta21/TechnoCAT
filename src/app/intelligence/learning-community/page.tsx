@@ -184,6 +184,11 @@ export default function LearningCommunityPage() {
     y: number;
   } | null>(null);
 
+  // Individual Community Stat Detail Popover state
+  const [activeStatPopup, setActiveStatPopup] = useState<
+    "MEMBERS" | "DISCUSSIONS" | "SOLUTIONS" | "HELPFUL_RATE" | null
+  >(null);
+
   // Full Discussion Modal state
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState("");
@@ -221,9 +226,9 @@ export default function LearningCommunityPage() {
     };
   }, []);
 
-  // Lock body scroll when drawer or modal is open
+  // Lock body scroll when drawer, modal, or stat popover is open
   useEffect(() => {
-    if (isStatsDrawerOpen || isCreateModalOpen || activePostId) {
+    if (isStatsDrawerOpen || isCreateModalOpen || activePostId || activeStatPopup) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -231,9 +236,9 @@ export default function LearningCommunityPage() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isStatsDrawerOpen, isCreateModalOpen, activePostId]);
+  }, [isStatsDrawerOpen, isCreateModalOpen, activePostId, activeStatPopup]);
 
-  // Close 3-dot dropdown, modals, or drawer on outside click or Escape
+  // Close 3-dot dropdown, modals, drawer, or stat popovers on outside click or Escape
   useEffect(() => {
     const handleGlobalClick = () => {
       if (openMenuPostId) setOpenMenuPostId(null);
@@ -244,6 +249,7 @@ export default function LearningCommunityPage() {
         setIsCreateModalOpen(false);
         setActivePostId(null);
         setIsStatsDrawerOpen(false);
+        setActiveStatPopup(null);
       }
     };
     window.addEventListener("click", handleGlobalClick);
@@ -851,19 +857,86 @@ export default function LearningCommunityPage() {
           {mobileDrawer === "STATS" && (
             <div className={styles.mobileDrawerPanel}>
               <div className={styles.statsGrid}>
-                <div className={`${styles.statBox} ${styles.statBoxBlue}`}>
+                <div
+                  className={`${styles.statBox} ${styles.statBoxBlue} ${styles.statBoxClickable}`}
+                  onClick={() => {
+                    setMobileDrawer(null);
+                    setActiveStatPopup("MEMBERS");
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMobileDrawer(null);
+                      setActiveStatPopup("MEMBERS");
+                    }
+                  }}
+                  title="Click to view Members details"
+                >
                   <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
                   <span className={styles.statLabel}>Members</span>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxCyan}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxCyan} ${styles.statBoxClickable}`}
+                  onClick={() => {
+                    setMobileDrawer(null);
+                    setActiveStatPopup("DISCUSSIONS");
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMobileDrawer(null);
+                      setActiveStatPopup("DISCUSSIONS");
+                    }
+                  }}
+                  title="Click to view Discussions details"
+                >
                   <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
                   <span className={styles.statLabel}>Discussions</span>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxPurple}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxPurple} ${styles.statBoxClickable}`}
+                  onClick={() => {
+                    setMobileDrawer(null);
+                    setActiveStatPopup("SOLUTIONS");
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMobileDrawer(null);
+                      setActiveStatPopup("SOLUTIONS");
+                    }
+                  }}
+                  title="Click to view Solutions details"
+                >
                   <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
                   <span className={styles.statLabel}>Solutions</span>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxAmber}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxAmber} ${styles.statBoxClickable}`}
+                  onClick={() => {
+                    setMobileDrawer(null);
+                    setActiveStatPopup("HELPFUL_RATE");
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMobileDrawer(null);
+                      setActiveStatPopup("HELPFUL_RATE");
+                    }
+                  }}
+                  title="Click to view Helpful Rate details"
+                >
                   <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
                   <span className={styles.statLabel}>Helpful Rate</span>
                 </div>
@@ -1342,7 +1415,19 @@ export default function LearningCommunityPage() {
                 </button>
               </div>
               <div className={styles.statsGrid}>
-                <div className={`${styles.statBox} ${styles.statBoxBlue}`}>
+                <div
+                  className={`${styles.statBox} ${styles.statBoxBlue} ${styles.statBoxClickable}`}
+                  onClick={() => setActiveStatPopup("MEMBERS")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveStatPopup("MEMBERS");
+                    }
+                  }}
+                  title="Click to view Members details"
+                >
                   <div className={styles.statIconCircle} style={{ background: "#EFF6FF", color: "#2563EB" }}>
                     👥
                   </div>
@@ -1351,7 +1436,20 @@ export default function LearningCommunityPage() {
                     <span className={styles.statLabel}>Members</span>
                   </div>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxCyan}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxCyan} ${styles.statBoxClickable}`}
+                  onClick={() => setActiveStatPopup("DISCUSSIONS")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveStatPopup("DISCUSSIONS");
+                    }
+                  }}
+                  title="Click to view Discussions details"
+                >
                   <div className={styles.statIconCircle} style={{ background: "#E0F2FE", color: "#0284C7" }}>
                     💬
                   </div>
@@ -1360,7 +1458,20 @@ export default function LearningCommunityPage() {
                     <span className={styles.statLabel}>Discussions</span>
                   </div>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxPurple}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxPurple} ${styles.statBoxClickable}`}
+                  onClick={() => setActiveStatPopup("SOLUTIONS")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveStatPopup("SOLUTIONS");
+                    }
+                  }}
+                  title="Click to view Solutions details"
+                >
                   <div className={styles.statIconCircle} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
                     ✅
                   </div>
@@ -1369,7 +1480,20 @@ export default function LearningCommunityPage() {
                     <span className={styles.statLabel}>Solutions</span>
                   </div>
                 </div>
-                <div className={`${styles.statBox} ${styles.statBoxAmber}`}>
+
+                <div
+                  className={`${styles.statBox} ${styles.statBoxAmber} ${styles.statBoxClickable}`}
+                  onClick={() => setActiveStatPopup("HELPFUL_RATE")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveStatPopup("HELPFUL_RATE");
+                    }
+                  }}
+                  title="Click to view Helpful Rate details"
+                >
                   <div className={styles.statIconCircle} style={{ background: "#FFFBEB", color: "#D97706" }}>
                     📈
                   </div>
@@ -2083,6 +2207,460 @@ export default function LearningCommunityPage() {
                   })}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Interactive Community Stats Detail Popovers */}
+      {activeStatPopup === "MEMBERS" && (
+        <div
+          className={styles.statPopoverOverlay}
+          onClick={() => setActiveStatPopup(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stat-members-title"
+        >
+          <div
+            className={styles.statPopoverCard}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.statPopoverHeader}>
+              <div className={styles.statPopoverHeaderLeft}>
+                <div className={styles.statPopoverIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
+                  👥
+                </div>
+                <div>
+                  <h3 id="stat-members-title" className={styles.statPopoverTitle}>Community Members</h3>
+                  <p className={styles.statPopoverSub}>TechnoCAT Aspirant Network</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.statPopoverCloseBtn}
+                onClick={() => setActiveStatPopup(null)}
+                aria-label="Close members detail"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.statPopoverBody}>
+              <div className={styles.statHighlightBox}>
+                <div className={styles.statHighlightNumberRow}>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.members : "2.4K"}</span>
+                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`}>
+                    ▲ +14.2% this month
+                  </span>
+                </div>
+                <p className={styles.statHighlightDesc}>
+                  Community members across TechnoCAT actively preparing for CAT &amp; OMETs.
+                </p>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>30-Day Growth Trend</h4>
+                <div className={styles.miniTrendChartWrap}>
+                  <svg viewBox="0 0 320 80" className={styles.miniTrendChartSvg} aria-label="30-day membership growth chart">
+                    <defs>
+                      <linearGradient id="membersTrendGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <line x1="10" y1="20" x2="310" y2="20" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="10" y1="50" x2="310" y2="50" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                    <path
+                      d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14 L 305 75 L 15 75 Z"
+                      fill="url(#membersTrendGrad)"
+                    />
+                    <path
+                      d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14"
+                      fill="none"
+                      stroke="#2563EB"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="15" cy="65" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                    <circle cx="155" cy="45" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                    <circle cx="305" cy="14" r="4" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2.5" />
+                  </svg>
+                  <div className={styles.miniTrendLabels}>
+                    <span>Sep 01 (1,840)</span>
+                    <span>Mid-Sep (2.1K)</span>
+                    <span style={{ color: "#2563EB", fontWeight: 700 }}>Today ({data ? data.stats.members : "2.4K"})</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Engagement Highlights</h4>
+                <div className={styles.statChipsRow}>
+                  <div className={styles.statChip}>
+                    <span>🔥</span>
+                    <span><strong>480+</strong> active this week</span>
+                  </div>
+                  <div className={styles.statChip}>
+                    <span>🎯</span>
+                    <span><strong>85%</strong> CAT 2025/2026</span>
+                  </div>
+                  <div className={styles.statChip}>
+                    <span>🎓</span>
+                    <span><strong>99+</strong> %ile mentors</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.statPopoverFooter}>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Updated live every 15 minutes</span>
+              <button
+                type="button"
+                className={styles.statPopoverFooterBtn}
+                onClick={() => {
+                  setActiveStatPopup(null);
+                  setIsStatsDrawerOpen(true);
+                }}
+              >
+                Full Community Overview &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeStatPopup === "DISCUSSIONS" && (
+        <div
+          className={styles.statPopoverOverlay}
+          onClick={() => setActiveStatPopup(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stat-discussions-title"
+        >
+          <div
+            className={styles.statPopoverCard}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.statPopoverHeader}>
+              <div className={styles.statPopoverHeaderLeft}>
+                <div className={styles.statPopoverIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
+                  💬
+                </div>
+                <div>
+                  <h3 id="stat-discussions-title" className={styles.statPopoverTitle}>Total Discussions</h3>
+                  <p className={styles.statPopoverSub}>Threads, Doubts &amp; Debates</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.statPopoverCloseBtn}
+                onClick={() => setActiveStatPopup(null)}
+                aria-label="Close discussions detail"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.statPopoverBody}>
+              <div className={styles.statHighlightBox}>
+                <div className={styles.statHighlightNumberRow}>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.discussions : "1.2K"}</span>
+                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeBlue}`}>
+                    ▲ +18 this week
+                  </span>
+                </div>
+                <p className={styles.statHighlightDesc}>
+                  Peer discussions, strategy blueprints, and mock test analysis across categories.
+                </p>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Top Discussion Topics</h4>
+                <div className={styles.topicDistList}>
+                  {[
+                    { name: "CAT Strategy", icon: "🎯", count: 410, percent: 35 },
+                    { name: "Doubt Solving", icon: "❓", count: 345, percent: 29 },
+                    { name: "Study Resources", icon: "📚", count: 230, percent: 19 },
+                    { name: "Mocks & Analysis", icon: "📊", count: 175, percent: 14 },
+                    { name: "General Discussion", icon: "💬", count: 120, percent: 10 },
+                  ].map((topic) => (
+                    <div key={topic.name} className={styles.topicDistRow}>
+                      <span className={styles.topicDistName} title={topic.name}>
+                        {topic.icon} {topic.name}
+                      </span>
+                      <div className={styles.topicDistBarBg}>
+                        <div
+                          className={styles.topicDistBarFill}
+                          style={{ width: `${topic.percent * 2.8}%` }}
+                        />
+                      </div>
+                      <span className={styles.topicDistCount}>{topic.count} posts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Response Velocity</h4>
+                <div className={styles.statChipsRow}>
+                  <div className={styles.statChip}>
+                    <span>⚡</span>
+                    <span><strong>95%</strong> answered in &lt; 4 hours</span>
+                  </div>
+                  <div className={styles.statChip}>
+                    <span>💬</span>
+                    <span><strong>4.2</strong> replies per thread</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.statPopoverFooter}>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Sorted by overall community volume</span>
+              <button
+                type="button"
+                className={styles.statPopoverFooterBtn}
+                onClick={() => {
+                  setActiveStatPopup(null);
+                  setIsStatsDrawerOpen(true);
+                }}
+              >
+                Full Breakdown &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeStatPopup === "SOLUTIONS" && (
+        <div
+          className={styles.statPopoverOverlay}
+          onClick={() => setActiveStatPopup(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stat-solutions-title"
+        >
+          <div
+            className={styles.statPopoverCard}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.statPopoverHeader}>
+              <div className={styles.statPopoverHeaderLeft}>
+                <div className={styles.statPopoverIcon} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
+                  ✅
+                </div>
+                <div>
+                  <h3 id="stat-solutions-title" className={styles.statPopoverTitle}>Solutions Provided</h3>
+                  <p className={styles.statPopoverSub}>Peer &amp; Mentor Problem Solving</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.statPopoverCloseBtn}
+                onClick={() => setActiveStatPopup(null)}
+                aria-label="Close solutions detail"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.statPopoverBody}>
+              <div className={styles.statHighlightBox}>
+                <div className={styles.statHighlightNumberRow}>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.solutions : "3.1K"}</span>
+                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`}>
+                    ✓ 2,820 Verified
+                  </span>
+                </div>
+                <p className={styles.statHighlightDesc}>
+                  Accepted and peer-validated step-by-step solutions for QA, DILR, and VARC questions.
+                </p>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Resolution Speed</h4>
+                <div className={styles.speedBarWrap}>
+                  <div className={styles.speedBarTitleRow}>
+                    <span>88% solved in under 2 hours</span>
+                    <span style={{ color: "#10B981" }}>Fast Response</span>
+                  </div>
+                  <div className={styles.speedBarFillRow}>
+                    <div className={styles.speedSegment1} title="< 30 mins (54%)" />
+                    <div className={styles.speedSegment2} title="< 2 hrs (34%)" />
+                    <div className={styles.speedSegment3} title="< 6 hrs (12%)" />
+                  </div>
+                  <div className={styles.speedLegendRow}>
+                    <span>• &lt; 30m: <strong>54%</strong></span>
+                    <span>• &lt; 2h: <strong>34%</strong></span>
+                    <span>• &lt; 6h: <strong>12%</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Recent Solved Doubts</h4>
+                <div className={styles.recentSolvedList}>
+                  <div className={styles.recentSolvedItem}>
+                    <span className={styles.recentSolvedTitle}>
+                      <span>📘</span> P&amp;C circular seating with restricted pairs
+                    </span>
+                    <span className={styles.recentSolvedTime}>Solved in 18m</span>
+                  </div>
+                  <div className={styles.recentSolvedItem}>
+                    <span className={styles.recentSolvedTitle}>
+                      <span>📖</span> RC inference tone vs author attitude nuance
+                    </span>
+                    <span className={styles.recentSolvedTime}>Solved in 35m</span>
+                  </div>
+                  <div className={styles.recentSolvedItem}>
+                    <span className={styles.recentSolvedTitle}>
+                      <span>📊</span> DILR matrix missing distribution clue
+                    </span>
+                    <span className={styles.recentSolvedTime}>Solved in 52m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.statPopoverFooter}>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Verified by top scorers &amp; mentors</span>
+              <button
+                type="button"
+                className={styles.statPopoverFooterBtn}
+                onClick={() => {
+                  setActiveStatPopup(null);
+                  setIsStatsDrawerOpen(true);
+                }}
+              >
+                View Activity History &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeStatPopup === "HELPFUL_RATE" && (
+        <div
+          className={styles.statPopoverOverlay}
+          onClick={() => setActiveStatPopup(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stat-helpful-title"
+        >
+          <div
+            className={styles.statPopoverCard}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.statPopoverHeader}>
+              <div className={styles.statPopoverHeaderLeft}>
+                <div className={styles.statPopoverIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
+                  📈
+                </div>
+                <div>
+                  <h3 id="stat-helpful-title" className={styles.statPopoverTitle}>Helpful Rate</h3>
+                  <p className={styles.statPopoverSub}>Quality &amp; Satisfaction Benchmark</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.statPopoverCloseBtn}
+                onClick={() => setActiveStatPopup(null)}
+                aria-label="Close helpful rate detail"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.statPopoverBody}>
+              <div className={styles.helpfulRateDonutCard}>
+                <div className={styles.donutSvgWrap}>
+                  <svg viewBox="0 0 100 100" className={styles.donutSvg} aria-label="Helpful rate donut ring 92%">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#F1F5F9"
+                      strokeWidth="10"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="url(#donutGrad)"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray="251.3"
+                      strokeDashoffset="20.1"
+                    />
+                    <defs>
+                      <linearGradient id="donutGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#059669" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className={styles.donutCenterText}>
+                    <span className={styles.donutPercent}>{data ? data.stats.helpfulRate : "92%"}</span>
+                    <span className={styles.donutLabel}>Helpful</span>
+                  </div>
+                </div>
+
+                <div className={styles.helpfulRateInfoSide}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span className={styles.helpfulRateScore}>Excellent Rating</span>
+                    <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ padding: "2px 8px", fontSize: "11px" }}>
+                      ▲ +3.4%
+                    </span>
+                  </div>
+                  <p className={styles.helpfulRateDesc}>
+                    Positive feedback indicator compared to last month&apos;s baseline.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>What This Metric Means</h4>
+                <div className={styles.statHighlightBox} style={{ background: "#F0FDF4", borderColor: "#DCFCE7" }}>
+                  <p className={styles.statHighlightDesc} style={{ color: "#166534" }}>
+                    The <strong>Helpful Rate</strong> measures the percentage of CAT questions that receive verified answers, peer upvotes, or explicit thank-you confirmations from the student who asked.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.statSectionBlock}>
+                <h4 className={styles.statSectionHeading}>Satisfaction Metrics</h4>
+                <div className={styles.statChipsRow}>
+                  <div className={styles.statChip}>
+                    <span>⭐️</span>
+                    <span><strong>4.8 / 5.0</strong> community rating</span>
+                  </div>
+                  <div className={styles.statChip}>
+                    <span>👍</span>
+                    <span><strong>94%</strong> received upvotes</span>
+                  </div>
+                  <div className={styles.statChip}>
+                    <span>🎯</span>
+                    <span><strong>&lt; 3%</strong> flagged answers</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.statPopoverFooter}>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Based on 3,400+ peer ratings</span>
+              <button
+                type="button"
+                className={styles.statPopoverFooterBtn}
+                onClick={() => {
+                  setActiveStatPopup(null);
+                  setIsStatsDrawerOpen(true);
+                }}
+              >
+                View Full Report &rarr;
+              </button>
             </div>
           </div>
         </div>
