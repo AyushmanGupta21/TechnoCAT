@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import styles from "./learning-community.module.css";
 import {
@@ -149,8 +151,67 @@ function getCategoryBadgeClass(cat: CommunityCategory): string {
 }
 
 export default function LearningCommunityPage() {
+  const router = useRouter();
+  const { user, openAuthModal } = useAuth();
+
   const [data, setData] = useState<CommunityPayload | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Dynamic user profile resolution
+  const isDemo = !user || user.isGuest || user.email?.toLowerCase() === "student@technocat.edu";
+  const isGuest = !user || user.isGuest;
+
+  const currentUserName = isGuest
+    ? "Guest Aspirant"
+    : user?.fullName || data?.currentUser.fullName || (isDemo ? "Sabrina Gomez" : "Student");
+
+  const currentUserRole = isGuest
+    ? "Browse Mode • Click to Sign In"
+    : user?.role
+    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+    : user?.dreamSchool
+    ? `Target: ${user.dreamSchool}`
+    : "CAT Aspirant";
+
+  const currentUserAvatarUrl = isGuest
+    ? "/community/avatar-user.png"
+    : isDemo
+    ? (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80")
+    : (user?.avatarUrl || data?.currentUser.avatarUrl || null);
+
+  const currentUserInitials = useMemo(() => {
+    if (isGuest || !currentUserName) return "GA";
+    const parts = currentUserName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [isGuest, currentUserName]);
+
+  const handleProfileCardClick = () => {
+    if (isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
+      }
+      openAuthModal("signin");
+    } else {
+      router.push("/profile/edit");
+    }
+  };
+
+  const handleOpenCreateModal = (categoryOverride?: CommunityCategory) => {
+    if (isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
+      }
+      openAuthModal("signin");
+      return;
+    }
+    if (categoryOverride) {
+      setNewCategory(categoryOverride);
+    } else if (selectedCategory) {
+      setNewCategory(selectedCategory);
+    }
+    setIsCreateModalOpen(true);
+  };
 
   // Navigation & filter state
   const [sidebarView, setSidebarView] = useState<SidebarSection>("HOME");
@@ -906,17 +967,29 @@ export default function LearningCommunityPage() {
               </div>
 
               {/* Bottom profile card on mobile */}
-              <div className={styles.sidebarUserProfileCard} style={{ marginTop: "12px" }}>
+              <div
+                className={styles.sidebarUserProfileCard}
+                style={{ marginTop: "12px" }}
+                onClick={() => {
+                  setMobileDrawer(null);
+                  handleProfileCardClick();
+                }}
+                title={isGuest ? "Sign in to TechnoCAT" : "View Profile"}
+              >
                 <div className={styles.sidebarUserAvatarWrap}>
-                  <img
-                    src="/community/avatar-user.png"
-                    alt="Tanisha Samanta"
-                    className={styles.sidebarUserAvatarImg}
-                  />
+                  {currentUserAvatarUrl ? (
+                    <img
+                      src={currentUserAvatarUrl}
+                      alt={currentUserName}
+                      className={styles.sidebarUserAvatarImg}
+                    />
+                  ) : (
+                    <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
+                  )}
                 </div>
                 <div className={styles.sidebarUserInfoStack}>
-                  <span className={styles.sidebarUserName}>Tanisha Samanta</span>
-                  <span className={styles.sidebarUserRole}>CAT Aspirant</span>
+                  <span className={styles.sidebarUserName}>{currentUserName}</span>
+                  <span className={styles.sidebarUserRole}>{currentUserRole}</span>
                 </div>
               </div>
             </div>
@@ -1279,19 +1352,23 @@ export default function LearningCommunityPage() {
             {/* Bottom User Profile */}
             <div
               className={styles.sidebarUserProfileCard}
-              onClick={() => showToast("Signed in as Tanisha Samanta (CAT Aspirant)")}
-              title="View Profile"
+              onClick={handleProfileCardClick}
+              title={isGuest ? "Sign in to TechnoCAT" : "View Profile"}
             >
               <div className={styles.sidebarUserAvatarWrap}>
-                <img
-                  src="/community/avatar-user.png"
-                  alt="Tanisha Samanta"
-                  className={styles.sidebarUserAvatarImg}
-                />
+                {currentUserAvatarUrl ? (
+                  <img
+                    src={currentUserAvatarUrl}
+                    alt={currentUserName}
+                    className={styles.sidebarUserAvatarImg}
+                  />
+                ) : (
+                  <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
+                )}
               </div>
               <div className={styles.sidebarUserInfoStack}>
-                <span className={styles.sidebarUserName}>Tanisha Samanta</span>
-                <span className={styles.sidebarUserRole}>CAT Aspirant</span>
+                <span className={styles.sidebarUserName}>{currentUserName}</span>
+                <span className={styles.sidebarUserRole}>{currentUserRole}</span>
               </div>
               <span className={styles.sidebarUserArrow} aria-hidden="true">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -1307,21 +1384,28 @@ export default function LearningCommunityPage() {
             <div className={styles.createPostPromptCard}>
               <div className={styles.composerTopRow}>
                 <div className={styles.userAvatarCircle}>
-                  <img
-                    src="/community/avatar-user.png"
-                    alt={data?.currentUser.fullName || "User"}
-                    className={styles.userAvatarImg}
-                  />
+                  {currentUserAvatarUrl ? (
+                    <img
+                      src={currentUserAvatarUrl}
+                      alt={currentUserName}
+                      className={styles.userAvatarImg}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#2563EB" }}>
+                      {currentUserInitials}
+                    </span>
+                  )}
                 </div>
                 <input
                   type="text"
                   readOnly
-                  placeholder="Share your thoughts, ask a doubt, or start a discussion..."
+                  placeholder={
+                    isGuest
+                      ? "Sign in to start a discussion, ask a doubt, or share analysis..."
+                      : "Share your thoughts, ask a doubt, or start a discussion..."
+                  }
                   className={styles.createPostTriggerInput}
-                  onClick={() => {
-                    if (selectedCategory) setNewCategory(selectedCategory);
-                    setIsCreateModalOpen(true);
-                  }}
+                  onClick={() => handleOpenCreateModal()}
                   aria-label="Share your thoughts, ask a doubt, or start a discussion"
                 />
               </div>
@@ -1331,10 +1415,7 @@ export default function LearningCommunityPage() {
                   <button
                     type="button"
                     className={styles.composerToolBtn}
-                    onClick={() => {
-                      if (selectedCategory) setNewCategory(selectedCategory);
-                      setIsCreateModalOpen(true);
-                    }}
+                    onClick={() => handleOpenCreateModal()}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -1349,10 +1430,7 @@ export default function LearningCommunityPage() {
                   <button
                     type="button"
                     className={styles.composerToolBtn}
-                    onClick={() => {
-                      if (selectedCategory) setNewCategory(selectedCategory);
-                      setIsCreateModalOpen(true);
-                    }}
+                    onClick={() => handleOpenCreateModal()}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -1365,10 +1443,7 @@ export default function LearningCommunityPage() {
                 <button
                   type="button"
                   className={styles.createPostQuickBtn}
-                  onClick={() => {
-                    if (selectedCategory) setNewCategory(selectedCategory);
-                    setIsCreateModalOpen(true);
-                  }}
+                  onClick={() => handleOpenCreateModal()}
                 >
                   <span>Post</span>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -1479,7 +1554,7 @@ export default function LearningCommunityPage() {
                   onClick={() => {
                     if (searchQuery) setSearchQuery("");
                     else if (selectedCategory) setSelectedCategory(null);
-                    else setIsCreateModalOpen(true);
+                    else handleOpenCreateModal();
                   }}
                 >
                   {searchQuery

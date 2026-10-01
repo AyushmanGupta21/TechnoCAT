@@ -98,10 +98,10 @@ async function resolveCurrentUser() {
   if (demoProfile) {
     return {
       id: String(demoProfile.id),
-      fullName: demoProfile.full_name || "aditi_sharma",
+      fullName: demoProfile.full_name || "Sabrina Gomez",
       email: demoProfile.email || "student@technocat.edu",
-      role: demoProfile.dream_school ? `Target: ${demoProfile.dream_school}` : "CAT 2026 Aspirant",
-      avatarUrl: demoProfile.avatar_url || null,
+      role: demoProfile.role ? (demoProfile.role.charAt(0).toUpperCase() + demoProfile.role.slice(1)) : "Student",
+      avatarUrl: demoProfile.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
     };
   }
 
