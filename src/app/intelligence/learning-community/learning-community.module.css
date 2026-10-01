@@ -269,13 +269,20 @@
   gap: 6px;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.2s ease;
+  transition: all 180ms ease;
+}
+
+.mobileDrawerBtn:hover:not(.mobileDrawerBtnActive) {
+  background: rgba(37, 99, 235, 0.08);
+  color: #0F172A;
+  transform: translateY(-1px);
 }
 
 .mobileDrawerBtnActive {
-  background: #1D4ED8;
-  border-color: #1D4ED8;
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #3B82F6 0%, #38BDF8 100%) !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15) !important;
 }
 
 .mobileDrawerPanel {
@@ -316,17 +323,18 @@
   border: none;
   background: transparent;
   border-radius: 12px;
-  padding: 11px 14px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 13.5px;
   font-weight: 600;
-  color: #334155;
+  color: #0F172A;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  transition: all 0.18s ease;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  position: relative;
 }
 
 .sidebarNavItemLeft {
@@ -341,24 +349,43 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #475569;
+  color: #334155;
+  font-size: 15px;
   flex-shrink: 0;
+  transition: color 180ms ease;
 }
 
-.sidebarNavItem:hover {
-  background: #F1F6FE;
+/* Hover state: subtle light-blue background, dark navy text, no glow, no blur */
+.sidebarNavItem:hover:not(.sidebarNavItemActive) {
+  background: rgba(37, 99, 235, 0.08);
+  color: #0F172A;
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.sidebarNavItem:hover:not(.sidebarNavItemActive) .sidebarIconWrap {
+  color: #2563EB;
+}
+
+.sidebarNavItem:hover:not(.sidebarNavItemActive) .sidebarCountBadge {
+  background: rgba(37, 99, 235, 0.12);
   color: #1D4ED8;
+  border-color: rgba(37, 99, 235, 0.2);
 }
 
-.sidebarNavItem:hover .sidebarIconWrap {
-  color: #1D4ED8;
-}
-
+/* Active / Selected state: soft TechnoCAT blue-to-cyan gradient, white text, subtle shadow */
 .sidebarNavItemActive {
-  background: linear-gradient(90deg, #1D4ED8 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #38BDF8 100%) !important;
   color: #FFFFFF !important;
   font-weight: 700;
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15) !important;
+  transform: none !important;
+}
+
+.sidebarNavItemActive:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #38BDF8 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2) !important;
 }
 
 .sidebarNavItemActive .sidebarIconWrap {
@@ -394,12 +421,13 @@
   border: 1px solid #DBEAFE;
   padding: 1px 7px;
   border-radius: 999px;
+  transition: all 180ms ease;
 }
 
 .sidebarNavItemActive .sidebarCountBadge {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #FFFFFF !important;
 }
 
 /* Sidebar Category Nav */
@@ -411,25 +439,14 @@
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 500;
-  color: #334155;
+  color: #0F172A;
   cursor: pointer;
   font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: all 0.18s ease;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   text-align: left;
-}
-
-.sidebarCategoryItem:hover {
-  background: #F1F6FE;
-  color: #1D4ED8;
-}
-
-.sidebarCategoryItemActive {
-  background: #EFF6FF;
-  color: #1D4ED8;
-  font-weight: 700;
 }
 
 .sidebarCategoryLeft {
@@ -445,6 +462,8 @@
   justify-content: center;
   width: 20px;
   flex-shrink: 0;
+  color: #475569;
+  transition: color 180ms ease;
 }
 
 .sidebarCategoryName {
@@ -458,11 +477,52 @@
   background: #F1F5F9;
   border-radius: 999px;
   padding: 1px 7px;
+  transition: all 180ms ease;
+}
+
+/* Category Hover: subtle light-blue background, dark text, no glow */
+.sidebarCategoryItem:hover:not(.sidebarCategoryItemActive) {
+  background: rgba(37, 99, 235, 0.08);
+  color: #0F172A;
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.sidebarCategoryItem:hover:not(.sidebarCategoryItemActive) .sidebarCategoryIcon {
+  color: #2563EB;
+}
+
+.sidebarCategoryItem:hover:not(.sidebarCategoryItemActive) .sidebarCategoryCount {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1D4ED8;
+}
+
+/* Category Active: clean TechnoCAT blue-to-cyan gradient, white text */
+.sidebarCategoryItemActive {
+  background: linear-gradient(135deg, #3B82F6 0%, #38BDF8 100%) !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15) !important;
+  transform: none !important;
+}
+
+.sidebarCategoryItemActive:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #38BDF8 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2) !important;
+}
+
+.sidebarCategoryItemActive .sidebarCategoryIcon {
+  color: #FFFFFF !important;
+}
+
+.sidebarCategoryItemActive .sidebarCategoryName {
+  color: #FFFFFF !important;
 }
 
 .sidebarCategoryItemActive .sidebarCategoryCount {
-  background: #DBEAFE;
-  color: #1D4ED8;
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #FFFFFF !important;
 }
 
 /* 5. Center Feed Column */
