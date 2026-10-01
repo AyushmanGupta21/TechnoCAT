@@ -1737,3 +1737,379 @@
     width: 100%;
   }
 }
+
+/* Right-Side Community Stats Drawer */
+.statsDrawerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeInOverlay 0.25s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.statsDrawerPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 47vw;
+  max-width: 680px;
+  min-width: 360px;
+  height: 100vh;
+  background: #FFFFFF;
+  border-top-left-radius: 28px;
+  border-bottom-left-radius: 28px;
+  box-shadow: -14px 0 45px rgba(15, 23, 42, 0.16);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideInDrawer 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInDrawer {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawerHeader {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #E2EEFF;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+  flex-shrink: 0;
+}
+
+.drawerTitleCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerTitle {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.drawerTitleHighlight {
+  color: #2563EB;
+}
+
+.drawerSubtitle {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
+  font-weight: 500;
+}
+
+.drawerCloseBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.drawerCloseBtn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+  transform: scale(1.05);
+}
+
+.drawerBody {
+  padding: 24px 28px 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1;
+}
+
+/* 2x2 Stat Cards in Drawer */
+.drawerStatsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.drawerStatCard {
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.18s ease;
+}
+
+.drawerStatCard:hover {
+  transform: translateY(-2px);
+}
+
+.drawerStatCardLavender {
+  background: #F4F7FF;
+  border: 1.5px solid #DCE6FE;
+}
+
+.drawerStatCardPink {
+  background: #FFF5F7;
+  border: 1.5px solid #FEE2E8;
+}
+
+.drawerStatCardMint {
+  background: #ECFDF5;
+  border: 1.5px solid #A7F3D0;
+}
+
+.drawerStatCardYellow {
+  background: #FFFBEB;
+  border: 1.5px solid #FDE68A;
+}
+
+.drawerStatIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  margin-bottom: 2px;
+}
+
+.drawerStatNumber {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.15;
+}
+
+.drawerStatLabel {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.drawerStatDesc {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Drawer Section Cards (Chart & Categories) */
+.drawerSectionCard {
+  background: #FFFFFF;
+  border: 1.5px solid #E2EEFF;
+  border-radius: 20px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.035);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.drawerSectionHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.drawerSectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+
+.drawerSectionSubtitle {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0;
+  font-weight: 500;
+}
+
+.periodSelect {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1E293B;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.18s ease;
+}
+
+.periodSelect:focus {
+  border-color: #3B82F6;
+}
+
+/* Chart Canvas & SVG */
+.chartContainer {
+  width: 100%;
+  position: relative;
+  padding-top: 6px;
+}
+
+.chartSvg {
+  width: 100%;
+  height: 170px;
+  overflow: visible;
+  display: block;
+}
+
+.chartTooltipFloating {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.chartXAxisLabels {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #F1F5F9;
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+/* Categories Progress List */
+.categoryProgressList {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.categoryProgressRow {
+  display: grid;
+  grid-template-columns: 140px 1fr 75px;
+  align-items: center;
+  gap: 14px;
+}
+
+.categoryRowName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.categoryProgressBarBg {
+  height: 8px;
+  border-radius: 999px;
+  background: #F1F5F9;
+  overflow: hidden;
+}
+
+.categoryProgressBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3B82F6 0%, #38BDF8 100%);
+  transition: width 0.35s ease-out;
+}
+
+.categoryRowCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.viewAllCategoriesBtn {
+  border: none;
+  background: transparent;
+  color: #2563EB;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+
+.viewAllCategoriesBtn:hover {
+  text-decoration: underline;
+  color: #1D4ED8;
+}
+
+@media (max-width: 1100px) {
+  .statsDrawerPanel {
+    width: 60vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .statsDrawerPanel {
+    width: 94vw;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+  }
+  .drawerStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  .categoryProgressRow {
+    grid-template-columns: 120px 1fr 65px;
+    gap: 10px;
+  }
+  .drawerHeader,
+  .drawerBody {
+    padding: 20px;
+  }
+}

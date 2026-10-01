@@ -173,6 +173,17 @@ export default function LearningCommunityPage() {
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Community Stats Right Drawer state
+  const [isStatsDrawerOpen, setIsStatsDrawerOpen] = useState(false);
+  const [activityPeriod, setActivityPeriod] = useState<"7D" | "30D" | "90D">("30D");
+  const [showAllCategoriesInDrawer, setShowAllCategoriesInDrawer] = useState(false);
+  const [hoveredPoint, setHoveredPoint] = useState<{
+    date: string;
+    value: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Full Discussion Modal state
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState("");
@@ -210,7 +221,19 @@ export default function LearningCommunityPage() {
     };
   }, []);
 
-  // Close 3-dot dropdown on outside click or Escape
+  // Lock body scroll when drawer or modal is open
+  useEffect(() => {
+    if (isStatsDrawerOpen || isCreateModalOpen || activePostId) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isStatsDrawerOpen, isCreateModalOpen, activePostId]);
+
+  // Close 3-dot dropdown, modals, or drawer on outside click or Escape
   useEffect(() => {
     const handleGlobalClick = () => {
       if (openMenuPostId) setOpenMenuPostId(null);
@@ -220,6 +243,7 @@ export default function LearningCommunityPage() {
         setOpenMenuPostId(null);
         setIsCreateModalOpen(false);
         setActivePostId(null);
+        setIsStatsDrawerOpen(false);
       }
     };
     window.addEventListener("click", handleGlobalClick);
@@ -235,6 +259,109 @@ export default function LearningCommunityPage() {
     () => posts.find((p) => p.id === activePostId) || null,
     [posts, activePostId]
   );
+
+  // Activity chart data for selected timeframe
+  const activityData = useMemo(() => {
+    if (activityPeriod === "7D") {
+      return [
+        { label: "Sep 25", fullDate: "Sep 25", value: 38 },
+        { label: "Sep 26", fullDate: "Sep 26", value: 45 },
+        { label: "Sep 27", fullDate: "Sep 27", value: 42 },
+        { label: "Sep 28", fullDate: "Sep 28", value: 68 },
+        { label: "Sep 29", fullDate: "Sep 29", value: 74 },
+        { label: "Sep 30", fullDate: "Sep 30", value: 61 },
+        { label: "Oct 01", fullDate: "Oct 01", value: 89 + (posts.length > 6 ? (posts.length - 6) * 4 : 0) },
+      ];
+    }
+    if (activityPeriod === "90D") {
+      return [
+        { label: "Jul 10", fullDate: "Jul 10", value: 120 },
+        { label: "Jul 24", fullDate: "Jul 24", value: 165 },
+        { label: "Aug 07", fullDate: "Aug 07", value: 190 },
+        { label: "Aug 21", fullDate: "Aug 21", value: 240 },
+        { label: "Sep 04", fullDate: "Sep 04", value: 310 },
+        { label: "Sep 18", fullDate: "Sep 18", value: 380 },
+        { label: "Oct 01", fullDate: "Oct 01", value: 465 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
+      ];
+    }
+    // Default 30D
+    return [
+      { label: "Sep 02", fullDate: "Sep 02", value: 48 },
+      { label: "Sep 06", fullDate: "Sep 06", value: 55 },
+      { label: "Sep 10", fullDate: "Sep 10", value: 62 },
+      { label: "Sep 14", fullDate: "Sep 14", value: 58 },
+      { label: "Sep 18", fullDate: "Sep 18", value: 79 },
+      { label: "Sep 22", fullDate: "Sep 22", value: 84 },
+      { label: "Sep 26", fullDate: "Sep 26", value: 92 },
+      { label: "Sep 30", fullDate: "Sep 30", value: 108 },
+      { label: "Oct 01", fullDate: "Oct 01", value: 124 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
+    ];
+  }, [activityPeriod, posts.length]);
+
+  const chartPaths = useMemo(() => {
+    const dataList = activityData;
+    if (dataList.length === 0) return { lineD: "", areaD: "", points: [] };
+
+    const width = 500;
+    const height = 150;
+    const padX = 20;
+    const padTop = 20;
+    const padBottom = 22;
+    const plotWidth = width - padX * 2;
+    const plotHeight = height - padTop - padBottom;
+
+    const maxVal = Math.max(...dataList.map((d) => d.value), 10) * 1.15;
+
+    const points = dataList.map((item, idx) => {
+      const x = padX + (idx / (dataList.length - 1)) * plotWidth;
+      const y = height - padBottom - (item.value / maxVal) * plotHeight;
+      return { x, y, item };
+    });
+
+    const lineD = points.reduce(
+      (acc, pt, idx) => (idx === 0 ? `M ${pt.x},${pt.y}` : `${acc} L ${pt.x},${pt.y}`),
+      ""
+    );
+
+    const firstPt = points[0];
+    const lastPt = points[points.length - 1];
+    const baseY = height - padBottom;
+    const areaD = `${lineD} L ${lastPt.x},${baseY} L ${firstPt.x},${baseY} Z`;
+
+    return { lineD, areaD, points };
+  }, [activityData]);
+
+  const categoryActivityCounts = useMemo(() => {
+    const baseCounts: Record<CommunityCategory, number> = {
+      "Doubt Solving": 298,
+      "CAT Strategy": 256,
+      "Study Resources": 210,
+      "Mocks & Analysis": 186,
+      "General Discussion": 156,
+      "College Discussions": 112,
+      "Motivation & Journey": 94,
+      "Off-topic": 68,
+    };
+
+    const extraCounts: Record<string, number> = {};
+    for (const p of posts) {
+      if (!p.id.startsWith("post-ref-")) {
+        extraCounts[p.category] = (extraCounts[p.category] || 0) + 1;
+      }
+    }
+
+    const list = CATEGORIES_CONFIG.map((cat) => {
+      const total = (baseCounts[cat.name] || 50) + (extraCounts[cat.name] || 0);
+      return {
+        name: cat.name,
+        icon: cat.icon,
+        count: total,
+      };
+    });
+
+    list.sort((a, b) => b.count - a.count);
+    return list;
+  }, [posts]);
 
   // Compute filtered & sorted posts
   const visiblePosts = useMemo(() => {
@@ -741,6 +868,18 @@ export default function LearningCommunityPage() {
                   <span className={styles.statLabel}>Helpful Rate</span>
                 </div>
               </div>
+              <div style={{ marginTop: "12px", display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  className={styles.viewAllCategoriesBtn}
+                  onClick={() => {
+                    setMobileDrawer(null);
+                    setIsStatsDrawerOpen(true);
+                  }}
+                >
+                  View All Stats &amp; Activity &rarr;
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -1197,7 +1336,7 @@ export default function LearningCommunityPage() {
                 <button
                   type="button"
                   className={styles.widgetViewAllBtn}
-                  onClick={() => showToast("Viewing overall community activity statistics.")}
+                  onClick={() => setIsStatsDrawerOpen(true)}
                 >
                   View All
                 </button>
@@ -1732,6 +1871,218 @@ export default function LearningCommunityPage() {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Community Stats Right-Side Drawer */}
+      {isStatsDrawerOpen && (
+        <div
+          className={styles.statsDrawerOverlay}
+          onClick={() => setIsStatsDrawerOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="community-stats-drawer-title"
+        >
+          <div
+            className={styles.statsDrawerPanel}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className={styles.drawerHeader}>
+              <div className={styles.drawerTitleCol}>
+                <h2 id="community-stats-drawer-title" className={styles.drawerTitle}>
+                  COMMUNITY <span className={styles.drawerTitleHighlight}>STATS</span>
+                </h2>
+                <p className={styles.drawerSubtitle}>
+                  A quick overview of our community activity and impact.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className={styles.drawerCloseBtn}
+                onClick={() => setIsStatsDrawerOpen(false)}
+                aria-label="Close community stats drawer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Drawer Body */}
+            <div className={styles.drawerBody}>
+              {/* 3. Stat Summary Cards 2x2 */}
+              <div className={styles.drawerStatsGrid}>
+                {/* Card 1: Members */}
+                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardLavender}`}>
+                  <div className={styles.drawerStatIconWrap}>👥</div>
+                  <span className={styles.drawerStatNumber}>{data ? data.stats.members : "2.4K"}</span>
+                  <span className={styles.drawerStatLabel}>Members</span>
+                  <span className={styles.drawerStatDesc}>Active CAT aspirants in our community</span>
+                </div>
+
+                {/* Card 2: Discussions */}
+                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardPink}`}>
+                  <div className={styles.drawerStatIconWrap}>💬</div>
+                  <span className={styles.drawerStatNumber}>{data ? data.stats.discussions : "1.2K"}</span>
+                  <span className={styles.drawerStatLabel}>Discussions</span>
+                  <span className={styles.drawerStatDesc}>Questions &amp; discussions started</span>
+                </div>
+
+                {/* Card 3: Solutions */}
+                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardMint}`}>
+                  <div className={styles.drawerStatIconWrap}>✅</div>
+                  <span className={styles.drawerStatNumber}>{data ? data.stats.solutions : "3.1K"}</span>
+                  <span className={styles.drawerStatLabel}>Solutions</span>
+                  <span className={styles.drawerStatDesc}>Doubts solved by the community</span>
+                </div>
+
+                {/* Card 4: Helpful Rate */}
+                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardYellow}`}>
+                  <div className={styles.drawerStatIconWrap}>📊</div>
+                  <span className={styles.drawerStatNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
+                  <span className={styles.drawerStatLabel}>Helpful Rate</span>
+                  <span className={styles.drawerStatDesc}>Questions getting helpful responses</span>
+                </div>
+              </div>
+
+              {/* 4. Community Activity Chart Card */}
+              <div className={styles.drawerSectionCard}>
+                <div className={styles.drawerSectionHeaderRow}>
+                  <div>
+                    <h3 className={styles.drawerSectionTitle}>Community Activity</h3>
+                    <p className={styles.drawerSectionSubtitle}>Community engagement over time.</p>
+                  </div>
+
+                  <select
+                    className={styles.periodSelect}
+                    value={activityPeriod}
+                    onChange={(e) => setActivityPeriod(e.target.value as "7D" | "30D" | "90D")}
+                    aria-label="Select activity timeframe"
+                  >
+                    <option value="7D">Last 7 Days</option>
+                    <option value="30D">Last 30 Days</option>
+                    <option value="90D">Last 90 Days</option>
+                  </select>
+                </div>
+
+                <div className={styles.chartContainer}>
+                  {hoveredPoint && (
+                    <div className={styles.chartTooltipFloating}>
+                      <span>{hoveredPoint.date}:</span>
+                      <strong>{hoveredPoint.value} activities</strong>
+                    </div>
+                  )}
+
+                  <svg viewBox="0 0 500 150" className={styles.chartSvg}>
+                    <defs>
+                      <linearGradient id="communityActivityGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.32" />
+                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.02" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Dotted horizontal grid lines */}
+                    <line x1="20" y1="28" x2="480" y2="28" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
+                    <line x1="20" y1="70" x2="480" y2="70" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
+                    <line x1="20" y1="112" x2="480" y2="112" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
+
+                    {/* Filled Area */}
+                    <path d={chartPaths.areaD} fill="url(#communityActivityGrad)" />
+
+                    {/* Trend Line */}
+                    <path
+                      d={chartPaths.lineD}
+                      fill="none"
+                      stroke="#2563EB"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Data Points */}
+                    {chartPaths.points.map((pt, idx) => (
+                      <g
+                        key={idx}
+                        onMouseEnter={() =>
+                          setHoveredPoint({
+                            date: pt.item.fullDate,
+                            value: pt.item.value,
+                            x: pt.x,
+                            y: pt.y,
+                          })
+                        }
+                        onMouseLeave={() => setHoveredPoint(null)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <circle cx={pt.x} cy={pt.y} r="8" fill="transparent" />
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={hoveredPoint?.date === pt.item.fullDate ? "5.5" : "3.5"}
+                          fill="#FFFFFF"
+                          stroke="#2563EB"
+                          strokeWidth="2.5"
+                        />
+                      </g>
+                    ))}
+                  </svg>
+
+                  <div className={styles.chartXAxisLabels}>
+                    {activityData.map((item, idx) => (
+                      <span key={idx}>{item.label}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Most Active Categories Card */}
+              <div className={styles.drawerSectionCard}>
+                <div className={styles.drawerSectionHeaderRow}>
+                  <div>
+                    <h3 className={styles.drawerSectionTitle}>Most Active Categories</h3>
+                    <p className={styles.drawerSectionSubtitle}>
+                      Breakdown of discussions by preparation topic.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={styles.viewAllCategoriesBtn}
+                    onClick={() => setShowAllCategoriesInDrawer((prev) => !prev)}
+                  >
+                    {showAllCategoriesInDrawer ? "Show Less ↑" : "View All"}
+                  </button>
+                </div>
+
+                <div className={styles.categoryProgressList}>
+                  {(showAllCategoriesInDrawer
+                    ? categoryActivityCounts
+                    : categoryActivityCounts.slice(0, 5)
+                  ).map((cat) => {
+                    const maxCount = categoryActivityCounts[0]?.count || 300;
+                    const percent = Math.min(100, Math.max(12, Math.round((cat.count / maxCount) * 100)));
+                    return (
+                      <div key={cat.name} className={styles.categoryProgressRow}>
+                        <span className={styles.categoryRowName} title={cat.name}>
+                          <span>{cat.icon}</span>
+                          <span>{cat.name}</span>
+                        </span>
+
+                        <div className={styles.categoryProgressBarBg}>
+                          <div
+                            className={styles.categoryProgressBarFill}
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+
+                        <span className={styles.categoryRowCount}>{cat.count} posts</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
