@@ -12,7 +12,7 @@
 
 .modalContent {
   background: #FFFFFF;
-  border-radius: 26px;
+  border-radius: 28px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: space-between;
   background: #F8FAFC;
-  border-radius: 26px 26px 0 0;
+  border-radius: 28px 28px 0 0;
 }
 
 .modalTitle {
