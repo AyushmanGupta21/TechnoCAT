@@ -312,41 +312,7 @@
   top: 96px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-/* Sidebar Logo Area */
-.sidebarLogoArea {
-  padding: 4px 6px 14px;
-  border-bottom: 1px solid #F1F5F9;
-  display: flex;
-  align-items: center;
-}
-
-.sidebarLogoLink {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-  transition: opacity 180ms ease;
-}
-
-.sidebarLogoLink:hover {
-  opacity: 0.9;
-}
-
-.sidebarLogoImg {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-
-/* Nav groups & items */
-.sidebarNavGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 .sidebarNavList {
@@ -398,8 +364,8 @@
 }
 
 .sidebarNavIcon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 
@@ -456,7 +422,21 @@
 .sidebarDivider {
   height: 1px;
   background: #EBF2FA;
-  margin: 10px 4px;
+  margin: 8px 4px;
+}
+
+.sidebarSectionTitle {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0 12px;
+  margin: 6px 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
 }
 
 .sidebarCountBadge {
@@ -596,9 +576,16 @@
   align-items: center;
   justify-content: center;
   width: 20px;
+  height: 20px;
   flex-shrink: 0;
   color: #475569;
   transition: color 180ms ease;
+}
+
+.sidebarCategoryIcon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .sidebarCategoryName {
