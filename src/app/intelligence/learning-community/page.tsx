@@ -8,6 +8,7 @@ import {
   CommunityCategory,
   CommunityPayload,
   CommunityPostItem,
+  ContributorItem,
   getCommunityDataAction,
   createCommunityPostAction,
   togglePostUpvoteAction,
@@ -17,15 +18,71 @@ import {
   reportCommunityPostAction,
 } from "./actions";
 
-const CATEGORIES: CommunityCategory[] = [
-  "CAT Strategy",
-  "Doubt Solving",
-  "Study Resources",
-  "Mocks & Analysis",
-  "Motivation & Journey",
+interface CategoryMeta {
+  name: CommunityCategory;
+  icon: string;
+}
+
+const CATEGORIES_CONFIG: CategoryMeta[] = [
+  { name: "General Discussion", icon: "💬" },
+  { name: "CAT Strategy", icon: "🎯" },
+  { name: "Doubt Solving", icon: "❓" },
+  { name: "Study Resources", icon: "📖" },
+  { name: "Mocks & Analysis", icon: "📊" },
+  { name: "College Discussions", icon: "🎓" },
+  { name: "Motivation & Journey", icon: "⭐" },
+  { name: "Off-topic", icon: "☕" },
 ];
 
-type SidebarSection = "HOME" | "MY_POSTS" | "SAVED_POSTS" | "TOPIC";
+const DEFAULT_CONTRIBUTORS: ContributorItem[] = [
+  {
+    authorId: "user-priya",
+    authorName: "priya_singh",
+    authorAvatar: "/community/contrib-priya.png",
+    postCount: 55,
+    commentCount: 0,
+    totalScore: 55,
+    rank: 1,
+  },
+  {
+    authorId: "user-aniket",
+    authorName: "aniket_verma",
+    authorAvatar: "/community/contrib-aniket.png",
+    postCount: 41,
+    commentCount: 0,
+    totalScore: 41,
+    rank: 2,
+  },
+  {
+    authorId: "user-shruti",
+    authorName: "shruti_agarwal",
+    authorAvatar: "/community/contrib-shruti.png",
+    postCount: 37,
+    commentCount: 0,
+    totalScore: 37,
+    rank: 3,
+  },
+  {
+    authorId: "user-karthik",
+    authorName: "karthik_r",
+    authorAvatar: "/community/contrib-karthik.png",
+    postCount: 31,
+    commentCount: 0,
+    totalScore: 31,
+    rank: 4,
+  },
+  {
+    authorId: "user-neha",
+    authorName: "neha_14",
+    authorAvatar: "/community/contrib-neha.png",
+    postCount: 28,
+    commentCount: 0,
+    totalScore: 28,
+    rank: 5,
+  },
+];
+
+type SidebarSection = "HOME" | "MY_POSTS" | "SAVED_POSTS" | "BOOKMARKS";
 type FeedFilterTab = "Recent" | "Most Helpful" | "Trending" | "Unanswered" | "My Posts";
 
 function formatRelativeTime(isoDate: string): string {
@@ -54,8 +111,24 @@ function getInitials(name: string): string {
   return (parts[0]?.slice(0, 2) || "CA").toUpperCase();
 }
 
+function getAuthorAvatar(authorName: string): string | null {
+  const map: Record<string, string> = {
+    aditi_sharma: "/community/avatar-aditi.png",
+    rahul_k: "/community/avatar-rahul.png",
+    megha_17: "/community/avatar-megha.png",
+    priya_singh: "/community/contrib-priya.png",
+    aniket_verma: "/community/contrib-aniket.png",
+    shruti_agarwal: "/community/contrib-shruti.png",
+    karthik_r: "/community/contrib-karthik.png",
+    neha_14: "/community/contrib-neha.png",
+  };
+  return map[authorName] || null;
+}
+
 function getCategoryBadgeClass(cat: CommunityCategory): string {
   switch (cat) {
+    case "General Discussion":
+      return `${styles.categoryBadge} ${styles.catGeneral}`;
     case "CAT Strategy":
       return `${styles.categoryBadge} ${styles.catStrategy}`;
     case "Doubt Solving":
@@ -64,10 +137,14 @@ function getCategoryBadgeClass(cat: CommunityCategory): string {
       return `${styles.categoryBadge} ${styles.catResources}`;
     case "Mocks & Analysis":
       return `${styles.categoryBadge} ${styles.catMocks}`;
+    case "College Discussions":
+      return `${styles.categoryBadge} ${styles.catCollege}`;
     case "Motivation & Journey":
       return `${styles.categoryBadge} ${styles.catMotivation}`;
+    case "Off-topic":
+      return `${styles.categoryBadge} ${styles.catOfftopic}`;
     default:
-      return `${styles.categoryBadge} ${styles.catStrategy}`;
+      return `${styles.categoryBadge} ${styles.catGeneral}`;
   }
 }
 
@@ -77,13 +154,12 @@ export default function LearningCommunityPage() {
 
   // Navigation & filter state
   const [sidebarView, setSidebarView] = useState<SidebarSection>("HOME");
-  const [topicsExpanded, setTopicsExpanded] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState<CommunityCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CommunityCategory | null>(null);
   const [activeTab, setActiveTab] = useState<FeedFilterTab>("Recent");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Mobile drawer state
-  const [mobileDrawer, setMobileDrawer] = useState<"MENU" | "TOPICS" | "STATS" | null>(null);
+  const [mobileDrawer, setMobileDrawer] = useState<"MENU" | "CATEGORIES" | "STATS" | null>(null);
 
   // Card 3-dot menu state
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
@@ -167,18 +243,21 @@ export default function LearningCommunityPage() {
     // 1. Sidebar view filtering
     if (sidebarView === "MY_POSTS" || activeTab === "My Posts") {
       list = list.filter((p) => p.isOwnPost);
-    } else if (sidebarView === "SAVED_POSTS") {
+    } else if (sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS") {
       list = list.filter((p) => p.isSaved);
-    } else if (sidebarView === "TOPIC" && selectedTopic) {
-      list = list.filter((p) => p.category === selectedTopic);
     }
 
-    // 2. Tab filtering
+    // 2. Category filtering
+    if (selectedCategory) {
+      list = list.filter((p) => p.category === selectedCategory);
+    }
+
+    // 3. Tab filtering
     if (activeTab === "Unanswered") {
       list = list.filter((p) => p.commentsCount === 0);
     }
 
-    // 3. Search query filtering
+    // 4. Search query filtering
     const q = searchQuery.trim().toLowerCase();
     if (q) {
       list = list.filter(
@@ -190,7 +269,7 @@ export default function LearningCommunityPage() {
       );
     }
 
-    // 4. Sorting
+    // 5. Sorting
     if (activeTab === "Most Helpful") {
       list.sort(
         (a, b) =>
@@ -212,38 +291,55 @@ export default function LearningCommunityPage() {
     }
 
     return list;
-  }, [posts, sidebarView, selectedTopic, activeTab, searchQuery]);
+  }, [posts, sidebarView, selectedCategory, activeTab, searchQuery]);
 
   const myPostsCount = useMemo(() => posts.filter((p) => p.isOwnPost).length, [posts]);
   const savedPostsCount = useMemo(() => posts.filter((p) => p.isSaved).length, [posts]);
 
+  const topContributorsList = useMemo(() => {
+    if (data?.topContributors && data.topContributors.length > 0) {
+      return data.topContributors;
+    }
+    return DEFAULT_CONTRIBUTORS;
+  }, [data]);
+
   // Handlers
   const handleSelectHome = () => {
     setSidebarView("HOME");
-    setSelectedTopic(null);
+    setSelectedCategory(null);
     if (activeTab === "My Posts") setActiveTab("Recent");
     setMobileDrawer(null);
   };
 
   const handleSelectMyPosts = () => {
     setSidebarView("MY_POSTS");
-    setSelectedTopic(null);
+    setSelectedCategory(null);
     setActiveTab("My Posts");
     setMobileDrawer(null);
   };
 
   const handleSelectSavedPosts = () => {
     setSidebarView("SAVED_POSTS");
-    setSelectedTopic(null);
+    setSelectedCategory(null);
     if (activeTab === "My Posts") setActiveTab("Recent");
     setMobileDrawer(null);
   };
 
-  const handleSelectTopic = (topic: CommunityCategory) => {
-    setSidebarView("TOPIC");
-    setSelectedTopic(topic);
-    setTopicsExpanded(true);
+  const handleSelectBookmarks = () => {
+    setSidebarView("BOOKMARKS");
+    setSelectedCategory(null);
     if (activeTab === "My Posts") setActiveTab("Recent");
+    setMobileDrawer(null);
+  };
+
+  const handleToggleCategory = (cat: CommunityCategory) => {
+    if (selectedCategory === cat) {
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(cat);
+      setSidebarView("HOME");
+      if (activeTab === "My Posts") setActiveTab("Recent");
+    }
     setMobileDrawer(null);
   };
 
@@ -251,7 +347,7 @@ export default function LearningCommunityPage() {
     setActiveTab(tab);
     if (tab === "My Posts") {
       setSidebarView("MY_POSTS");
-      setSelectedTopic(null);
+      setSelectedCategory(null);
     } else if (sidebarView === "MY_POSTS") {
       setSidebarView("HOME");
     }
@@ -303,7 +399,7 @@ export default function LearningCommunityPage() {
       setNewImageUrl(null);
       setIsCreateModalOpen(false);
       setSidebarView("HOME");
-      setSelectedTopic(null);
+      setSelectedCategory(null);
       setActiveTab("Recent");
       showToast("Discussion published to Learning Community!");
     } finally {
@@ -460,7 +556,7 @@ export default function LearningCommunityPage() {
         </div>
       </header>
 
-      {/* 1. Breadcrumb */}
+      {/* 1. Breadcrumb Navigation */}
       <div className={styles.breadcrumb}>
         <Link href="/intelligence" className={styles.breadcrumbLink}>
           Intelligence Hub
@@ -468,113 +564,213 @@ export default function LearningCommunityPage() {
         &gt; <span>Learning Community</span>
       </div>
 
-      {/* 2. Community Hero */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroInner}>
-          <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>
-              <span>✦</span> CAT ASPIRANT PEER NETWORK
+      <div className={styles.outerContainer}>
+        {/* 2. Hero Section Matching Reference Image */}
+        <section className={styles.heroBannerCard}>
+          <div className={styles.heroLeftGroup}>
+            <div className={styles.heroIconSquare}>
+              <img
+                src="/community/hero-community-icon.png"
+                alt="Learning Community"
+                className={styles.heroIconImg}
+              />
             </div>
-            <h1 className={styles.heroTitle}>
-              Learning <span>Community</span>
-            </h1>
-            <p className={styles.heroSubtitleTag}>
-              Connect &bull; Learn &bull; Discuss &bull; Grow Together
-            </p>
-            <p className={styles.heroDescription}>
-              A space for CAT aspirants to ask questions, share strategies, discuss doubts and learn
-              from each other&apos;s journey.
-            </p>
-          </div>
-
-          {/* Subtle Student/Community Illustration on the Right */}
-          <div className={styles.heroRightIllustration} aria-hidden="true">
-            <svg width="68" height="68" viewBox="0 0 72 72" fill="none">
-              <circle cx="36" cy="36" r="34" fill="#EFF6FF" stroke="#BFDBFE" strokeWidth="2" />
-              <circle cx="24" cy="28" r="7" fill="#2563EB" />
-              <path
-                d="M13 46C13 40.5 17.8 37 24 37C30.2 37 35 40.5 35 46"
-                stroke="#2563EB"
-                strokeWidth="3.2"
-                strokeLinecap="round"
-              />
-              <circle cx="48" cy="26" r="6.5" fill="#0EA5E9" />
-              <path
-                d="M38 44C38 39 42.3 36 48 36C53.7 36 58 39 58 44"
-                stroke="#0EA5E9"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <rect x="26" y="48" width="22" height="12" rx="6" fill="#DBEAFE" />
-              <circle cx="32" cy="54" r="1.8" fill="#1D4ED8" />
-              <circle cx="37" cy="54" r="1.8" fill="#1D4ED8" />
-              <circle cx="42" cy="54" r="1.8" fill="#1D4ED8" />
-            </svg>
-            <div className={styles.illustrationCardContent}>
-              <div className={styles.illusPillRow}>
-                <span className={styles.illusAvatarDot} style={{ background: "#2563EB" }}>
-                  RD
-                </span>
-                <span>DILR 2-Round Strategy Shared</span>
-              </div>
-              <div className={styles.illusPillRow}>
-                <span className={styles.illusAvatarDot} style={{ background: "#0EA5E9" }}>
-                  AI
-                </span>
-                <span>VARC Inference Doubt Solved</span>
-              </div>
+            <div className={styles.heroTextCol}>
+              <h1 className={styles.heroTitle}>
+                Learning <span>Community</span>
+              </h1>
+              <p className={styles.heroSubtitleTag}>
+                Connect &bull; Learn &bull; Discuss &bull; Grow Together
+              </p>
+              <p className={styles.heroDescription}>
+                A space for CAT aspirants to ask questions, share strategies, discuss doubts and learn
+                from each other&apos;s journey.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* 17. Mobile Collapsible Sections (Community Menu, Topics, Community Stats) */}
-      <div className={styles.mobileDrawersBar}>
-        <div className={styles.mobileDrawerToggleRow}>
-          <button
-            type="button"
-            className={`${styles.mobileDrawerBtn} ${
-              mobileDrawer === "MENU" ? styles.mobileDrawerBtnActive : ""
-            }`}
-            onClick={() => setMobileDrawer(mobileDrawer === "MENU" ? null : "MENU")}
-          >
-            <span>🏠</span> Community Menu
-          </button>
-          <button
-            type="button"
-            className={`${styles.mobileDrawerBtn} ${
-              mobileDrawer === "TOPICS" ? styles.mobileDrawerBtnActive : ""
-            }`}
-            onClick={() => setMobileDrawer(mobileDrawer === "TOPICS" ? null : "TOPICS")}
-          >
-            <span>📚</span> Topics
-          </button>
-          <button
-            type="button"
-            className={`${styles.mobileDrawerBtn} ${
-              mobileDrawer === "STATS" ? styles.mobileDrawerBtnActive : ""
-            }`}
-            onClick={() => setMobileDrawer(mobileDrawer === "STATS" ? null : "STATS")}
-          >
-            <span>📊</span> Community Stats
-          </button>
+          <div className={styles.heroCenterIllustration}>
+            <img
+              src="/community/hero-students.png"
+              alt="CAT aspirants discussing"
+              className={styles.heroStudentsImg}
+            />
+          </div>
+
+          <div className={styles.heroRightCallout}>
+            <img
+              src="/community/hero-target-badge.png"
+              alt="Good Discussions Lead to Better Preparation"
+              className={styles.heroBadgeImg}
+            />
+          </div>
+        </section>
+
+        {/* Mobile Drawers Toggle for Small Screens */}
+        <div className={styles.mobileDrawersBar}>
+          <div className={styles.mobileDrawerToggleRow}>
+            <button
+              type="button"
+              className={`${styles.mobileDrawerBtn} ${
+                mobileDrawer === "MENU" ? styles.mobileDrawerBtnActive : ""
+              }`}
+              onClick={() => setMobileDrawer(mobileDrawer === "MENU" ? null : "MENU")}
+            >
+              <span>🏠</span> Menu
+            </button>
+            <button
+              type="button"
+              className={`${styles.mobileDrawerBtn} ${
+                mobileDrawer === "CATEGORIES" ? styles.mobileDrawerBtnActive : ""
+              }`}
+              onClick={() => setMobileDrawer(mobileDrawer === "CATEGORIES" ? null : "CATEGORIES")}
+            >
+              <span>🏷️</span> Categories
+            </button>
+            <button
+              type="button"
+              className={`${styles.mobileDrawerBtn} ${
+                mobileDrawer === "STATS" ? styles.mobileDrawerBtnActive : ""
+              }`}
+              onClick={() => setMobileDrawer(mobileDrawer === "STATS" ? null : "STATS")}
+            >
+              <span>📊</span> Stats
+            </button>
+          </div>
+
+          {mobileDrawer === "MENU" && (
+            <div className={styles.mobileDrawerPanel}>
+              <div className={styles.sidebarNavList}>
+                <button
+                  type="button"
+                  className={`${styles.sidebarNavItem} ${
+                    sidebarView === "HOME" && !selectedCategory ? styles.sidebarNavItemActive : ""
+                  }`}
+                  onClick={handleSelectHome}
+                >
+                  <span className={styles.sidebarNavItemLeft}>
+                    <span>🏠</span>
+                    <span>Community Home</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.sidebarNavItem} ${
+                    sidebarView === "MY_POSTS" ? styles.sidebarNavItemActive : ""
+                  }`}
+                  onClick={handleSelectMyPosts}
+                >
+                  <span className={styles.sidebarNavItemLeft}>
+                    <span>📝</span>
+                    <span>My Posts</span>
+                  </span>
+                  {myPostsCount > 0 && (
+                    <span className={styles.sidebarCountBadge}>{myPostsCount}</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.sidebarNavItem} ${
+                    sidebarView === "SAVED_POSTS" ? styles.sidebarNavItemActive : ""
+                  }`}
+                  onClick={handleSelectSavedPosts}
+                >
+                  <span className={styles.sidebarNavItemLeft}>
+                    <span>🔖</span>
+                    <span>Saved Posts</span>
+                  </span>
+                  {savedPostsCount > 0 && (
+                    <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.sidebarNavItem} ${
+                    sidebarView === "BOOKMARKS" ? styles.sidebarNavItemActive : ""
+                  }`}
+                  onClick={handleSelectBookmarks}
+                >
+                  <span className={styles.sidebarNavItemLeft}>
+                    <span>📑</span>
+                    <span>Bookmarks</span>
+                  </span>
+                  {savedPostsCount > 0 && (
+                    <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mobileDrawer === "CATEGORIES" && (
+            <div className={styles.mobileDrawerPanel}>
+              <div className={styles.sidebarNavList}>
+                {CATEGORIES_CONFIG.map((cat) => {
+                  const count = posts.filter((p) => p.category === cat.name).length;
+                  const isSelected = selectedCategory === cat.name;
+                  return (
+                    <button
+                      key={cat.name}
+                      type="button"
+                      className={`${styles.sidebarCategoryItem} ${
+                        isSelected ? styles.sidebarCategoryItemActive : ""
+                      }`}
+                      onClick={() => handleToggleCategory(cat.name)}
+                    >
+                      <span className={styles.sidebarCategoryLeft}>
+                        <span>{cat.icon}</span>
+                        <span>{cat.name}</span>
+                      </span>
+                      {count > 0 && <span className={styles.sidebarCategoryCount}>{count}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {mobileDrawer === "STATS" && (
+            <div className={styles.mobileDrawerPanel}>
+              <div className={styles.statsGrid}>
+                <div className={`${styles.statBox} ${styles.statBoxBlue}`}>
+                  <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
+                  <span className={styles.statLabel}>Members</span>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxCyan}`}>
+                  <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
+                  <span className={styles.statLabel}>Discussions</span>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxPurple}`}>
+                  <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
+                  <span className={styles.statLabel}>Solutions</span>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxAmber}`}>
+                  <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
+                  <span className={styles.statLabel}>Helpful Rate</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {mobileDrawer === "MENU" && (
-          <div className={styles.mobileDrawerPanel}>
+        {/* 3. Main 3-Column Layout (~20% Sidebar, ~55% Feed, ~25% Widgets) */}
+        <main className={styles.mainContainer}>
+          {/* Left Sidebar Navigation */}
+          <aside className={styles.leftSidebar} aria-label="Community Navigation">
             <div className={styles.sidebarNavList}>
               <button
                 type="button"
                 className={`${styles.sidebarNavItem} ${
-                  sidebarView === "HOME" ? styles.sidebarNavItemActive : ""
+                  sidebarView === "HOME" && !selectedCategory ? styles.sidebarNavItemActive : ""
                 }`}
                 onClick={handleSelectHome}
               >
                 <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>🏠</span>
+                  <span className={styles.sidebarIconWrap}>🏠</span>
                   <span>Community Home</span>
                 </span>
               </button>
+
               <button
                 type="button"
                 className={`${styles.sidebarNavItem} ${
@@ -583,13 +779,14 @@ export default function LearningCommunityPage() {
                 onClick={handleSelectMyPosts}
               >
                 <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>📝</span>
+                  <span className={styles.sidebarIconWrap}>📝</span>
                   <span>My Posts</span>
                 </span>
                 {myPostsCount > 0 && (
                   <span className={styles.sidebarCountBadge}>{myPostsCount}</span>
                 )}
               </button>
+
               <button
                 type="button"
                 className={`${styles.sidebarNavItem} ${
@@ -598,593 +795,551 @@ export default function LearningCommunityPage() {
                 onClick={handleSelectSavedPosts}
               >
                 <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>🔖</span>
+                  <span className={styles.sidebarIconWrap}>🔖</span>
                   <span>Saved Posts</span>
                 </span>
                 {savedPostsCount > 0 && (
                   <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
                 )}
               </button>
-            </div>
-          </div>
-        )}
 
-        {mobileDrawer === "TOPICS" && (
-          <div className={styles.mobileDrawerPanel}>
-            <div className={styles.sidebarNavList}>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  className={`${styles.topicSubItem} ${
-                    sidebarView === "TOPIC" && selectedTopic === cat
-                      ? styles.topicSubItemActive
-                      : ""
-                  }`}
-                  onClick={() => handleSelectTopic(cat)}
-                >
-                  <span>{cat}</span>
-                  <span className={styles.sidebarCountBadge}>
-                    {posts.filter((p) => p.category === cat).length}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {mobileDrawer === "STATS" && (
-          <div className={styles.mobileDrawerPanel}>
-            <div className={styles.statsGrid}>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.members : "—"}</span>
-                <span className={styles.statLabel}>Members</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.discussions : "—"}</span>
-                <span className={styles.statLabel}>Discussions</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.solutions : "—"}</span>
-                <span className={styles.statLabel}>Solutions</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "—"}</span>
-                <span className={styles.statLabel}>Helpful Rate</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 3. Main 3-Column Layout */}
-      <main className={styles.mainContainer}>
-        {/* 4. Left Sidebar */}
-        <aside className={styles.leftSidebar} aria-label="Community Sidebar Navigation">
-          <div className={styles.sidebarSectionTitle}>COMMUNITY</div>
-          <div className={styles.sidebarNavList}>
-            <button
-              type="button"
-              className={`${styles.sidebarNavItem} ${
-                sidebarView === "HOME" ? styles.sidebarNavItemActive : ""
-              }`}
-              onClick={handleSelectHome}
-            >
-              <span className={styles.sidebarNavItemLeft}>
-                <span className={styles.sidebarNavIcon}>🏠</span>
-                <span>Community Home</span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.sidebarNavItem} ${
-                sidebarView === "MY_POSTS" ? styles.sidebarNavItemActive : ""
-              }`}
-              onClick={handleSelectMyPosts}
-            >
-              <span className={styles.sidebarNavItemLeft}>
-                <span className={styles.sidebarNavIcon}>📝</span>
-                <span>My Posts</span>
-              </span>
-              {myPostsCount > 0 && <span className={styles.sidebarCountBadge}>{myPostsCount}</span>}
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.sidebarNavItem} ${
-                sidebarView === "SAVED_POSTS" ? styles.sidebarNavItemActive : ""
-              }`}
-              onClick={handleSelectSavedPosts}
-            >
-              <span className={styles.sidebarNavItemLeft}>
-                <span className={styles.sidebarNavIcon}>🔖</span>
-                <span>Saved Posts</span>
-              </span>
-              {savedPostsCount > 0 && (
-                <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
-              )}
-            </button>
-
-            {/* Expandable Topics Item */}
-            <div>
               <button
                 type="button"
                 className={`${styles.sidebarNavItem} ${
-                  sidebarView === "TOPIC" ? styles.sidebarNavItemActive : ""
+                  sidebarView === "BOOKMARKS" ? styles.sidebarNavItemActive : ""
                 }`}
-                onClick={() => setTopicsExpanded((prev) => !prev)}
-                aria-expanded={topicsExpanded}
+                onClick={handleSelectBookmarks}
               >
                 <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>📚</span>
-                  <span>Topics</span>
+                  <span className={styles.sidebarIconWrap}>📑</span>
+                  <span>Bookmarks</span>
                 </span>
-                <span
-                  className={`${styles.topicsChevron} ${
-                    topicsExpanded ? styles.topicsChevronOpen : ""
-                  }`}
-                >
-                  ▾
-                </span>
+                {savedPostsCount > 0 && (
+                  <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
+                )}
               </button>
+            </div>
 
-              {topicsExpanded && (
-                <div className={styles.topicsSubList}>
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      className={`${styles.topicSubItem} ${
-                        sidebarView === "TOPIC" && selectedTopic === cat
-                          ? styles.topicSubItemActive
-                          : ""
-                      }`}
-                      onClick={() => handleSelectTopic(cat)}
-                    >
-                      <span>{cat}</span>
-                      <span style={{ fontSize: "11px", color: "#64748B" }}>
-                        {posts.filter((p) => p.category === cat).length}
-                      </span>
-                    </button>
-                  ))}
+            <div className={styles.sidebarDivider} />
+
+            <div className={styles.sidebarSectionTitle}>
+              <span>DISCUSS CATEGORIES</span>
+            </div>
+
+            <div className={styles.sidebarNavList}>
+              {CATEGORIES_CONFIG.map((cat) => {
+                const count = posts.filter((p) => p.category === cat.name).length;
+                const isSelected = selectedCategory === cat.name;
+                return (
+                  <button
+                    key={cat.name}
+                    type="button"
+                    className={`${styles.sidebarCategoryItem} ${
+                      isSelected ? styles.sidebarCategoryItemActive : ""
+                    }`}
+                    onClick={() => handleToggleCategory(cat.name)}
+                  >
+                    <span className={styles.sidebarCategoryLeft}>
+                      <span className={styles.sidebarCategoryIcon}>{cat.icon}</span>
+                      <span className={styles.sidebarCategoryName}>{cat.name}</span>
+                    </span>
+                    {count > 0 && <span className={styles.sidebarCategoryCount}>{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          {/* Center Feed Column */}
+          <section className={styles.feedColumn} aria-label="Discussions">
+            {/* Inline 2-Row Create Post Card */}
+            <div className={styles.createPostPromptCard}>
+              <div className={styles.composerTopRow}>
+                <div className={styles.userAvatarCircle}>
+                  <img
+                    src="/community/avatar-user.png"
+                    alt={data?.currentUser.fullName || "User"}
+                    className={styles.userAvatarImg}
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-        </aside>
-
-        {/* Center Discussion Feed */}
-        <section className={styles.feedColumn} aria-label="Discussion Feed">
-          {/* 5. Create Post Prompt */}
-          <div className={styles.createPostPromptCard}>
-            <div className={styles.userAvatarCircle}>
-              {data?.currentUser.avatarUrl ? (
-                <img
-                  src={data.currentUser.avatarUrl}
-                  alt={data.currentUser.fullName}
-                  className={styles.userAvatarImg}
+                <input
+                  type="text"
+                  readOnly
+                  placeholder="Share your thoughts, ask a doubt, or start a discussion..."
+                  className={styles.createPostTriggerInput}
+                  onClick={() => {
+                    if (selectedCategory) setNewCategory(selectedCategory);
+                    setIsCreateModalOpen(true);
+                  }}
+                  aria-label="Share your thoughts, ask a doubt, or start a discussion"
                 />
-              ) : (
-                getInitials(data?.currentUser.fullName || "CAT Aspirant")
-              )}
-            </div>
-            <button
-              type="button"
-              className={styles.createPostTriggerInput}
-              onClick={() => {
-                if (selectedTopic) setNewCategory(selectedTopic);
-                setIsCreateModalOpen(true);
-              }}
-            >
-              Share your thoughts, ask a doubt, or start a discussion…
-            </button>
-            <button
-              type="button"
-              className={styles.createPostQuickBtn}
-              onClick={() => {
-                if (selectedTopic) setNewCategory(selectedTopic);
-                setIsCreateModalOpen(true);
-              }}
-            >
-              + New Post
-            </button>
-          </div>
+              </div>
 
-          {/* 6. Discussion Filters & Search */}
-          <div className={styles.filtersToolbar}>
-            <div className={styles.filterTabsGroup} role="tablist" aria-label="Discussion Filters">
-              {(
-                ["Recent", "Most Helpful", "Trending", "Unanswered", "My Posts"] as FeedFilterTab[]
-              ).map((tab) => (
+              <div className={styles.composerBottomRow}>
+                <div className={styles.composerToolsLeft}>
+                  <button
+                    type="button"
+                    className={styles.composerToolBtn}
+                    onClick={() => {
+                      if (selectedCategory) setNewCategory(selectedCategory);
+                      setIsCreateModalOpen(true);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Add Image</span>
+                  </button>
+
+                  <div className={styles.composerToolDivider} />
+
+                  <button
+                    type="button"
+                    className={styles.composerToolBtn}
+                    onClick={() => {
+                      if (selectedCategory) setNewCategory(selectedCategory);
+                      setIsCreateModalOpen(true);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                      <line x1="7" y1="7" x2="7.01" y2="7" />
+                    </svg>
+                    <span>{selectedCategory || "Choose Category"}</span>
+                  </button>
+                </div>
+
                 <button
-                  key={tab}
                   type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab}
-                  className={`${styles.filterTabBtn} ${
-                    activeTab === tab ? styles.filterTabBtnActive : ""
-                  }`}
-                  onClick={() => handleTabChange(tab)}
+                  className={styles.createPostQuickBtn}
+                  onClick={() => {
+                    if (selectedCategory) setNewCategory(selectedCategory);
+                    setIsCreateModalOpen(true);
+                  }}
                 >
-                  {tab}
+                  <span>Post</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
                 </button>
-              ))}
+              </div>
             </div>
 
-            <div className={styles.searchBoxWrap}>
-              <span className={styles.searchIcon} aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search discussions..."
-                className={styles.searchInput}
-                aria-label="Search discussions"
-              />
-              {searchQuery && (
+            {/* Filter Tabs & Search Toolbar */}
+            <div className={styles.filtersToolbar}>
+              <div className={styles.filterTabsGroup} role="tablist" aria-label="Discussion Filters">
+                {(
+                  ["Recent", "Most Helpful", "Trending", "Unanswered", "My Posts"] as FeedFilterTab[]
+                ).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    className={`${styles.filterTabBtn} ${
+                      activeTab === tab ? styles.filterTabBtnActive : ""
+                    }`}
+                    onClick={() => handleTabChange(tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.searchBoxWrap}>
+                <span className={styles.searchIcon} aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search discussions..."
+                  className={styles.searchInput}
+                  aria-label="Search discussions"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className={styles.clearSearchBtn}
+                    onClick={() => setSearchQuery("")}
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Contextual Filter Banners */}
+            {selectedCategory && (
+              <div className={styles.activeFilterBanner}>
+                <span>Filtered by Category: <strong>{selectedCategory}</strong></span>
                 <button
                   type="button"
-                  className={styles.clearSearchBtn}
-                  onClick={() => setSearchQuery("")}
-                  title="Clear search"
+                  className={styles.clearFilterBtn}
+                  onClick={() => setSelectedCategory(null)}
                 >
-                  ✕
+                  Clear Filter ✕
                 </button>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
 
-          {/* Contextual Banner when viewing Saved Posts or a Specific Topic */}
-          {sidebarView === "SAVED_POSTS" && (
-            <div className={styles.activeFilterBanner}>
-              <span>🔖 Viewing your Saved Discussions ({savedPostsCount})</span>
-              <button
-                type="button"
-                className={styles.clearFilterBtn}
-                onClick={handleSelectHome}
-              >
-                Back to All Discussions
-              </button>
-            </div>
-          )}
-
-          {sidebarView === "TOPIC" && selectedTopic && (
-            <div className={styles.activeFilterBanner}>
-              <span>📚 Topic Filter: {selectedTopic}</span>
-              <button
-                type="button"
-                className={styles.clearFilterBtn}
-                onClick={handleSelectHome}
-              >
-                Clear Topic ✕
-              </button>
-            </div>
-          )}
-
-          {/* 7. Discussion Feed List or Empty States */}
-          {loading ? (
-            <div className={styles.emptyStateCard}>
-              <div className={styles.emptyStateIcon}>⏳</div>
-              <p className={styles.emptyStateTitle}>Loading community discussions...</p>
-            </div>
-          ) : visiblePosts.length === 0 ? (
-            /* 14. Empty States */
-            sidebarView === "SAVED_POSTS" ? (
-              <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>🔖</div>
-                <p className={styles.emptyStateTitle}>No saved discussions yet.</p>
+            {(sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS") && (
+              <div className={styles.activeFilterBanner}>
+                <span>🔖 Viewing your Saved Discussions ({savedPostsCount})</span>
                 <button
                   type="button"
-                  className={styles.emptyStateCtaBtn}
+                  className={styles.clearFilterBtn}
                   onClick={handleSelectHome}
                 >
-                  Explore Community
+                  Back to All Discussions
                 </button>
               </div>
-            ) : sidebarView === "MY_POSTS" || activeTab === "My Posts" ? (
+            )}
+
+            {/* Discussion Feed Cards List */}
+            {loading ? (
               <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>📝</div>
-                <p className={styles.emptyStateTitle}>
-                  You haven&apos;t created any discussions yet.
-                </p>
-                <button
-                  type="button"
-                  className={styles.emptyStateCtaBtn}
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  Start a Discussion
-                </button>
+                <div className={styles.emptyStateIcon}>⏳</div>
+                <p className={styles.emptyStateTitle}>Loading community discussions...</p>
               </div>
-            ) : searchQuery.trim().length > 0 ? (
-              <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>🔍</div>
-                <p className={styles.emptyStateTitle}>No discussions found.</p>
-                <button
-                  type="button"
-                  className={styles.emptyStateCtaBtn}
-                  onClick={() => setSearchQuery("")}
-                >
-                  Reset Search
-                </button>
-              </div>
-            ) : (
+            ) : visiblePosts.length === 0 ? (
               <div className={styles.emptyStateCard}>
                 <div className={styles.emptyStateIcon}>💬</div>
                 <p className={styles.emptyStateTitle}>
-                  {"No discussions yet.\nBe the first to start a conversation."}
+                  {searchQuery.trim().length > 0
+                    ? "No discussions found for your search."
+                    : selectedCategory
+                    ? `No discussions yet under ${selectedCategory}.`
+                    : sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS"
+                    ? "You haven't saved any discussions yet."
+                    : "No discussions yet.\nBe the first to start a conversation."}
                 </p>
                 <button
                   type="button"
                   className={styles.emptyStateCtaBtn}
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  Start a Discussion
-                </button>
-              </div>
-            )
-          ) : (
-            <div className={styles.postsList}>
-              {visiblePosts.map((post) => (
-                <article
-                  key={post.id}
-                  className={styles.postCard}
                   onClick={() => {
-                    setActivePostId(post.id);
-                    setReplyingToCommentId(null);
+                    if (searchQuery) setSearchQuery("");
+                    else if (selectedCategory) setSelectedCategory(null);
+                    else setIsCreateModalOpen(true);
                   }}
                 >
-                  <div className={styles.postHeaderRow}>
-                    <div className={styles.postAuthorMeta}>
-                      <div className={styles.userAvatarCircle}>
-                        {post.authorAvatar ? (
-                          <img
-                            src={post.authorAvatar}
-                            alt={post.authorName}
-                            className={styles.userAvatarImg}
-                          />
-                        ) : (
-                          getInitials(post.authorName)
-                        )}
-                      </div>
-                      <div>
-                        <div className={styles.authorNameRow}>
-                          <span className={styles.authorName}>{post.authorName}</span>
-                          <span className={styles.postTime}>
-                            &bull; {formatRelativeTime(post.createdAt)}
-                          </span>
-                        </div>
-                        <div className={styles.authorSubRole}>{post.authorRole}</div>
-                      </div>
-                    </div>
-
-                    <div className={styles.postHeaderRight}>
-                      <span className={getCategoryBadgeClass(post.category)}>
-                        {post.category}
-                      </span>
-
-                      {/* Three-dot Menu */}
-                      <div
-                        className={styles.menuWrap}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          className={styles.threeDotBtn}
-                          aria-label="Discussion options"
-                          onClick={() =>
-                            setOpenMenuPostId((prev) => (prev === post.id ? null : post.id))
-                          }
-                        >
-                          ⋯
-                        </button>
-
-                        {openMenuPostId === post.id && (
-                          <div className={styles.dropdownMenu}>
-                            <button
-                              type="button"
-                              className={styles.dropdownItem}
-                              onClick={(e) => handleToggleSave(post.id, e)}
-                            >
-                              <span>🔖</span>
-                              <span>{post.isSaved ? "Unsave" : "Save"}</span>
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.dropdownItem}
-                              onClick={(e) => handleReportPost(post.id, e)}
-                            >
-                              <span>🚩</span>
-                              <span>Report</span>
-                            </button>
-                            {post.isOwnPost && (
-                              <button
-                                type="button"
-                                className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                                onClick={(e) => handleDeletePost(post.id, e)}
-                              >
-                                <span>🗑️</span>
-                                <span>Delete</span>
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <h2 className={styles.postTitle}>{post.title}</h2>
-                  <p className={styles.postSnippet}>{post.content}</p>
-
-                  {post.imageUrl && (
-                    <div className={styles.postImageThumbWrap}>
-                      <img
-                        src={post.imageUrl}
-                        alt={post.title}
-                        className={styles.postImageThumb}
-                      />
-                    </div>
-                  )}
-
-                  <div className={styles.postActionsBar}>
-                    <div className={styles.postActionsLeft}>
-                      <button
-                        type="button"
-                        className={`${styles.actionPillBtn} ${
-                          post.isUpvoted ? styles.actionPillUpvoted : ""
-                        }`}
-                        onClick={(e) => handleToggleUpvote(post.id, e)}
-                        aria-label={`Upvote (${post.upvotesCount})`}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill={post.isUpvoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                        </svg>
-                        <span>Upvote &bull; {post.upvotesCount}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        className={styles.actionPillBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePostId(post.id);
-                          setReplyingToCommentId(null);
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <span>
-                          {post.commentsCount}{" "}
-                          {post.commentsCount === 1 ? "Comment" : "Comments"}
-                        </span>
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      className={`${styles.actionPillBtn} ${
-                        post.isSaved ? styles.actionPillSaved : ""
-                      }`}
-                      onClick={(e) => handleToggleSave(post.id, e)}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill={post.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                      </svg>
-                      <span>{post.isSaved ? "Saved" : "Save"}</span>
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* 9. Right Sidebar (Strictly 3 Widgets) */}
-        <aside className={styles.rightSidebar} aria-label="Community Insights">
-          {/* Widget 1: Community Stats */}
-          <div className={styles.widgetCard}>
-            <div className={styles.widgetTitleRow}>
-              <h3 className={styles.widgetTitle}>COMMUNITY STATS</h3>
-            </div>
-            <div className={styles.statsGrid}>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.members : "—"}</span>
-                <span className={styles.statLabel}>Members</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.discussions : "—"}</span>
-                <span className={styles.statLabel}>Discussions</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.solutions : "—"}</span>
-                <span className={styles.statLabel}>Solutions</span>
-              </div>
-              <div className={styles.statBox}>
-                <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "—"}</span>
-                <span className={styles.statLabel}>Helpful Rate</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Widget 2: Top Contributors */}
-          <div className={styles.widgetCard}>
-            <div className={styles.widgetTitleRow}>
-              <h3 className={styles.widgetTitle}>TOP CONTRIBUTORS</h3>
-            </div>
-            <p className={styles.widgetSub}>Top contributors this month</p>
-
-            {!data || data.topContributors.length === 0 ? (
-              <div style={{ fontSize: "12.5px", color: "#64748B" }}>
-                No contributor activity recorded yet.
+                  {searchQuery
+                    ? "Reset Search"
+                    : selectedCategory
+                    ? "View All Discussions"
+                    : "Start a Discussion"}
+                </button>
               </div>
             ) : (
-              <div className={styles.contributorsList}>
-                {data.topContributors.map((contributor) => (
-                  <div key={contributor.authorId} className={styles.contributorRow}>
-                    <div className={styles.contributorLeft}>
-                      <span
-                        className={`${styles.rankBadge} ${
-                          contributor.rank === 1 ? styles.rankBadgeGold : ""
-                        }`}
-                      >
-                        #{contributor.rank}
-                      </span>
-                      <div className={styles.contributorAvatar}>
-                        {contributor.authorAvatar ? (
-                          <img
-                            src={contributor.authorAvatar}
-                            alt={contributor.authorName}
-                            className={styles.userAvatarImg}
-                          />
-                        ) : (
-                          getInitials(contributor.authorName)
-                        )}
+              <div className={styles.postsList}>
+                {visiblePosts.map((post) => {
+                  const avatarSrc = getAuthorAvatar(post.authorName) || post.authorAvatar;
+                  return (
+                    <article
+                      key={post.id}
+                      className={styles.postCard}
+                      onClick={() => {
+                        setActivePostId(post.id);
+                        setReplyingToCommentId(null);
+                      }}
+                    >
+                      <div className={styles.postHeaderRow}>
+                        <div className={styles.postAuthorMeta}>
+                          <div className={styles.userAvatarCircle}>
+                            {avatarSrc ? (
+                              <img
+                                src={avatarSrc}
+                                alt={post.authorName}
+                                className={styles.userAvatarImg}
+                              />
+                            ) : (
+                              getInitials(post.authorName)
+                            )}
+                          </div>
+                          <div className={styles.authorMetaStack}>
+                            <div className={styles.authorNameAndBadgeRow}>
+                              <span className={styles.authorName}>{post.authorName}</span>
+                              <span className={styles.postTime}>
+                                &bull; {formatRelativeTime(post.createdAt)}
+                              </span>
+                              <span className={getCategoryBadgeClass(post.category)}>
+                                {post.category}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Three-dot dropdown menu */}
+                        <div
+                          className={styles.menuWrap}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            className={styles.threeDotBtn}
+                            aria-label="Discussion options"
+                            onClick={() =>
+                              setOpenMenuPostId((prev) => (prev === post.id ? null : post.id))
+                            }
+                          >
+                            ⋯
+                          </button>
+
+                          {openMenuPostId === post.id && (
+                            <div className={styles.dropdownMenu}>
+                              <button
+                                type="button"
+                                className={styles.dropdownItem}
+                                onClick={(e) => handleToggleSave(post.id, e)}
+                              >
+                                <span>🔖</span>
+                                <span>{post.isSaved ? "Unsave" : "Save"}</span>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.dropdownItem}
+                                onClick={(e) => handleReportPost(post.id, e)}
+                              >
+                                <span>🚩</span>
+                                <span>Report</span>
+                              </button>
+                              {post.isOwnPost && (
+                                <button
+                                  type="button"
+                                  className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                                  onClick={(e) => handleDeletePost(post.id, e)}
+                                >
+                                  <span>🗑️</span>
+                                  <span>Delete</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className={styles.contributorName}>{contributor.authorName}</span>
-                    </div>
-                    <span className={styles.contributorPostCount}>
-                      {contributor.postCount} {contributor.postCount === 1 ? "post" : "posts"}
-                    </span>
-                  </div>
-                ))}
+
+                      {/* Post Body (Indented to align under username) */}
+                      <div className={styles.postContentIndented}>
+                        <h2 className={styles.postTitle}>{post.title}</h2>
+                        <p className={styles.postSnippet}>{post.content}</p>
+
+                        {post.imageUrl && (
+                          <div className={styles.postImageThumbWrap}>
+                            <img
+                              src={post.imageUrl}
+                              alt={post.title}
+                              className={styles.postImageThumb}
+                            />
+                          </div>
+                        )}
+
+                        {/* Indented Post Action Metrics Bar */}
+                        <div className={styles.postActionsBar}>
+                          <div className={styles.postActionsLeft}>
+                            <button
+                              type="button"
+                              className={`${styles.actionMetricBtn} ${
+                                post.isUpvoted ? styles.actionMetricUpvoted : ""
+                              }`}
+                              onClick={(e) => handleToggleUpvote(post.id, e)}
+                              aria-label={`Upvote (${post.upvotesCount})`}
+                            >
+                              <span className={styles.upvoteArrowIcon}>▲</span>
+                              <span>Upvote &bull; {post.upvotesCount}</span>
+                            </button>
+
+                            <div className={styles.actionMetricDivider} />
+
+                            <button
+                              type="button"
+                              className={styles.actionMetricBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActivePostId(post.id);
+                                setReplyingToCommentId(null);
+                              }}
+                            >
+                              <span>💬</span>
+                              <span>
+                                {post.commentsCount}{" "}
+                                {post.commentsCount === 1 ? "Comment" : "Comments"}
+                              </span>
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={`${styles.bookmarkIconBtn} ${
+                              post.isSaved ? styles.bookmarkIconActive : ""
+                            }`}
+                            onClick={(e) => handleToggleSave(post.id, e)}
+                            title={post.isSaved ? "Saved" : "Save discussion"}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill={post.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
-          </div>
+          </section>
 
-          {/* Widget 3: Community Guidelines */}
-          <div className={styles.widgetCard}>
-            <div className={styles.widgetTitleRow}>
-              <h3 className={styles.widgetTitle}>Community Guidelines</h3>
+          {/* Right Sidebar Widgets */}
+          <aside className={styles.rightSidebar} aria-label="Community Insights">
+            {/* Widget 1: Community Stats */}
+            <div className={styles.widgetCard}>
+              <div className={styles.widgetTitleRow}>
+                <h3 className={styles.widgetTitle}>COMMUNITY STATS</h3>
+                <button
+                  type="button"
+                  className={styles.widgetViewAllBtn}
+                  onClick={() => showToast("Viewing overall community activity statistics.")}
+                >
+                  View All
+                </button>
+              </div>
+              <div className={styles.statsGrid}>
+                <div className={`${styles.statBox} ${styles.statBoxBlue}`}>
+                  <div className={styles.statIconCircle} style={{ background: "#EFF6FF", color: "#2563EB" }}>
+                    👥
+                  </div>
+                  <div>
+                    <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
+                    <span className={styles.statLabel}>Members</span>
+                  </div>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxCyan}`}>
+                  <div className={styles.statIconCircle} style={{ background: "#E0F2FE", color: "#0284C7" }}>
+                    💬
+                  </div>
+                  <div>
+                    <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
+                    <span className={styles.statLabel}>Discussions</span>
+                  </div>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxPurple}`}>
+                  <div className={styles.statIconCircle} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
+                    ✅
+                  </div>
+                  <div>
+                    <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
+                    <span className={styles.statLabel}>Solutions</span>
+                  </div>
+                </div>
+                <div className={`${styles.statBox} ${styles.statBoxAmber}`}>
+                  <div className={styles.statIconCircle} style={{ background: "#FFFBEB", color: "#D97706" }}>
+                    📈
+                  </div>
+                  <div>
+                    <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
+                    <span className={styles.statLabel}>Helpful Rate</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <ul className={styles.guidelinesList}>
-              <li>
-                <span className={styles.guidelineBullet}>&bull;</span>
-                <span>Be respectful and supportive</span>
-              </li>
-              <li>
-                <span className={styles.guidelineBullet}>&bull;</span>
-                <span>Keep discussions relevant to CAT preparation</span>
-              </li>
-              <li>
-                <span className={styles.guidelineBullet}>&bull;</span>
-                <span>No spam or promotional content</span>
-              </li>
-              <li>
-                <span className={styles.guidelineBullet}>&bull;</span>
-                <span>Help others and share genuine insights</span>
-              </li>
-            </ul>
-          </div>
-        </aside>
-      </main>
 
-      {/* 5. Create Post Modal */}
+            {/* Widget 2: Top Contributors */}
+            <div className={styles.widgetCard}>
+              <div className={styles.widgetTitleRow}>
+                <div>
+                  <h3 className={styles.widgetTitle}>TOP CONTRIBUTORS</h3>
+                  <p className={styles.widgetSub}>This Month</p>
+                </div>
+                <button
+                  type="button"
+                  className={styles.widgetViewAllBtn}
+                  onClick={() => showToast("Top contributor leaderboard for this month.")}
+                >
+                  View All
+                </button>
+              </div>
+
+              <div className={styles.contributorsList}>
+                {topContributorsList.map((contributor) => {
+                  const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                  return (
+                    <div key={contributor.authorId} className={styles.contributorRow}>
+                      <div className={styles.contributorLeft}>
+                        {contributor.rank === 1 ? (
+                          <img src="/community/medal-gold.png" alt="1st" className={styles.rankMedalImg} />
+                        ) : contributor.rank === 2 ? (
+                          <img src="/community/medal-silver.png" alt="2nd" className={styles.rankMedalImg} />
+                        ) : contributor.rank === 3 ? (
+                          <img src="/community/medal-bronze.png" alt="3rd" className={styles.rankMedalImg} />
+                        ) : (
+                          <span className={styles.rankNumberCircle}>{contributor.rank}</span>
+                        )}
+
+                        <div className={styles.contributorAvatar}>
+                          {avatarSrc ? (
+                            <img
+                              src={avatarSrc}
+                              alt={contributor.authorName}
+                              className={styles.userAvatarImg}
+                            />
+                          ) : (
+                            getInitials(contributor.authorName)
+                          )}
+                        </div>
+
+                        <div className={styles.contributorInfoStack}>
+                          <span className={styles.contributorName}>{contributor.authorName}</span>
+                          <span className={styles.contributorPostSub}>{contributor.postCount} posts</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Widget 3: Community Guidelines */}
+            <div className={styles.widgetCard}>
+              <div className={styles.guidelinesHeaderRow}>
+                <span className={styles.guidelinesShieldIcon}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                </span>
+                <h3 className={styles.guidelinesTitle}>Community Guidelines</h3>
+              </div>
+              <ul className={styles.guidelinesList}>
+                <li>
+                  <span className={styles.guidelineBullet}>&bull;</span>
+                  <span>Be respectful and supportive</span>
+                </li>
+                <li>
+                  <span className={styles.guidelineBullet}>&bull;</span>
+                  <span>Keep discussions relevant to CAT preparation</span>
+                </li>
+                <li>
+                  <span className={styles.guidelineBullet}>&bull;</span>
+                  <span>No spam or promotional content</span>
+                </li>
+                <li>
+                  <span className={styles.guidelineBullet}>&bull;</span>
+                  <span>Help others and share genuine insights</span>
+                </li>
+              </ul>
+            </div>
+          </aside>
+        </main>
+      </div>
+
+      {/* Create Post Modal */}
       {isCreateModalOpen && (
         <div
           className={styles.modalOverlay}
@@ -1234,7 +1389,7 @@ export default function LearningCommunityPage() {
                     id="post-title-input"
                     type="text"
                     className={styles.formInput}
-                    placeholder="e.g., How to approach Maxima-Minima DILR sets under time pressure?"
+                    placeholder="e.g., How to approach DILR sets effectively?"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     required
@@ -1251,9 +1406,9 @@ export default function LearningCommunityPage() {
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as CommunityCategory)}
                   >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    {CATEGORIES_CONFIG.map((cat) => (
+                      <option key={cat.name} value={cat.name}>
+                        {cat.icon} {cat.name}
                       </option>
                     ))}
                   </select>
@@ -1266,7 +1421,7 @@ export default function LearningCommunityPage() {
                   <textarea
                     id="post-content-textarea"
                     className={styles.formTextarea}
-                    placeholder="Share your question, mock breakdown, formula shortcut, or preparation strategy..."
+                    placeholder="Share your thoughts, ask a doubt, or start a discussion..."
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
                     required
@@ -1328,7 +1483,7 @@ export default function LearningCommunityPage() {
         </div>
       )}
 
-      {/* 8. Full Discussion View Modal */}
+      {/* Full Discussion View Modal */}
       {activePost && (
         <div
           className={styles.modalOverlay}
@@ -1344,9 +1499,9 @@ export default function LearningCommunityPage() {
             <div className={styles.modalHeader}>
               <div className={styles.postAuthorMeta}>
                 <div className={styles.userAvatarCircle}>
-                  {activePost.authorAvatar ? (
+                  {getAuthorAvatar(activePost.authorName) || activePost.authorAvatar ? (
                     <img
-                      src={activePost.authorAvatar}
+                      src={getAuthorAvatar(activePost.authorName) || activePost.authorAvatar!}
                       alt={activePost.authorName}
                       className={styles.userAvatarImg}
                     />
@@ -1402,25 +1557,25 @@ export default function LearningCommunityPage() {
                 <div className={styles.postActionsLeft}>
                   <button
                     type="button"
-                    className={`${styles.actionPillBtn} ${
-                      activePost.isUpvoted ? styles.actionPillUpvoted : ""
+                    className={`${styles.actionMetricBtn} ${
+                      activePost.isUpvoted ? styles.actionMetricUpvoted : ""
                     }`}
                     onClick={() => handleToggleUpvote(activePost.id)}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill={activePost.isUpvoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                    </svg>
+                    <span className={styles.upvoteArrowIcon}>▲</span>
                     <span>Upvote &bull; {activePost.upvotesCount}</span>
                   </button>
 
+                  <div className={styles.actionMetricDivider} />
+
                   <button
                     type="button"
-                    className={`${styles.actionPillBtn} ${
-                      activePost.isSaved ? styles.actionPillSaved : ""
+                    className={`${styles.actionMetricBtn} ${
+                      activePost.isSaved ? styles.bookmarkIconActive : ""
                     }`}
                     onClick={() => handleToggleSave(activePost.id)}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill={activePost.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill={activePost.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                     </svg>
                     <span>{activePost.isSaved ? "Saved" : "Save"}</span>
@@ -1430,7 +1585,7 @@ export default function LearningCommunityPage() {
                 {activePost.isOwnPost && (
                   <button
                     type="button"
-                    className={`${styles.actionPillBtn} ${styles.dropdownItemDanger}`}
+                    className={`${styles.actionMetricBtn} ${styles.dropdownItemDanger}`}
                     onClick={() => handleDeletePost(activePost.id)}
                   >
                     <span>🗑️ Delete Post</span>
@@ -1473,6 +1628,7 @@ export default function LearningCommunityPage() {
                 <div className={styles.commentsThreadList}>
                   {rootComments.map((comment) => {
                     const replies = getRepliesForComment(comment.id);
+                    const commentAvatar = getAuthorAvatar(comment.authorName) || comment.authorAvatar;
                     return (
                       <div key={comment.id} className={styles.commentCard}>
                         <div className={styles.postAuthorMeta}>
@@ -1480,7 +1636,15 @@ export default function LearningCommunityPage() {
                             className={styles.userAvatarCircle}
                             style={{ width: "32px", height: "32px", fontSize: "12px" }}
                           >
-                            {getInitials(comment.authorName)}
+                            {commentAvatar ? (
+                              <img
+                                src={commentAvatar}
+                                alt={comment.authorName}
+                                className={styles.userAvatarImg}
+                              />
+                            ) : (
+                              getInitials(comment.authorName)
+                            )}
                           </div>
                           <div>
                             <div className={styles.authorNameRow}>
@@ -1535,21 +1699,40 @@ export default function LearningCommunityPage() {
 
                         {replies.length > 0 && (
                           <div className={styles.nestedRepliesList}>
-                            {replies.map((rep) => (
-                              <div key={rep.id} className={styles.nestedReplyCard}>
-                                <div className={styles.authorNameRow}>
-                                  <span className={styles.authorName} style={{ fontSize: "12.5px" }}>
-                                    {rep.authorName}
-                                  </span>
-                                  <span className={styles.postTime}>
-                                    &bull; {formatRelativeTime(rep.createdAt)}
-                                  </span>
+                            {replies.map((rep) => {
+                              const repAvatar = getAuthorAvatar(rep.authorName) || rep.authorAvatar;
+                              return (
+                                <div key={rep.id} className={styles.nestedReplyCard}>
+                                  <div className={styles.postAuthorMeta} style={{ marginBottom: "4px" }}>
+                                    <div
+                                      className={styles.userAvatarCircle}
+                                      style={{ width: "26px", height: "26px", fontSize: "10px" }}
+                                    >
+                                      {repAvatar ? (
+                                        <img
+                                          src={repAvatar}
+                                          alt={rep.authorName}
+                                          className={styles.userAvatarImg}
+                                        />
+                                      ) : (
+                                        getInitials(rep.authorName)
+                                      )}
+                                    </div>
+                                    <div className={styles.authorNameRow}>
+                                      <span className={styles.authorName} style={{ fontSize: "12.5px" }}>
+                                        {rep.authorName}
+                                      </span>
+                                      <span className={styles.postTime}>
+                                        &bull; {formatRelativeTime(rep.createdAt)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <p className={styles.commentText} style={{ margin: "2px 0 0" }}>
+                                    {rep.content}
+                                  </p>
                                 </div>
-                                <p className={styles.commentText} style={{ margin: "4px 0 0" }}>
-                                  {rep.content}
-                                </p>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>
