@@ -1,24 +1,7 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 import styles from "./CommunitySection.module.css";
 
 export default function CommunitySection() {
-  const router = useRouter();
-  const { user, openAuthModal } = useAuth();
-
-  const handleCommunityAction = () => {
-    if (!user || user.isGuest) {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
-      }
-      openAuthModal("signin");
-    } else {
-      router.push("/intelligence/community");
-    }
-  };
-
   return (
     <section className={styles.section} id="community">
       <div className={styles.container}>
@@ -44,7 +27,7 @@ export default function CommunitySection() {
               </div>
             </div>
 
-            <button className={styles.shareBtn} onClick={handleCommunityAction}>
+            <Link href="/intelligence/community" className={styles.shareBtn}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -63,29 +46,35 @@ export default function CommunitySection() {
                 <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
               </svg>
               Share Your Analysis in CAT Group
-            </button>
+            </Link>
           </div>
 
           {/* Right: Phone mockups */}
           <div className={styles.phonesCol}>
-            <div className={styles.phoneFallback}>
-              <div className={styles.phoneCard}>
-                <div className={styles.phoneHeader}>TechnoCAT Prep Group</div>
-                <div className={styles.phoneMessage}>
-                  <div className={styles.phoneAvatar}>A</div>
-                  <div className={styles.phoneBubble}>Hey, how do I solve this geometry problem?</div>
+            <Link
+              href="/intelligence/community"
+              className={styles.phoneLink}
+              aria-label="Open TechnoCAT Prep Group Community"
+            >
+              <div className={styles.phoneFallback}>
+                <div className={styles.phoneCard}>
+                  <div className={styles.phoneHeader}>TechnoCAT Prep Group</div>
+                  <div className={styles.phoneMessage}>
+                    <div className={styles.phoneAvatar}>A</div>
+                    <div className={styles.phoneBubble}>Hey, how do I solve this geometry problem?</div>
+                  </div>
+                  <div className={styles.phoneMessage} style={{ alignSelf: 'flex-end', flexDirection: 'row-reverse' }}>
+                    <div className={styles.phoneAvatar} style={{ background: 'var(--secondary)'}}>M</div>
+                    <div className={styles.phoneBubble} style={{ background: 'var(--primary)', color: 'white' }}>Use the tangent-secant theorem!</div>
+                  </div>
                 </div>
-                <div className={styles.phoneMessage} style={{ alignSelf: 'flex-end', flexDirection: 'row-reverse' }}>
-                  <div className={styles.phoneAvatar} style={{ background: 'var(--secondary)'}}>M</div>
-                  <div className={styles.phoneBubble} style={{ background: 'var(--primary)', color: 'white' }}>Use the tangent-secant theorem!</div>
+                <div className={styles.phoneCard} style={{ transform: "translateX(40px) scale(0.9)", opacity: 0.8, position: 'absolute', top: '20px', zIndex: -1 }}>
+                  <div className={styles.phoneHeader}>CAT Mock Analysis</div>
+                  <div className={styles.phoneLine} />
+                  <div className={styles.phoneLine} style={{ width: "70%" }} />
                 </div>
               </div>
-              <div className={styles.phoneCard} style={{ transform: "translateX(40px) scale(0.9)", opacity: 0.8, position: 'absolute', top: '20px', zIndex: -1 }}>
-                <div className={styles.phoneHeader}>CAT Mock Analysis</div>
-                <div className={styles.phoneLine} />
-                <div className={styles.phoneLine} style={{ width: "70%" }} />
-              </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
