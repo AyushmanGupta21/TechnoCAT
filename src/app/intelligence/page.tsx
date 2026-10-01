@@ -923,36 +923,90 @@ export default function IntelligenceHubPage() {
         </section>
 
         {/* INTELLIGENCE FLOW */}
-        <section className={styles.flowSection}>
+        <section className={styles.flowSection} aria-label="Your Complete CAT Improvement Loop">
           <h2 className={styles.sectionTitle}>Your Complete CAT Improvement Loop</h2>
           <div className={styles.flowContainer}>
+            {/* Step 1 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>1</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>1</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>TAKE A MOCK</span>
             </div>
-            <div className={styles.flowArrow}>&rarr;</div>
+
+            <div className={styles.flowArrow} aria-hidden="true">
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* Step 2 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>2</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>2</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>ANALYZE PERFORMANCE</span>
             </div>
-            <div className={styles.flowArrow}>&rarr;</div>
+
+            <div className={styles.flowArrow} aria-hidden="true">
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* Step 3 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>3</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>3</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>IDENTIFY MISTAKES</span>
             </div>
-            <div className={styles.flowArrow}>&rarr;</div>
+
+            <div className={styles.flowArrow} aria-hidden="true">
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* Step 4 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>4</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>4</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>GET AI INSIGHTS</span>
             </div>
-            <div className={styles.flowArrow}>&rarr;</div>
+
+            <div className={styles.flowArrow} aria-hidden="true">
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* Step 5 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>5</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>5</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>TARGET WEAK TOPICS</span>
             </div>
-            <div className={styles.flowArrow}>&rarr;</div>
+
+            <div className={styles.flowArrow} aria-hidden="true">
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* Step 6 */}
             <div className={styles.flowStep}>
-              <div className={styles.flowNode}>6</div>
+              <div className={styles.flowNodeWrapper}>
+                <div className={styles.flowNode}>6</div>
+                <div className={styles.flowNodeShadow} aria-hidden="true" />
+              </div>
               <span className={styles.flowText}>IMPROVE YOUR SCORE</span>
             </div>
           </div>
