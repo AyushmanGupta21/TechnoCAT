@@ -288,7 +288,7 @@
 .mobileDrawerPanel {
   background: #FFFFFF;
   border: 1px solid #DBEAFE;
-  border-radius: 16px;
+  border-radius: 24px;
   padding: 14px;
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06);
 }
@@ -2098,8 +2098,8 @@
 @media (max-width: 768px) {
   .statsDrawerPanel {
     width: 94vw;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
+    border-top-left-radius: 28px;
+    border-bottom-left-radius: 28px;
   }
   .drawerStatsGrid {
     grid-template-columns: 1fr;
