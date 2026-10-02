@@ -807,19 +807,50 @@
   font-family: inherit;
   transition: all 0.18s ease;
   white-space: nowrap;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.filterTabBtn:hover {
+.filterTabBtn:hover:not(.filterTabBtnActive) {
   background: #DCE7F6;
-  color: #1D4ED8;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.filterTabBtn:focus-visible:not(.filterTabBtnActive) {
+  background: #DCE7F6;
+  border-color: #94A3B8;
+  color: #0F172A;
+  outline: 2px solid rgba(37, 99, 235, 0.4);
+  outline-offset: 1px;
+}
+
+.filterTabBtn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.filterTabBtn:active:not(.filterTabBtnActive) {
+  background: #D0E1F9;
+  border-color: #94A3B8;
+  color: #0F172A;
 }
 
 .filterTabBtnActive {
-  background: linear-gradient(90deg, #1D4ED8 0%, #2563EB 100%);
-  border-color: #1D4ED8;
+  background: linear-gradient(90deg, #1D4ED8 0%, #2563EB 100%) !important;
+  border-color: #1D4ED8 !important;
   color: #FFFFFF !important;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.24);
+}
+
+.filterTabBtnActive:hover,
+.filterTabBtnActive:focus,
+.filterTabBtnActive:focus-visible,
+.filterTabBtnActive:active {
+  background: linear-gradient(90deg, #1E40AF 0%, #1D4ED8 100%) !important;
+  border-color: #1E40AF !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
 }
 
 .searchBoxWrap {
