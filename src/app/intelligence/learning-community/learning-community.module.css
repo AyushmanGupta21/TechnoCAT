@@ -1686,13 +1686,13 @@
 .addImageToggleBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   background: #F0F7FF;
   border: 1px solid #BFDBFE;
   color: #1D4ED8;
-  border-radius: 11px;
-  padding: 8px 14px;
-  font-size: 13px;
+  border-radius: 9px;
+  padding: 6px 12px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
@@ -1710,7 +1710,6 @@
   background: #EFF6FF;
   border-color: #3B82F6;
   color: #1D4ED8;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1);
 }
 
 .imageAttachedBadge {
@@ -1733,43 +1732,38 @@
 }
 
 .imageDropZone {
-  background: #F8FAFD;
-  border: 1.5px dashed #93C5FD;
-  border-radius: 14px;
-  padding: 13px 16px;
+  background: #F9FBFF;
+  border: 1px dashed #60A5FA;
+  border-radius: 13px;
+  padding: 16px 14px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  justify-content: center;
+  text-align: center;
+  gap: 7px;
   cursor: pointer;
   transition: all 0.18s ease;
   outline: none;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.04);
 }
 
 .imageDropZone:hover {
-  background: #F0F7FF;
+  background: #F0F6FF;
   border-color: #3B82F6;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
 }
 
 .imageDropZoneActive {
   background: #EFF6FF;
   border-color: #2563EB;
   border-style: solid;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-.imageDropZoneContent {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
 }
 
 .uploadCloudIconWrap {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
@@ -1778,51 +1772,53 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-bottom: 2px;
 }
 
 .uploadTextGroup {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  align-items: center;
   gap: 2px;
 }
 
 .uploadPrimaryText {
   font-size: 13px;
-  line-height: 1.4;
-}
-
-.uploadBoldText {
   font-weight: 700;
   color: #0F172A;
+  line-height: 1.35;
 }
 
-.uploadMutedText {
-  font-weight: 400;
+.uploadSecondaryText {
+  font-size: 12px;
+  font-weight: 500;
   color: #64748B;
+  line-height: 1.35;
 }
 
 .uploadHelperText {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #94A3B8;
   letter-spacing: 0.01em;
+  margin-top: 3px;
 }
 
 .btnBrowseFiles {
   background: #FFFFFF;
-  border: 1.5px solid #BFDBFE;
+  border: 1px solid #BFDBFE;
   color: #2563EB;
-  padding: 8px 16px;
-  border-radius: 9px;
+  padding: 6px 16px;
+  border-radius: 8px;
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+  margin-top: 3px;
 }
 
 .btnBrowseFiles:hover {
@@ -1847,15 +1843,15 @@
 
 /* Compact Attachment Preview Card */
 .attachmentPreviewCard {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  padding: 8px 12px;
+  background: #F9FBFF;
+  border: 1px solid #BFDBFE;
+  border-radius: 13px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.04);
 }
 
 .attachmentPreviewLeft {
@@ -1867,8 +1863,8 @@
 }
 
 .attachmentThumbWrap {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   overflow: hidden;
   background: #F1F5F9;
@@ -1914,9 +1910,9 @@
   height: 26px;
   border-radius: 7px;
   border: 1px solid #E2E8F0;
-  background: #F8FAFC;
+  background: #FFFFFF;
   color: #64748B;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -3024,17 +3020,6 @@
 }
 
 @media (max-width: 580px) {
-  .imageDropZone {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .btnBrowseFiles {
-    width: 100%;
-    text-align: center;
-  }
-
   .attachmentFileName {
     max-width: 180px;
   }

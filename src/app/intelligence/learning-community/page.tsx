@@ -634,13 +634,8 @@ export default function LearningCommunityPage() {
       SUPPORTED_IMAGE_TYPES.includes(file.type.toLowerCase()) ||
       /\.(jpe?g|png|webp)$/i.test(file.name);
 
-    if (!isFormatValid) {
-      setImageValidationError("Unsupported format. Please upload JPG, PNG, or WEBP.");
-      return;
-    }
-
-    if (file.size > MAX_IMAGE_SIZE) {
-      setImageValidationError("File size exceeds 5MB limit. Please choose a smaller image.");
+    if (!isFormatValid || file.size > MAX_IMAGE_SIZE) {
+      setImageValidationError("Please upload a JPG, PNG or WEBP image under 5MB.");
       return;
     }
 
@@ -2058,7 +2053,7 @@ export default function LearningCommunityPage() {
                         <circle cx="9" cy="9" r="2" />
                         <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                       </svg>
-                      <span>{isImageUploadExpanded ? "Close Image Upload" : "Add Image"}</span>
+                      <span>Add Image</span>
                       <svg
                         width="12"
                         height="12"
@@ -2081,78 +2076,61 @@ export default function LearningCommunityPage() {
 
                   {isImageUploadExpanded && (
                     <div className={styles.imageUploadExpandedWrap}>
-                      {/* 1. IMAGE UPLOAD AREA */}
-                      <div
-                        className={`${styles.imageDropZone} ${
-                          isDraggingImage ? styles.imageDropZoneActive : ""
-                        }`}
-                        onDragOver={handleImageDragOver}
-                        onDragEnter={handleImageDragEnter}
-                        onDragLeave={handleImageDragLeave}
-                        onDrop={handleImageDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            fileInputRef.current?.click();
-                          }
-                        }}
-                      >
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          onChange={handleImageFileChange}
-                          style={{ display: "none" }}
-                        />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleImageFileChange}
+                        style={{ display: "none" }}
+                      />
 
-                        <div className={styles.imageDropZoneContent}>
+                      {/* When no image selected: show clean centered upload dropzone */}
+                      {!newImageUrl ? (
+                        <div
+                          className={`${styles.imageDropZone} ${
+                            isDraggingImage ? styles.imageDropZoneActive : ""
+                          }`}
+                          onDragOver={handleImageDragOver}
+                          onDragEnter={handleImageDragEnter}
+                          onDragLeave={handleImageDragLeave}
+                          onDrop={handleImageDrop}
+                          onClick={() => fileInputRef.current?.click()}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              fileInputRef.current?.click();
+                            }
+                          }}
+                        >
                           <div className={styles.uploadCloudIconWrap} aria-hidden="true">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
                               <path d="M12 12v9" />
                               <path d="m16 16-4-4-4 4" />
                             </svg>
                           </div>
+
                           <div className={styles.uploadTextGroup}>
-                            <div className={styles.uploadPrimaryText}>
-                              <span className={styles.uploadBoldText}>Drag & drop an image here</span>{" "}
-                              <span className={styles.uploadMutedText}>or click to browse from your device</span>
-                            </div>
-                            <div className={styles.uploadHelperText}>
-                              JPG, PNG, WEBP • Max 5MB
-                            </div>
+                            <div className={styles.uploadPrimaryText}>Drag & drop an image here</div>
+                            <div className={styles.uploadSecondaryText}>or click to browse from your device</div>
+                            <div className={styles.uploadHelperText}>JPG, PNG, WEBP • Max 5MB</div>
                           </div>
+
+                          <button
+                            type="button"
+                            className={styles.btnBrowseFiles}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
+                          >
+                            Browse Files
+                          </button>
                         </div>
-
-                        <button
-                          type="button"
-                          className={styles.btnBrowseFiles}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            fileInputRef.current?.click();
-                          }}
-                        >
-                          Browse Files
-                        </button>
-                      </div>
-
-                      {/* Validation message if file error */}
-                      {imageValidationError && (
-                        <div className={styles.imageValidationMsg} role="alert">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                          </svg>
-                          <span>{imageValidationError}</span>
-                        </div>
-                      )}
-
-                      {/* 2. AFTER IMAGE IS SELECTED: Compact attachment preview */}
-                      {newImageUrl && (
+                      ) : (
+                        /* When image selected: replace empty dropzone with compact preview */
                         <div className={styles.attachmentPreviewCard}>
                           <div className={styles.attachmentPreviewLeft}>
                             <div className={styles.attachmentThumbWrap}>
@@ -2183,6 +2161,18 @@ export default function LearningCommunityPage() {
                           >
                             ✕
                           </button>
+                        </div>
+                      )}
+
+                      {/* Validation message if file error */}
+                      {imageValidationError && (
+                        <div className={styles.imageValidationMsg} role="alert">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                          <span>{imageValidationError}</span>
                         </div>
                       )}
                     </div>
