@@ -444,45 +444,56 @@ export default function ErrorTrackingPage() {
                   <span className={styles.cardBadge}>Aggregated Across Mocks</span>
                 </div>
                 <div className={styles.chartContainer}>
-                  <div style={{ width: "180px", height: "180px" }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={75}
-                          paddingAngle={3}
-                          dataKey="count"
-                        >
-                          {chartData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value: any, name: any, props: any) => [
-                            `${value} mistakes (${props.payload.percent}%)`,
-                            name,
-                          ]}
-                          contentStyle={{
-                            borderRadius: "8px",
-                            fontSize: "12px",
-                            border: "1px solid #E2E8F0",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className={styles.donutWrapper}>
+                    <div style={{ width: "230px", height: "230px" }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={68}
+                            outerRadius={98}
+                            paddingAngle={3}
+                            dataKey="count"
+                          >
+                            {chartData.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: any, name: any, props: any) => [
+                              `${value} mistakes (${props.payload.percent}%)`,
+                              name,
+                            ]}
+                            contentStyle={{
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                              border: "1px solid #E2E8F0",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className={styles.donutCenterLabel}>
+                      <span className={styles.donutCenterVal}>{totalErrors}</span>
+                      <span className={styles.donutCenterText}>Mistakes</span>
+                    </div>
                   </div>
                   <div className={styles.legendList}>
                     {chartData.map((item: any) => (
                       <div key={item.name} className={styles.legendItem}>
-                        <div>
+                        <div className={styles.legendItemLeft}>
                           <span className={styles.legendColor} style={{ background: item.color }} />
-                          <span>{item.name}</span>
+                          <span className={styles.legendName}>{item.name}</span>
                         </div>
-                        <span style={{ color: "#64748B" }}>{item.percent}%</span>
+                        <div className={styles.legendItemRight}>
+                          <span className={styles.legendCountBadge}>
+                            {item.count} {item.count === 1 ? "error" : "errors"}
+                          </span>
+                          <span className={styles.legendPercentVal}>{item.percent}%</span>
+                        </div>
                       </div>
                     ))}
                   </div>
