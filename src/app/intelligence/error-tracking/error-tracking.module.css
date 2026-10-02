@@ -160,19 +160,383 @@
 /* Hero Section */
 .heroSection {
   background: linear-gradient(135deg, #F0F9FF 0%, #E0E7FF 100%);
-  padding: 40px 40px 60px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  padding: 44px 40px 52px 40px;
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid #BAE6FD;
 }
 
-.heroLeft {
-  max-width: 620px;
+.heroSection::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroSection::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 18%;
+  width: 380px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
   position: relative;
   z-index: 2;
+}
+
+.heroLeft {
+  flex: 1 1 540px;
+  max-width: 600px;
+  position: relative;
+  z-index: 2;
+}
+
+.heroRight {
+  flex: 1 1 480px;
+  max-width: 540px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* AI Score Leak Radar Card (Hero Right) */
+.radarCard {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid #BAE6FD;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 16px 36px -8px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(14, 165, 233, 0.06);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.radarCard:hover {
+  box-shadow: 0 20px 44px -8px rgba(37, 99, 235, 0.16), 0 6px 20px rgba(14, 165, 233, 0.08);
+}
+
+.radarCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.radarStatusWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radarLiveDot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+
+.radarDotCore {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+}
+
+.radarDotPing {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.4);
+  animation: radarPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  75%, 100% { transform: scale(2.2); opacity: 0; }
+}
+
+.radarTitle {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0284C7;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.radarMetaBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+}
+
+.recoveryBanner {
+  background: linear-gradient(135deg, #F0FDF4 0%, #E0F2FE 100%);
+  border: 1px solid #BBF7D0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.recoveryBannerLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.recoveryScoreBig {
+  font-size: 28px;
+  font-weight: 900;
+  color: #059669;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.recoveryLabelGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.recoveryScoreHeading {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.2;
+}
+
+.recoveryScoreSub {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.recoveryJumpPill {
+  background: #FFFFFF;
+  border: 1px solid #86EFAC;
+  color: #059669;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 100px;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.08);
+  white-space: nowrap;
+}
+
+.radarSectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.radarSectionBox {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.18s ease;
+}
+
+.radarSectionClickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.radarSectionClickable:hover {
+  background: #FFFFFF;
+  border-color: #7DD3FC;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.12);
+}
+
+.radarSectionClickable:focus-visible {
+  outline: none;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.radarSecHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.radarSecName {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.radarSecNameQA {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.radarSecNameDILR {
+  background: #FAF5FF;
+  color: #9333EA;
+}
+
+.radarSecNameVARC {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.radarSecLoss {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lossRed {
+  color: #DC2626;
+}
+
+.lossOrange {
+  color: #D97706;
+}
+
+.lossGreen {
+  color: #059669;
+}
+
+.radarProgressBar {
+  height: 5px;
+  background: #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.radarProgressFill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.radarSecDesc {
+  font-size: 10px;
+  color: #64748B;
+  font-weight: 500;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radarInsightCallout {
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-left: 3.5px solid #0284C7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.radarInsightIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.radarInsightText {
+  font-size: 11.5px;
+  color: #1E293B;
+  line-height: 1.45;
+}
+
+.radarInsightText strong {
+  color: #0284C7;
+  font-weight: 700;
+}
+
+.radarFooterActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.radarActionBtnPrimary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #2563EB;
+  color: #FFFFFF;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+}
+
+.radarActionBtnPrimary:hover {
+  background: #1D4ED8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.radarActionBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #CBD5E1;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.radarActionBtnSecondary:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
 }
 
 .heroBadge {
@@ -663,9 +1027,17 @@
 }
 
 @media (max-width: 900px) {
-  .heroSection {
+  .heroContainer {
     flex-direction: column;
-    padding: 24px 20px;
+    align-items: stretch;
+    gap: 32px;
+  }
+  .heroLeft,
+  .heroRight {
+    max-width: 100%;
+  }
+  .heroSection {
+    padding: 28px 20px;
   }
   .container {
     padding: 20px;
@@ -679,6 +1051,24 @@
   .filterBar {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (max-width: 600px) {
+  .radarSectionsGrid {
+    grid-template-columns: 1fr;
+  }
+  .recoveryBanner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .radarFooterActions {
+    flex-direction: column;
+  }
+  .radarActionBtnPrimary,
+  .radarActionBtnSecondary {
+    width: 100%;
   }
 }
 
