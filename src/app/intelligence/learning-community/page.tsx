@@ -23,17 +23,141 @@ import {
 interface CategoryMeta {
   name: CommunityCategory;
   icon: string;
+  desc: string;
+  iconBg: string;
+  iconColor: string;
+}
+
+function getCategoryPopoverIcon(category: CommunityCategory) {
+  switch (category) {
+    case "General Discussion":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      );
+    case "CAT Strategy":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" />
+        </svg>
+      );
+    case "Doubt Solving":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      );
+    case "Study Resources":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      );
+    case "Mocks & Analysis":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      );
+    case "College Discussions":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 21h18" />
+          <path d="M3 10h18" />
+          <path d="M5 6l7-3 7 3" />
+          <path d="M4 10v11" />
+          <path d="M20 10v11" />
+          <path d="M8 14v4" />
+          <path d="M12 14v4" />
+          <path d="M16 14v4" />
+        </svg>
+      );
+    case "Motivation & Journey":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      );
+    case "Off-topic":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+          <line x1="6" y1="1" x2="6" y2="4" />
+          <line x1="10" y1="1" x2="10" y2="4" />
+          <line x1="14" y1="1" x2="14" y2="4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
 const CATEGORIES_CONFIG: CategoryMeta[] = [
-  { name: "General Discussion", icon: "💬" },
-  { name: "CAT Strategy", icon: "🎯" },
-  { name: "Doubt Solving", icon: "❓" },
-  { name: "Study Resources", icon: "📖" },
-  { name: "Mocks & Analysis", icon: "📊" },
-  { name: "College Discussions", icon: "🎓" },
-  { name: "Motivation & Journey", icon: "⭐" },
-  { name: "Off-topic", icon: "☕" },
+  {
+    name: "General Discussion",
+    icon: "💬",
+    desc: "Casual talk, introductions & general queries",
+    iconBg: "#EFF6FF",
+    iconColor: "#2563EB",
+  },
+  {
+    name: "CAT Strategy",
+    icon: "🎯",
+    desc: "Prep plans, section-wise strategy & tips",
+    iconBg: "#F5F3FF",
+    iconColor: "#7C3AED",
+  },
+  {
+    name: "Doubt Solving",
+    icon: "❓",
+    desc: "Get help with QA, DILR & VARC questions",
+    iconBg: "#FEF3C7",
+    iconColor: "#D97706",
+  },
+  {
+    name: "Study Resources",
+    icon: "📖",
+    desc: "Share & find notes, formula sheets, prep material",
+    iconBg: "#ECFDF5",
+    iconColor: "#059669",
+  },
+  {
+    name: "Mocks & Analysis",
+    icon: "📊",
+    desc: "Score reviews, percentile targets & analysis",
+    iconBg: "#FFF1F2",
+    iconColor: "#E11D48",
+  },
+  {
+    name: "College Discussions",
+    icon: "🎓",
+    desc: "IIMs, FMS, XLRI, cutoffs & GDPI prep",
+    iconBg: "#F0F9FF",
+    iconColor: "#0284C7",
+  },
+  {
+    name: "Motivation & Journey",
+    icon: "⭐",
+    desc: "Success stories, daily struggles & inspiration",
+    iconBg: "#FAF5FF",
+    iconColor: "#9333EA",
+  },
+  {
+    name: "Off-topic",
+    icon: "☕",
+    desc: "Non-prep chats, hobbies & relaxing talks",
+    iconBg: "#FDF2F8",
+    iconColor: "#DB2777",
+  },
 ];
 
 const DEFAULT_CONTRIBUTORS: ContributorItem[] = [
@@ -310,6 +434,22 @@ export default function LearningCommunityPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+
+  // Inline feed composer state matching reference image
+  const [composerText, setComposerText] = useState("");
+  const [composerCategory, setComposerCategory] = useState<CommunityCategory>("General Discussion");
+  const [composerImageUrl, setComposerImageUrl] = useState<string | null>(null);
+  const [composerImageMeta, setComposerImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
+  const [composerImageError, setComposerImageError] = useState<string | null>(null);
+  const [isAddImageOpen, setIsAddImageOpen] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isFeedDragging, setIsFeedDragging] = useState(false);
+  const [isPostingFromFeed, setIsPostingFromFeed] = useState(false);
+
+  const feedFileInputRef = useRef<HTMLInputElement | null>(null);
+  const feedCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const addImagePopoverRef = useRef<HTMLDivElement | null>(null);
+  const categoryPopoverRef = useRef<HTMLDivElement | null>(null);
 
   // Community Stats Right Drawer state
   const [isStatsDrawerOpen, setIsStatsDrawerOpen] = useState(false);
@@ -708,6 +848,118 @@ export default function LearningCommunityPage() {
     setImageValidationError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        addImagePopoverRef.current &&
+        !addImagePopoverRef.current.contains(e.target as Node)
+      ) {
+        setIsAddImageOpen(false);
+      }
+      if (
+        categoryPopoverRef.current &&
+        !categoryPopoverRef.current.contains(e.target as Node)
+      ) {
+        setIsCategoryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const processComposerImage = (file: File) => {
+    setComposerImageError(null);
+
+    const isFormatValid =
+      SUPPORTED_IMAGE_TYPES.includes(file.type.toLowerCase()) ||
+      /\.(jpe?g|png|webp)$/i.test(file.name);
+
+    if (!isFormatValid || file.size > MAX_IMAGE_SIZE) {
+      setComposerImageError("Please upload a JPG, PNG or WEBP image under 5MB.");
+      return;
+    }
+
+    const formattedSize =
+      file.size < 1024 * 1024
+        ? `${Math.round(file.size / 1024)} KB`
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setComposerImageUrl(reader.result);
+        setComposerImageMeta({
+          name: file.name,
+          sizeFormatted: formattedSize,
+        });
+        setComposerImageError(null);
+      }
+    };
+    reader.onerror = () => {
+      setComposerImageError("Could not read image file. Please try again.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleComposerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processComposerImage(file);
+    }
+  };
+
+  const handleRemoveComposerImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setComposerImageUrl(null);
+    setComposerImageMeta(null);
+    setComposerImageError(null);
+    if (feedFileInputRef.current) feedFileInputRef.current.value = "";
+    if (feedCameraInputRef.current) feedCameraInputRef.current.value = "";
+  };
+
+  const handleFeedPostSubmit = async () => {
+    if (isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
+      }
+      openAuthModal("signin");
+      return;
+    }
+
+    const text = composerText.trim();
+    if (!text) {
+      handleOpenCreateModal();
+      return;
+    }
+
+    setIsPostingFromFeed(true);
+    try {
+      const firstLine = text.split("\n")[0].trim().slice(0, 80);
+      const title = firstLine || "Community Discussion";
+      const res = await createCommunityPostAction({
+        title,
+        content: text,
+        category: composerCategory,
+        imageUrl: composerImageUrl,
+      });
+
+      if (res.success && res.payload) {
+        setData(res.payload);
+        setComposerText("");
+        setComposerImageUrl(null);
+        setComposerImageMeta(null);
+        setComposerImageError(null);
+        setIsAddImageOpen(false);
+        setIsCategoryOpen(false);
+        showToast("Discussion published to Learning Community!");
+      } else {
+        showToast(res.error || "Could not publish discussion.");
+      }
+    } finally {
+      setIsPostingFromFeed(false);
     }
   };
 
@@ -1393,7 +1645,7 @@ export default function LearningCommunityPage() {
 
           {/* Center Feed Column */}
           <section className={styles.feedColumn} aria-label="Discussions">
-            {/* Inline 2-Row Create Post Card */}
+            {/* Inline Interactive Create Post Card with Floating Popovers */}
             <div className={styles.createPostPromptCard}>
               <div className={styles.composerTopRow}>
                 <div className={styles.userAvatarCircle}>
@@ -1411,55 +1663,343 @@ export default function LearningCommunityPage() {
                 </div>
                 <input
                   type="text"
-                  readOnly
-                  placeholder={
-                    isGuest
-                      ? "Sign in to start a discussion, ask a doubt, or share analysis..."
-                      : "Share your thoughts, ask a doubt, or start a discussion..."
-                  }
+                  placeholder="Share your thoughts, ask a doubt, or start a discussion..."
                   className={styles.createPostTriggerInput}
-                  onClick={() => handleOpenCreateModal()}
+                  value={composerText}
+                  onChange={(e) => setComposerText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleFeedPostSubmit();
+                    }
+                  }}
                   aria-label="Share your thoughts, ask a doubt, or start a discussion"
                 />
               </div>
 
-              <div className={styles.composerBottomRow}>
-                <div className={styles.composerToolsLeft}>
+              {/* If image is attached, show compact preview chip inside composer */}
+              {composerImageUrl && (
+                <div className={styles.composerAttachmentBadge}>
+                  <div className={styles.composerAttachmentThumb}>
+                    <img src={composerImageUrl} alt="Attached thumbnail" />
+                  </div>
+                  <span className={styles.composerAttachmentName} title={composerImageMeta?.name || "Attached image"}>
+                    {composerImageMeta?.name || "Attached image"} ({composerImageMeta?.sizeFormatted || ""})
+                  </span>
                   <button
                     type="button"
-                    className={styles.composerToolBtn}
-                    onClick={() => handleOpenCreateModal(undefined, true)}
+                    className={styles.composerAttachmentRemove}
+                    onClick={handleRemoveComposerImage}
+                    title="Remove attachment"
+                    aria-label="Remove attachment"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    <span>Add Image</span>
-                  </button>
-
-                  <div className={styles.composerToolDivider} />
-
-                  <button
-                    type="button"
-                    className={styles.composerToolBtn}
-                    onClick={() => handleOpenCreateModal()}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                      <line x1="7" y1="7" x2="7.01" y2="7" />
-                    </svg>
-                    <span>{selectedCategory || "Choose Category"}</span>
+                    ✕
                   </button>
                 </div>
+              )}
 
+              <div className={styles.composerBottomRow}>
+                <div className={styles.composerToolsLeft}>
+                  {/* Hidden inputs for feed file upload */}
+                  <input
+                    ref={feedFileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleComposerFileChange}
+                    style={{ display: "none" }}
+                  />
+                  <input
+                    ref={feedCameraInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    capture="environment"
+                    onChange={handleComposerFileChange}
+                    style={{ display: "none" }}
+                  />
+
+                  {/* 1. ADD IMAGE BUTTON & FLOATING POPOVER */}
+                  <div className={styles.popoverTriggerWrap} ref={addImagePopoverRef}>
+                    <button
+                      type="button"
+                      className={`${styles.composerToolBtn} ${
+                        isAddImageOpen ? styles.composerToolBtnActive : ""
+                      }`}
+                      onClick={() => {
+                        setIsAddImageOpen((prev) => !prev);
+                        setIsCategoryOpen(false);
+                      }}
+                      aria-expanded={isAddImageOpen}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                        <circle cx="9" cy="9" r="2" />
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                      </svg>
+                      <span>Add Image</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          transform: isAddImageOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.18s ease",
+                        }}
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+
+                    {/* Floating Add Image Popover */}
+                    {isAddImageOpen && (
+                      <div className={styles.floatingAddImagePopover} role="dialog" aria-label="Add Image">
+                        <div className={styles.popoverHeader}>
+                          <span className={styles.popoverTitleBlue}>Add Image</span>
+                          <button
+                            type="button"
+                            className={styles.popoverCloseBtn}
+                            onClick={() => setIsAddImageOpen(false)}
+                            aria-label="Close"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        {!composerImageUrl ? (
+                          <div
+                            className={`${styles.imageDropZone} ${
+                              isFeedDragging ? styles.imageDropZoneActive : ""
+                            }`}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              setIsFeedDragging(true);
+                            }}
+                            onDragLeave={(e) => {
+                              e.preventDefault();
+                              setIsFeedDragging(false);
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              setIsFeedDragging(false);
+                              const files = e.dataTransfer?.files;
+                              if (files && files.length > 0) {
+                                processComposerImage(files[0]);
+                              }
+                            }}
+                            onClick={() => feedFileInputRef.current?.click()}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className={styles.uploadCloudIconWrap} aria-hidden="true">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                <circle cx="9" cy="9" r="2" />
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                <path d="M12 11v6" strokeWidth="2.5" />
+                                <path d="m9 14 3-3 3 3" strokeWidth="2.5" />
+                              </svg>
+                            </div>
+
+                            <div className={styles.uploadTextGroup}>
+                              <div className={styles.uploadPrimaryText}>Drag & drop an image here</div>
+                              <div className={styles.uploadSecondaryText}>or click to upload</div>
+                            </div>
+
+                            <button
+                              type="button"
+                              className={styles.popoverBrowseBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                feedFileInputRef.current?.click();
+                              }}
+                            >
+                              Browse Files
+                            </button>
+
+                            <div className={styles.uploadHelperText}>Supports: JPG, PNG, WEBP (Max 5MB)</div>
+                          </div>
+                        ) : (
+                          <div className={styles.attachmentPreviewCard}>
+                            <div className={styles.attachmentPreviewLeft}>
+                              <div className={styles.attachmentThumbWrap}>
+                                <img
+                                  src={composerImageUrl}
+                                  alt={composerImageMeta?.name || "Image attachment"}
+                                  className={styles.attachmentThumbImg}
+                                />
+                              </div>
+                              <div className={styles.attachmentMeta}>
+                                <span className={styles.attachmentFileName} title={composerImageMeta?.name || "Attached image"}>
+                                  {composerImageMeta?.name || "Attached image"}
+                                </span>
+                                <span className={styles.attachmentFileSize}>
+                                  {composerImageMeta?.sizeFormatted || ""}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className={styles.btnRemoveAttachment}
+                              onClick={handleRemoveComposerImage}
+                              title="Remove image"
+                              aria-label="Remove image"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+
+                        {composerImageError && (
+                          <div className={styles.imageValidationMsg} role="alert">
+                            <span>{composerImageError}</span>
+                          </div>
+                        )}
+
+                        <div className={styles.quickOptionsTitle}>Quick Options</div>
+                        <div className={styles.quickOptionsRow}>
+                          <button
+                            type="button"
+                            className={styles.quickOptionBtn}
+                            onClick={() => feedCameraInputRef.current?.click()}
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                              <circle cx="12" cy="13" r="4" />
+                            </svg>
+                            <span>Take Photo</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.quickOptionBtn}
+                            onClick={() => feedFileInputRef.current?.click()}
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                            </svg>
+                            <span>From Device</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. CHOOSE CATEGORY BUTTON & FLOATING POPOVER */}
+                  <div className={styles.popoverTriggerWrap} ref={categoryPopoverRef}>
+                    <button
+                      type="button"
+                      className={`${styles.composerToolBtn} ${
+                        isCategoryOpen ? styles.composerToolBtnActive : ""
+                      }`}
+                      onClick={() => {
+                        setIsCategoryOpen((prev) => !prev);
+                        setIsAddImageOpen(false);
+                      }}
+                      aria-expanded={isCategoryOpen}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                      </svg>
+                      <span>{composerCategory || "Choose Category"}</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          transform: isCategoryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.18s ease",
+                        }}
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+
+                    {/* Floating Choose Category Popover */}
+                    {isCategoryOpen && (
+                      <div className={styles.floatingCategoryPopover} role="dialog" aria-label="Choose a Category">
+                        <div className={styles.popoverHeader}>
+                          <span className={styles.popoverTitleDark}>Choose a Category</span>
+                          <button
+                            type="button"
+                            className={styles.popoverCloseBtn}
+                            onClick={() => setIsCategoryOpen(false)}
+                            aria-label="Close"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        <div className={styles.categoryListWrap}>
+                          {CATEGORIES_CONFIG.map((cat) => {
+                            const isSelected = composerCategory === cat.name;
+                            return (
+                              <div
+                                key={cat.name}
+                                className={`${styles.categoryListItem} ${
+                                  isSelected ? styles.categoryListItemActive : ""
+                                }`}
+                                onClick={() => {
+                                  setComposerCategory(cat.name);
+                                  setIsCategoryOpen(false);
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <div className={styles.categoryItemLeft}>
+                                  <div
+                                    className={styles.categoryItemIconBox}
+                                    style={{
+                                      background: cat.iconBg || "#EFF6FF",
+                                      color: cat.iconColor || "#2563EB",
+                                    }}
+                                  >
+                                    {getCategoryPopoverIcon(cat.name)}
+                                  </div>
+                                  <div className={styles.categoryItemMeta}>
+                                    <span className={styles.categoryItemTitle}>{cat.name}</span>
+                                    <span className={styles.categoryItemDesc}>{cat.desc}</span>
+                                  </div>
+                                </div>
+                                <div
+                                  className={`${styles.categoryRadioCircle} ${
+                                    isSelected ? styles.categoryRadioCircleActive : ""
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. POST BUTTON */}
                 <button
                   type="button"
                   className={styles.createPostQuickBtn}
-                  onClick={() => handleOpenCreateModal()}
+                  onClick={handleFeedPostSubmit}
+                  disabled={isPostingFromFeed}
                 >
-                  <span>Post</span>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <span>{isPostingFromFeed ? "Posting..." : "Post"}</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                   </svg>
