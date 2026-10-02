@@ -1987,156 +1987,470 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.imageAttachToggleRow {
+/* Image Attachment Header Row with Chevron */
+.imageAttachmentHeaderRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-.addImageToggleBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: #F0F7FF;
-  border: 1px solid #BFDBFE;
-  color: #1D4ED8;
-  border-radius: 9px;
-  padding: 6px 12px;
-  font-size: 12.5px;
-  font-weight: 600;
+.imageAttachmentChevronBtn {
+  border: none;
+  background: transparent;
+  color: #2563EB;
   cursor: pointer;
-  font-family: inherit;
-  transition: all 0.18s ease;
-  user-select: none;
-}
-
-.addImageToggleBtn:hover {
-  background: #E0EFFE;
-  border-color: #93C5FD;
-  color: #1E40AF;
-}
-
-.addImageToggleBtnActive {
-  background: #EFF6FF;
-  border-color: #3B82F6;
-  color: #1D4ED8;
-}
-
-.imageAttachedBadge {
+  padding: 4px;
   display: inline-flex;
   align-items: center;
-  background: #ECFDF5;
-  border: 1px solid #A7F3D0;
-  color: #065F46;
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.imageAttachmentChevronBtn:hover {
+  background: #EFF6FF;
 }
 
 .imageUploadExpandedWrap {
-  margin-top: 8px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.imageDropZone {
-  background: #F9FBFF;
-  border: 1px dashed #60A5FA;
-  border-radius: 13px;
-  padding: 16px 14px;
+/* Modal Image Attachment Panel (State 1: Dropzone & State 3: Preview) */
+.modalAttachmentPanel {
+  background: #F8FAFD;
+  border: 1.5px dashed #93C5FD;
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.04);
+}
+
+.modalImageDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  outline: none;
+}
+
+.modalImageDropzoneActive {
+  background: #EFF6FF;
+  border-radius: 12px;
+}
+
+.modalUploadIconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.modalUploadPrimaryText {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.modalUploadSecondaryText {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+  margin-bottom: 4px;
+}
+
+.modalUploadHelperText {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.01em;
+  margin-bottom: 12px;
+}
+
+.modalBrowseFilesBtn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.18s ease;
+}
+
+.modalBrowseFilesBtn:hover {
+  background: #1D4ED8;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+/* OR divider */
+.modalOrDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modalOrLine {
+  flex: 1;
+  height: 1px;
+  background: #DBEAFE;
+}
+
+.modalOrText {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.05em;
+}
+
+/* 2 Action Buttons Row: [ 📷 Take Photo ] [ 📁 From Device ] */
+.modalActionButtonsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.modalSecondaryActionBtn {
+  background: #FFFFFF;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 11px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1D4ED8;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.05);
+}
+
+.modalSecondaryActionBtn:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #1D4ED8;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.12);
+}
+
+/* STATE 2: Live Camera View inside Image Attachment area */
+.modalCameraPanel {
+  background: #F8FAFD;
+  border: 1.5px solid #E2EEFF;
+  border-radius: 16px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cameraBackBtn {
+  border: none;
+  background: transparent;
+  color: #0F172A;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 2px 0;
+  align-self: flex-start;
+  transition: color 0.15s ease;
+}
+
+.cameraBackBtn:hover {
+  color: #2563EB;
+}
+
+.cameraViewportWrap {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+}
+
+.cameraVideoPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Camera Framing Corners */
+.cameraCorner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cameraCornerTL {
+  top: 14px;
+  left: 14px;
+  border-width: 2.5px 0 0 2.5px;
+  border-top-left-radius: 6px;
+}
+
+.cameraCornerTR {
+  top: 14px;
+  right: 14px;
+  border-width: 2.5px 2.5px 0 0;
+  border-top-right-radius: 6px;
+}
+
+.cameraCornerBL {
+  bottom: 14px;
+  left: 14px;
+  border-width: 0 0 2.5px 2.5px;
+  border-bottom-left-radius: 6px;
+}
+
+.cameraCornerBR {
+  bottom: 14px;
+  right: 14px;
+  border-width: 0 2.5px 2.5px 0;
+  border-bottom-right-radius: 6px;
+}
+
+/* Switch Camera Control (top right) */
+.cameraSwitchBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 5;
+  font-family: inherit;
+}
+
+.cameraSwitchBtn:hover {
+  background: rgba(15, 23, 42, 0.88);
+  transform: scale(1.02);
+}
+
+.cameraSwitchIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Large Circular Capture Button (bottom center) */
+.cameraCaptureWrap {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 5;
+}
+
+.cameraCaptureBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #2563EB;
+  border: 3.5px solid #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+  outline: none;
+}
+
+.cameraCaptureBtn:hover {
+  transform: scale(1.08);
+  background: #1D4ED8;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+}
+
+.cameraCaptureInnerDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  opacity: 0.3;
+}
+
+.cameraCaptureLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  letter-spacing: 0.02em;
+}
+
+/* Camera Error and Retry State */
+.cameraErrorOverlay {
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 7px;
+  gap: 10px;
+  background: #FEF2F2;
+  width: 100%;
+  height: 100%;
+}
+
+.cameraErrorText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #DC2626;
+  max-width: 320px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.cameraRetryBtn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s ease;
-  outline: none;
-  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.04);
+  font-family: inherit;
+  transition: background 0.15s ease;
 }
 
-.imageDropZone:hover {
-  background: #F0F6FF;
-  border-color: #3B82F6;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+.cameraRetryBtn:hover {
+  background: #1D4ED8;
 }
 
-.imageDropZoneActive {
-  background: #EFF6FF;
-  border-color: #2563EB;
-  border-style: solid;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+/* STATE 3: Selected Image Preview */
+.modalPreviewRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.04);
 }
 
-.uploadCloudIconWrap {
-  width: 36px;
-  height: 36px;
+.modalPreviewThumbWrap {
+  width: 48px;
+  height: 48px;
   border-radius: 10px;
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-  color: #2563EB;
+  overflow: hidden;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  margin-bottom: 2px;
 }
 
-.uploadTextGroup {
+.modalPreviewThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.modalPreviewMeta {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
-.uploadPrimaryText {
+.modalPreviewFileName {
   font-size: 13px;
   font-weight: 700;
   color: #0F172A;
-  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.uploadSecondaryText {
-  font-size: 12px;
+.modalPreviewFileSize {
+  font-size: 11.5px;
   font-weight: 500;
   color: #64748B;
-  line-height: 1.35;
 }
 
-.uploadHelperText {
-  font-size: 11px;
-  font-weight: 600;
-  color: #94A3B8;
-  letter-spacing: 0.01em;
-  margin-top: 3px;
-}
-
-.btnBrowseFiles {
-  background: #FFFFFF;
-  border: 1px solid #BFDBFE;
-  color: #2563EB;
-  padding: 6px 16px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
-  margin-top: 3px;
-}
-
-.btnBrowseFiles:hover {
+.modalPreviewRemoveBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   background: #EFF6FF;
-  border-color: #2563EB;
-  color: #1D4ED8;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.14);
+  border: 1px solid #DBEAFE;
+  color: #64748B;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.modalPreviewRemoveBtn:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+  border-color: #FECACA;
 }
 
 .imageValidationMsg {
@@ -2150,93 +2464,6 @@
   font-weight: 600;
   padding: 7px 12px;
   border-radius: 9px;
-}
-
-/* Compact Attachment Preview Card */
-.attachmentPreviewCard {
-  background: #F9FBFF;
-  border: 1px solid #BFDBFE;
-  border-radius: 13px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.04);
-}
-
-.attachmentPreviewLeft {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
-}
-
-.attachmentThumbWrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #F1F5F9;
-  border: 1px solid #CBD5E1;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.attachmentThumbImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.attachmentMeta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 2px;
-}
-
-.attachmentFileName {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0F172A;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 320px;
-}
-
-.attachmentFileSize {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #64748B;
-}
-
-.btnRemoveAttachment {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  border: 1px solid #E2E8F0;
-  background: #FFFFFF;
-  color: #64748B;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-}
-
-.btnRemoveAttachment:hover {
-  background: #FEE2E2;
-  color: #DC2626;
-  border-color: #FCA5A5;
 }
 
 .modalFooter {

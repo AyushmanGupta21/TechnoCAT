@@ -428,12 +428,19 @@ export default function LearningCommunityPage() {
   const [newCategory, setNewCategory] = useState<CommunityCategory>("CAT Strategy");
   const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
   const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
-  const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(false);
+  const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(true);
   const [imageValidationError, setImageValidationError] = useState<string | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+
+  // Modal live camera state
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState<"user" | "environment">("user");
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const modalVideoRef = useRef<HTMLVideoElement | null>(null);
+  const modalMediaStreamRef = useRef<MediaStream | null>(null);
 
   // Inline feed composer state matching reference image
   const [composerText, setComposerText] = useState("");
@@ -843,6 +850,8 @@ export default function LearningCommunityPage() {
     if (e) {
       e.stopPropagation();
     }
+    stopCameraStream();
+    setIsCameraActive(false);
     setNewImageUrl(null);
     setNewImageMeta(null);
     setImageValidationError(null);
@@ -850,6 +859,124 @@ export default function LearningCommunityPage() {
       fileInputRef.current.value = "";
     }
   };
+
+  const stopCameraStream = () => {
+    if (modalMediaStreamRef.current) {
+      modalMediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      modalMediaStreamRef.current = null;
+    }
+    if (modalVideoRef.current) {
+      modalVideoRef.current.srcObject = null;
+    }
+  };
+
+  const startCameraStream = async (facing: "user" | "environment" = cameraFacingMode) => {
+    stopCameraStream();
+    setCameraError(null);
+    setIsCameraActive(true);
+
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setCameraError("Camera is not available on this device.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: facing,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+      modalMediaStreamRef.current = stream;
+      if (modalVideoRef.current) {
+        modalVideoRef.current.srcObject = stream;
+        modalVideoRef.current.play().catch(() => {});
+      }
+    } catch (err: any) {
+      console.warn("[Camera Access Error]", err);
+      if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
+        setCameraError("Camera access was denied. Please allow camera access to take a photo.");
+      } else if (err?.name === "NotFoundError" || err?.name === "DevicesNotFoundError") {
+        setCameraError("Camera is not available on this device.");
+      } else {
+        setCameraError("Camera access was denied. Please allow camera access to take a photo.");
+      }
+    }
+  };
+
+  const handleCapturePhoto = () => {
+    if (!modalVideoRef.current) return;
+    const video = modalVideoRef.current;
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      const approxBytes = Math.round((dataUrl.length * 3) / 4);
+      const sizeFormatted =
+        approxBytes < 1024 * 1024
+          ? `${(approxBytes / 1024).toFixed(1)} KB`
+          : `${(approxBytes / (1024 * 1024)).toFixed(1)} MB`;
+
+      setNewImageUrl(dataUrl);
+      setNewImageMeta({
+        name: "camera-photo.jpg",
+        sizeFormatted,
+      });
+      setImageValidationError(null);
+    }
+
+    stopCameraStream();
+    setIsCameraActive(false);
+  };
+
+  const handleSwitchCamera = () => {
+    const nextFacing = cameraFacingMode === "user" ? "environment" : "user";
+    setCameraFacingMode(nextFacing);
+    startCameraStream(nextFacing);
+  };
+
+  const handleBackToUploadOptions = () => {
+    stopCameraStream();
+    setIsCameraActive(false);
+    setCameraError(null);
+  };
+
+  const handleRetakePhoto = () => {
+    startCameraStream(cameraFacingMode);
+  };
+
+  const closeCreateModal = () => {
+    stopCameraStream();
+    setIsCameraActive(false);
+    setCameraError(null);
+    setIsCreateModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isCreateModalOpen) {
+      stopCameraStream();
+      setIsCameraActive(false);
+      setCameraError(null);
+    }
+  }, [isCreateModalOpen]);
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -992,7 +1119,9 @@ export default function LearningCommunityPage() {
       setNewImageUrl(null);
       setNewImageMeta(null);
       setImageValidationError(null);
-      setIsImageUploadExpanded(false);
+      stopCameraStream();
+      setIsCameraActive(false);
+      setIsImageUploadExpanded(true);
       setIsCreateModalOpen(false);
       setSidebarView("HOME");
       setSelectedCategory(null);
@@ -2473,7 +2602,7 @@ export default function LearningCommunityPage() {
       {isCreateModalOpen && (
         <div
           className={styles.modalOverlay}
-          onClick={() => setIsCreateModalOpen(false)}
+          onClick={closeCreateModal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-post-modal-title"
@@ -2486,7 +2615,7 @@ export default function LearningCommunityPage() {
               <button
                 type="button"
                 className={styles.modalCloseBtn}
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={closeCreateModal}
                 aria-label="Close modal"
               >
                 ✕
@@ -2558,58 +2687,43 @@ export default function LearningCommunityPage() {
                   />
                 </div>
 
-                {/* Image Attachment (Collapsible Drop Zone & Preview) */}
+                {/* Image Attachment (3-State: Upload Dropzone, Live Camera, or Selected Preview) */}
                 <div className={styles.formField}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <div className={styles.imageAttachmentHeaderRow}>
                     <span className={styles.formLabel}>Image Attachment (Optional)</span>
-                    {newImageUrl && !isImageUploadExpanded && (
-                      <span className={styles.imageAttachedBadge}>
-                        1 image attached
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.imageAttachToggleRow}>
                     <button
                       type="button"
-                      className={`${styles.addImageToggleBtn} ${
-                        isImageUploadExpanded ? styles.addImageToggleBtnActive : ""
-                      }`}
-                      onClick={() => setIsImageUploadExpanded((prev) => !prev)}
+                      className={styles.imageAttachmentChevronBtn}
+                      onClick={() => {
+                        if (isImageUploadExpanded) {
+                          if (isCameraActive) {
+                            stopCameraStream();
+                            setIsCameraActive(false);
+                          }
+                          setIsImageUploadExpanded(false);
+                        } else {
+                          setIsImageUploadExpanded(true);
+                        }
+                      }}
+                      aria-label={isImageUploadExpanded ? "Collapse image attachment" : "Expand image attachment"}
                       aria-expanded={isImageUploadExpanded}
                     >
                       <svg
-                        width="15"
-                        height="15"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                        <circle cx="9" cy="9" r="2" />
-                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                      </svg>
-                      <span>Add Image</span>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
+                        stroke="#2563EB"
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{
-                          transform: isImageUploadExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                          transform: isImageUploadExpanded ? "rotate(0deg)" : "rotate(180deg)",
                           transition: "transform 0.18s ease",
                         }}
                         aria-hidden="true"
                       >
-                        <polyline points="6 9 12 15 18 9" />
+                        <polyline points="18 15 12 9 6 15" />
                       </svg>
                     </button>
                   </div>
@@ -2624,83 +2738,226 @@ export default function LearningCommunityPage() {
                         style={{ display: "none" }}
                       />
 
-                      {/* When no image selected: show clean centered upload dropzone */}
-                      {!newImageUrl ? (
-                        <div
-                          className={`${styles.imageDropZone} ${
-                            isDraggingImage ? styles.imageDropZoneActive : ""
-                          }`}
-                          onDragOver={handleImageDragOver}
-                          onDragEnter={handleImageDragEnter}
-                          onDragLeave={handleImageDragLeave}
-                          onDrop={handleImageDrop}
-                          onClick={() => fileInputRef.current?.click()}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              fileInputRef.current?.click();
-                            }
-                          }}
-                        >
-                          <div className={styles.uploadCloudIconWrap} aria-hidden="true">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-                              <path d="M12 12v9" />
-                              <path d="m16 16-4-4-4 4" />
-                            </svg>
-                          </div>
-
-                          <div className={styles.uploadTextGroup}>
-                            <div className={styles.uploadPrimaryText}>Drag & drop an image here</div>
-                            <div className={styles.uploadSecondaryText}>or click to browse from your device</div>
-                            <div className={styles.uploadHelperText}>JPG, PNG, WEBP • Max 5MB</div>
-                          </div>
-
+                      {/* STATE 2: LIVE CAMERA PREVIEW */}
+                      {isCameraActive ? (
+                        <div className={styles.modalCameraPanel}>
                           <button
                             type="button"
-                            className={styles.btnBrowseFiles}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              fileInputRef.current?.click();
-                            }}
+                            className={styles.cameraBackBtn}
+                            onClick={handleBackToUploadOptions}
                           >
-                            Browse Files
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                            <span>Back to Upload Options</span>
                           </button>
+
+                          <div className={styles.cameraViewportWrap}>
+                            {cameraError ? (
+                              <div className={styles.cameraErrorOverlay}>
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <line x1="12" y1="8" x2="12" y2="12" />
+                                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <p className={styles.cameraErrorText}>{cameraError}</p>
+                                {cameraError.includes("denied") && (
+                                  <button
+                                    type="button"
+                                    className={styles.cameraRetryBtn}
+                                    onClick={() => startCameraStream(cameraFacingMode)}
+                                  >
+                                    Try Again
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                <video
+                                  ref={(el) => {
+                                    modalVideoRef.current = el;
+                                    if (el && modalMediaStreamRef.current && el.srcObject !== modalMediaStreamRef.current) {
+                                      el.srcObject = modalMediaStreamRef.current;
+                                      el.play().catch(() => {});
+                                    }
+                                  }}
+                                  autoPlay
+                                  playsInline
+                                  muted
+                                  className={styles.cameraVideoPreview}
+                                />
+
+                                {/* Camera Framing Corners */}
+                                <div className={`${styles.cameraCorner} ${styles.cameraCornerTL}`} />
+                                <div className={`${styles.cameraCorner} ${styles.cameraCornerTR}`} />
+                                <div className={`${styles.cameraCorner} ${styles.cameraCornerBL}`} />
+                                <div className={`${styles.cameraCorner} ${styles.cameraCornerBR}`} />
+
+                                {/* Switch Camera (top right) */}
+                                <button
+                                  type="button"
+                                  className={styles.cameraSwitchBtn}
+                                  onClick={handleSwitchCamera}
+                                  title="Switch Camera"
+                                >
+                                  <div className={styles.cameraSwitchIconBox}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                      <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                  </div>
+                                  <span>Switch Camera</span>
+                                </button>
+
+                                {/* Capture Photo Button (bottom center) */}
+                                <div className={styles.cameraCaptureWrap}>
+                                  <button
+                                    type="button"
+                                    className={styles.cameraCaptureBtn}
+                                    onClick={handleCapturePhoto}
+                                    aria-label="Capture Photo"
+                                  >
+                                    <span className={styles.cameraCaptureInnerDot} />
+                                  </button>
+                                  <span className={styles.cameraCaptureLabel}>Capture Photo</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      ) : (
-                        /* When image selected: replace empty dropzone with compact preview */
-                        <div className={styles.attachmentPreviewCard}>
-                          <div className={styles.attachmentPreviewLeft}>
-                            <div className={styles.attachmentThumbWrap}>
+                      ) : newImageUrl ? (
+                        /* STATE 3: CAPTURED / SELECTED IMAGE PREVIEW */
+                        <div className={styles.modalAttachmentPanel}>
+                          <div className={styles.modalPreviewRow}>
+                            <div className={styles.modalPreviewThumbWrap}>
                               <img
                                 src={newImageUrl}
-                                alt={newImageMeta?.name || "Image attachment preview"}
-                                className={styles.attachmentThumbImg}
+                                alt={newImageMeta?.name || "Attached photo"}
+                                className={styles.modalPreviewThumbImg}
                               />
                             </div>
-                            <div className={styles.attachmentMeta}>
+                            <div className={styles.modalPreviewMeta}>
                               <span
-                                className={styles.attachmentFileName}
-                                title={newImageMeta?.name || "Attached image"}
+                                className={styles.modalPreviewFileName}
+                                title={newImageMeta?.name || "camera-photo.jpg"}
                               >
-                                {newImageMeta?.name || "Attached image"}
+                                {newImageMeta?.name || "camera-photo.jpg"}
                               </span>
-                              <span className={styles.attachmentFileSize}>
+                              <span className={styles.modalPreviewFileSize}>
                                 {newImageMeta?.sizeFormatted || ""}
                               </span>
                             </div>
+                            <button
+                              type="button"
+                              className={styles.modalPreviewRemoveBtn}
+                              onClick={handleRemoveImage}
+                              title="Remove image"
+                              aria-label="Remove image"
+                            >
+                              ✕
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            className={styles.btnRemoveAttachment}
-                            onClick={handleRemoveImage}
-                            title="Remove image"
-                            aria-label="Remove image"
+
+                          <div className={styles.modalActionButtonsRow}>
+                            <button
+                              type="button"
+                              className={styles.modalSecondaryActionBtn}
+                              onClick={handleRetakePhoto}
+                            >
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                <circle cx="12" cy="13" r="4" />
+                              </svg>
+                              <span>Retake Photo</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.modalSecondaryActionBtn}
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                              </svg>
+                              <span>From Device</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* STATE 1: UPLOAD OPTIONS PANEL */
+                        <div className={styles.modalAttachmentPanel}>
+                          <div
+                            className={`${styles.modalImageDropzone} ${
+                              isDraggingImage ? styles.modalImageDropzoneActive : ""
+                            }`}
+                            onDragOver={handleImageDragOver}
+                            onDragEnter={handleImageDragEnter}
+                            onDragLeave={handleImageDragLeave}
+                            onDrop={handleImageDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                fileInputRef.current?.click();
+                              }
+                            }}
                           >
-                            ✕
-                          </button>
+                            <div className={styles.modalUploadIconWrap} aria-hidden="true">
+                              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                                <path d="M12 12v9" />
+                                <path d="m16 16-4-4-4 4" />
+                              </svg>
+                            </div>
+
+                            <div className={styles.modalUploadPrimaryText}>Drag & drop an image here</div>
+                            <div className={styles.modalUploadSecondaryText}>or click to browse from your device</div>
+                            <div className={styles.modalUploadHelperText}>JPG, PNG, WEBP • Max 5MB</div>
+
+                            <button
+                              type="button"
+                              className={styles.modalBrowseFilesBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                fileInputRef.current?.click();
+                              }}
+                            >
+                              Browse Files
+                            </button>
+                          </div>
+
+                          <div className={styles.modalOrDivider}>
+                            <span className={styles.modalOrLine} />
+                            <span className={styles.modalOrText}>OR</span>
+                            <span className={styles.modalOrLine} />
+                          </div>
+
+                          <div className={styles.modalActionButtonsRow}>
+                            <button
+                              type="button"
+                              className={styles.modalSecondaryActionBtn}
+                              onClick={() => startCameraStream("user")}
+                            >
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                <circle cx="12" cy="13" r="4" />
+                              </svg>
+                              <span>Take Photo</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.modalSecondaryActionBtn}
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                              </svg>
+                              <span>From Device</span>
+                            </button>
+                          </div>
                         </div>
                       )}
 
@@ -2724,7 +2981,7 @@ export default function LearningCommunityPage() {
                 <button
                   type="button"
                   className={styles.btnCancel}
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={closeCreateModal}
                 >
                   Cancel
                 </button>
