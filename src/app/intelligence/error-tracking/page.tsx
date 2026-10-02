@@ -136,6 +136,13 @@ export default function ErrorTrackingPage() {
     document.getElementById("mistakes-review-list")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleReviewAllLogs = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveSection("ALL");
+    setActiveErrorType("ALL");
+    document.getElementById("mistakes-review-list")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className={styles.pageWrapper}>
       {/* Sticky App Header */}
@@ -276,7 +283,7 @@ export default function ErrorTrackingPage() {
               <div className={styles.radarSectionsGrid}>
                 {/* QA */}
                 <div
-                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable}`}
+                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable} ${activeSection === "QA" ? styles.radarSectionActive : ""}`}
                   onClick={() => handleSectionFilterJump("QA")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -310,7 +317,7 @@ export default function ErrorTrackingPage() {
 
                 {/* DILR */}
                 <div
-                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable}`}
+                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable} ${activeSection === "DILR" ? styles.radarSectionActive : ""}`}
                   onClick={() => handleSectionFilterJump("DILR")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -344,7 +351,7 @@ export default function ErrorTrackingPage() {
 
                 {/* VARC */}
                 <div
-                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable}`}
+                  className={`${styles.radarSectionBox} ${styles.radarSectionClickable} ${activeSection === "VARC" ? styles.radarSectionActive : ""}`}
                   onClick={() => handleSectionFilterJump("VARC")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -397,11 +404,9 @@ export default function ErrorTrackingPage() {
               <div className={styles.radarFooterActions}>
                 <a
                   href="#mistakes-review-list"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("mistakes-review-list")?.scrollIntoView({ behavior: "smooth" });
-                  }}
+                  onClick={handleReviewAllLogs}
                   className={styles.radarActionBtnPrimary}
+                  title="Reset filter and review all section mistakes"
                 >
                   <span>Review Detailed Log</span>
                   <span aria-hidden="true">&darr;</span>
