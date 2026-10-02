@@ -307,59 +307,103 @@ export default function AiAnalysisPage() {
           </div>
           
           <div className={styles.heroMetrics}>
+            {/* Card 1: Estimated Percentile */}
             <div
               className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => setSelectedMetric("accuracy")}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("accuracy"); } }}
+              onClick={() => {
+                document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               role="button"
               tabIndex={0}
-              aria-label="Open Accuracy Details"
+              aria-label="View Sectional Standing & Percentile Analysis"
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{background: '#EFF6FF', color: '#2563EB'}}>🎯</span>
-                  Accuracy
+                  <span className={styles.hmIcon} style={{ background: '#F5F3FF', color: '#7C3AED' }}>📈</span>
+                  Estimated Percentile
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
-                <span className={styles.hmVal}>{d.dna.accuracy.value}%</span>
+                <span className={styles.hmVal} style={{ color: '#6D28D9' }}>94.8%ile</span>
               </div>
-              <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.accuracy.value}%`, background: '#2563EB'}}></div></div>
+              <div className={styles.hmBar}>
+                <div className={styles.hmFill} style={{ width: `94.8%`, background: 'linear-gradient(90deg, #8B5CF6, #6366F1)' }}></div>
+              </div>
+              <div className={styles.hmSubtext}>
+                <span>Target: 99.0%ile</span>
+                <span style={{ color: '#10B981', fontWeight: 700 }}>Top 5.2% Band</span>
+              </div>
             </div>
+
+            {/* Card 2: Recoverable Marks */}
             <div
               className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => setSelectedMetric("speed")}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("speed"); } }}
+              onClick={() => {
+                document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               role="button"
               tabIndex={0}
-              aria-label="Open Speed Analysis"
+              aria-label="View Recoverable Marks & Mistakes Breakdown"
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{background: '#F0FDF4', color: '#10B981'}}>⚡</span>
-                  Speed
+                  <span className={styles.hmIcon} style={{ background: '#FEF3C7', color: '#D97706' }}>💡</span>
+                  Recoverable Marks
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
-                <span className={styles.hmVal}>{d.dna.speed.value}%</span>
+                <span className={styles.hmVal} style={{ color: '#D97706' }}>+18 Pts</span>
               </div>
-              <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.speed.value}%`, background: '#10B981'}}></div></div>
+              <div className={styles.hmBar}>
+                <div className={styles.hmFill} style={{ width: `72%`, background: 'linear-gradient(90deg, #F59E0B, #10B981)' }}></div>
+              </div>
+              <div className={styles.hmSubtext}>
+                <span>Careless errors &amp; traps</span>
+                <span style={{ color: '#2563EB', fontWeight: 700 }}>+8 QA / +6 DILR</span>
+              </div>
             </div>
+
+            {/* Card 3: Primary Focus Area */}
             <div
               className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => setSelectedMetric("consistency")}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric("consistency"); } }}
+              onClick={() => {
+                document.getElementById('action-plan')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  document.getElementById('action-plan')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               role="button"
               tabIndex={0}
-              aria-label="Open Consistency Details"
+              aria-label="View Primary Focus Area & Next-Mock Action Plan"
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{background: '#F5F3FF', color: '#8B5CF6'}}>🛡️</span>
-                  Consistency
+                  <span className={styles.hmIcon} style={{ background: '#EFF6FF', color: '#2563EB' }}>🎯</span>
+                  Primary Focus Area
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
-                <span className={styles.hmVal}>{d.dna.consistency.value}%</span>
+                <span className={styles.hmVal} style={{ color: '#1D4ED8', fontSize: '15px' }}>QA &amp; DILR</span>
               </div>
-              <div className={styles.hmBar}><div className={styles.hmFill} style={{width: `${d.dna.consistency.value}%`, background: '#8B5CF6'}}></div></div>
+              <div className={styles.hmBar}>
+                <div className={styles.hmFill} style={{ width: `85%`, background: 'linear-gradient(90deg, #0EA5E9, #2563EB)' }}></div>
+              </div>
+              <div className={styles.hmSubtext}>
+                <span>Highest ROI for next mock</span>
+                <span style={{ color: '#EF4444', fontWeight: 700 }}>Time Traps</span>
+              </div>
             </div>
           </div>
         </div>
@@ -942,7 +986,7 @@ export default function AiAnalysisPage() {
           </div>
 
           {/* Action Plan */}
-          <div className={styles.lcCard}>
+          <div className={styles.lcCard} id="action-plan">
             <div className={styles.lcTitle}>Your Next-Mock Action Plan</div>
             <div className={styles.lcSubtitle}>Personalized steps to improve your performance</div>
             <div className={styles.apList}>

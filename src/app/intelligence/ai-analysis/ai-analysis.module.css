@@ -138,7 +138,7 @@
 .ringStatus { font-size: 12px; font-weight: 600; color: #10B981; }
 .ringTrend { font-size: 12px; font-weight: 700; color: #10B981; margin-top: 8px; background: #D1FAE5; padding: 4px 10px; border-radius: 100px; }
 
-.heroMetrics { display: flex; flex-direction: column; gap: 20px; width: 260px; }
+.heroMetrics { display: flex; flex-direction: column; gap: 16px; width: 280px; }
 .hmRow { display: flex; flex-direction: column; gap: 8px; background: #FFF; padding: 12px 16px; border-radius: 16px; border: 1px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
 .hmRowClickable { cursor: pointer; user-select: none; }
 .hmRowClickable:hover { border-color: #7DD3FC; box-shadow: 0 8px 24px rgba(14, 165, 233, 0.14), 0 0 0 3px rgba(14, 165, 233, 0.08); transform: translateY(-2px); }
@@ -151,6 +151,7 @@
 .hmVal { font-size: 18px; font-weight: 800; color: #0F172A; }
 .hmBar { height: 6px; background: #F1F5F9; border-radius: 100px; overflow: hidden; }
 .hmFill { height: 100%; border-radius: 100px; transition: width 0.5s ease; }
+.hmSubtext { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; color: #64748B; margin-top: 1px; }
 
 .contentWrapper { max-width: 1300px; margin: 0 auto; padding: 0 40px; display: flex; flex-direction: column; gap: 40px; margin-top: -60px; position: relative; z-index: 10; }
 
