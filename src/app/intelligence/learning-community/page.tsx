@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -266,7 +266,7 @@ export default function LearningCommunityPage() {
     }
   };
 
-  const handleOpenCreateModal = (categoryOverride?: CommunityCategory) => {
+  const handleOpenCreateModal = (categoryOverride?: CommunityCategory, expandImage = false) => {
     if (isGuest) {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
@@ -278,6 +278,9 @@ export default function LearningCommunityPage() {
       setNewCategory(categoryOverride);
     } else if (selectedCategory) {
       setNewCategory(selectedCategory);
+    }
+    if (expandImage) {
+      setIsImageUploadExpanded(true);
     }
     setIsCreateModalOpen(true);
   };
@@ -300,6 +303,11 @@ export default function LearningCommunityPage() {
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<CommunityCategory>("CAT Strategy");
   const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
+  const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
+  const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(false);
+  const [imageValidationError, setImageValidationError] = useState<string | null>(null);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -616,21 +624,96 @@ export default function LearningCommunityPage() {
     }
   };
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      setCreateError("Image size must be under 3 MB.");
+  const SUPPORTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+  const processImageFile = (file: File) => {
+    setImageValidationError(null);
+
+    const isFormatValid =
+      SUPPORTED_IMAGE_TYPES.includes(file.type.toLowerCase()) ||
+      /\.(jpe?g|png|webp)$/i.test(file.name);
+
+    if (!isFormatValid) {
+      setImageValidationError("Unsupported format. Please upload JPG, PNG, or WEBP.");
       return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setImageValidationError("File size exceeds 5MB limit. Please choose a smaller image.");
+      return;
+    }
+
+    const formattedSize =
+      file.size < 1024 * 1024
+        ? `${Math.round(file.size / 1024)} KB`
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
         setNewImageUrl(reader.result);
+        setNewImageMeta({
+          name: file.name,
+          sizeFormatted: formattedSize,
+        });
+        setIsImageUploadExpanded(true);
+        setImageValidationError(null);
         setCreateError(null);
       }
     };
+    reader.onerror = () => {
+      setImageValidationError("Failed to read image file. Please try again.");
+    };
     reader.readAsDataURL(file);
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
+
+  const handleImageDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(true);
+  };
+
+  const handleImageDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(true);
+  };
+
+  const handleImageDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDraggingImage(false);
+  };
+
+  const handleImageDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      processImageFile(files[0]);
+    }
+  };
+
+  const handleRemoveImage = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setNewImageUrl(null);
+    setNewImageMeta(null);
+    setImageValidationError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleCreatePostSubmit = async (e: React.FormEvent) => {
@@ -660,6 +743,9 @@ export default function LearningCommunityPage() {
       setNewTitle("");
       setNewContent("");
       setNewImageUrl(null);
+      setNewImageMeta(null);
+      setImageValidationError(null);
+      setIsImageUploadExpanded(false);
       setIsCreateModalOpen(false);
       setSidebarView("HOME");
       setSelectedCategory(null);
@@ -1347,7 +1433,7 @@ export default function LearningCommunityPage() {
                   <button
                     type="button"
                     className={styles.composerToolBtn}
-                    onClick={() => handleOpenCreateModal()}
+                    onClick={() => handleOpenCreateModal(undefined, true)}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -1937,35 +2023,168 @@ export default function LearningCommunityPage() {
                   />
                 </div>
 
+                {/* Image Attachment (Collapsible Drop Zone & Preview) */}
                 <div className={styles.formField}>
-                  <span className={styles.formLabel}>Image Attachment (Optional)</span>
-                  <div className={styles.imageAttachRow}>
-                    <label className={styles.imageUploadLabel}>
-                      <span>📷 Attach Screenshot / Diagram</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageFileChange}
-                        style={{ display: "none" }}
-                      />
-                    </label>
-                    {newImageUrl && (
-                      <button
-                        type="button"
-                        className={styles.btnCancel}
-                        onClick={() => setNewImageUrl(null)}
-                      >
-                        Remove Image
-                      </button>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                    <span className={styles.formLabel}>Image Attachment (Optional)</span>
+                    {newImageUrl && !isImageUploadExpanded && (
+                      <span className={styles.imageAttachedBadge}>
+                        1 image attached
+                      </span>
                     )}
                   </div>
-                  {newImageUrl && (
-                    <div className={styles.postImageThumbWrap} style={{ marginTop: "8px" }}>
-                      <img
-                        src={newImageUrl}
-                        alt="Attachment preview"
-                        className={styles.postImageThumb}
-                      />
+
+                  <div className={styles.imageAttachToggleRow}>
+                    <button
+                      type="button"
+                      className={`${styles.addImageToggleBtn} ${
+                        isImageUploadExpanded ? styles.addImageToggleBtnActive : ""
+                      }`}
+                      onClick={() => setIsImageUploadExpanded((prev) => !prev)}
+                      aria-expanded={isImageUploadExpanded}
+                    >
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                        <circle cx="9" cy="9" r="2" />
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                      </svg>
+                      <span>{isImageUploadExpanded ? "Close Image Upload" : "Add Image"}</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          transform: isImageUploadExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.18s ease",
+                        }}
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {isImageUploadExpanded && (
+                    <div className={styles.imageUploadExpandedWrap}>
+                      {/* 1. IMAGE UPLOAD AREA */}
+                      <div
+                        className={`${styles.imageDropZone} ${
+                          isDraggingImage ? styles.imageDropZoneActive : ""
+                        }`}
+                        onDragOver={handleImageDragOver}
+                        onDragEnter={handleImageDragEnter}
+                        onDragLeave={handleImageDragLeave}
+                        onDrop={handleImageDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            fileInputRef.current?.click();
+                          }
+                        }}
+                      >
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleImageFileChange}
+                          style={{ display: "none" }}
+                        />
+
+                        <div className={styles.imageDropZoneContent}>
+                          <div className={styles.uploadCloudIconWrap} aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                              <path d="M12 12v9" />
+                              <path d="m16 16-4-4-4 4" />
+                            </svg>
+                          </div>
+                          <div className={styles.uploadTextGroup}>
+                            <div className={styles.uploadPrimaryText}>
+                              <span className={styles.uploadBoldText}>Drag & drop an image here</span>{" "}
+                              <span className={styles.uploadMutedText}>or click to browse from your device</span>
+                            </div>
+                            <div className={styles.uploadHelperText}>
+                              JPG, PNG, WEBP • Max 5MB
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={styles.btnBrowseFiles}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          Browse Files
+                        </button>
+                      </div>
+
+                      {/* Validation message if file error */}
+                      {imageValidationError && (
+                        <div className={styles.imageValidationMsg} role="alert">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                          <span>{imageValidationError}</span>
+                        </div>
+                      )}
+
+                      {/* 2. AFTER IMAGE IS SELECTED: Compact attachment preview */}
+                      {newImageUrl && (
+                        <div className={styles.attachmentPreviewCard}>
+                          <div className={styles.attachmentPreviewLeft}>
+                            <div className={styles.attachmentThumbWrap}>
+                              <img
+                                src={newImageUrl}
+                                alt={newImageMeta?.name || "Image attachment preview"}
+                                className={styles.attachmentThumbImg}
+                              />
+                            </div>
+                            <div className={styles.attachmentMeta}>
+                              <span
+                                className={styles.attachmentFileName}
+                                title={newImageMeta?.name || "Attached image"}
+                              >
+                                {newImageMeta?.name || "Attached image"}
+                              </span>
+                              <span className={styles.attachmentFileSize}>
+                                {newImageMeta?.sizeFormatted || ""}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className={styles.btnRemoveAttachment}
+                            onClick={handleRemoveImage}
+                            title="Remove image"
+                            aria-label="Remove image"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
