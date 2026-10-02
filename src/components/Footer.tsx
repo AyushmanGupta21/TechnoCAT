@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -161,10 +161,7 @@ export default function Footer() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const [selectedLabel, setSelectedLabel] = useState<string>("FAQs");
-
   const handleFooterLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: FooterLinkItem) => {
-    setSelectedLabel(link.label);
     const isHash = link.href.startsWith("/#") || link.href.startsWith("#");
 
     if (!isHash) {
@@ -191,50 +188,6 @@ export default function Footer() {
       }
     }
   };
-
-  useEffect(() => {
-    const syncActiveFromLocation = () => {
-      if (typeof window === "undefined") return;
-      const hash = window.location.hash;
-
-      if (pathname === "/browse") {
-        setSelectedLabel("Mock Tests");
-        return;
-      }
-      if (pathname.startsWith("/topics")) {
-        setSelectedLabel("Sectional Tests");
-        return;
-      }
-      if (pathname.startsWith("/intelligence/ai-analysis")) {
-        setSelectedLabel("AI Analysis");
-        return;
-      }
-      if (pathname.startsWith("/dashboard")) {
-        setSelectedLabel("Performance");
-        return;
-      }
-
-      if (hash === "#faq") {
-        setSelectedLabel("FAQs");
-      } else if (hash === "#what-you-get") {
-        setSelectedLabel("Preparation Guide");
-      } else if (hash === "#community") {
-        setSelectedLabel("Community");
-      } else if (hash === "#reviews") {
-        setSelectedLabel("Reviews");
-      } else if (hash === "#two-modes") {
-        setSelectedLabel("Exam Modes");
-      } else if (hash === "#why-stand-out") {
-        setSelectedLabel("About");
-      } else if (pathname === "/") {
-        setSelectedLabel("FAQs");
-      }
-    };
-
-    syncActiveFromLocation();
-    window.addEventListener("hashchange", syncActiveFromLocation);
-    return () => window.removeEventListener("hashchange", syncActiveFromLocation);
-  }, [pathname]);
 
   return (
     <footer className={styles.footer}>
@@ -277,29 +230,25 @@ export default function Footer() {
               <div key={col.heading} className={styles.col}>
                 <h4 className={styles.colHeading}>{col.heading}</h4>
                 <ul className={styles.linkList}>
-                  {col.links.map((link) => {
-                    const isActive = selectedLabel === link.label;
-                    return (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          onClick={(e) => handleFooterLinkClick(e, link)}
-                          className={`${styles.link} ${isActive ? styles.linkActive : ""}`}
-                          aria-current={isActive ? "page" : undefined}
-                        >
-                          <span className={styles.linkLeft}>
-                            <span className={styles.linkIcon} aria-hidden="true">
-                              {link.icon}
-                            </span>
-                            <span className={styles.linkLabel}>{link.label}</span>
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        onClick={(e) => handleFooterLinkClick(e, link)}
+                        className={styles.link}
+                      >
+                        <span className={styles.linkLeft}>
+                          <span className={styles.linkIcon} aria-hidden="true">
+                            {link.icon}
                           </span>
-                          <span className={styles.linkArrow} aria-hidden="true">
-                            →
-                          </span>
-                        </a>
-                      </li>
-                    );
-                  })}
+                          <span className={styles.linkLabel}>{link.label}</span>
+                        </span>
+                        <span className={styles.linkArrow} aria-hidden="true">
+                          →
+                        </span>
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </div>
             ))}

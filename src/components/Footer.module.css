@@ -194,9 +194,9 @@
   flex-shrink: 0;
 }
 
-/* Hovered or Active/Selected Link: soft light-blue gradient card */
+/* Hovered Link (or keyboard focus): soft light-blue gradient card */
 .link:hover,
-.linkActive {
+.link:focus-visible {
   background:
     linear-gradient(90deg, rgba(0, 200, 255, 0.04) 0%, rgba(0, 200, 255, 0.01) 100%),
     linear-gradient(90deg, #EFF8FF 0%, #E8F2FF 100%);
@@ -206,19 +206,16 @@
     0 2px 6px rgba(37, 99, 235, 0.04);
   color: #2563EB;
   font-weight: 600;
-}
-
-.link:hover {
   transform: translateY(-1px);
 }
 
 .link:hover .linkIcon,
-.linkActive .linkIcon {
+.link:focus-visible .linkIcon {
   color: #2563EB;
 }
 
 .link:hover .linkArrow,
-.linkActive .linkArrow {
+.link:focus-visible .linkArrow {
   opacity: 1;
   transform: translateX(0);
 }
