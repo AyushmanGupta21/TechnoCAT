@@ -480,6 +480,23 @@ export default function LearningCommunityPage() {
   const modalCategoryRef = useRef<HTMLDivElement | null>(null);
   const selectedCategoryRowRef = useRef<HTMLDivElement | null>(null);
 
+  const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const el = contentTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const defaultHeight = 130;
+    const maxHeight = 380;
+    if (el.scrollHeight > maxHeight) {
+      el.style.height = `${maxHeight}px`;
+      el.style.overflowY = "auto";
+    } else {
+      el.style.height = `${Math.max(defaultHeight, el.scrollHeight)}px`;
+      el.style.overflowY = "hidden";
+    }
+  }, [newContent, isCreateModalOpen]);
+
   useEffect(() => {
     if (isModalCategoryOpen && selectedCategoryRowRef.current) {
       selectedCategoryRowRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -547,6 +564,23 @@ export default function LearningCommunityPage() {
   // Full Discussion Modal state
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState("");
+  const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const el = commentTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const defaultHeight = 82;
+    const maxHeight = 300;
+    if (el.scrollHeight > maxHeight) {
+      el.style.height = `${maxHeight}px`;
+      el.style.overflowY = "auto";
+    } else {
+      el.style.height = `${Math.max(defaultHeight, el.scrollHeight)}px`;
+      el.style.overflowY = "hidden";
+    }
+  }, [commentInput, activePostId]);
+
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [replyInput, setReplyInput] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -3039,6 +3073,7 @@ export default function LearningCommunityPage() {
                   </label>
                   <div className={styles.textareaWrapper}>
                     <textarea
+                      ref={contentTextareaRef}
                       id="post-content-textarea"
                       className={styles.formTextarea}
                       placeholder="Share your thoughts, ask a doubt, or start a discussion..."
@@ -3304,6 +3339,7 @@ export default function LearningCommunityPage() {
               {/* Reply / Comment Box */}
               <form className={styles.commentComposerBox} onSubmit={handleAddComment}>
                 <textarea
+                  ref={commentTextareaRef}
                   className={styles.formTextarea}
                   style={{ minHeight: "82px", background: "#FFFFFF" }}
                   placeholder="Write a helpful response, share your solution, or ask a follow-up..."

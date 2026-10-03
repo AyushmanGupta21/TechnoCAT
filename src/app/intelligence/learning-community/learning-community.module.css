@@ -2375,8 +2375,10 @@
 
 .formTextarea {
   min-height: 130px;
-  resize: vertical;
+  resize: none;
   line-height: 1.6;
+  padding-bottom: 28px;
+  box-sizing: border-box;
 }
 
 .formInput:focus,
