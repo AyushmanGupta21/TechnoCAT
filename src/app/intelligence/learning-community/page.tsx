@@ -221,27 +221,27 @@ const DEFAULT_CONTRIBUTORS: ContributorItem[] = [
     authorId: "user-priya",
     authorName: "priya_singh",
     authorAvatar: "/community/contrib-priya.png",
-    postCount: 55,
+    postCount: 56,
     commentCount: 0,
-    totalScore: 55,
+    totalScore: 56,
     rank: 1,
   },
   {
     authorId: "user-aniket",
     authorName: "aniket_verma",
     authorAvatar: "/community/contrib-aniket.png",
-    postCount: 41,
+    postCount: 42,
     commentCount: 0,
-    totalScore: 41,
+    totalScore: 42,
     rank: 2,
   },
   {
     authorId: "user-shruti",
     authorName: "shruti_agarwal",
     authorAvatar: "/community/contrib-shruti.png",
-    postCount: 37,
+    postCount: 38,
     commentCount: 0,
-    totalScore: 37,
+    totalScore: 38,
     rank: 3,
   },
   {
@@ -527,6 +527,10 @@ export default function LearningCommunityPage() {
     y: number;
   } | null>(null);
 
+  // Top Contributors Right Drawer state
+  const [isContributorsDrawerOpen, setIsContributorsDrawerOpen] = useState(false);
+  const [contributorTab, setContributorTab] = useState<"This Month" | "This Week" | "All Time">("This Month");
+
   // Individual Community Stat Detail Popover state
   const [activeStatPopup, setActiveStatPopup] = useState<
     "MEMBERS" | "DISCUSSIONS" | "SOLUTIONS" | "HELPFUL_RATE" | null
@@ -575,6 +579,7 @@ export default function LearningCommunityPage() {
     isAddImageOpen ||
     activePostId ||
     isStatsDrawerOpen ||
+    isContributorsDrawerOpen ||
     activeStatPopup ||
     mobileDrawer
   );
@@ -596,7 +601,7 @@ export default function LearningCommunityPage() {
       if (!target) return;
       // Allow internal scrolling ONLY inside active scrollable modal/panel containers
       const scrollable = target.closest(
-        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.statsDrawerBody}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
+        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.statsDrawerBody}, .${styles.contributorDrawerBody}, .${styles.contributorDrawerPanel}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
       );
       if (!scrollable) {
         if (e.cancelable) {
@@ -628,6 +633,7 @@ export default function LearningCommunityPage() {
         setIsCreateModalOpen(false);
         setActivePostId(null);
         setIsStatsDrawerOpen(false);
+        setIsContributorsDrawerOpen(false);
         setActiveStatPopup(null);
         setIsAddImageOpen(false);
       }
@@ -2755,9 +2761,10 @@ export default function LearningCommunityPage() {
                 <button
                   type="button"
                   className={styles.widgetViewAllBtn}
-                  onClick={() => showToast("Top contributor leaderboard for this month.")}
+                  onClick={() => setIsContributorsDrawerOpen(true)}
+                  aria-label="View all top contributors"
                 >
-                  View All
+                  View All &rarr;
                 </button>
               </div>
 
@@ -3432,6 +3439,222 @@ export default function LearningCommunityPage() {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Contributors Right-Side Drawer */}
+      {isContributorsDrawerOpen && (
+        <div
+          className={styles.contributorDrawerOverlay}
+          onClick={() => setIsContributorsDrawerOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="top-contributors-drawer-title"
+        >
+          <div
+            className={styles.contributorDrawerPanel}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className={styles.contributorDrawerHeader}>
+              <div className={styles.contributorDrawerHeaderCol}>
+                <div className={styles.contributorDrawerHeaderTitleRow}>
+                  <span className={styles.contributorDrawerHeaderEmoji} aria-hidden="true">🏆</span>
+                  <h2 id="top-contributors-drawer-title" className={styles.contributorDrawerHeaderTitle}>
+                    Top Contributors
+                  </h2>
+                </div>
+                <p className={styles.contributorDrawerHeaderSubtitle}>
+                  {contributorTab === "This Month"
+                    ? "Community leaders this month"
+                    : contributorTab === "This Week"
+                    ? "Community leaders this week"
+                    : "Community leaders of all time"}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className={styles.contributorDrawerCloseBtn}
+                onClick={() => setIsContributorsDrawerOpen(false)}
+                aria-label="Close top contributors drawer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className={styles.contributorDrawerFilterWrap}>
+              <div className={styles.contributorTabsWrap}>
+                {(["This Month", "This Week", "All Time"] as const).map((tab) => {
+                  const isSelected = contributorTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      className={`${styles.contributorPillTab} ${
+                        isSelected ? styles.contributorPillTabActive : ""
+                      }`}
+                      onClick={() => setContributorTab(tab)}
+                    >
+                      {tab}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Drawer Body - Scrollable */}
+            <div className={styles.contributorDrawerBody}>
+              {/* Contributor Cards List */}
+              <div className={styles.contributorCardsList}>
+                {topContributorsList.map((contributor) => {
+                  const avatarSrc =
+                    getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                  const rankClass =
+                    contributor.rank === 1
+                      ? styles.contributorCardGold
+                      : contributor.rank === 2
+                      ? styles.contributorCardSilver
+                      : contributor.rank === 3
+                      ? styles.contributorCardBronze
+                      : styles.contributorCardDefault;
+
+                  return (
+                    <div
+                      key={contributor.authorId}
+                      className={`${styles.contributorDrawerCard} ${rankClass}`}
+                    >
+                      {/* Rank indicator */}
+                      <div className={styles.contributorDrawerRankWrap}>
+                        {contributor.rank === 1 ? (
+                          <img
+                            src="/community/medal-gold.png"
+                            alt="1st Place"
+                            className={styles.contributorDrawerMedal}
+                          />
+                        ) : contributor.rank === 2 ? (
+                          <img
+                            src="/community/medal-silver.png"
+                            alt="2nd Place"
+                            className={styles.contributorDrawerMedal}
+                          />
+                        ) : contributor.rank === 3 ? (
+                          <img
+                            src="/community/medal-bronze.png"
+                            alt="3rd Place"
+                            className={styles.contributorDrawerMedal}
+                          />
+                        ) : (
+                          <span className={styles.contributorDrawerRankCircle}>
+                            {contributor.rank}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Avatar */}
+                      <div className={styles.contributorDrawerAvatarWrap}>
+                        {avatarSrc ? (
+                          <img
+                            src={avatarSrc}
+                            alt={contributor.authorName}
+                            className={styles.contributorDrawerAvatarImg}
+                          />
+                        ) : (
+                          <span className={styles.contributorDrawerAvatarFallback}>
+                            {getInitials(contributor.authorName)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Info Stack */}
+                      <div className={styles.contributorDrawerContent}>
+                        <div className={styles.contributorDrawerTopRow}>
+                          <span className={styles.contributorDrawerUsername}>
+                            {contributor.authorName}
+                          </span>
+                          {contributor.rank === 1 && (
+                            <span
+                              className={styles.contributorDrawerTrophyIcon}
+                              aria-label="Top Contributor Trophy"
+                              title="Community Leader 1st Place"
+                            >
+                              🏆
+                            </span>
+                          )}
+                        </div>
+
+                        <div className={styles.contributorDrawerStatsRow}>
+                          <span>{contributor.postCount} posts</span>
+                        </div>
+
+                        <div className={styles.contributorDrawerBadgesRow}>
+                          <span className={styles.contributorDrawerActiveBadge}>
+                            <span className={styles.contributorActiveDot} /> Active
+                          </span>
+                          {contributor.rank <= 3 && (
+                            <span
+                              className={`${styles.contributorDrawerTopBadge} ${
+                                contributor.rank === 1
+                                  ? styles.topBadgeGold
+                                  : contributor.rank === 2
+                                  ? styles.topBadgeSilver
+                                  : styles.topBadgeBronze
+                              }`}
+                            >
+                              Top Contributor
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Community Contribution Card */}
+              <div className={styles.communityContributionCard}>
+                <div className={styles.communityContributionHeader}>
+                  <h4 className={styles.communityContributionTitle}>
+                    Community Contribution
+                  </h4>
+                  <p className={styles.communityContributionSubtitle}>
+                    {contributorTab === "This Month"
+                      ? "Total impact this month"
+                      : contributorTab === "This Week"
+                      ? "Total impact this week"
+                      : "Total impact of all time"}
+                  </p>
+                </div>
+                <div className={styles.contributionMetricsGrid}>
+                  <div className={styles.contributionMetricBox}>
+                    <span className={styles.contributionMetricValue}>
+                      {data ? data.stats.discussions : "1.2K"}
+                    </span>
+                    <span className={styles.contributionMetricLabel}>
+                      Discussions Started
+                    </span>
+                  </div>
+                  <div className={styles.contributionMetricBox}>
+                    <span className={styles.contributionMetricValue}>
+                      {data ? data.stats.helpfulRate : "92%"}
+                    </span>
+                    <span className={styles.contributionMetricLabel}>
+                      Helpful Answers
+                    </span>
+                  </div>
+                  <div className={styles.contributionMetricBox}>
+                    <span className={styles.contributionMetricValue}>
+                      {data ? data.stats.solutions : "3.1K"}
+                    </span>
+                    <span className={styles.contributionMetricLabel}>
+                      Solutions Shared
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

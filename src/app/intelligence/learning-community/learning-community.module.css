@@ -4252,3 +4252,422 @@
   }
 }
 
+/* ===================================================
+   TOP CONTRIBUTORS RIGHT-SIDE DRAWER
+   =================================================== */
+
+.contributorDrawerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1020;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeInOverlay 0.22s ease-out;
+}
+
+.contributorDrawerPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  max-width: 95vw;
+  height: 100vh;
+  background: #FFFFFF;
+  border-top-left-radius: 28px;
+  border-bottom-left-radius: 28px;
+  box-shadow: -14px 0 45px rgba(15, 23, 42, 0.16);
+  z-index: 1021;
+  display: flex;
+  flex-direction: column;
+  animation: slideInDrawer 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.contributorDrawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #F1F5F9;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.contributorDrawerHeaderCol {
+  flex: 1;
+}
+
+.contributorDrawerHeaderTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contributorDrawerHeaderEmoji {
+  font-size: 24px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.contributorDrawerHeaderTitle {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.contributorDrawerHeaderSubtitle {
+  font-size: 13px;
+  color: #64748B;
+  margin: 4px 0 0 0;
+}
+
+.contributorDrawerCloseBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.contributorDrawerCloseBtn:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+.contributorDrawerFilterWrap {
+  padding: 16px 24px 12px 24px;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.contributorTabsWrap {
+  display: flex;
+  gap: 8px;
+}
+
+.contributorPillTab {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #EFF6FF;
+  color: #1E40AF;
+  white-space: nowrap;
+}
+
+.contributorPillTab:hover {
+  background: #DBEAFE;
+}
+
+.contributorPillTabActive {
+  background: #2563EB;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+}
+
+.contributorPillTabActive:hover {
+  background: #1D4ED8;
+}
+
+.contributorDrawerBody {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contributorCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contributorDrawerCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+}
+
+.contributorDrawerCard:hover {
+  transform: translateY(-1px);
+}
+
+/* Rank 1: Gold styling */
+.contributorCardGold {
+  background: #FFFDF5;
+  border-color: #FEF08A;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.08);
+}
+
+/* Rank 2: Silver styling */
+.contributorCardSilver {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.06);
+}
+
+/* Rank 3: Bronze styling */
+.contributorCardBronze {
+  background: #FFF7ED;
+  border-color: #FED7AA;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.06);
+}
+
+/* Ranks 4 and 5: Clean white / light styling */
+.contributorCardDefault {
+  background: #FFFFFF;
+  border-color: #F1F5F9;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+
+.contributorDrawerRankWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-width: 28px;
+}
+
+.contributorDrawerMedal {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.contributorDrawerRankCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E2E8F0;
+}
+
+.contributorDrawerAvatarWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #EFF6FF;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.contributorDrawerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contributorDrawerAvatarFallback {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.contributorDrawerContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.contributorDrawerTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contributorDrawerUsername {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contributorDrawerTrophyIcon {
+  font-size: 16px;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.contributorDrawerStatsRow {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contributorDrawerBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.contributorDrawerActiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16A34A;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  padding: 1px 7px;
+  border-radius: 9999px;
+}
+
+.contributorActiveDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #22C55E;
+}
+
+.contributorDrawerTopBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 9999px;
+}
+
+.topBadgeGold {
+  background: #FEF9C3;
+  color: #854D0E;
+  border: 1px solid #FEF08A;
+}
+
+.topBadgeSilver {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
+.topBadgeBronze {
+  background: #FFEDD5;
+  color: #9A3412;
+  border: 1px solid #FED7AA;
+}
+
+/* Community Contribution Card */
+.communityContributionCard {
+  margin-top: 14px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.communityContributionHeader {
+  margin-bottom: 12px;
+}
+
+.communityContributionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.communityContributionSubtitle {
+  font-size: 12px;
+  color: #64748B;
+  margin: 2px 0 0 0;
+}
+
+.contributionMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.contributionMetricBox {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.contributionMetricValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+}
+
+.contributionMetricLabel {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #64748B;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .contributorDrawerPanel {
+    width: 92vw;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+  }
+  .contributorDrawerHeader,
+  .contributorDrawerFilterWrap,
+  .contributorDrawerBody {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+
