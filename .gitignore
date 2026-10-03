@@ -38,6 +38,7 @@ yarn-error.log*
 env.*
 *.env
 *.download
+proxy-3000.js
 
 # vercel
 .vercel

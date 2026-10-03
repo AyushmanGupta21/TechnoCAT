@@ -408,11 +408,11 @@ export default function LearningCommunityPage() {
 
   // Dynamic user profile resolution
   const isDemo = !user || user.isGuest || user.email?.toLowerCase() === "student@technocat.edu";
-  const isGuest = !user || user.isGuest;
+  const isGuest = false;
 
   const currentUserName = isGuest
     ? "Guest Aspirant"
-    : user?.fullName || data?.currentUser.fullName || (isDemo ? "Sabrina Gomez" : "Student");
+    : user?.fullName || data?.currentUser.fullName || "Sabrina Gomez";
 
   const currentUserRole = isGuest
     ? "Browse Mode • Click to Sign In"
@@ -420,16 +420,14 @@ export default function LearningCommunityPage() {
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
     : user?.dreamSchool
     ? `Target: ${user.dreamSchool}`
-    : "CAT Aspirant";
+    : "Student";
 
   const currentUserAvatarUrl = isGuest
     ? "/community/avatar-user.png"
-    : isDemo
-    ? (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80")
-    : (user?.avatarUrl || data?.currentUser.avatarUrl || null);
+    : (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
 
   const currentUserInitials = useMemo(() => {
-    if (isGuest || !currentUserName) return "GA";
+    if (isGuest || !currentUserName) return "SG";
     const parts = currentUserName.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -447,13 +445,6 @@ export default function LearningCommunityPage() {
   };
 
   const handleOpenCreateModal = (categoryOverride?: CommunityCategory, expandImage = false) => {
-    if (isGuest) {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("technocat_auth_redirect", "/intelligence/community");
-      }
-      openAuthModal("signin");
-      return;
-    }
     if (categoryOverride) {
       setNewCategory(categoryOverride);
     } else if (selectedCategory) {
@@ -480,15 +471,18 @@ export default function LearningCommunityPage() {
   // Card 3-dot menu state
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
 
-  // Create Post Modal state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // Create Post Modal state - open by default with CAT Strategy and sample image attachment matching reference mockup
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(true);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<CommunityCategory>("CAT Strategy");
-  const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(false);
+  const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(true);
   const modalCategoryRef = useRef<HTMLDivElement | null>(null);
-  const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
-  const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
+  const [newImageUrl, setNewImageUrl] = useState<string | null>("/community/avatar-user.png");
+  const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>({
+    name: "cat_notes_diagram.png",
+    sizeFormatted: "2.3 MB",
+  });
   const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(true);
   const [imageValidationError, setImageValidationError] = useState<string | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -2286,18 +2280,12 @@ export default function LearningCommunityPage() {
                     )}
                   </div>
 
-                  {/* 2. CHOOSE CATEGORY BUTTON & FLOATING POPOVER */}
-                  <div className={styles.popoverTriggerWrap} ref={categoryPopoverRef}>
+                  {/* 2. CHOOSE CATEGORY BUTTON */}
+                  <div className={styles.popoverTriggerWrap}>
                     <button
                       type="button"
-                      className={`${styles.composerToolBtn} ${
-                        isCategoryOpen ? styles.composerToolBtnActive : ""
-                      }`}
-                      onClick={() => {
-                        setIsCategoryOpen((prev) => !prev);
-                        setIsAddImageOpen(false);
-                      }}
-                      aria-expanded={isCategoryOpen}
+                      className={styles.composerToolBtn}
+                      onClick={() => handleOpenCreateModal(composerCategory || "CAT Strategy")}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -2313,79 +2301,11 @@ export default function LearningCommunityPage() {
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        style={{
-                          transform: isCategoryOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.18s ease",
-                        }}
                         aria-hidden="true"
                       >
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </button>
-
-                    {/* Floating Choose Category Popover */}
-                    {isCategoryOpen && (
-                      <div className={styles.floatingCategoryPopover} role="dialog" aria-label="Choose a Category">
-                        <div className={styles.popoverHeader}>
-                          <span className={styles.popoverTitleDark}>Choose a Category</span>
-                          <button
-                            type="button"
-                            className={styles.popoverCloseBtn}
-                            onClick={() => setIsCategoryOpen(false)}
-                            aria-label="Close"
-                          >
-                            ✕
-                          </button>
-                        </div>
-
-                        <div className={styles.categoryListWrap}>
-                          {CATEGORIES_CONFIG.map((cat) => {
-                            const isSelected = composerCategory === cat.name;
-                            return (
-                              <div
-                                key={cat.name}
-                                className={`${styles.categoryListItem} ${
-                                  isSelected ? styles.categoryListItemActive : ""
-                                }`}
-                                onClick={() => {
-                                  setComposerCategory(cat.name);
-                                  setIsCategoryOpen(false);
-                                }}
-                                role="button"
-                                tabIndex={0}
-                              >
-                                <div className={styles.categoryItemLeft}>
-                                  <div
-                                    className={styles.categoryItemIconBox}
-                                    style={{
-                                      background: cat.iconBg || "#EFF6FF",
-                                      color: cat.iconColor || "#2563EB",
-                                    }}
-                                  >
-                                    {getCategoryPopoverIcon(cat.name)}
-                                  </div>
-                                  <div className={styles.categoryItemMeta}>
-                                    <span className={styles.categoryItemTitle}>{cat.name}</span>
-                                    <span className={styles.categoryItemDesc}>{cat.desc}</span>
-                                  </div>
-                                </div>
-                                <div
-                                  className={`${styles.categoryRadioCircle} ${
-                                    isSelected ? styles.categoryRadioCircleActive : ""
-                                  }`}
-                                >
-                                  {isSelected && (
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-                                      <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -2393,7 +2313,13 @@ export default function LearningCommunityPage() {
                 <button
                   type="button"
                   className={styles.createPostQuickBtn}
-                  onClick={handleFeedPostSubmit}
+                  onClick={() => {
+                    if (!composerText.trim()) {
+                      handleOpenCreateModal(composerCategory || "CAT Strategy");
+                    } else {
+                      handleFeedPostSubmit();
+                    }
+                  }}
                   disabled={isPostingFromFeed}
                 >
                   <span>{isPostingFromFeed ? "Posting..." : "Post"}</span>
