@@ -862,7 +862,34 @@
 }
 
 /* Floating Popovers (Add Image & Choose Category) */
-.floatingAddImagePopover,
+.floatingAddImagePopover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 370px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2EEFF;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(37, 99, 235, 0.06);
+  padding: 18px;
+  z-index: 90;
+  animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floatingAddImagePopover::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 32px;
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  border-left: 1.5px solid #E2EEFF;
+  border-top: 1.5px solid #E2EEFF;
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
 .floatingCategoryPopover {
   position: absolute;
   top: calc(100% + 10px);
@@ -892,7 +919,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 14px;
 }
 
 .popoverTitleBlue {
@@ -913,10 +942,10 @@
   border: none;
   background: #F1F5F9;
   color: #64748B;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -931,32 +960,101 @@
   color: #0F172A;
 }
 
+/* Compact Dropzone */
+.popoverDropzone {
+  background: #F8FAFD;
+  border: 1.5px dashed #93C5FD;
+  border-radius: 12px;
+  padding: 16px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.popoverDropzone:hover,
+.popoverDropzoneActive {
+  background: #EFF6FF;
+  border-color: #3B82F6;
+}
+
+.popoverUploadIconWrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.popoverDropPrimaryText {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.popoverDropSecondaryText {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748B;
+  margin-bottom: 8px;
+}
+
 .popoverBrowseBtn {
   background: #FFFFFF;
-  border: 1.5px solid #BFDBFE;
+  border: 1.5px solid #2563EB;
   color: #2563EB;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 700;
   border-radius: 8px;
-  padding: 6px 14px;
+  padding: 5px 16px;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
-  margin-top: 3px;
+  margin-bottom: 8px;
 }
 
 .popoverBrowseBtn:hover {
   background: #2563EB;
   color: #FFFFFF;
-  border-color: #2563EB;
   box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
 }
 
+.popoverDropHelperText {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: 0.01em;
+}
+
+.popoverValidationMsg {
+  margin-top: 10px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
 .quickOptionsTitle {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  color: #1E293B;
+  color: #64748B;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin: 14px 0 8px 0;
 }
 
@@ -972,22 +1070,269 @@
   justify-content: center;
   gap: 8px;
   background: #FFFFFF;
-  border: 1.5px solid #E2E8F0;
+  border: 1.5px solid #E2EEFF;
   border-radius: 11px;
   padding: 9px 12px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #334155;
+  color: #0F172A;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.18s ease;
 }
 
 .quickOptionBtn:hover {
-  background: #F8FAFC;
-  border-color: #3B82F6;
+  background: #F8FAFD;
+  border-color: #93C5FD;
   color: #2563EB;
   transform: translateY(-1px);
+}
+
+/* Live Camera View inside Popover */
+.popoverCameraWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.popoverCameraViewport {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.popoverCameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.popoverCameraErrorBox {
+  position: absolute;
+  inset: 0;
+  background: #FEF2F2;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  color: #DC2626;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.popoverCameraRetryBtn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.popoverCameraRetryBtn:hover {
+  background: #1D4ED8;
+}
+
+.popoverCameraControlsRow {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.popoverCameraCancelBtn {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.popoverCameraCancelBtn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.popoverCameraCaptureBtn {
+  background: linear-gradient(90deg, #1D4ED8 0%, #2563EB 100%);
+  color: #FFFFFF;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.popoverCameraCaptureBtn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #1E40AF 0%, #1D4ED8 100%);
+  transform: translateY(-1px);
+}
+
+.popoverCameraCaptureBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Selected Image Preview State inside Popover */
+.popoverSelectedWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.popoverSelectedCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #F8FAFD;
+  border: 1px solid #DBEAFE;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.popoverSelectedThumbWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popoverSelectedThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.popoverSelectedMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.popoverSelectedName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popoverSelectedSize {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.popoverSelectedRemoveBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.popoverSelectedRemoveBtn:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+  border-color: #FECACA;
+}
+
+.popoverSelectedActionsRow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.popoverSelectedActionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #FFFFFF;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1D4ED8;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.popoverSelectedActionBtn:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+}
+
+.popoverSelectedActionBtnFull {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #FFFFFF;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1D4ED8;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.popoverSelectedActionBtnFull:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
 }
 
 .categoryListWrap {

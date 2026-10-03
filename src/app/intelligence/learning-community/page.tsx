@@ -458,6 +458,12 @@ export default function LearningCommunityPage() {
   const addImagePopoverRef = useRef<HTMLDivElement | null>(null);
   const categoryPopoverRef = useRef<HTMLDivElement | null>(null);
 
+  // Feed composer live camera state
+  const [isFeedCameraActive, setIsFeedCameraActive] = useState(false);
+  const [feedCameraError, setFeedCameraError] = useState<string | null>(null);
+  const feedVideoRef = useRef<HTMLVideoElement | null>(null);
+  const feedMediaStreamRef = useRef<MediaStream | null>(null);
+
   // Community Stats Right Drawer state
   const [isStatsDrawerOpen, setIsStatsDrawerOpen] = useState(false);
   const [activityPeriod, setActivityPeriod] = useState<"7D" | "30D" | "90D">("30D");
@@ -972,9 +978,110 @@ export default function LearningCommunityPage() {
     }
   }, [isCreateModalOpen]);
 
+  const stopFeedCameraStream = () => {
+    if (feedMediaStreamRef.current) {
+      feedMediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      feedMediaStreamRef.current = null;
+    }
+    if (feedVideoRef.current) {
+      feedVideoRef.current.srcObject = null;
+    }
+  };
+
+  const startFeedCameraStream = async () => {
+    stopFeedCameraStream();
+    setFeedCameraError(null);
+    setIsFeedCameraActive(true);
+
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setFeedCameraError("Camera access is required to take a photo.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+      feedMediaStreamRef.current = stream;
+      if (feedVideoRef.current) {
+        feedVideoRef.current.srcObject = stream;
+        feedVideoRef.current.play().catch(() => {});
+      }
+    } catch (err: any) {
+      console.warn("[Feed Camera Access Error]", err);
+      setFeedCameraError("Camera access is required to take a photo.");
+    }
+  };
+
+  const handleCaptureFeedPhoto = () => {
+    if (!feedVideoRef.current) return;
+    const video = feedVideoRef.current;
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      const approxBytes = Math.round((dataUrl.length * 3) / 4);
+      const sizeFormatted =
+        approxBytes < 1024 * 1024
+          ? `${(approxBytes / 1024).toFixed(1)} KB`
+          : `${(approxBytes / (1024 * 1024)).toFixed(1)} MB`;
+
+      setComposerImageUrl(dataUrl);
+      setComposerImageMeta({
+        name: "camera-photo.jpg",
+        sizeFormatted,
+      });
+      setComposerImageError(null);
+    }
+
+    stopFeedCameraStream();
+    setIsFeedCameraActive(false);
+  };
+
+  const handleCancelFeedCamera = () => {
+    stopFeedCameraStream();
+    setIsFeedCameraActive(false);
+    setFeedCameraError(null);
+  };
+
+  const handleRetakeFeedPhoto = () => {
+    startFeedCameraStream();
+  };
+
+  const closeAddImagePopover = () => {
+    stopFeedCameraStream();
+    setIsFeedCameraActive(false);
+    setFeedCameraError(null);
+    setIsAddImageOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isAddImageOpen) {
+      stopFeedCameraStream();
+      setIsFeedCameraActive(false);
+      setFeedCameraError(null);
+    }
+  }, [isAddImageOpen]);
+
   useEffect(() => {
     return () => {
       stopCameraStream();
+      stopFeedCameraStream();
     };
   }, []);
 
@@ -984,7 +1091,7 @@ export default function LearningCommunityPage() {
         addImagePopoverRef.current &&
         !addImagePopoverRef.current.contains(e.target as Node)
       ) {
-        setIsAddImageOpen(false);
+        closeAddImagePopover();
       }
       if (
         categoryPopoverRef.current &&
@@ -993,8 +1100,20 @@ export default function LearningCommunityPage() {
         setIsCategoryOpen(false);
       }
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeAddImagePopover();
+        setIsCategoryOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const processComposerImage = (file: File) => {
@@ -1040,6 +1159,8 @@ export default function LearningCommunityPage() {
 
   const handleRemoveComposerImage = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    stopFeedCameraStream();
+    setIsFeedCameraActive(false);
     setComposerImageUrl(null);
     setComposerImageMeta(null);
     setComposerImageError(null);
@@ -1892,127 +2013,207 @@ export default function LearningCommunityPage() {
                           <button
                             type="button"
                             className={styles.popoverCloseBtn}
-                            onClick={() => setIsAddImageOpen(false)}
+                            onClick={closeAddImagePopover}
                             aria-label="Close"
                           >
                             ✕
                           </button>
                         </div>
 
-                        {!composerImageUrl ? (
-                          <div
-                            className={`${styles.imageDropZone} ${
-                              isFeedDragging ? styles.imageDropZoneActive : ""
-                            }`}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              setIsFeedDragging(true);
-                            }}
-                            onDragLeave={(e) => {
-                              e.preventDefault();
-                              setIsFeedDragging(false);
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              setIsFeedDragging(false);
-                              const files = e.dataTransfer?.files;
-                              if (files && files.length > 0) {
-                                processComposerImage(files[0]);
-                              }
-                            }}
-                            onClick={() => feedFileInputRef.current?.click()}
-                            role="button"
-                            tabIndex={0}
-                          >
-                            <div className={styles.uploadCloudIconWrap} aria-hidden="true">
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                <circle cx="9" cy="9" r="2" />
-                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                                <path d="M12 11v6" strokeWidth="2.5" />
-                                <path d="m9 14 3-3 3 3" strokeWidth="2.5" />
-                              </svg>
+                        {isFeedCameraActive ? (
+                          <div className={styles.popoverCameraWrap}>
+                            <div className={styles.popoverCameraViewport}>
+                              <video
+                                ref={feedVideoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className={styles.popoverCameraVideo}
+                              />
+                              {feedCameraError && (
+                                <div className={styles.popoverCameraErrorBox} role="alert">
+                                  <span>{feedCameraError}</span>
+                                  <button
+                                    type="button"
+                                    className={styles.popoverCameraRetryBtn}
+                                    onClick={startFeedCameraStream}
+                                  >
+                                    Try Again
+                                  </button>
+                                </div>
+                              )}
                             </div>
-
-                            <div className={styles.uploadTextGroup}>
-                              <div className={styles.uploadPrimaryText}>Drag & drop an image here</div>
-                              <div className={styles.uploadSecondaryText}>or click to upload</div>
+                            <div className={styles.popoverCameraControlsRow}>
+                              <button
+                                type="button"
+                                className={styles.popoverCameraCancelBtn}
+                                onClick={handleCancelFeedCamera}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.popoverCameraCaptureBtn}
+                                onClick={handleCaptureFeedPhoto}
+                                disabled={Boolean(feedCameraError)}
+                              >
+                                Capture Photo
+                              </button>
                             </div>
-
-                            <button
-                              type="button"
-                              className={styles.popoverBrowseBtn}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                feedFileInputRef.current?.click();
-                              }}
-                            >
-                              Browse Files
-                            </button>
-
-                            <div className={styles.uploadHelperText}>Supports: JPG, PNG, WEBP (Max 5MB)</div>
                           </div>
-                        ) : (
-                          <div className={styles.attachmentPreviewCard}>
-                            <div className={styles.attachmentPreviewLeft}>
-                              <div className={styles.attachmentThumbWrap}>
+                        ) : composerImageUrl && composerImageMeta ? (
+                          <div className={styles.popoverSelectedWrap}>
+                            <div className={styles.popoverSelectedCard}>
+                              <div className={styles.popoverSelectedThumbWrap}>
                                 <img
                                   src={composerImageUrl}
-                                  alt={composerImageMeta?.name || "Image attachment"}
-                                  className={styles.attachmentThumbImg}
+                                  alt={composerImageMeta.name || "Attached preview"}
+                                  className={styles.popoverSelectedThumb}
                                 />
                               </div>
-                              <div className={styles.attachmentMeta}>
-                                <span className={styles.attachmentFileName} title={composerImageMeta?.name || "Attached image"}>
-                                  {composerImageMeta?.name || "Attached image"}
+                              <div className={styles.popoverSelectedMeta}>
+                                <span className={styles.popoverSelectedName} title={composerImageMeta.name}>
+                                  {composerImageMeta.name}
                                 </span>
-                                <span className={styles.attachmentFileSize}>
-                                  {composerImageMeta?.sizeFormatted || ""}
+                                <span className={styles.popoverSelectedSize}>
+                                  {composerImageMeta.sizeFormatted}
                                 </span>
                               </div>
+                              <button
+                                type="button"
+                                className={styles.popoverSelectedRemoveBtn}
+                                onClick={handleRemoveComposerImage}
+                                title="Remove image"
+                                aria-label="Remove image"
+                              >
+                                ✕
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              className={styles.btnRemoveAttachment}
-                              onClick={handleRemoveComposerImage}
-                              title="Remove image"
-                              aria-label="Remove image"
+
+                            <div className={styles.popoverSelectedActionsRow}>
+                              {composerImageMeta.name === "camera-photo.jpg" ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    className={styles.popoverSelectedActionBtn}
+                                    onClick={handleRetakeFeedPhoto}
+                                  >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                      <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                    <span>Retake</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={styles.popoverSelectedActionBtn}
+                                    onClick={() => feedFileInputRef.current?.click()}
+                                  >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                                    </svg>
+                                    <span>Replace Image</span>
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={styles.popoverSelectedActionBtnFull}
+                                  onClick={() => feedFileInputRef.current?.click()}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                                  </svg>
+                                  <span>Choose Different Image</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div
+                              className={`${styles.popoverDropzone} ${
+                                isFeedDragging ? styles.popoverDropzoneActive : ""
+                              }`}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                setIsFeedDragging(true);
+                              }}
+                              onDragLeave={(e) => {
+                                e.preventDefault();
+                                setIsFeedDragging(false);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                setIsFeedDragging(false);
+                                const files = e.dataTransfer?.files;
+                                if (files && files.length > 0) {
+                                  processComposerImage(files[0]);
+                                }
+                              }}
+                              onClick={() => feedFileInputRef.current?.click()}
+                              role="button"
+                              tabIndex={0}
                             >
-                              ✕
-                            </button>
-                          </div>
-                        )}
+                              <div className={styles.popoverUploadIconWrap} aria-hidden="true">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                  <circle cx="9" cy="9" r="2" />
+                                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                  <path d="M12 11v5" strokeWidth="2.5" />
+                                  <path d="m9.5 13.5 2.5-2.5 2.5 2.5" strokeWidth="2.5" />
+                                </svg>
+                              </div>
 
-                        {composerImageError && (
-                          <div className={styles.imageValidationMsg} role="alert">
-                            <span>{composerImageError}</span>
-                          </div>
-                        )}
+                              <div className={styles.popoverDropPrimaryText}>Drag & drop image here</div>
+                              <div className={styles.popoverDropSecondaryText}>or click to browse</div>
 
-                        <div className={styles.quickOptionsTitle}>Quick Options</div>
-                        <div className={styles.quickOptionsRow}>
-                          <button
-                            type="button"
-                            className={styles.quickOptionBtn}
-                            onClick={() => feedCameraInputRef.current?.click()}
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                              <circle cx="12" cy="13" r="4" />
-                            </svg>
-                            <span>Take Photo</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.quickOptionBtn}
-                            onClick={() => feedFileInputRef.current?.click()}
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                            </svg>
-                            <span>From Device</span>
-                          </button>
-                        </div>
+                              <button
+                                type="button"
+                                className={styles.popoverBrowseBtn}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  feedFileInputRef.current?.click();
+                                }}
+                              >
+                                Browse Files
+                              </button>
+
+                              <div className={styles.popoverDropHelperText}>JPG, PNG, WEBP • Max 5MB</div>
+                            </div>
+
+                            {composerImageError && (
+                              <div className={styles.popoverValidationMsg} role="alert">
+                                <span>{composerImageError}</span>
+                              </div>
+                            )}
+
+                            <div className={styles.quickOptionsTitle}>QUICK OPTIONS</div>
+                            <div className={styles.quickOptionsRow}>
+                              <button
+                                type="button"
+                                className={styles.quickOptionBtn}
+                                onClick={startFeedCameraStream}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                  <circle cx="12" cy="13" r="4" />
+                                </svg>
+                                <span>Take Photo</span>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.quickOptionBtn}
+                                onClick={() => feedFileInputRef.current?.click()}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                                </svg>
+                                <span>From Device</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
