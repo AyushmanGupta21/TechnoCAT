@@ -180,39 +180,39 @@ const MODAL_CATEGORIES_CONFIG: {
   },
   {
     name: "Doubt Solving",
-    desc: "Get help with specific CAT questions",
+    desc: "Ask and solve your doubts",
     iconBg: "#FEF2F2",
-    iconColor: "#EA580C",
+    iconColor: "#F43F5E",
   },
   {
     name: "Study Resources",
-    desc: "Books, notes, formulas, and materials",
+    desc: "Books, notes, PYQs and useful materials",
     iconBg: "#EFF6FF",
     iconColor: "#2563EB",
   },
   {
     name: "Mocks & Analysis",
-    desc: "Mock scores, percentiles, analysis tips",
+    desc: "Mock tests, analysis and performance",
     iconBg: "#F0FDF4",
-    iconColor: "#16A34A",
+    iconColor: "#0284C7",
   },
   {
     name: "College Discussions",
-    desc: "IIMs, FMS, XLRI, cutoffs & interviews",
+    desc: "Colleges, admissions, cutoffs, selection",
     iconBg: "#F5F3FF",
     iconColor: "#7C3AED",
   },
   {
     name: "Motivation & Journey",
-    desc: "Success stories, daily motivation, mindset",
+    desc: "Share your journey and stay motivated",
     iconBg: "#FFFBEB",
     iconColor: "#D97706",
   },
   {
     name: "Off-topic",
-    desc: "Casual chats and non-CAT discussions",
+    desc: "Fun, general chat and more",
     iconBg: "#FDF2F8",
-    iconColor: "#DB2777",
+    iconColor: "#7C3AED",
   },
 ];
 
@@ -2876,11 +2876,16 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="create-post-modal-title"
         >
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+          <div className={`${styles.modalCard} ${styles.discussionModalCard}`} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 id="create-post-modal-title" className={styles.modalTitle}>
-                Start a New Discussion
-              </h2>
+              <div>
+                <h2 id="create-post-modal-title" className={styles.modalTitle}>
+                  Start a New Discussion
+                </h2>
+                <p className={styles.modalSubtitle}>
+                  Share your thoughts, ask a doubt, or start a meaningful discussion with the community.
+                </p>
+              </div>
               <button
                 type="button"
                 className={styles.modalCloseBtn}
@@ -3008,7 +3013,6 @@ export default function LearningCommunityPage() {
                                 <div
                                   className={styles.modalCategoryIconBox}
                                   style={{
-                                    background: cat.iconBg,
                                     color: cat.iconColor,
                                   }}
                                   aria-hidden="true"
@@ -3042,14 +3046,20 @@ export default function LearningCommunityPage() {
                   <label className={styles.formLabel} htmlFor="post-content-textarea">
                     Content
                   </label>
-                  <textarea
-                    id="post-content-textarea"
-                    className={styles.formTextarea}
-                    placeholder="Share your thoughts, ask a doubt, or start a discussion..."
-                    value={newContent}
-                    onChange={(e) => setNewContent(e.target.value)}
-                    required
-                  />
+                  <div className={styles.textareaWrapper}>
+                    <textarea
+                      id="post-content-textarea"
+                      className={styles.formTextarea}
+                      placeholder="Share your thoughts, ask a doubt, or start a discussion..."
+                      value={newContent}
+                      onChange={(e) => setNewContent(e.target.value)}
+                      maxLength={2000}
+                      required
+                    />
+                    <div className={styles.textareaCounter}>
+                      {newContent.length}/2000
+                    </div>
+                  </div>
                 </div>
 
                 {/* Image Attachment (3-State: Upload Dropzone, Live Camera, or Selected Preview) */}
