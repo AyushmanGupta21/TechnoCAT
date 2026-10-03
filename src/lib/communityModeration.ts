@@ -64,11 +64,11 @@ export function validateCommunityContent(
         reason: "Discussion title must be at least 6 characters long.",
       };
     }
-    if (cleanTitle.length > 150) {
+    if (cleanTitle.length > 50) {
       return {
         isValid: false,
         flagType: "length",
-        reason: "Discussion title cannot exceed 150 characters.",
+        reason: "Discussion title cannot exceed 50 characters.",
       };
     }
   }

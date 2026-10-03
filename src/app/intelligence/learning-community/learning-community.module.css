@@ -2563,6 +2563,33 @@
   border-radius: 50%;
 }
 
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapper .formInput {
+  padding-right: 56px;
+}
+
+.inputCounter {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.formLabelHint {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #64748B;
+  margin-left: 6px;
+}
+
 .textareaWrapper {
   position: relative;
   width: 100%;

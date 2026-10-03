@@ -2884,16 +2884,23 @@ export default function LearningCommunityPage() {
                 <div className={styles.formField}>
                   <label className={styles.formLabel} htmlFor="post-title-input">
                     Title
+                    <span className={styles.formLabelHint}>(max 50 characters)</span>
                   </label>
-                  <input
-                    id="post-title-input"
-                    type="text"
-                    className={styles.formInput}
-                    placeholder="e.g., How to approach DILR sets effectively?"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    required
-                  />
+                  <div className={styles.inputWrapper}>
+                    <input
+                      id="post-title-input"
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="e.g., How to approach DILR sets effectively?"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      maxLength={50}
+                      required
+                    />
+                    <div className={styles.inputCounter}>
+                      {newTitle.length}/50
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.formField} ref={modalCategoryRef}>
@@ -3012,6 +3019,7 @@ export default function LearningCommunityPage() {
                 <div className={styles.formField}>
                   <label className={styles.formLabel} htmlFor="post-content-textarea">
                     Content
+                    <span className={styles.formLabelHint}>(min 15 characters)</span>
                   </label>
                   <div className={styles.textareaWrapper}>
                     <textarea
