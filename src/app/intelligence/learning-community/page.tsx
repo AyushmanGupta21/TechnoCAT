@@ -2858,7 +2858,7 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="create-post-modal-title"
         >
-          <div className={`${styles.modalCard} ${styles.discussionModalCard}`} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
                 <h2 id="create-post-modal-title" className={styles.modalTitle}>
@@ -2878,7 +2878,7 @@ export default function LearningCommunityPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreatePostSubmit}>
+            <form onSubmit={handleCreatePostSubmit} className={styles.modalForm}>
               <div className={styles.modalBody}>
                 {createError && (
                   <div
