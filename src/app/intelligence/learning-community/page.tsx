@@ -572,17 +572,53 @@ export default function LearningCommunityPage() {
     };
   }, []);
 
-  // Lock body scroll when drawer, modal, or stat popover is open
+  // Comprehensive scroll lock when modal, panel, or drawer is open
+  const isAnyModalOrPanelOpen = Boolean(
+    isCreateModalOpen ||
+    isAddImageOpen ||
+    activePostId ||
+    isStatsDrawerOpen ||
+    activeStatPopup ||
+    mobileDrawer
+  );
+
   useEffect(() => {
-    if (isStatsDrawerOpen || isCreateModalOpen || activePostId || activeStatPopup) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
+    if (!isAnyModalOrPanelOpen) return;
+
+    // Save previous overflow values
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    // Lock body and html scroll so background page cannot move
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    // Prevent wheel, trackpad, and touchmove from scrolling background page
+    const preventBackgroundScroll = (e: TouchEvent | WheelEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      // Allow internal scrolling ONLY inside active scrollable modal/panel containers
+      const scrollable = target.closest(
+        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.statsDrawerBody}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
+      );
+      if (!scrollable) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      }
     };
-  }, [isStatsDrawerOpen, isCreateModalOpen, activePostId, activeStatPopup]);
+
+    window.addEventListener("wheel", preventBackgroundScroll, { passive: false });
+    window.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
+
+    return () => {
+      // Cleanly restore previous overflow values upon close or unmount
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      window.removeEventListener("wheel", preventBackgroundScroll);
+      window.removeEventListener("touchmove", preventBackgroundScroll);
+    };
+  }, [isAnyModalOrPanelOpen]);
 
   // Close 3-dot dropdown, modals, drawer, or stat popovers on outside click or Escape
   useEffect(() => {
@@ -596,6 +632,7 @@ export default function LearningCommunityPage() {
         setActivePostId(null);
         setIsStatsDrawerOpen(false);
         setActiveStatPopup(null);
+        setIsAddImageOpen(false);
       }
     };
     window.addEventListener("click", handleGlobalClick);

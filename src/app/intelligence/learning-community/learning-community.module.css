@@ -867,6 +867,9 @@
   top: calc(100% + 10px);
   left: 0;
   width: 370px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #FFFFFF;
   border: 1.5px solid #E2EEFF;
   border-radius: 16px;
@@ -2211,6 +2214,7 @@
   justify-content: center;
   padding: 20px;
   animation: fadeOverlay 0.18s ease-out;
+  overscroll-behavior: contain;
 }
 
 @keyframes fadeOverlay {
@@ -2234,6 +2238,7 @@
   overflow: hidden;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
   animation: scaleModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overscroll-behavior: contain;
 }
 
 .discussionModalCard {
@@ -2304,6 +2309,7 @@
 .modalBody {
   padding: 22px 28px 24px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 16px;
