@@ -1418,8 +1418,16 @@ export default function LearningCommunityPage() {
   const handleReportPost = async (postId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setOpenMenuPostId(null);
-    await reportCommunityPostAction(postId);
-    showToast("Thank you. Discussion reported to moderators for review.");
+    const res = await reportCommunityPostAction(postId);
+    if (res?.autoDeleted && res?.payload) {
+      setData(res.payload);
+      if (activePostId === postId) {
+        setActivePostId(null);
+      }
+      showToast("Discussion received multiple reports and was automatically removed.");
+    } else {
+      showToast("Thank you. Discussion reported to moderators for review.");
+    }
   };
 
   const handleAddComment = async (e: React.FormEvent) => {

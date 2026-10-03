@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { query, getProfileById, getProfileByEmail } from "@/lib/db";
+import { validateCommunityContent, validateCommentContent } from "@/lib/communityModeration";
 
 export type CommunityCategory =
   | "General Discussion"
@@ -172,6 +173,18 @@ async function ensureCommunityTablesAndSeed() {
       post_id TEXT NOT NULL,
       user_id TEXT NOT NULL,
       reason TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    )
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.community_moderation_logs (
+      id SERIAL PRIMARY KEY,
+      post_id TEXT,
+      author_id TEXT,
+      reason TEXT NOT NULL,
+      violating_snippet TEXT,
+      action_taken TEXT DEFAULT 'rejected_at_submit',
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     )
   `);
@@ -401,9 +414,25 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
     "post-ref-3": 10,
   };
 
-  const posts: CommunityPostItem[] = postsRes.rows
-    .filter((row: any) => !String(row.id).startsWith("post-seed-"))
-    .map((row: any) => {
+  const validRows: any[] = [];
+  for (const row of postsRes.rows) {
+    if (String(row.id).startsWith("post-seed-")) continue;
+
+    // Auto-detect and purge any unwanted content
+    const modCheck = validateCommunityContent(String(row.title || ""), String(row.content || ""));
+    if (!modCheck.isValid) {
+      query(`DELETE FROM public.community_posts WHERE id = $1`, [row.id]).catch(() => {});
+      query(
+        `INSERT INTO public.community_moderation_logs (post_id, author_id, reason, violating_snippet, action_taken)
+         VALUES ($1, $2, $3, $4, 'auto_deleted_background_sweep')`,
+        [row.id, row.author_id, modCheck.reason || "Auto-detected unwanted content", String(row.title || "").slice(0, 100)]
+      ).catch(() => {});
+      continue;
+    }
+    validRows.push(row);
+  }
+
+  const posts: CommunityPostItem[] = validRows.map((row: any) => {
       const postId = String(row.id);
       const postComments = commentsByPost.get(postId) || [];
       const displayCommentCount = postComments.length + (baselineCommentBonus[postId] || 0);
@@ -521,6 +550,49 @@ export async function createCommunityPostAction(input: {
 
     if (!cleanTitle || !cleanContent) {
       return { success: false, error: "Please enter both a title and content for your discussion." };
+    }
+
+    // 1. Content Moderation & Anti-Spam Validation
+    const moderation = validateCommunityContent(cleanTitle, cleanContent);
+    if (!moderation.isValid) {
+      query(
+        `INSERT INTO public.community_moderation_logs (post_id, author_id, reason, violating_snippet, action_taken)
+         VALUES ($1, $2, $3, $4, 'rejected_at_submit')`,
+        [null, user.id, moderation.reason || "Content moderation violation", cleanTitle.slice(0, 100)]
+      ).catch(() => {});
+
+      return {
+        success: false,
+        error: moderation.reason || "Discussion could not be posted due to community safety guidelines.",
+      };
+    }
+
+    // 2. Velocity / Rate Limiting (Prevent spam flooding: 30s cooldown between posts)
+    const recentPostRes = await query(
+      `SELECT created_at FROM public.community_posts
+       WHERE author_id = $1 AND created_at > NOW() - INTERVAL '30 seconds'
+       LIMIT 1`,
+      [user.id]
+    );
+    if (recentPostRes.rows.length > 0) {
+      return {
+        success: false,
+        error: "You are posting too quickly. Please wait 30 seconds before creating another discussion.",
+      };
+    }
+
+    // 3. Duplicate Post Check (Within 2 hours)
+    const duplicateRes = await query(
+      `SELECT id FROM public.community_posts
+       WHERE author_id = $1 AND title = $2 AND created_at > NOW() - INTERVAL '2 hours'
+       LIMIT 1`,
+      [user.id, cleanTitle]
+    );
+    if (duplicateRes.rows.length > 0) {
+      return {
+        success: false,
+        error: "A discussion with this exact title was already posted recently. Please avoid duplicate posts.",
+      };
     }
 
     const postId = `post-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -643,6 +715,14 @@ export async function addCommentOrReplyAction(input: {
       return { success: false, error: "Comment cannot be empty." };
     }
 
+    const modCheck = validateCommentContent(cleanContent);
+    if (!modCheck.isValid) {
+      return {
+        success: false,
+        error: modCheck.reason || "Comment violates community guidelines.",
+      };
+    }
+
     const commentId = `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
     await query(
@@ -706,6 +786,8 @@ export async function deleteCommunityPostAction(postId: string): Promise<{
 
 export async function reportCommunityPostAction(postId: string, reason?: string): Promise<{
   success: boolean;
+  autoDeleted?: boolean;
+  payload?: CommunityPayload;
 }> {
   try {
     await ensureCommunityTablesAndSeed();
@@ -714,7 +796,35 @@ export async function reportCommunityPostAction(postId: string, reason?: string)
       `INSERT INTO public.community_reports (post_id, user_id, reason) VALUES ($1, $2, $3)`,
       [postId, user.id, reason || "Flagged by community member"]
     );
-    return { success: true };
+
+    // Check total distinct community reports for this post
+    const reportsRes = await query(
+      `SELECT COUNT(DISTINCT user_id) as count FROM public.community_reports WHERE post_id = $1`,
+      [postId]
+    );
+    const count = parseInt(reportsRes.rows[0]?.count || "0", 10);
+
+    // Auto-delete if reported by 2 or more distinct members
+    if (count >= 2) {
+      const pInfo = await query(`SELECT title, author_id FROM public.community_posts WHERE id = $1`, [postId]);
+      if (pInfo.rows.length > 0) {
+        await query(
+          `INSERT INTO public.community_moderation_logs (post_id, author_id, reason, violating_snippet, action_taken)
+           VALUES ($1, $2, $3, $4, 'auto_deleted_community_reports')`,
+          [
+            postId,
+            pInfo.rows[0].author_id,
+            `Auto-deleted after ${count} community reports (${reason || "Flagged"})`,
+            String(pInfo.rows[0].title).slice(0, 100),
+          ]
+        ).catch(() => {});
+      }
+      await query(`DELETE FROM public.community_posts WHERE id = $1`, [postId]);
+      const payload = await getCommunityDataAction();
+      return { success: true, autoDeleted: true, payload };
+    }
+
+    return { success: true, autoDeleted: false };
   } catch (err) {
     console.error("[reportCommunityPostAction Error]", err);
     return { success: false };
