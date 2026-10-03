@@ -180,39 +180,39 @@ const MODAL_CATEGORIES_CONFIG: {
   },
   {
     name: "Doubt Solving",
-    desc: "Ask and solve your doubts",
+    desc: "Get help with specific CAT questions",
     iconBg: "#FEF2F2",
-    iconColor: "#E11D48",
+    iconColor: "#EA580C",
   },
   {
     name: "Study Resources",
-    desc: "Books, notes, PYQs and useful materials",
+    desc: "Books, notes, formulas, and materials",
     iconBg: "#EFF6FF",
     iconColor: "#2563EB",
   },
   {
     name: "Mocks & Analysis",
-    desc: "Mock tests, analysis and performance",
-    iconBg: "#F0F9FF",
-    iconColor: "#0284C7",
+    desc: "Mock scores, percentiles, analysis tips",
+    iconBg: "#F0FDF4",
+    iconColor: "#16A34A",
   },
   {
     name: "College Discussions",
-    desc: "Colleges, admissions, cutoffs, selection",
+    desc: "IIMs, FMS, XLRI, cutoffs & interviews",
     iconBg: "#F5F3FF",
     iconColor: "#7C3AED",
   },
   {
     name: "Motivation & Journey",
-    desc: "Share your journey and stay motivated",
+    desc: "Success stories, daily motivation, mindset",
     iconBg: "#FFFBEB",
     iconColor: "#D97706",
   },
   {
     name: "Off-topic",
-    desc: "Fun, general chat and more",
-    iconBg: "#F5F3FF",
-    iconColor: "#7C3AED",
+    desc: "Casual chats and non-CAT discussions",
+    iconBg: "#FDF2F8",
+    iconColor: "#DB2777",
   },
 ];
 
@@ -2977,22 +2977,10 @@ export default function LearningCommunityPage() {
                   {isModalCategoryOpen && (
                     <div
                       className={styles.modalCategoryPanel}
-                      role="dialog"
-                      aria-label="Choose a Category"
+                      role="listbox"
+                      aria-label="Category Options"
                     >
-                      <div className={styles.modalCategoryHeader}>
-                        <span className={styles.modalCategoryHeading}>Choose a Category</span>
-                        <button
-                          type="button"
-                          className={styles.modalCategoryCloseBtn}
-                          onClick={() => setIsModalCategoryOpen(false)}
-                          aria-label="Close category picker"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      <div className={styles.modalCategoryList} role="listbox" aria-label="Categories">
+                      <div className={styles.modalCategoryList}>
                         {MODAL_CATEGORIES_CONFIG.map((cat) => {
                           const isSelected = newCategory === cat.name;
                           return (
