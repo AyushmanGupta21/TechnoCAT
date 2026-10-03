@@ -1494,6 +1494,317 @@
   color: #2563EB;
 }
 
+.flowStepActive .flowNode {
+  transform: translateY(-4px) scale(1.08);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.22),
+              inset 0 1.5px 1.5px 0 #FFFFFF,
+              0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.flowStepActive .flowNodeShadow {
+  transform: scale(1.15);
+  opacity: 0.9;
+}
+
+.flowStepActive .flowText {
+  color: #2563EB;
+  font-weight: 800;
+}
+
+.flowSectionSubtitle {
+  text-align: center;
+  font-size: 13.5px;
+  color: #64748B;
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+/* Flow Step Popup Modal */
+.flowModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: flowFadeOverlay 0.18s ease-out;
+}
+
+@keyframes flowFadeOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.flowModalCard {
+  background: #FFFFFF;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  animation: flowScaleModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@keyframes flowScaleModal {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.flowModalHeader {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+}
+
+.flowModalHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flowModalStepBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.flowModalStepShortDesc {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.flowModalCloseBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.flowModalCloseBtn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+.flowModalBody {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.flowModalTitleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flowModalShortLabel {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #2563EB;
+}
+
+.flowModalMainTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.flowModalDescription {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #475569;
+  line-height: 1.6;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0;
+}
+
+.flowModalTipsBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flowModalTipsTitle {
+  font-size: 12px;
+  font-weight: 750;
+  color: #0F172A;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flowModalTipsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flowModalTipItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.flowModalTipBullet {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.flowModalFooter {
+  padding: 16px 24px 20px;
+  border-top: 1px solid #F1F5F9;
+  background: #FAFCFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.flowModalNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flowModalNavBtn {
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flowModalNavBtn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+.flowModalCtaBtn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  text-decoration: none;
+}
+
+.flowModalCtaBtn:hover {
+  background: #1D4ED8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+@media (max-width: 640px) {
+  .flowModalCard {
+    max-width: 100%;
+    border-radius: 20px;
+  }
+  .flowModalHeader {
+    padding: 16px 18px 12px;
+  }
+  .flowModalBody {
+    padding: 18px 18px;
+  }
+  .flowModalMainTitle {
+    font-size: 17.5px;
+  }
+  .flowModalFooter {
+    padding: 14px 18px 16px;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .flowModalNavGroup {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .flowModalCtaBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Responsive */
 @media (max-width: 1023px) and (min-width: 768px) {
   .flowSection {

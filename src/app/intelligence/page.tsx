@@ -37,12 +37,139 @@ interface DashboardData {
   };
 }
 
+interface FlowStepConfig {
+  id: number;
+  label: string;
+  shortDesc: string;
+  title: string;
+  description: string;
+  tips: string[];
+  ctaText: string;
+  ctaHref: string;
+  themeColor: string;
+  badgeBg: string;
+}
+
+const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
+  {
+    id: 1,
+    label: "TAKE A MOCK",
+    shortDesc: "Simulate real exam conditions",
+    title: "Take a Full or Sectional Mock Exam",
+    description: "Attempt a full-length 2-hour mock or 40-minute sectional mock under strict exam constraints. TechnoCAT replicates the real TCS-iON interface, sectional timers, marking scheme (+3 / -1), and virtual calculator to build your psychological stamina and pacing.",
+    tips: [
+      "Take mocks during your actual CAT exam slot (e.g., 8:30 AM, 12:30 PM, or 4:30 PM).",
+      "Never pause or restart midway — train your brain to adapt to unexpected tough questions.",
+      "Practice round-1 skimming to pick the highest accuracy 'sitter' questions first."
+    ],
+    ctaText: "Browse Mock Tests",
+    ctaHref: "/browse",
+    themeColor: "#2563EB",
+    badgeBg: "#EFF6FF"
+  },
+  {
+    id: 2,
+    label: "ANALYZE PERFORMANCE",
+    shortDesc: "Deep-dive into sectional scores",
+    title: "In-Depth Performance Analytics",
+    description: "Don't just look at the raw composite score. Evaluate your sectional percentiles, accuracy rates, attempt velocity, and time spent per question. Understand where your minutes were spent productively vs. where you got bogged down.",
+    tips: [
+      "Compare your attempt-to-accuracy ratio across VARC, DILR, and QA.",
+      "Inspect time wasted on questions you ended up leaving blank or getting wrong.",
+      "Benchmark your sectional pacing against 99th percentile target timelines."
+    ],
+    ctaText: "View Performance Analytics",
+    ctaHref: "/analytics",
+    themeColor: "#4F46E5",
+    badgeBg: "#EEF2FF"
+  },
+  {
+    id: 3,
+    label: "IDENTIFY MISTAKES",
+    shortDesc: "Pinpoint & classify every error",
+    title: "Classify & Track Your Errors",
+    description: "Every incorrect question is a golden opportunity. Classify your errors into Conceptual Gaps, Calculation Slips, Misread Questions, or Panic Guesses. TechnoCAT's Error Tracker maps mistakes directly to your preparation log.",
+    tips: [
+      "A negative mark costs 4 marks (+3 unearned + 1 deduction) — eliminate wild guesses.",
+      "Log unforced errors in your Error Diary so you never repeat the same blunder twice.",
+      "Review correct answers too to discover faster, more elegant alternative shortcuts."
+    ],
+    ctaText: "Open Error Tracker",
+    ctaHref: "/intelligence/error-tracking",
+    themeColor: "#E11D48",
+    badgeBg: "#FFF1F2"
+  },
+  {
+    id: 4,
+    label: "GET AI INSIGHTS",
+    shortDesc: "AI diagnostic recommendations",
+    title: "AI Diagnostic Analysis & Recommendations",
+    description: "TechnoCAT AI analyzes your entire mock attempt trajectory to reveal subconscious patterns: section-3 fatigue, overconfidence in geometry, or getting trapped in lengthy DILR sets. Get actionable recommendations tailored specifically to your test profile.",
+    tips: [
+      "Review your AI-generated Weakness Radar to focus on high-yield topic improvements.",
+      "Follow recommended question selection rules based on your proven sectional strengths.",
+      "Monitor your predicted percentile bracket with the CAT Readiness Meter."
+    ],
+    ctaText: "Explore AI Insights",
+    ctaHref: "/intelligence/ai-analysis",
+    themeColor: "#0284C7",
+    badgeBg: "#F0F9FF"
+  },
+  {
+    id: 5,
+    label: "TARGET WEAK TOPICS",
+    shortDesc: "Focused drills on low-accuracy topics",
+    title: "Targeted Drills & Concept Mastery",
+    description: "Zero in on the specific topic clusters where your accuracy dropped below 65%. Practice focused topic quizzes, review foundational theories, and solve previous year CAT questions to turn weak spots into dependable strengths.",
+    tips: [
+      "Dedicate 70% of non-mock study hours to high-weightage identified weak areas.",
+      "Practice topic quizzes under 1.5 to 2 minutes-per-question time caps.",
+      "Solve at least 20-30 varied problem types per subtopic before retaking a full mock."
+    ],
+    ctaText: "Practice Topic Quizzes",
+    ctaHref: "/topics",
+    themeColor: "#D97706",
+    badgeBg: "#FFFBEB"
+  },
+  {
+    id: 6,
+    label: "IMPROVE YOUR SCORE",
+    shortDesc: "Retest, measure & close the loop",
+    title: "Re-Attempt & Measure Readiness",
+    description: "Armed with identified mistakes, AI insights, and reinforced concepts, step back into your next mock test. Watch your accuracy improve, negative marks shrink, and overall CAT percentile climb. Repeat this continuous improvement loop to reach your target 99+ percentile.",
+    tips: [
+      "Implement 1 or 2 specific strategy tweaks per new mock test (e.g., skip Set 1 in DILR if hard).",
+      "Monitor your CAT Readiness Meter trend week over week to verify upward progress.",
+      "Consistency across 15–25 completed mock cycles builds unbreakable test-day confidence."
+    ],
+    ctaText: "Check Readiness Meter",
+    ctaHref: "#readiness-meter",
+    themeColor: "#16A34A",
+    badgeBg: "#F0FDF4"
+  }
+];
+
 export default function IntelligenceHubPage() {
-    const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
+  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
   const [selectedChallengeDay, setSelectedChallengeDay] = useState<number | null>(null);
+  const [activeFlowStep, setActiveFlowStep] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveFlowStep(null);
+      }
+    };
+    if (activeFlowStep !== null) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeFlowStep]);
 
   useEffect(() => {
             const fetchDashboard = async () => {
@@ -925,96 +1052,191 @@ export default function IntelligenceHubPage() {
         {/* INTELLIGENCE FLOW */}
         <section className={styles.flowSection} aria-label="Your Complete CAT Improvement Loop">
           <h2 className={styles.sectionTitle}>Your Complete CAT Improvement Loop</h2>
+          <p className={styles.flowSectionSubtitle}>
+            Click any step below to explore in-depth guidance, strategies, and action items.
+          </p>
           <div className={styles.flowContainer}>
-            {/* Step 1 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>1</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>TAKE A MOCK</span>
-            </div>
+            {FLOW_STEPS_CONFIG.map((step, idx) => {
+              const isActive = activeFlowStep === step.id;
+              return (
+                <React.Fragment key={step.id}>
+                  <div
+                    className={`${styles.flowStep} ${isActive ? styles.flowStepActive : ""}`}
+                    onClick={() => setActiveFlowStep(step.id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Step ${step.id}: ${step.label}. Click to view details`}
+                    title={`Click to view details for Step ${step.id}: ${step.label}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setActiveFlowStep(step.id);
+                      }
+                    }}
+                  >
+                    <div className={styles.flowNodeWrapper}>
+                      <div className={styles.flowNode}>{step.id}</div>
+                      <div className={styles.flowNodeShadow} aria-hidden="true" />
+                    </div>
+                    <span className={styles.flowText}>{step.label}</span>
+                  </div>
 
-            <div className={styles.flowArrow} aria-hidden="true">
-              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
-                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* Step 2 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>2</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>ANALYZE PERFORMANCE</span>
-            </div>
-
-            <div className={styles.flowArrow} aria-hidden="true">
-              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
-                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* Step 3 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>3</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>IDENTIFY MISTAKES</span>
-            </div>
-
-            <div className={styles.flowArrow} aria-hidden="true">
-              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
-                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* Step 4 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>4</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>GET AI INSIGHTS</span>
-            </div>
-
-            <div className={styles.flowArrow} aria-hidden="true">
-              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
-                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* Step 5 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>5</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>TARGET WEAK TOPICS</span>
-            </div>
-
-            <div className={styles.flowArrow} aria-hidden="true">
-              <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
-                <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* Step 6 */}
-            <div className={styles.flowStep}>
-              <div className={styles.flowNodeWrapper}>
-                <div className={styles.flowNode}>6</div>
-                <div className={styles.flowNodeShadow} aria-hidden="true" />
-              </div>
-              <span className={styles.flowText}>IMPROVE YOUR SCORE</span>
-            </div>
+                  {idx < FLOW_STEPS_CONFIG.length - 1 && (
+                    <div className={styles.flowArrow} aria-hidden="true">
+                      <svg width="24" height="12" viewBox="0 0 24 12" fill="none" className={styles.flowArrowSvg}>
+                        <path d="M1 6H21M21 6L16.5 1.5M21 6L16.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
+
+          {/* Step Details Popup Modal */}
+          {activeFlowStep !== null && (() => {
+            const currentStep = FLOW_STEPS_CONFIG.find((s) => s.id === activeFlowStep) || FLOW_STEPS_CONFIG[0];
+            const prevStepId = currentStep.id === 1 ? FLOW_STEPS_CONFIG.length : currentStep.id - 1;
+            const nextStepId = currentStep.id === FLOW_STEPS_CONFIG.length ? 1 : currentStep.id + 1;
+
+            return (
+              <div
+                className={styles.flowModalOverlay}
+                onClick={() => setActiveFlowStep(null)}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="flow-step-modal-title"
+              >
+                <div
+                  className={styles.flowModalCard}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className={styles.flowModalHeader}>
+                    <div className={styles.flowModalHeaderLeft}>
+                      <span
+                        className={styles.flowModalStepBadge}
+                        style={{
+                          backgroundColor: currentStep.badgeBg,
+                          color: currentStep.themeColor,
+                        }}
+                      >
+                        Step {currentStep.id} of 6
+                      </span>
+                      <span className={styles.flowModalStepShortDesc}>
+                        {currentStep.shortDesc}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.flowModalCloseBtn}
+                      onClick={() => setActiveFlowStep(null)}
+                      aria-label="Close step details"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className={styles.flowModalBody}>
+                    <div className={styles.flowModalTitleRow}>
+                      <span
+                        className={styles.flowModalShortLabel}
+                        style={{ color: currentStep.themeColor }}
+                      >
+                        {currentStep.label}
+                      </span>
+                      <h3 id="flow-step-modal-title" className={styles.flowModalMainTitle}>
+                        {currentStep.title}
+                      </h3>
+                    </div>
+
+                    <p className={styles.flowModalDescription}>
+                      {currentStep.description}
+                    </p>
+
+                    <div className={styles.flowModalTipsBox}>
+                      <div className={styles.flowModalTipsTitle}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={currentStep.themeColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="16" x2="12" y2="12" />
+                          <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                        <span>Key Focus &amp; Pro Tips</span>
+                      </div>
+                      <ul className={styles.flowModalTipsList}>
+                        {currentStep.tips.map((tip, tIdx) => (
+                          <li key={tIdx} className={styles.flowModalTipItem}>
+                            <span
+                              className={styles.flowModalTipBullet}
+                              style={{
+                                backgroundColor: currentStep.badgeBg,
+                                color: currentStep.themeColor,
+                              }}
+                              aria-hidden="true"
+                            >
+                              ✓
+                            </span>
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className={styles.flowModalFooter}>
+                    <div className={styles.flowModalNavGroup}>
+                      <button
+                        type="button"
+                        className={styles.flowModalNavBtn}
+                        onClick={() => setActiveFlowStep(prevStepId)}
+                        title="Previous Step"
+                      >
+                        &larr; Prev
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.flowModalNavBtn}
+                        onClick={() => setActiveFlowStep(nextStepId)}
+                        title={currentStep.id === 6 ? "Loop back to Step 1" : "Next Step"}
+                      >
+                        {currentStep.id === 6 ? "Loop to 1 ↺" : "Next &rarr;"}
+                      </button>
+                    </div>
+
+                    {currentStep.ctaHref.startsWith("#") ? (
+                      <button
+                        type="button"
+                        className={styles.flowModalCtaBtn}
+                        style={{ backgroundColor: currentStep.themeColor }}
+                        onClick={() => {
+                          setActiveFlowStep(null);
+                          const target = document.querySelector(currentStep.ctaHref);
+                          target?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <span>{currentStep.ctaText}</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    ) : (
+                      <Link
+                        href={currentStep.ctaHref}
+                        className={styles.flowModalCtaBtn}
+                        style={{ backgroundColor: currentStep.themeColor }}
+                        onClick={() => setActiveFlowStep(null)}
+                      >
+                        <span>{currentStep.ctaText}</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </section>
 
         <div className={styles.bottomGrid}>
           {/* CAT READINESS METER */}
-          <section className={styles.readinessSection} style={{position: 'relative'}}>
+          <section id="readiness-meter" className={styles.readinessSection} style={{position: 'relative'}}>
             <div className={styles.readinessHeader}>
               <h2 className={styles.sectionTitleSmall}>CAT Readiness Meter</h2>
               <span className={styles.readinessBadge}>Updated Today</span>
