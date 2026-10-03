@@ -2310,9 +2310,29 @@
   padding: 22px 28px 24px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 .formField {
@@ -2422,14 +2442,15 @@
   width: 100%;
   margin-top: 8px;
   background: #FFFFFF;
-  border: 1px solid #DCEBFA;
+  border: 1.5px solid #DCEBFA;
   border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.05);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   animation: modalCategoryFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  overflow: hidden;
 }
 
 @keyframes modalCategoryFade {
@@ -2444,19 +2465,46 @@
 }
 
 .modalCategoryList {
-  padding: 6px;
+  padding: 6px 4px 6px 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #94A3B8 #F1F5F9;
+}
+
+.modalCategoryList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalCategoryList::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 999px;
+  margin: 6px 2px;
+}
+
+.modalCategoryList::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+  border: 1px solid #F1F5F9;
+}
+
+.modalCategoryList::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 .modalCategoryRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 10px 12px;
   min-height: 50px;
   border-radius: 8px;
   border: none;

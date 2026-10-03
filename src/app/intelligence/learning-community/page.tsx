@@ -478,6 +478,14 @@ export default function LearningCommunityPage() {
   const [newCategory, setNewCategory] = useState<CommunityCategory>("General Discussion");
   const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(false);
   const modalCategoryRef = useRef<HTMLDivElement | null>(null);
+  const selectedCategoryRowRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isModalCategoryOpen && selectedCategoryRowRef.current) {
+      selectedCategoryRowRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [isModalCategoryOpen]);
+
   const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
   const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
   const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(true);
@@ -2972,6 +2980,7 @@ export default function LearningCommunityPage() {
                           return (
                             <div
                               key={cat.name}
+                              ref={isSelected ? selectedCategoryRowRef : undefined}
                               className={`${styles.modalCategoryRow} ${
                                 isSelected ? styles.modalCategoryRowSelected : ""
                               }`}
