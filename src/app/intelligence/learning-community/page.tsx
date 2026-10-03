@@ -444,18 +444,18 @@ export default function LearningCommunityPage() {
     }
   };
 
-  const handleOpenCreateModal = (categoryOverride?: CommunityCategory, expandImage = false) => {
+  const handleOpenCreateModal = (categoryOverride?: CommunityCategory, expandCategory = false, expandImage = false) => {
     if (categoryOverride) {
       setNewCategory(categoryOverride);
     } else if (selectedCategory) {
       setNewCategory(selectedCategory);
     } else {
-      setNewCategory("CAT Strategy");
+      setNewCategory("General Discussion");
     }
     if (expandImage) {
       setIsImageUploadExpanded(true);
     }
-    setIsModalCategoryOpen(true);
+    setIsModalCategoryOpen(expandCategory);
     setIsCreateModalOpen(true);
   };
 
@@ -471,18 +471,15 @@ export default function LearningCommunityPage() {
   // Card 3-dot menu state
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
 
-  // Create Post Modal state - open by default with CAT Strategy and sample image attachment matching reference mockup
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(true);
+  // Create Post Modal state - closed by default on initial page load
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
-  const [newCategory, setNewCategory] = useState<CommunityCategory>("CAT Strategy");
-  const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(true);
+  const [newCategory, setNewCategory] = useState<CommunityCategory>("General Discussion");
+  const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(false);
   const modalCategoryRef = useRef<HTMLDivElement | null>(null);
-  const [newImageUrl, setNewImageUrl] = useState<string | null>("/community/avatar-user.png");
-  const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>({
-    name: "cat_notes_diagram.png",
-    sizeFormatted: "2.3 MB",
-  });
+  const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
+  const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
   const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(true);
   const [imageValidationError, setImageValidationError] = useState<string | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -2322,7 +2319,7 @@ export default function LearningCommunityPage() {
                     <button
                       type="button"
                       className={styles.composerToolBtn}
-                      onClick={() => handleOpenCreateModal(composerCategory || "CAT Strategy")}
+                      onClick={() => handleOpenCreateModal(composerCategory || "General Discussion")}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -2352,7 +2349,7 @@ export default function LearningCommunityPage() {
                   className={styles.createPostQuickBtn}
                   onClick={() => {
                     if (!composerText.trim()) {
-                      handleOpenCreateModal(composerCategory || "CAT Strategy");
+                      handleOpenCreateModal(composerCategory || "General Discussion");
                     } else {
                       handleFeedPostSubmit();
                     }
