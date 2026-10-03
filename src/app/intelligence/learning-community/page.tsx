@@ -163,47 +163,56 @@ const CATEGORIES_CONFIG: CategoryMeta[] = [
 const MODAL_CATEGORIES_CONFIG: {
   name: CommunityCategory;
   desc: string;
+  iconBg: string;
   iconColor: string;
 }[] = [
   {
     name: "General Discussion",
     desc: "Open discussion on anything related to CAT",
+    iconBg: "#EFF6FF",
     iconColor: "#2563EB",
   },
   {
     name: "CAT Strategy",
     desc: "Preparation strategies, study plans, tips",
+    iconBg: "#FFF1F2",
     iconColor: "#E11D48",
   },
   {
     name: "Doubt Solving",
     desc: "Ask and solve your doubts",
+    iconBg: "#FEF2F2",
     iconColor: "#E11D48",
   },
   {
     name: "Study Resources",
     desc: "Books, notes, PYQs and useful materials",
+    iconBg: "#EFF6FF",
     iconColor: "#2563EB",
   },
   {
     name: "Mocks & Analysis",
     desc: "Mock tests, analysis and performance",
+    iconBg: "#F0F9FF",
     iconColor: "#0284C7",
   },
   {
     name: "College Discussions",
     desc: "Colleges, admissions, cutoffs, selection",
-    iconColor: "#8B5CF6",
+    iconBg: "#F5F3FF",
+    iconColor: "#7C3AED",
   },
   {
     name: "Motivation & Journey",
     desc: "Share your journey and stay motivated",
-    iconColor: "#F59E0B",
+    iconBg: "#FFFBEB",
+    iconColor: "#D97706",
   },
   {
     name: "Off-topic",
     desc: "Fun, general chat and more",
-    iconColor: "#8B5CF6",
+    iconBg: "#F5F3FF",
+    iconColor: "#7C3AED",
   },
 ];
 
@@ -2968,58 +2977,75 @@ export default function LearningCommunityPage() {
                   {isModalCategoryOpen && (
                     <div
                       className={styles.modalCategoryPanel}
-                      role="listbox"
-                      aria-label="Select Category"
+                      role="dialog"
+                      aria-label="Choose a Category"
                     >
-                      {MODAL_CATEGORIES_CONFIG.map((cat) => {
-                        const isSelected = newCategory === cat.name;
-                        return (
-                          <div
-                            key={cat.name}
-                            className={`${styles.modalCategoryRow} ${
-                              isSelected ? styles.modalCategoryRowSelected : ""
-                            }`}
-                            onClick={() => {
-                              setNewCategory(cat.name);
-                              setIsModalCategoryOpen(false);
-                            }}
-                            role="option"
-                            aria-selected={isSelected}
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
+                      <div className={styles.modalCategoryHeader}>
+                        <span className={styles.modalCategoryHeading}>Choose a Category</span>
+                        <button
+                          type="button"
+                          className={styles.modalCategoryCloseBtn}
+                          onClick={() => setIsModalCategoryOpen(false)}
+                          aria-label="Close category picker"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className={styles.modalCategoryList} role="listbox" aria-label="Categories">
+                        {MODAL_CATEGORIES_CONFIG.map((cat) => {
+                          const isSelected = newCategory === cat.name;
+                          return (
+                            <div
+                              key={cat.name}
+                              className={`${styles.modalCategoryRow} ${
+                                isSelected ? styles.modalCategoryRowSelected : ""
+                              }`}
+                              onClick={() => {
                                 setNewCategory(cat.name);
                                 setIsModalCategoryOpen(false);
-                              }
-                            }}
-                          >
-                            <div className={styles.modalCategoryRowLeft}>
-                              <span
-                                className={styles.modalCategoryRowIcon}
-                                style={{ color: cat.iconColor }}
-                                aria-hidden="true"
-                              >
-                                {getCategoryOutlineIcon(cat.name, styles.modalCategoryRowSvg)}
-                              </span>
-                              <div className={styles.modalCategoryRowMeta}>
-                                <span className={styles.modalCategoryRowName}>{cat.name}</span>
-                                <span className={styles.modalCategoryRowDesc}>{cat.desc}</span>
+                              }}
+                              role="option"
+                              aria-selected={isSelected}
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setNewCategory(cat.name);
+                                  setIsModalCategoryOpen(false);
+                                }
+                              }}
+                            >
+                              <div className={styles.modalCategoryRowLeft}>
+                                <div
+                                  className={styles.modalCategoryIconBox}
+                                  style={{
+                                    background: cat.iconBg,
+                                    color: cat.iconColor,
+                                  }}
+                                  aria-hidden="true"
+                                >
+                                  {getCategoryOutlineIcon(cat.name, styles.modalCategoryRowSvg)}
+                                </div>
+                                <div className={styles.modalCategoryRowMeta}>
+                                  <span className={styles.modalCategoryRowName}>{cat.name}</span>
+                                  <span className={styles.modalCategoryRowDesc}>{cat.desc}</span>
+                                </div>
+                              </div>
+
+                              <div className={styles.modalCategoryRadioWrap} aria-hidden="true">
+                                {isSelected ? (
+                                  <div className={styles.modalCategoryRadioActive}>
+                                    <div className={styles.modalCategoryRadioDot} />
+                                  </div>
+                                ) : (
+                                  <div className={styles.modalCategoryRadioInactive} />
+                                )}
                               </div>
                             </div>
-
-                            <div className={styles.modalCategoryRadioWrap} aria-hidden="true">
-                              {isSelected ? (
-                                <div className={styles.modalCategoryRadioActive}>
-                                  <div className={styles.modalCategoryRadioDot} />
-                                </div>
-                              ) : (
-                                <div className={styles.modalCategoryRadioInactive} />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

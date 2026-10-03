@@ -2397,13 +2397,13 @@
 .modalCategoryPanel {
   margin-top: 8px;
   background: #FFFFFF;
-  border: 1.5px solid #DBEAFE;
+  border: 1.5px solid #DCEBFA;
   border-radius: 16px;
-  padding: 6px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), 0 1px 4px rgba(37, 99, 235, 0.04);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(37, 99, 235, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  overflow: hidden;
+  max-height: 380px;
   animation: modalCategoryFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2418,50 +2418,125 @@
   }
 }
 
+.modalCategoryHeader {
+  padding: 12px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.modalCategoryHeading {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.modalCategoryCloseBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.modalCategoryCloseBtn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.modalCategoryList {
+  padding: 6px 8px 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 320px;
+}
+
+.modalCategoryList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.modalCategoryList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalCategoryList::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 10px;
+}
+
+.modalCategoryList::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
 .modalCategoryRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 12px;
-  border-radius: 12px;
+  padding: 8px 10px;
+  min-height: 52px;
+  border-radius: 10px;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
   user-select: none;
   outline: none;
+  box-sizing: border-box;
 }
 
 .modalCategoryRow:hover {
-  background: #F8FAFC;
+  background: #F8FAFD;
 }
 
 .modalCategoryRowSelected {
   background: #EFF6FF;
+  border-color: #BFDBFE;
 }
 
 .modalCategoryRowSelected:hover {
-  background: #E8F2FE;
+  background: #EBF4FF;
 }
 
 .modalCategoryRowLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   min-width: 0;
   flex: 1;
 }
 
-.modalCategoryRowIcon {
-  width: 22px;
-  height: 22px;
+.modalCategoryIconBox {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.modalCategoryRow:hover .modalCategoryIconBox {
+  filter: saturate(1.2);
 }
 
 .modalCategoryRowSvg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .modalCategoryRowMeta {
@@ -2472,8 +2547,8 @@
 }
 
 .modalCategoryRowName {
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: #0F172A;
   line-height: 1.3;
 }
@@ -2489,13 +2564,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 12px;
+  margin-left: 10px;
   flex-shrink: 0;
 }
 
 .modalCategoryRadioInactive {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border: 1.5px solid #CBD5E1;
   border-radius: 50%;
   background: #FFFFFF;
@@ -2507,8 +2582,8 @@
 }
 
 .modalCategoryRadioActive {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border: 2px solid #2563EB;
   border-radius: 50%;
   background: #FFFFFF;
@@ -2518,8 +2593,8 @@
 }
 
 .modalCategoryRadioDot {
-  width: 8px;
-  height: 8px;
+  width: 7.5px;
+  height: 7.5px;
   background: #2563EB;
   border-radius: 50%;
 }
