@@ -2016,7 +2016,6 @@ export default function LearningCommunityPage() {
                   value={composerText}
                   onChange={(e) => setComposerText(e.target.value)}
                   onClick={() => handleOpenCreateModal()}
-                  onFocus={() => handleOpenCreateModal()}
                   readOnly
                   style={{ cursor: "pointer" }}
                   aria-label="Share your thoughts, ask a doubt, or start a discussion"
