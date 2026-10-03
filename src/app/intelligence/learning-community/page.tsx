@@ -160,6 +160,53 @@ const CATEGORIES_CONFIG: CategoryMeta[] = [
   },
 ];
 
+const MODAL_CATEGORIES_CONFIG: {
+  name: CommunityCategory;
+  desc: string;
+  iconColor: string;
+}[] = [
+  {
+    name: "General Discussion",
+    desc: "Open discussion on anything related to CAT",
+    iconColor: "#2563EB",
+  },
+  {
+    name: "CAT Strategy",
+    desc: "Preparation strategies, study plans, tips",
+    iconColor: "#E11D48",
+  },
+  {
+    name: "Doubt Solving",
+    desc: "Ask and solve your doubts",
+    iconColor: "#E11D48",
+  },
+  {
+    name: "Study Resources",
+    desc: "Books, notes, PYQs and useful materials",
+    iconColor: "#2563EB",
+  },
+  {
+    name: "Mocks & Analysis",
+    desc: "Mock tests, analysis and performance",
+    iconColor: "#0284C7",
+  },
+  {
+    name: "College Discussions",
+    desc: "Colleges, admissions, cutoffs, selection",
+    iconColor: "#8B5CF6",
+  },
+  {
+    name: "Motivation & Journey",
+    desc: "Share your journey and stay motivated",
+    iconColor: "#F59E0B",
+  },
+  {
+    name: "Off-topic",
+    desc: "Fun, general chat and more",
+    iconColor: "#8B5CF6",
+  },
+];
+
 const DEFAULT_CONTRIBUTORS: ContributorItem[] = [
   {
     authorId: "user-priya",
@@ -406,6 +453,7 @@ export default function LearningCommunityPage() {
     if (expandImage) {
       setIsImageUploadExpanded(true);
     }
+    setIsModalCategoryOpen(false);
     setIsCreateModalOpen(true);
   };
 
@@ -426,6 +474,8 @@ export default function LearningCommunityPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<CommunityCategory>("CAT Strategy");
+  const [isModalCategoryOpen, setIsModalCategoryOpen] = useState(false);
+  const modalCategoryRef = useRef<HTMLDivElement | null>(null);
   const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
   const [newImageMeta, setNewImageMeta] = useState<{ name: string; sizeFormatted: string } | null>(null);
   const [isImageUploadExpanded, setIsImageUploadExpanded] = useState(true);
@@ -967,6 +1017,7 @@ export default function LearningCommunityPage() {
     stopCameraStream();
     setIsCameraActive(false);
     setCameraError(null);
+    setIsModalCategoryOpen(false);
     setIsCreateModalOpen(false);
   };
 
@@ -975,6 +1026,7 @@ export default function LearningCommunityPage() {
       stopCameraStream();
       setIsCameraActive(false);
       setCameraError(null);
+      setIsModalCategoryOpen(false);
     }
   }, [isCreateModalOpen]);
 
@@ -1099,12 +1151,19 @@ export default function LearningCommunityPage() {
       ) {
         setIsCategoryOpen(false);
       }
+      if (
+        modalCategoryRef.current &&
+        !modalCategoryRef.current.contains(e.target as Node)
+      ) {
+        setIsModalCategoryOpen(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         closeAddImagePopover();
         setIsCategoryOpen(false);
+        setIsModalCategoryOpen(false);
       }
     };
 
@@ -2856,22 +2915,113 @@ export default function LearningCommunityPage() {
                   />
                 </div>
 
-                <div className={styles.formField}>
-                  <label className={styles.formLabel} htmlFor="post-category-select">
+                <div className={styles.formField} ref={modalCategoryRef}>
+                  <label className={styles.formLabel} id="modal-category-label">
                     Category
                   </label>
-                  <select
-                    id="post-category-select"
-                    className={styles.formSelect}
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as CommunityCategory)}
+                  <button
+                    id="modal-category-trigger"
+                    type="button"
+                    className={`${styles.modalCategoryTrigger} ${
+                      isModalCategoryOpen ? styles.modalCategoryTriggerActive : ""
+                    }`}
+                    onClick={() => setIsModalCategoryOpen((prev) => !prev)}
+                    aria-expanded={isModalCategoryOpen}
+                    aria-haspopup="listbox"
+                    aria-labelledby="modal-category-label modal-category-trigger"
                   >
-                    {CATEGORIES_CONFIG.map((cat) => (
-                      <option key={cat.name} value={cat.name}>
-                        {cat.icon} {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                    <div className={styles.modalCategoryTriggerLeft}>
+                      <span
+                        className={styles.modalCategoryTriggerIcon}
+                        style={{
+                          color:
+                            MODAL_CATEGORIES_CONFIG.find((c) => c.name === newCategory)
+                              ?.iconColor || "#2563EB",
+                        }}
+                        aria-hidden="true"
+                      >
+                        {getCategoryOutlineIcon(newCategory, styles.modalCategoryTriggerSvg)}
+                      </span>
+                      <span className={styles.modalCategoryTriggerText}>{newCategory}</span>
+                    </div>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={styles.modalCategoryTriggerChevron}
+                      style={{
+                        transform: isModalCategoryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.18s ease",
+                      }}
+                      aria-hidden="true"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+
+                  {/* Expanded Category Selection Panel */}
+                  {isModalCategoryOpen && (
+                    <div
+                      className={styles.modalCategoryPanel}
+                      role="listbox"
+                      aria-label="Select Category"
+                    >
+                      {MODAL_CATEGORIES_CONFIG.map((cat) => {
+                        const isSelected = newCategory === cat.name;
+                        return (
+                          <div
+                            key={cat.name}
+                            className={`${styles.modalCategoryRow} ${
+                              isSelected ? styles.modalCategoryRowSelected : ""
+                            }`}
+                            onClick={() => {
+                              setNewCategory(cat.name);
+                              setIsModalCategoryOpen(false);
+                            }}
+                            role="option"
+                            aria-selected={isSelected}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setNewCategory(cat.name);
+                                setIsModalCategoryOpen(false);
+                              }
+                            }}
+                          >
+                            <div className={styles.modalCategoryRowLeft}>
+                              <span
+                                className={styles.modalCategoryRowIcon}
+                                style={{ color: cat.iconColor }}
+                                aria-hidden="true"
+                              >
+                                {getCategoryOutlineIcon(cat.name, styles.modalCategoryRowSvg)}
+                              </span>
+                              <div className={styles.modalCategoryRowMeta}>
+                                <span className={styles.modalCategoryRowName}>{cat.name}</span>
+                                <span className={styles.modalCategoryRowDesc}>{cat.desc}</span>
+                              </div>
+                            </div>
+
+                            <div className={styles.modalCategoryRadioWrap} aria-hidden="true">
+                              {isSelected ? (
+                                <div className={styles.modalCategoryRadioActive}>
+                                  <div className={styles.modalCategoryRadioDot} />
+                                </div>
+                              ) : (
+                                <div className={styles.modalCategoryRadioInactive} />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.formField}>
