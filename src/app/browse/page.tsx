@@ -230,38 +230,281 @@ export default function BrowsePage() {
       <main className={styles.mainContent}>
         {/* Categories (only show if not searching) */}
         {!searchQuery && (
-          <>
-            <h2 className={styles.sectionTitle}>Browse by Category</h2>
+          <section className={styles.categorySection} aria-label="Browse by Category">
+            <div className={styles.categoryHeaderRow}>
+              <h2 className={styles.sectionTitle}>Browse by Category</h2>
+              <button
+                type="button"
+                className={styles.viewAllBtn}
+                onClick={() => {
+                  const el = document.getElementById("all-topics-section");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    window.scrollBy({ top: 380, behavior: "smooth" });
+                  }
+                }}
+                aria-label="View all topics"
+              >
+                View All <span className={styles.viewAllArrow}>&rarr;</span>
+              </button>
+            </div>
+
             <div className={styles.categoryGrid}>
-              <div className={styles.categoryCard} onClick={() => setSearchQuery("Quantitative")}>
-                <div className={styles.catIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              {/* Card 1: Quantitative Ability */}
+              <div
+                className={styles.categoryCard}
+                onClick={() => setSearchQuery("Quantitative")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSearchQuery("Quantitative");
+                  }
+                }}
+                aria-label="Browse Quantitative Ability topics"
+              >
+                <div className={styles.categoryCardTopRow}>
+                  <div className={styles.categoryCardLeft}>
+                    <div className={`${styles.categoryIconBox} ${styles.quantIconBox}`}>
+                      {/* Mathematical Sigma / Math icon */}
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M19 4H6l7 8-7 8h13" />
+                      </svg>
+                    </div>
+                    <div className={styles.categoryMetaStack}>
+                      <h3 className={styles.categoryCardTitle}>Quantitative Ability</h3>
+                      <p className={styles.categoryCardStats}>51 Lessons • 12 Topics</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.categoryArrowBtn} aria-hidden="true">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </div>
                 </div>
-                <div className={styles.catInfo}>
-                  <h3>Quantitative Ability</h3>
-                  <p>51 Lessons</p>
+
+                <div className={styles.categoryCardBottom}>
+                  <p className={styles.categorySubtopicsText}>
+                    Algebra, Arithmetic, Modern Math and more
+                  </p>
                 </div>
+
+                {/* Subtle mathematical decorative visual */}
+                <svg
+                  className={`${styles.cardBgDeco} ${styles.quantDeco}`}
+                  width="96"
+                  height="68"
+                  viewBox="0 0 96 68"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 52 L36 36 L58 44 L80 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="80" cy="18" r="3" fill="currentColor" />
+                  <line
+                    x1="10"
+                    y1="58"
+                    x2="88"
+                    y2="58"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeDasharray="3 3"
+                    opacity="0.6"
+                  />
+                  <rect x="18" y="44" width="6" height="14" rx="2" fill="currentColor" opacity="0.3" />
+                  <rect x="40" y="32" width="6" height="26" rx="2" fill="currentColor" opacity="0.3" />
+                  <rect x="62" y="24" width="6" height="34" rx="2" fill="currentColor" opacity="0.3" />
+                </svg>
               </div>
-              <div className={styles.categoryCard} onClick={() => setSearchQuery("Data")}>
-                <div className={styles.catIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+
+              {/* Card 2: DILR */}
+              <div
+                className={styles.categoryCard}
+                onClick={() => setSearchQuery("Data")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSearchQuery("Data");
+                  }
+                }}
+                aria-label="Browse DILR topics"
+              >
+                <div className={styles.categoryCardTopRow}>
+                  <div className={styles.categoryCardLeft}>
+                    <div className={`${styles.categoryIconBox} ${styles.dilrIconBox}`}>
+                      {/* Analytics / chart icon */}
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 3v18h18" />
+                        <rect x="7" y="13" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.4" />
+                        <rect x="12" y="9" width="3" height="9" rx="0.8" fill="currentColor" opacity="0.6" />
+                        <rect x="17" y="5" width="3" height="13" rx="0.8" fill="currentColor" />
+                      </svg>
+                    </div>
+                    <div className={styles.categoryMetaStack}>
+                      <h3 className={styles.categoryCardTitle}>DILR</h3>
+                      <p className={styles.categoryCardStats}>20 Lessons • 8 Topics</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.categoryArrowBtn} aria-hidden="true">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </div>
                 </div>
-                <div className={styles.catInfo}>
-                  <h3>DILR</h3>
-                  <p>20 Lessons</p>
+
+                <div className={styles.categoryCardBottom}>
+                  <p className={styles.categorySubtopicsText}>
+                    Data Interpretation, Logical Reasoning, Set Theory and more
+                  </p>
                 </div>
+
+                {/* Subtle geometric / analytics chart shapes */}
+                <svg
+                  className={`${styles.cardBgDeco} ${styles.dilrDeco}`}
+                  width="96"
+                  height="68"
+                  viewBox="0 0 96 68"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect x="16" y="36" width="16" height="24" rx="3" fill="currentColor" opacity="0.25" />
+                  <rect x="38" y="22" width="16" height="38" rx="3" fill="currentColor" opacity="0.4" />
+                  <rect x="60" y="12" width="16" height="48" rx="3" fill="currentColor" opacity="0.6" />
+                  <line x1="10" y1="62" x2="84" y2="62" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
               </div>
-              <div className={styles.categoryCard} onClick={() => setSearchQuery("Verbal")}>
-                <div className={styles.catIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+
+              {/* Card 3: VARC */}
+              <div
+                className={styles.categoryCard}
+                onClick={() => setSearchQuery("Verbal")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSearchQuery("Verbal");
+                  }
+                }}
+                aria-label="Browse VARC topics"
+              >
+                <div className={styles.categoryCardTopRow}>
+                  <div className={styles.categoryCardLeft}>
+                    <div className={`${styles.categoryIconBox} ${styles.varcIconBox}`}>
+                      {/* Book / reading icon */}
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                    </div>
+                    <div className={styles.categoryMetaStack}>
+                      <h3 className={styles.categoryCardTitle}>VARC</h3>
+                      <p className={styles.categoryCardStats}>18 Lessons • 9 Topics</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.categoryArrowBtn} aria-hidden="true">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </div>
                 </div>
-                <div className={styles.catInfo}>
-                  <h3>VARC</h3>
-                  <p>18 Lessons</p>
+
+                <div className={styles.categoryCardBottom}>
+                  <p className={styles.categorySubtopicsText}>
+                    Reading Comprehension, Para Jumbles, Para Summary and more
+                  </p>
                 </div>
+
+                {/* Subtle document / reading lines */}
+                <svg
+                  className={`${styles.cardBgDeco} ${styles.varcDeco}`}
+                  width="96"
+                  height="68"
+                  viewBox="0 0 96 68"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect x="28" y="12" width="46" height="48" rx="6" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.35" />
+                  <line x1="36" y1="22" x2="62" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+                  <line x1="36" y1="30" x2="66" y2="30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+                  <line x1="36" y1="38" x2="58" y2="38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+                  <line x1="36" y1="46" x2="50" y2="46" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+                </svg>
               </div>
             </div>
-          </>
+          </section>
         )}
 
 
@@ -290,7 +533,7 @@ export default function BrowsePage() {
         )}
 
         {/* Course Grid */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <div id="all-topics-section" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
           <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
             {searchQuery ? `Search Results for "${searchQuery}"` : 'All Topics'}
           </h2>
