@@ -1190,7 +1190,7 @@ export default function IntelligenceHubPage() {
                         onClick={() => setActiveFlowStep(prevStepId)}
                         title="Previous Step"
                       >
-                        &larr; Prev
+                        Prev
                       </button>
                       <button
                         type="button"
@@ -1198,7 +1198,7 @@ export default function IntelligenceHubPage() {
                         onClick={() => setActiveFlowStep(nextStepId)}
                         title={currentStep.id === 6 ? "Loop back to Step 1" : "Next Step"}
                       >
-                        {currentStep.id === 6 ? "Loop to 1 ↺" : "Next &rarr;"}
+                        {currentStep.id === 6 ? "Loop to 1 ↺" : "Next"}
                       </button>
                     </div>
 
