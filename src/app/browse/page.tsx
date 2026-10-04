@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
@@ -22,8 +22,34 @@ export default function BrowsePage() {
   const [enrollingTopicId, setEnrollingTopicId] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState("Browse");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategoryTab, setSelectedCategoryTab] = useState<"All" | "Quantitative" | "DILR" | "VARC">("All");
+  const [sortBy, setSortBy] = useState<"Recommended" | "Recently Added" | "Most Popular" | "A–Z">("Recommended");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
   const [searchPYQModalOpen, setSearchPYQModalOpen] = useState(false);
   const router = useRouter();
+
+  // Close sort dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSortDropdownOpen(false);
+      }
+    };
+    if (sortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sortDropdownOpen]);
 
   useEffect(() => {
     if (isDemo) {
@@ -153,16 +179,60 @@ export default function BrowsePage() {
     );
   }, [searchQuery]);
 
-  // Filter topics based on search
+  // Filter and sort topics based on category tab, search query, and sort option
   const filteredTopics = useMemo(() => {
-    if (!searchQuery.trim()) return TOPICS_DATA;
-    const lowerQ = searchQuery.toLowerCase();
-    return TOPICS_DATA.filter(t => 
-      t.title.toLowerCase().includes(lowerQ) || 
-      t.category.toLowerCase().includes(lowerQ) ||
-      t.description.toLowerCase().includes(lowerQ)
-    );
-  }, [searchQuery]);
+    let list = [...TOPICS_DATA];
+
+    if (selectedCategoryTab === "Quantitative") {
+      list = list.filter(
+        (t) =>
+          t.category.toLowerCase().includes("quant") ||
+          t.id.toLowerCase().startsWith("qa-") ||
+          t.title.toLowerCase().includes("quant")
+      );
+    } else if (selectedCategoryTab === "DILR") {
+      list = list.filter(
+        (t) =>
+          t.category.toLowerCase().includes("data") ||
+          t.category.toLowerCase().includes("dilr") ||
+          t.id.toLowerCase().startsWith("dilr-") ||
+          t.title.toLowerCase().includes("dilr")
+      );
+    } else if (selectedCategoryTab === "VARC") {
+      list = list.filter(
+        (t) =>
+          t.category.toLowerCase().includes("verbal") ||
+          t.category.toLowerCase().includes("varc") ||
+          t.id.toLowerCase().startsWith("varc-") ||
+          t.title.toLowerCase().includes("varc")
+      );
+    }
+
+    if (searchQuery.trim()) {
+      const lowerQ = searchQuery.toLowerCase();
+      list = list.filter((t) =>
+        t.title.toLowerCase().includes(lowerQ) ||
+        t.category.toLowerCase().includes(lowerQ) ||
+        t.description.toLowerCase().includes(lowerQ)
+      );
+    }
+
+    // Sort options: Recommended, Recently Added, Most Popular, A–Z
+    if (sortBy === "A–Z") {
+      list.sort((a, b) => {
+        const titleA = a.shortTitle || a.title;
+        const titleB = b.shortTitle || b.title;
+        return titleA.localeCompare(titleB);
+      });
+    } else if (sortBy === "Most Popular") {
+      list.sort((a, b) => (b.totalLessons || 0) - (a.totalLessons || 0));
+    } else if (sortBy === "Recently Added") {
+      list.reverse();
+    }
+    // "Recommended" preserves default ordering
+
+    return list;
+  }, [selectedCategoryTab, searchQuery, sortBy]);
 
 
   return (
@@ -533,20 +603,105 @@ export default function BrowsePage() {
         )}
 
         {/* Course Grid */}
-        <div id="all-topics-section" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <div id="all-topics-section" className={styles.topicsHeaderRow}>
           <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
-            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Topics'}
+            {searchQuery ? `Search Results for "${searchQuery}"` : "All Topics"}
           </h2>
-          {searchQuery && (
+          {searchQuery ? (
             <button 
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategoryTab("All");
+              }}
               style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", background: "#f1f5f9", color: "#475569", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#e2e8f0"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#f1f5f9"}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#f1f5f9")}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
               Back to Categories
             </button>
+          ) : (
+            <div className={styles.topicsControls}>
+              <div className={styles.segmentedNav} role="tablist" aria-label="Topic categories">
+                {(["All", "Quantitative", "DILR", "VARC"] as const).map((tab) => {
+                  const isActive = selectedCategoryTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={`${styles.segmentedNavItem} ${isActive ? styles.segmentedNavItemActive : ""}`}
+                      onClick={() => setSelectedCategoryTab(tab)}
+                    >
+                      {tab}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className={styles.sortContainer} ref={sortRef}>
+                <button
+                  type="button"
+                  className={styles.sortButton}
+                  onClick={() => setSortDropdownOpen((prev) => !prev)}
+                  aria-haspopup="listbox"
+                  aria-expanded={sortDropdownOpen}
+                  aria-label={`Sort topics, currently sorted by ${sortBy}`}
+                >
+                  <span className={styles.sortLabelPrefix}>Sort by:</span>
+                  <span className={styles.sortLabelValue}>{sortBy}</span>
+                  <svg
+                    className={`${styles.sortChevron} ${sortDropdownOpen ? styles.sortChevronOpen : ""}`}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {sortDropdownOpen && (
+                  <div className={styles.sortDropdownMenu} role="listbox">
+                    {(["Recommended", "Recently Added", "Most Popular", "A–Z"] as const).map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="option"
+                        aria-selected={sortBy === opt}
+                        className={`${styles.sortMenuItem} ${sortBy === opt ? styles.sortMenuItemActive : ""}`}
+                        onClick={() => {
+                          setSortBy(opt);
+                          setSortDropdownOpen(false);
+                        }}
+                      >
+                        <span>{opt}</span>
+                        {sortBy === opt && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#2563EB"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
