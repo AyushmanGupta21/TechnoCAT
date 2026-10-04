@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import styles from "./learning-community.module.css";
 import {
@@ -22,7 +23,6 @@ import {
 
 interface CategoryMeta {
   name: CommunityCategory;
-  icon: string;
   desc: string;
   iconBg: string;
   iconColor: string;
@@ -104,56 +104,48 @@ function getCategoryPopoverIcon(category: CommunityCategory) {
 const CATEGORIES_CONFIG: CategoryMeta[] = [
   {
     name: "General Discussion",
-    icon: "💬",
     desc: "Casual talk, introductions & general queries",
     iconBg: "#EFF6FF",
     iconColor: "#2563EB",
   },
   {
     name: "CAT Strategy",
-    icon: "🎯",
     desc: "Prep plans, section-wise strategy & tips",
     iconBg: "#F5F3FF",
     iconColor: "#7C3AED",
   },
   {
     name: "Doubt Solving",
-    icon: "❓",
     desc: "Get help with QA, DILR & VARC questions",
     iconBg: "#FEF3C7",
     iconColor: "#D97706",
   },
   {
     name: "Study Resources",
-    icon: "📖",
     desc: "Share & find notes, formula sheets, prep material",
     iconBg: "#ECFDF5",
     iconColor: "#059669",
   },
   {
     name: "Mocks & Analysis",
-    icon: "📊",
     desc: "Score reviews, percentile targets & analysis",
     iconBg: "#FFF1F2",
     iconColor: "#E11D48",
   },
   {
     name: "College Discussions",
-    icon: "🎓",
     desc: "IIMs, FMS, XLRI, cutoffs & GDPI prep",
     iconBg: "#F0F9FF",
     iconColor: "#0284C7",
   },
   {
     name: "Motivation & Journey",
-    icon: "⭐",
     desc: "Success stories, daily struggles & inspiration",
     iconBg: "#FAF5FF",
     iconColor: "#9333EA",
   },
   {
     name: "Off-topic",
-    icon: "☕",
     desc: "Non-prep chats, hobbies & relaxing talks",
     iconBg: "#FDF2F8",
     iconColor: "#DB2777",
@@ -412,7 +404,7 @@ export default function LearningCommunityPage() {
 
   const currentUserName = isGuest
     ? "Guest Aspirant"
-    : user?.fullName || data?.currentUser.fullName || "Sabrina Gomez";
+    : resolveStudentName(user?.fullName || data?.currentUser.fullName, user?.email || data?.currentUser.email);
 
   const currentUserRole = isGuest
     ? "Browse Mode • Click to Sign In"
@@ -422,12 +414,13 @@ export default function LearningCommunityPage() {
     ? `Target: ${user.dreamSchool}`
     : "Student";
 
+  const cleanCommunityAvatar = sanitizeAvatarUrl(user?.avatarUrl || data?.currentUser.avatarUrl);
   const currentUserAvatarUrl = isGuest
     ? "/community/avatar-user.png"
-    : (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
+    : cleanCommunityAvatar;
 
   const currentUserInitials = useMemo(() => {
-    if (isGuest || !currentUserName) return "SG";
+    if (isGuest || !currentUserName) return "ST";
     const parts = currentUserName.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -788,7 +781,6 @@ export default function LearningCommunityPage() {
       const total = (baseCounts[cat.name] || 50) + (extraCounts[cat.name] || 0);
       return {
         name: cat.name,
-        icon: cat.icon,
         count: total,
       };
     });
@@ -2094,7 +2086,10 @@ export default function LearningCommunityPage() {
                     title="Remove attachment"
                     aria-label="Remove attachment"
                   >
-                    ✕
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </button>
                 </div>
               )}
@@ -2167,7 +2162,10 @@ export default function LearningCommunityPage() {
                             onClick={closeAddImagePopover}
                             aria-label="Close"
                           >
-                            ✕
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
                           </button>
                         </div>
 
@@ -2237,7 +2235,10 @@ export default function LearningCommunityPage() {
                                 title="Remove image"
                                 aria-label="Remove image"
                               >
-                                ✕
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <line x1="18" y1="6" x2="6" y2="18" />
+                                  <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
                               </button>
                             </div>
 
@@ -2463,7 +2464,10 @@ export default function LearningCommunityPage() {
                     onClick={() => setSearchQuery("")}
                     title="Clear search"
                   >
-                    ✕
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </button>
                 )}
               </div>
@@ -2478,14 +2482,23 @@ export default function LearningCommunityPage() {
                   className={styles.clearFilterBtn}
                   onClick={() => setSelectedCategory(null)}
                 >
-                  Clear Filter ✕
+                  Clear Filter
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
             )}
 
             {(sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS") && (
               <div className={styles.activeFilterBanner}>
-                <span>🔖 Viewing your Saved Discussions ({savedPostsCount})</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Viewing your Saved Discussions ({savedPostsCount})
+                </span>
                 <button
                   type="button"
                   className={styles.clearFilterBtn}
@@ -2499,12 +2512,21 @@ export default function LearningCommunityPage() {
             {/* Discussion Feed Cards List */}
             {loading ? (
               <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>⏳</div>
+                <div className={styles.emptyStateIcon}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
                 <p className={styles.emptyStateTitle}>Loading community discussions...</p>
               </div>
             ) : visiblePosts.length === 0 ? (
               <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>💬</div>
+                <div className={styles.emptyStateIcon}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
                 <p className={styles.emptyStateTitle}>
                   {searchQuery.trim().length > 0
                     ? "No discussions found for your search."
@@ -2592,7 +2614,9 @@ export default function LearningCommunityPage() {
                                 className={styles.dropdownItem}
                                 onClick={(e) => handleToggleSave(post.id, e)}
                               >
-                                <span>🔖</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
                                 <span>{post.isSaved ? "Unsave" : "Save"}</span>
                               </button>
                               <button
@@ -2600,7 +2624,10 @@ export default function LearningCommunityPage() {
                                 className={styles.dropdownItem}
                                 onClick={(e) => handleReportPost(post.id, e)}
                               >
-                                <span>🚩</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                  <line x1="4" y1="22" x2="4" y2="15" />
+                                </svg>
                                 <span>Report</span>
                               </button>
                               {post.isOwnPost && (
@@ -2609,7 +2636,10 @@ export default function LearningCommunityPage() {
                                   className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
                                   onClick={(e) => handleDeletePost(post.id, e)}
                                 >
-                                  <span>🗑️</span>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  </svg>
                                   <span>Delete</span>
                                 </button>
                               )}
@@ -2659,7 +2689,9 @@ export default function LearningCommunityPage() {
                                 setReplyingToCommentId(null);
                               }}
                             >
-                              <span>💬</span>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                              </svg>
                               <span>
                                 {post.commentsCount}{" "}
                                 {post.commentsCount === 1 ? "Comment" : "Comments"}
@@ -2717,7 +2749,12 @@ export default function LearningCommunityPage() {
                   title="Click to view Members details"
                 >
                   <div className={styles.statIconCircle} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                    👥
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
                   </div>
                   <div>
                     <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
@@ -2739,7 +2776,9 @@ export default function LearningCommunityPage() {
                   title="Click to view Discussions details"
                 >
                   <div className={styles.statIconCircle} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                    💬
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
                   </div>
                   <div>
                     <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
@@ -2761,7 +2800,9 @@ export default function LearningCommunityPage() {
                   title="Click to view Solutions details"
                 >
                   <div className={styles.statIconCircle} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
-                    ✅
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   </div>
                   <div>
                     <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
@@ -2783,7 +2824,10 @@ export default function LearningCommunityPage() {
                   title="Click to view Helpful Rate details"
                 >
                   <div className={styles.statIconCircle} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                    📈
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
                   </div>
                   <div>
                     <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
@@ -2908,7 +2952,10 @@ export default function LearningCommunityPage() {
                 onClick={closeCreateModal}
                 aria-label="Close modal"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -3183,7 +3230,10 @@ export default function LearningCommunityPage() {
                         title="Remove image"
                         aria-label="Remove image"
                       >
-                        ✕
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
                       </button>
                     </div>
                   )}
@@ -3273,7 +3323,10 @@ export default function LearningCommunityPage() {
                   onClick={() => setActivePostId(null)}
                   aria-label="Close discussion"
                 >
-                  ✕
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -3331,7 +3384,11 @@ export default function LearningCommunityPage() {
                     className={`${styles.actionMetricBtn} ${styles.dropdownItemDanger}`}
                     onClick={() => handleDeletePost(activePost.id)}
                   >
-                    <span>🗑️ Delete Post</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    <span>Delete Post</span>
                   </button>
                 )}
               </div>
@@ -3506,7 +3563,14 @@ export default function LearningCommunityPage() {
             <div className={styles.contributorDrawerHeader}>
               <div className={styles.contributorDrawerHeaderCol}>
                 <div className={styles.contributorDrawerHeaderTitleRow}>
-                  <span className={styles.contributorDrawerHeaderEmoji} aria-hidden="true">🏆</span>
+                  <span className={styles.contributorDrawerHeaderEmoji} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                      <path d="M4 22h16" />
+                      <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
+                    </svg>
+                  </span>
                   <h2 id="top-contributors-drawer-title" className={styles.contributorDrawerHeaderTitle}>
                     Top Contributors
                   </h2>
@@ -3526,7 +3590,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setIsContributorsDrawerOpen(false)}
                 aria-label="Close top contributors drawer"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -3625,8 +3692,14 @@ export default function LearningCommunityPage() {
                               className={styles.contributorDrawerTrophyIcon}
                               aria-label="Top Contributor Trophy"
                               title="Community Leader 1st Place"
+                              style={{ display: "inline-flex", alignItems: "center" }}
                             >
-                              🏆
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                <path d="M4 22h16" />
+                                <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
+                              </svg>
                             </span>
                           )}
                         </div>
@@ -3735,7 +3808,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setIsStatsDrawerOpen(false)}
                 aria-label="Close community stats drawer"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -3745,7 +3821,14 @@ export default function LearningCommunityPage() {
               <div className={styles.drawerStatsGrid}>
                 {/* Card 1: Members */}
                 <div className={`${styles.drawerStatCard} ${styles.drawerStatCardLavender}`}>
-                  <div className={styles.drawerStatIconWrap}>👥</div>
+                  <div className={styles.drawerStatIconWrap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
                   <span className={styles.drawerStatNumber}>{data ? data.stats.members : "2.4K"}</span>
                   <span className={styles.drawerStatLabel}>Members</span>
                   <span className={styles.drawerStatDesc}>Active CAT aspirants in our community</span>
@@ -3753,7 +3836,11 @@ export default function LearningCommunityPage() {
 
                 {/* Card 2: Discussions */}
                 <div className={`${styles.drawerStatCard} ${styles.drawerStatCardPink}`}>
-                  <div className={styles.drawerStatIconWrap}>💬</div>
+                  <div className={styles.drawerStatIconWrap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DB2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
                   <span className={styles.drawerStatNumber}>{data ? data.stats.discussions : "1.2K"}</span>
                   <span className={styles.drawerStatLabel}>Discussions</span>
                   <span className={styles.drawerStatDesc}>Questions &amp; discussions started</span>
@@ -3761,7 +3848,11 @@ export default function LearningCommunityPage() {
 
                 {/* Card 3: Solutions */}
                 <div className={`${styles.drawerStatCard} ${styles.drawerStatCardMint}`}>
-                  <div className={styles.drawerStatIconWrap}>✅</div>
+                  <div className={styles.drawerStatIconWrap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
                   <span className={styles.drawerStatNumber}>{data ? data.stats.solutions : "3.1K"}</span>
                   <span className={styles.drawerStatLabel}>Solutions</span>
                   <span className={styles.drawerStatDesc}>Doubts solved by the community</span>
@@ -3769,7 +3860,13 @@ export default function LearningCommunityPage() {
 
                 {/* Card 4: Helpful Rate */}
                 <div className={`${styles.drawerStatCard} ${styles.drawerStatCardYellow}`}>
-                  <div className={styles.drawerStatIconWrap}>📊</div>
+                  <div className={styles.drawerStatIconWrap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                  </div>
                   <span className={styles.drawerStatNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
                   <span className={styles.drawerStatLabel}>Helpful Rate</span>
                   <span className={styles.drawerStatDesc}>Questions getting helpful responses</span>
@@ -3935,7 +4032,12 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverHeader}>
               <div className={styles.statPopoverHeaderLeft}>
                 <div className={styles.statPopoverIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                  👥
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
                 </div>
                 <div>
                   <h3 id="stat-members-title" className={styles.statPopoverTitle}>Community Members</h3>
@@ -3948,7 +4050,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setActiveStatPopup(null)}
                 aria-label="Close members detail"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -4005,15 +4110,24 @@ export default function LearningCommunityPage() {
                 <h4 className={styles.statSectionHeading}>Engagement Highlights</h4>
                 <div className={styles.statChipsRow}>
                   <div className={styles.statChip}>
-                    <span>🔥</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" />
+                    </svg>
                     <span><strong>480+</strong> active this week</span>
                   </div>
                   <div className={styles.statChip}>
-                    <span>🎯</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
                     <span><strong>85%</strong> CAT 2025/2026</span>
                   </div>
                   <div className={styles.statChip}>
-                    <span>🎓</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
                     <span><strong>99+</strong> %ile mentors</span>
                   </div>
                 </div>
@@ -4052,7 +4166,9 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverHeader}>
               <div className={styles.statPopoverHeaderLeft}>
                 <div className={styles.statPopoverIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                  💬
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
                 </div>
                 <div>
                   <h3 id="stat-discussions-title" className={styles.statPopoverTitle}>Total Discussions</h3>
@@ -4065,7 +4181,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setActiveStatPopup(null)}
                 aria-label="Close discussions detail"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -4086,15 +4205,43 @@ export default function LearningCommunityPage() {
                 <h4 className={styles.statSectionHeading}>Top Discussion Topics</h4>
                 <div className={styles.topicDistList}>
                   {[
-                    { name: "CAT Strategy", icon: "🎯", count: 410, percent: 35 },
-                    { name: "Doubt Solving", icon: "❓", count: 345, percent: 29 },
-                    { name: "Study Resources", icon: "📚", count: 230, percent: 19 },
-                    { name: "Mocks & Analysis", icon: "📊", count: 175, percent: 14 },
-                    { name: "General Discussion", icon: "💬", count: 120, percent: 10 },
+                    { name: "CAT Strategy", count: 410, percent: 35 },
+                    { name: "Doubt Solving", count: 345, percent: 29 },
+                    { name: "Study Resources", count: 230, percent: 19 },
+                    { name: "Mocks & Analysis", count: 175, percent: 14 },
+                    { name: "General Discussion", count: 120, percent: 10 },
                   ].map((topic) => (
                     <div key={topic.name} className={styles.topicDistRow}>
-                      <span className={styles.topicDistName} title={topic.name}>
-                        {topic.icon} {topic.name}
+                      <span className={styles.topicDistName} title={topic.name} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        {topic.name === "CAT Strategy" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="12" r="6" />
+                            <circle cx="12" cy="12" r="2" />
+                          </svg>
+                        ) : topic.name === "Doubt Solving" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                        ) : topic.name === "Study Resources" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                          </svg>
+                        ) : topic.name === "Mocks & Analysis" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                        )}
+                        <span>{topic.name}</span>
                       </span>
                       <div className={styles.topicDistBarBg}>
                         <div
@@ -4112,11 +4259,15 @@ export default function LearningCommunityPage() {
                 <h4 className={styles.statSectionHeading}>Response Velocity</h4>
                 <div className={styles.statChipsRow}>
                   <div className={styles.statChip}>
-                    <span>⚡</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
                     <span><strong>95%</strong> answered in &lt; 4 hours</span>
                   </div>
                   <div className={styles.statChip}>
-                    <span>💬</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
                     <span><strong>4.2</strong> replies per thread</span>
                   </div>
                 </div>
@@ -4155,7 +4306,9 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverHeader}>
               <div className={styles.statPopoverHeaderLeft}>
                 <div className={styles.statPopoverIcon} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
-                  ✅
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
                 <div>
                   <h3 id="stat-solutions-title" className={styles.statPopoverTitle}>Solutions Provided</h3>
@@ -4168,7 +4321,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setActiveStatPopup(null)}
                 aria-label="Close solutions detail"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -4176,8 +4332,11 @@ export default function LearningCommunityPage() {
               <div className={styles.statHighlightBox}>
                 <div className={styles.statHighlightNumberRow}>
                   <span className={styles.statHighlightNumber}>{data ? data.stats.solutions : "3.1K"}</span>
-                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`}>
-                    ✓ 2,820 Verified
+                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>2,820 Verified</span>
                   </span>
                 </div>
                 <p className={styles.statHighlightDesc}>
@@ -4209,20 +4368,33 @@ export default function LearningCommunityPage() {
                 <h4 className={styles.statSectionHeading}>Recent Solved Doubts</h4>
                 <div className={styles.recentSolvedList}>
                   <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle}>
-                      <span>📘</span> P&amp;C circular seating with restricted pairs
+                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                      <span>P&amp;C circular seating with restricted pairs</span>
                     </span>
                     <span className={styles.recentSolvedTime}>Solved in 18m</span>
                   </div>
                   <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle}>
-                      <span>📖</span> RC inference tone vs author attitude nuance
+                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                      <span>RC inference tone vs author attitude nuance</span>
                     </span>
                     <span className={styles.recentSolvedTime}>Solved in 35m</span>
                   </div>
                   <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle}>
-                      <span>📊</span> DILR matrix missing distribution clue
+                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                      </svg>
+                      <span>DILR matrix missing distribution clue</span>
                     </span>
                     <span className={styles.recentSolvedTime}>Solved in 52m</span>
                   </div>
@@ -4262,7 +4434,10 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverHeader}>
               <div className={styles.statPopoverHeaderLeft}>
                 <div className={styles.statPopoverIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                  📈
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
                 </div>
                 <div>
                   <h3 id="stat-helpful-title" className={styles.statPopoverTitle}>Helpful Rate</h3>
@@ -4275,7 +4450,10 @@ export default function LearningCommunityPage() {
                 onClick={() => setActiveStatPopup(null)}
                 aria-label="Close helpful rate detail"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -4341,15 +4519,23 @@ export default function LearningCommunityPage() {
                 <h4 className={styles.statSectionHeading}>Satisfaction Metrics</h4>
                 <div className={styles.statChipsRow}>
                   <div className={styles.statChip}>
-                    <span>⭐️</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
                     <span><strong>4.8 / 5.0</strong> community rating</span>
                   </div>
                   <div className={styles.statChip}>
-                    <span>👍</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                    </svg>
                     <span><strong>94%</strong> received upvotes</span>
                   </div>
                   <div className={styles.statChip}>
-                    <span>🎯</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
                     <span><strong>&lt; 3%</strong> flagged answers</span>
                   </div>
                 </div>

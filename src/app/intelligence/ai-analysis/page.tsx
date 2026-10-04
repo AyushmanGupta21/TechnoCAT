@@ -261,7 +261,12 @@ export default function AiAnalysisPage() {
 
       <section className={styles.heroSection}>
         <div className={styles.heroLeft}>
-          <div className={styles.heroBadge}><span>✦</span> AI PERFORMANCE INTELLIGENCE</div>
+          <div className={styles.heroBadge}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span>AI PERFORMANCE INTELLIGENCE</span>
+          </div>
           <h1 className={styles.heroTitle}>Your CAT Performance,<br/><span>Explained.</span></h1>
           <p className={styles.heroSubtitle}>AI analyzes your attempts, accuracy, speed and mistakes to identify exactly where you are losing marks.</p>
           <div className={styles.heroActions}>
@@ -325,7 +330,12 @@ export default function AiAnalysisPage() {
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#F5F3FF', color: '#7C3AED' }}>📈</span>
+                  <span className={styles.hmIcon} style={{ background: '#F5F3FF', color: '#7C3AED' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                  </span>
                   Estimated Percentile
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
@@ -358,7 +368,13 @@ export default function AiAnalysisPage() {
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#FEF3C7', color: '#D97706' }}>💡</span>
+                  <span className={styles.hmIcon} style={{ background: '#FEF3C7', color: '#D97706' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 18h6" />
+                      <path d="M10 22h4" />
+                      <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                    </svg>
+                  </span>
                   Recoverable Marks
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
@@ -391,7 +407,13 @@ export default function AiAnalysisPage() {
             >
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#EFF6FF', color: '#2563EB' }}>🎯</span>
+                  <span className={styles.hmIcon} style={{ background: '#EFF6FF', color: '#2563EB' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                  </span>
                   Primary Focus Area
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
@@ -421,12 +443,22 @@ export default function AiAnalysisPage() {
               <div className={styles.aiTitle}>TechnoCAT AI Diagnosis</div>
               <div className={styles.aiSubtitle}>Based on your last 5 mock attempts, here's what we found:</div>
             </div>
-            <div className={styles.aiMainInsight}>
-              <span>✨</span> {d.diagnosis.pattern}
+            <div className={styles.aiMainInsight} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+              </svg>
+              <span>{d.diagnosis.pattern}</span>
             </div>
             <div className={styles.aiCols}>
               <div className={styles.aiCol}>
-                <div className={styles.aiColTitle}><div className={`${styles.acIcon} ${styles.success}`}>✓</div> What You're Doing Well</div>
+                <div className={styles.aiColTitle}>
+                  <div className={`${styles.acIcon} ${styles.success}`}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <span>What You're Doing Well</span>
+                </div>
                 <ul className={styles.acList}>
                   <li>Strong accuracy in VARC</li>
                   <li>Good conceptual clarity in QA</li>
@@ -434,7 +466,16 @@ export default function AiAnalysisPage() {
                 </ul>
               </div>
               <div className={styles.aiCol}>
-                <div className={styles.aiColTitle}><div className={`${styles.acIcon} ${styles.warning}`}>⚠</div> What's Holding You Back</div>
+                <div className={styles.aiColTitle}>
+                  <div className={`${styles.acIcon} ${styles.warning}`}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <span>What's Holding You Back</span>
+                </div>
                 <ul className={styles.acList}>
                   <li>Slower solving speed in DILR sets</li>
                   <li>Higher error rate in tricky QA questions</li>
@@ -442,7 +483,15 @@ export default function AiAnalysisPage() {
                 </ul>
               </div>
               <div className={styles.aiCol}>
-                <div className={styles.aiColTitle}><div className={`${styles.acIcon} ${styles.action}`}>↗</div> What Will Improve Your Score</div>
+                <div className={styles.aiColTitle}>
+                  <div className={`${styles.acIcon} ${styles.action}`}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                  </div>
+                  <span>What Will Improve Your Score</span>
+                </div>
                 <ul className={styles.acList}>
                   <li>Practice timed DILR sets</li>
                   <li>Focus on high-weightage QA topics</li>
@@ -461,11 +510,11 @@ export default function AiAnalysisPage() {
           </div>
           <div className={styles.dnaGrid}>
             {[
-              {l: 'Accuracy', key: 'accuracy' as const, i: '🎯', v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', glow: 'rgba(37, 99, 235, 0.14)', ring: 'rgba(37, 99, 235, 0.12)', soft: '#EFF6FF', m: 'Maintain current level'},
-              {l: 'Speed', key: 'speed' as const, i: '⚡', v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', glow: 'rgba(16, 185, 129, 0.14)', ring: 'rgba(16, 185, 129, 0.12)', soft: '#F0FDF4', m: 'Focus on time management'},
-              {l: 'Consistency', key: 'consistency' as const, i: '🛡️', v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.14)', ring: 'rgba(139, 92, 246, 0.12)', soft: '#F5F3FF', m: 'Keep up the momentum'},
-              {l: 'Concept Strength', key: 'conceptStrength' as const, i: '📚', v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', glow: 'rgba(217, 70, 239, 0.14)', ring: 'rgba(217, 70, 239, 0.12)', soft: '#FDF4FF', m: 'Review weak topics'},
-              {l: 'Question Selection', key: 'questionSelection' as const, i: '🎯', v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', glow: 'rgba(14, 165, 233, 0.14)', ring: 'rgba(14, 165, 233, 0.12)', soft: '#F0F9FF', m: 'Avoid low-value questions'}
+              {l: 'Accuracy', key: 'accuracy' as const, v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', glow: 'rgba(37, 99, 235, 0.14)', ring: 'rgba(37, 99, 235, 0.12)', soft: '#EFF6FF', m: 'Maintain current level'},
+              {l: 'Speed', key: 'speed' as const, v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', glow: 'rgba(16, 185, 129, 0.14)', ring: 'rgba(16, 185, 129, 0.12)', soft: '#F0FDF4', m: 'Focus on time management'},
+              {l: 'Consistency', key: 'consistency' as const, v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.14)', ring: 'rgba(139, 92, 246, 0.12)', soft: '#F5F3FF', m: 'Keep up the momentum'},
+              {l: 'Concept Strength', key: 'conceptStrength' as const, v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', glow: 'rgba(217, 70, 239, 0.14)', ring: 'rgba(217, 70, 239, 0.12)', soft: '#FDF4FF', m: 'Review weak topics'},
+              {l: 'Question Selection', key: 'questionSelection' as const, v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', glow: 'rgba(14, 165, 233, 0.14)', ring: 'rgba(14, 165, 233, 0.12)', soft: '#F0F9FF', m: 'Avoid low-value questions'}
             ].map((dna, i) => (
               <div
                 key={i}
@@ -484,7 +533,39 @@ export default function AiAnalysisPage() {
               >
                 <div className={styles.dnaTopBorder} style={{background: dna.c}}></div>
                 <div className={styles.dnaHeader}>
-                  <div className={styles.dnaLbl}><span style={{color: dna.c}}>{dna.i}</span> {dna.l}</div>
+                  <div className={styles.dnaLbl}>
+                    <span style={{color: dna.c, display: 'inline-flex', alignItems: 'center'}}>
+                      {dna.key === 'accuracy' ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" />
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                        </svg>
+                      ) : dna.key === 'speed' ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                      ) : dna.key === 'consistency' ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                      ) : dna.key === 'conceptStrength' ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        </svg>
+                      ) : (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="22" y1="12" x2="18" y2="12" />
+                          <line x1="6" y1="12" x2="2" y2="12" />
+                          <line x1="12" y1="6" x2="12" y2="2" />
+                          <line x1="12" y1="22" x2="12" y2="18" />
+                        </svg>
+                      )}
+                    </span>
+                    <span>{dna.l}</span>
+                  </div>
                   <span className={styles.dnaInfoIcon} aria-hidden="true">ⓘ</span>
                 </div>
                 <div className={styles.dnaVal}>{dna.v}%</div>
@@ -533,7 +614,13 @@ export default function AiAnalysisPage() {
               {/* VARC */}
               <div className={styles.wysCard}>
                 <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle}><span style={{color: '#0EA5E9'}}>📰</span> VARC</div>
+                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span>VARC</span>
+                  </div>
                   <div className={`${styles.wcBadge} ${styles.statusSTRONG}`}>STRONG</div>
                 </div>
                 <div className={styles.wcMain}>
@@ -563,15 +650,26 @@ export default function AiAnalysisPage() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #0EA5E9'}}>
-                  <span style={{color: '#0EA5E9'}}>🧠</span> Great performance in RC. Keep practicing para jumbles to improve consistency.
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #0EA5E9', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                  </svg>
+                  <span>Great performance in RC. Keep practicing para jumbles to improve consistency.</span>
                 </div>
               </div>
 
               {/* DILR */}
               <div className={styles.wysCard}>
                 <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle}><span style={{color: '#10B981'}}>🧩</span> DILR</div>
+                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    <span>DILR</span>
+                  </div>
                   <div className={`${styles.wcBadge} ${styles.statusNEEDS}`}>NEEDS ATTENTION</div>
                 </div>
                 <div className={styles.wcMain}>
@@ -601,15 +699,27 @@ export default function AiAnalysisPage() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #10B981'}}>
-                  <span style={{color: '#10B981'}}>💡</span> You lose marks due to slower solving speed. Work on set selection and timed practice.
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #10B981', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 18h6" />
+                    <path d="M10 22h4" />
+                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                  </svg>
+                  <span>You lose marks due to slower solving speed. Work on set selection and timed practice.</span>
                 </div>
               </div>
 
               {/* QA */}
               <div className={styles.wysCard}>
                 <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle}><span style={{color: '#8B5CF6'}}>📐</span> QUANTITATIVE APTITUDE</div>
+                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m14 8-4 8" />
+                      <path d="m10 8 4 8" />
+                    </svg>
+                    <span>QUANTITATIVE APTITUDE</span>
+                  </div>
                   <div className={`${styles.wcBadge} ${styles.statusIMPROVING}`}>IMPROVING</div>
                 </div>
                 <div className={styles.wcMain}>
@@ -639,8 +749,12 @@ export default function AiAnalysisPage() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #8B5CF6'}}>
-                  <span style={{color: '#8B5CF6'}}>📈</span> Arithmetic is strong. Focus on algebra and geometry concepts.
+                <div className={styles.wcInsight} style={{borderLeft: '3px solid #8B5CF6', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
+                  <span>Arithmetic is strong. Focus on algebra and geometry concepts.</span>
                 </div>
               </div>
             </div>
@@ -651,7 +765,13 @@ export default function AiAnalysisPage() {
               {/* Detailed VARC Card */}
               <div className={styles.detailedCard}>
                 <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle}><span>📰</span> VARC Topics</div>
+                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span>VARC Topics</span>
+                  </div>
                   <span className={`${styles.topicBadge} ${styles.badgeStrong}`}>STRONG (82%)</span>
                 </div>
                 <div className={styles.topicsList}>
@@ -685,7 +805,15 @@ export default function AiAnalysisPage() {
               {/* Detailed DILR Card */}
               <div className={styles.detailedCard}>
                 <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle}><span>🧩</span> DILR Topics</div>
+                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    <span>DILR Topics</span>
+                  </div>
                   <span className={`${styles.topicBadge} ${styles.badgeNeeds}`}>NEEDS ATTENTION (58%)</span>
                 </div>
                 <div className={styles.topicsList}>
@@ -719,7 +847,14 @@ export default function AiAnalysisPage() {
               {/* Detailed QA Card */}
               <div className={styles.detailedCard}>
                 <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle}><span>📐</span> QA Topics</div>
+                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m14 8-4 8" />
+                      <path d="m10 8 4 8" />
+                    </svg>
+                    <span>QA Topics</span>
+                  </div>
                   <span className={`${styles.topicBadge} ${styles.badgeModerate}`}>IMPROVING (68%)</span>
                 </div>
                 <div className={styles.topicsList}>
@@ -768,12 +903,22 @@ export default function AiAnalysisPage() {
                 <div className={styles.trendStatPill}>
                   <span className={styles.trendStatLbl}>Avg. Question Speed</span>
                   <span className={styles.trendStatVal}>2m 04s</span>
-                  <span className={styles.trendStatDelta} style={{color: '#2563EB'}}>⚡ 18s faster per question</span>
+                  <span className={styles.trendStatDelta} style={{color: '#2563EB', display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    <span>18s faster per question</span>
+                  </span>
                 </div>
                 <div className={styles.trendStatPill}>
                   <span className={styles.trendStatLbl}>Consistency Index</span>
                   <span className={styles.trendStatVal}>{d.dna?.consistency?.value || 72}%</span>
-                  <span className={styles.trendStatDelta}>🛡️ Low variance in VARC/QA</span>
+                  <span className={styles.trendStatDelta} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span>Low variance in VARC/QA</span>
+                  </span>
                 </div>
               </div>
 
@@ -846,7 +991,12 @@ export default function AiAnalysisPage() {
                 <div className={styles.csItem}><span className={styles.csLbl}>Total Mocks</span><span className={styles.csVal}>5</span></div>
                 <div className={styles.csItem}><span className={styles.csLbl}>Best Score</span><span className={styles.csVal}>78</span></div>
                 <div className={styles.csItem}><span className={styles.csLbl}>Avg. Score</span><span className={styles.csVal}>68</span></div>
-                <div className={styles.csInsight}>🧠 Your performance is showing a steady improvement. Keep going!</div>
+                <div className={styles.csInsight} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                  </svg>
+                  <span>Your performance is showing a steady improvement. Keep going!</span>
+                </div>
               </div>
             </div>
           </div>
@@ -876,7 +1026,14 @@ export default function AiAnalysisPage() {
               </div>
               <div className={styles.chartStats} style={{width: '180px'}}>
                 <div style={{background: '#F8FAFC', borderRadius: '12px', padding: '16px', border: '1px solid #E2E8F0', height: '100%'}}>
-                  <div style={{fontSize: '11px', fontWeight: 700, color: '#3B82F6', background: '#EFF6FF', display: 'inline-block', padding: '4px 10px', borderRadius: '100px', marginBottom: '12px'}}>💡 Key Insight</div>
+                  <div style={{fontSize: '11px', fontWeight: 700, color: '#3B82F6', background: '#EFF6FF', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '100px', marginBottom: '12px'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 18h6" />
+                      <path d="M10 22h4" />
+                      <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                    </svg>
+                    <span>Key Insight</span>
+                  </div>
                   <div style={{fontSize: '13px', color: '#0F172A', fontWeight: 500, lineHeight: 1.5}}>You are strong in <strong>Fast + Accurate</strong> zone (VARC), but need improvement in <strong>Slow + Inaccurate</strong> zone (DILR).</div>
                 </div>
               </div>
@@ -931,7 +1088,6 @@ export default function AiAnalysisPage() {
               {[
                 {
                   key: 'carelessErrors' as const,
-                  i: '🎯',
                   c: '#D1FAE5',
                   tc: '#059669',
                   n: 'Reduce careless errors',
@@ -939,7 +1095,6 @@ export default function AiAnalysisPage() {
                 },
                 {
                   key: 'dilrAccuracy' as const,
-                  i: '🧩',
                   c: '#FEF3C7',
                   tc: '#D97706',
                   n: 'Improve DILR accuracy',
@@ -947,7 +1102,6 @@ export default function AiAnalysisPage() {
                 },
                 {
                   key: 'questionSelection' as const,
-                  i: '⚙️',
                   c: '#F3E8FF',
                   tc: '#7E22CE',
                   n: 'Better question selection',
@@ -955,7 +1109,6 @@ export default function AiAnalysisPage() {
                 },
                 {
                   key: 'qaSpeed' as const,
-                  i: '⚡',
                   c: '#E0F2FE',
                   tc: '#0369A1',
                   n: 'Increase QA speed',
@@ -976,7 +1129,31 @@ export default function AiAnalysisPage() {
                   tabIndex={0}
                   aria-label={`View details for ${opp.n} (${opp.m})`}
                 >
-                  <div className={styles.oppIcon} style={{background: opp.c, color: opp.tc}}>{opp.i}</div>
+                  <div className={styles.oppIcon} style={{background: opp.c, color: opp.tc, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    {opp.key === 'carelessErrors' ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                    ) : opp.key === 'dilrAccuracy' ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                    ) : opp.key === 'questionSelection' ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                    )}
+                  </div>
                   <div className={styles.oppName}>{opp.n}</div>
                   <div className={styles.oppMarks}>{opp.m}</div>
                   <div className={styles.oppArrow}>&gt;</div>
@@ -1026,7 +1203,11 @@ export default function AiAnalysisPage() {
         {/* FOOTER */}
         <div className={styles.footerBar}>
           <div className={styles.fbLeft}>
-            <span>🧠</span> Analysis based on your completed mock attempts, question responses and timing data.
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '6px' }}>
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04" />
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04" />
+            </svg>
+            Analysis based on your completed mock attempts, question responses and timing data.
           </div>
           <div>ⓘ More mocks = more accurate insights.</div>
         </div>
@@ -1041,7 +1222,11 @@ export default function AiAnalysisPage() {
             
             <div className={styles.modalBoxContent}>
               <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
-              <span style={{fontSize: '24px'}}>🎯</span>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
               <h3 style={{fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0}}>Your AI Improvement Plan</h3>
             </div>
             <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 16px 0', lineHeight: 1.5}}>
@@ -1066,7 +1251,11 @@ export default function AiAnalysisPage() {
                   aria-checked={completedTasks.includes(1)}
                   tabIndex={0}
                 >
-                  {completedTasks.includes(1) ? '✓' : ''}
+                  {completedTasks.includes(1) ? (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : null}
                 </div>
                 <div className={styles.planStepContent}>
                   <div className={styles.planStepTitle}>1. Review your last 5 Algebra mistakes</div>
@@ -1086,7 +1275,11 @@ export default function AiAnalysisPage() {
                   aria-checked={completedTasks.includes(2)}
                   tabIndex={0}
                 >
-                  {completedTasks.includes(2) ? '✓' : ''}
+                  {completedTasks.includes(2) ? (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : null}
                 </div>
                 <div className={styles.planStepContent}>
                   <div className={styles.planStepTitle}>2. Practice 2 timed DILR sets</div>
@@ -1106,7 +1299,11 @@ export default function AiAnalysisPage() {
                   aria-checked={completedTasks.includes(3)}
                   tabIndex={0}
                 >
-                  {completedTasks.includes(3) ? '✓' : ''}
+                  {completedTasks.includes(3) ? (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : null}
                 </div>
                 <div className={styles.planStepContent}>
                   <div className={styles.planStepTitle}>3. Attempt 15 QA Arithmetic questions</div>
@@ -1120,7 +1317,14 @@ export default function AiAnalysisPage() {
 
             {completedTasks.length === 3 ? (
               <div className={styles.celebrationBox}>
-                <span>🏆</span> All steps completed! You are in prime condition for your next CAT mock test.
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '6px' }}>
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34" />
+                  <path d="M18 4H6v7a6 6 0 0 0 12 0V4z" />
+                </svg>
+                All steps completed! You are in prime condition for your next CAT mock test.
               </div>
             ) : null}
 
@@ -1225,7 +1429,10 @@ export default function AiAnalysisPage() {
                 onClick={() => setSelectedMetric(null)}
                 aria-label="Close popup"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
 
               <div className={styles.metricModalScrollContent}>
@@ -1234,7 +1441,11 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                      🎯
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
                       Accuracy Details
@@ -1343,7 +1554,9 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#ECFDF5", color: "#059669" }}>
-                      ⚡
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
                       Speed Analysis
@@ -1431,7 +1644,9 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#F5F3FF", color: "#8B5CF6" }}>
-                      🛡️
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
                       Consistency Details
@@ -1553,7 +1768,10 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#FDF4FF", color: "#D946EF" }}>
-                      📚
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
                       Concept Strength
@@ -1584,9 +1802,12 @@ export default function AiAnalysisPage() {
                         </div>
                         <span
                           className={styles.metricImprovementBadge}
-                          style={{ background: "#FDF4FF", color: "#A21CAF", borderColor: "#F0ABFC" }}
+                          style={{ background: "#FDF4FF", color: "#A21CAF", borderColor: "#F0ABFC", display: "inline-flex", alignItems: "center", gap: "5px" }}
                         >
-                          ✦ {d.dna?.conceptStrength?.interpretation || "Excellent foundation"}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+                          </svg>
+                          {d.dna?.conceptStrength?.interpretation || "Excellent foundation"}
                         </span>
                       </div>
 
@@ -1653,12 +1874,20 @@ export default function AiAnalysisPage() {
                         <h4 className={styles.metricBlockTitle}>Recommended Topics to Revise</h4>
                         <div className={styles.metricReviseChips}>
                           {weakTopics.map((t) => (
-                            <span key={t.name} className={styles.metricReviseChip}>
-                              📌 {t.name} ({t.section})
+                            <span key={t.name} className={styles.metricReviseChip} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                                <line x1="7" y1="7" x2="7.01" y2="7" />
+                              </svg>
+                              {t.name} ({t.section})
                             </span>
                           ))}
-                          <span className={styles.metricReviseChip}>
-                            📌 Permutations &amp; Combinations (QA)
+                          <span className={styles.metricReviseChip} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                              <line x1="7" y1="7" x2="7.01" y2="7" />
+                            </svg>
+                            Permutations &amp; Combinations (QA)
                           </span>
                         </div>
                       </div>
@@ -1692,7 +1921,11 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                      🎯
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
                     </div>
                     <h3 id="metric-modal-title" className={styles.metricModalTitle}>
                       Question Selection
@@ -1723,9 +1956,12 @@ export default function AiAnalysisPage() {
                         </div>
                         <span
                           className={styles.metricImprovementBadge}
-                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC" }}
+                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC", display: "inline-flex", alignItems: "center", gap: "5px" }}
                         >
-                          ⚡ Efficiency: {d.dna?.questionSelection?.value ?? 55}%
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                          </svg>
+                          Efficiency: {d.dna?.questionSelection?.value ?? 55}%
                         </span>
                       </div>
 
@@ -1896,7 +2132,10 @@ export default function AiAnalysisPage() {
                 onClick={() => setSelectedOpportunity(null)}
                 aria-label="Close popup"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
 
               <div className={styles.metricModalScrollContent}>
@@ -1905,7 +2144,11 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
-                      🎯
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
                     </div>
                     <h3 id="opp-modal-title" className={styles.metricModalTitle}>
                       Reduce Careless Errors
@@ -1932,8 +2175,13 @@ export default function AiAnalysisPage() {
                             +{carelessGain} marks
                           </span>
                         </div>
-                        <span className={styles.metricImprovementBadge}>
-                          🎯 High-Impact Quick Win
+                        <span className={styles.metricImprovementBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="12" r="6" />
+                            <circle cx="12" cy="12" r="2" />
+                          </svg>
+                          High-Impact Quick Win
                         </span>
                       </div>
 
@@ -2018,7 +2266,12 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#FEF3C7", color: "#D97706" }}>
-                      🧩
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                      </svg>
                     </div>
                     <h3 id="opp-modal-title" className={styles.metricModalTitle}>
                       Improve DILR Accuracy
@@ -2047,9 +2300,15 @@ export default function AiAnalysisPage() {
                         </div>
                         <span
                           className={styles.metricImprovementBadge}
-                          style={{ background: "#FEF3C7", color: "#B45309", borderColor: "#FDE68A" }}
+                          style={{ background: "#FEF3C7", color: "#B45309", borderColor: "#FDE68A", display: "inline-flex", alignItems: "center", gap: "5px" }}
                         >
-                          🧩 Sectional Score Booster
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                          </svg>
+                          Sectional Score Booster
                         </span>
                       </div>
 
@@ -2134,7 +2393,10 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#F3E8FF", color: "#7E22CE" }}>
-                      ⚙️
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                      </svg>
                     </div>
                     <h3 id="opp-modal-title" className={styles.metricModalTitle}>
                       Better Question Selection
@@ -2163,9 +2425,13 @@ export default function AiAnalysisPage() {
                         </div>
                         <span
                           className={styles.metricImprovementBadge}
-                          style={{ background: "#F3E8FF", color: "#7E22CE", borderColor: "#D8B4FE" }}
+                          style={{ background: "#F3E8FF", color: "#7E22CE", borderColor: "#D8B4FE", display: "inline-flex", alignItems: "center", gap: "5px" }}
                         >
-                          ⚙️ Smart Attempt Strategy
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                          </svg>
+                          Smart Attempt Strategy
                         </span>
                       </div>
 
@@ -2256,7 +2522,9 @@ export default function AiAnalysisPage() {
                 <>
                   <div className={styles.metricModalHeader}>
                     <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0369A1" }}>
-                      ⚡
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
                     </div>
                     <h3 id="opp-modal-title" className={styles.metricModalTitle}>
                       Increase QA Speed
@@ -2285,9 +2553,12 @@ export default function AiAnalysisPage() {
                         </div>
                         <span
                           className={styles.metricImprovementBadge}
-                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC" }}
+                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC", display: "inline-flex", alignItems: "center", gap: "5px" }}
                         >
-                          ⚡ Attempt Rate Optimizer
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                          </svg>
+                          Attempt Rate Optimizer
                         </span>
                       </div>
 

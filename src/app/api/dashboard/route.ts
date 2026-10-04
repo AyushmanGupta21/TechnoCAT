@@ -1,79 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDashboardData, addStudyTask, getProfileByEmail } from "@/lib/db";
+import { getDashboardData, addStudyTask, getProfileById } from "@/lib/db";
 
-const FALLBACK_DASHBOARD = {
+// Zero-state for unauthenticated or new real users — NO fake demo values
+const EMPTY_DASHBOARD = {
+  isDemo: false,
+  enrolledTopics: [],
   metrics: {
-    inProgressCourses: 3,
-    completedCourses: 2,
-    watchingTime: "18h 45 min",
-    watchingTimeMinutes: 1125,
-    pointsEarned: 840,
+    inProgressCourses: 0,
+    completedCourses: 0,
+    watchingTime: "0h 0 min",
+    watchingTimeMinutes: 0,
+    pointsEarned: 0,
   },
   detailed: {
     inProgressTopics: [],
     completedTopics: [],
     watchingHistory: [],
-    pointsHistory: []
+    pointsHistory: [],
   },
   weeklyStats: [
-    { day: "Sun", learning: 50, challenge: 40 },
-    { day: "Mon", learning: 75, challenge: 60 },
-    { day: "Tue", learning: 50, challenge: 42 },
-    { day: "Wed", learning: 60, challenge: 50 },
-    { day: "Thu", learning: 60, challenge: 52 },
-    { day: "Fri", learning: 38, challenge: 32 },
-    { day: "Sat", learning: 28, challenge: 22 },
+    { day: "Sun", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Mon", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Tue", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Wed", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Thu", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Fri", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Sat", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
   ],
   summary: {
-    totalHoursWeek: 37,
-    avgHoursDay: 5.2,
-    courseHoursWeek: 18,
-    challengeHoursWeek: 20,
+    totalHoursWeek: 0,
+    avgHoursDay: 0,
+    courseHoursWeek: 0,
+    challengeHoursWeek: 0,
   },
   tasks: [],
 };
 
-export async function GET(request: NextRequest) {
-  try {
-    let userId = request.cookies.get("technocat_user_id")?.value;
+async function resolveUserId(request: NextRequest): Promise<string | null> {
+  // Primary: httpOnly session cookie set at login
+  const cookieUserId = request.cookies.get("technocat_user_id")?.value;
+  if (cookieUserId && cookieUserId.trim().length > 0) {
+    return cookieUserId.trim();
+  }
 
-    if (!userId) {
-      // Fallback to default demo user
-      const defaultUser = await getProfileByEmail("student@technocat.edu");
-      if (defaultUser) {
-        userId = defaultUser.id;
+  // Secondary: Authorization header (Bearer <userId>) for API clients
+  const authHeader = request.headers.get("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token.length > 0) {
+      try {
+        const profile = await getProfileById(token);
+        if (profile?.id) return profile.id;
+      } catch {
+        // ignore lookup failure
       }
     }
+  }
+
+  return null;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const userId = await resolveUserId(request);
 
     if (!userId) {
-      return NextResponse.json(FALLBACK_DASHBOARD);
+      // No authenticated session — return clean zero state (not demo data)
+      return NextResponse.json(EMPTY_DASHBOARD);
     }
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("DB timeout")), 3500)
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("DB timeout")), 5000)
     );
 
     const data = await Promise.race([getDashboardData(userId), timeoutPromise]);
     return NextResponse.json(data);
   } catch (error: any) {
-    console.warn("[Dashboard API Fallback]", error?.message);
-    return NextResponse.json(FALLBACK_DASHBOARD);
+    console.warn("[Dashboard API Error]", error?.message);
+    // On DB failure, return zero state — not fake demo data
+    return NextResponse.json(EMPTY_DASHBOARD);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    let userId = request.cookies.get("technocat_user_id")?.value;
+    const userId = await resolveUserId(request);
 
     if (!userId) {
-      const defaultUser = await getProfileByEmail("student@technocat.edu");
-      if (defaultUser) {
-        userId = defaultUser.id;
-      }
-    }
-
-    if (!userId) {
-      return NextResponse.json({ error: "User not found" }, { status: 401 });
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const { title, taskDate } = await request.json();

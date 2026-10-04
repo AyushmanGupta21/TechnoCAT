@@ -58,7 +58,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   percentile: {
     id: "percentile",
     name: "Projected CAT 2026 Percentile",
-    icon: "🎯",
+    icon: "target",
     category: "hero",
     currentValue: {
       "7d": "96.8 %ile",
@@ -107,7 +107,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   accuracy: {
     id: "accuracy",
     name: "Overall Question Accuracy Rate",
-    icon: "📈",
+    icon: "trend",
     category: "hero",
     currentValue: {
       "7d": "84.2%",
@@ -159,7 +159,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   speed: {
     id: "speed",
     name: "Speed Index (Pacing per Question)",
-    icon: "⚡",
+    icon: "bolt",
     category: "hero",
     currentValue: {
       "7d": "1m 42s",
@@ -210,7 +210,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   negativeMarking: {
     id: "negativeMarking",
     name: "Marks Lost to Negative Marking",
-    icon: "⚠️",
+    icon: "alert",
     category: "hero",
     currentValue: {
       "7d": "-7 Marks",
@@ -260,7 +260,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   dailyConsistency: {
     id: "dailyConsistency",
     name: "Daily Study Consistency",
-    icon: "⏱️",
+    icon: "clock",
     category: "habit",
     currentValue: {
       "7d": "52m / 60m goal",
@@ -310,7 +310,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   weeklyVolume: {
     id: "weeklyVolume",
     name: "Weekly Study Volume",
-    icon: "📅",
+    icon: "calendar",
     category: "habit",
     currentValue: {
       "7d": "14.8 Hours",
@@ -356,7 +356,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   deepFocus: {
     id: "deepFocus",
     name: "Deep Focus Session",
-    icon: "🧠",
+    icon: "brain",
     category: "habit",
     currentValue: {
       "7d": "2h 15m",
@@ -401,7 +401,7 @@ export const METRIC_DETAILS: Record<string, MetricCalculationDetail> = {
   streak: {
     id: "streak",
     name: "Active Study Streak",
-    icon: "🔥",
+    icon: "flame",
     category: "habit",
     currentValue: {
       "7d": "7 Consecutive Days",
@@ -594,7 +594,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "First Blood",
     desc: "Completed your first module in Quantitative Ability",
     date: "May 10, 2026",
-    icon: "🏆",
+    icon: "trophy",
     color: "#fef3c7",
     unlocked: true,
     progressPercent: 100,
@@ -604,7 +604,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "Perfect Score",
     desc: "Scored 100% in a 10-question sectional diagnostic",
     date: "May 15, 2026",
-    icon: "⭐",
+    icon: "star",
     color: "#dbeafe",
     unlocked: true,
     progressPercent: 100,
@@ -614,7 +614,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "7-Day Streak",
     desc: "Studied for 7 consecutive days without missing a single date",
     date: "Sep 10, 2026",
-    icon: "🔥",
+    icon: "flame",
     color: "#fee2e2",
     unlocked: true,
     progressPercent: 100,
@@ -624,7 +624,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "Quant Master",
     desc: "Completed over 50% of the Quantitative Ability syllabus",
     date: "May 28, 2026",
-    icon: "📈",
+    icon: "trend",
     color: "#dcfce7",
     unlocked: true,
     progressPercent: 100,
@@ -634,7 +634,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "Speed Demon",
     desc: "Solved 10 Arithmetic questions with an average time under 90 seconds",
     date: "Sep 02, 2026",
-    icon: "⚡",
+    icon: "bolt",
     color: "#e0e7ff",
     unlocked: true,
     progressPercent: 100,
@@ -644,7 +644,7 @@ export const ACHIEVEMENTS_LIST: AchievementBadge[] = [
     title: "DILR Decoder",
     desc: "Cracked 15 consecutive 4-question DILR arrangements with zero errors",
     date: "In Progress",
-    icon: "🧩",
+    icon: "puzzle",
     color: "#f3e8ff",
     unlocked: false,
     progressPercent: 75,

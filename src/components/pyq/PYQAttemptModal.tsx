@@ -156,14 +156,17 @@ export default function PYQAttemptModal({
         {/* Header */}
         <div className={styles.briefingHeader}>
           <div className={styles.headerTop}>
-            <span className={styles.catBadge}>★ Official CAT Examination Simulation</span>
+            <span className={styles.catBadge}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Official CAT Examination Simulation
+            </span>
             <button
               type="button"
               className={styles.closeBriefingBtn}
               onClick={onClose}
               title="Close briefing"
             >
-              ✕
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
           <h2 className={styles.briefingTitle}>
@@ -179,17 +182,17 @@ export default function PYQAttemptModal({
           {/* Quick Metrics */}
           <div className={styles.statGrid}>
             <div className={styles.statCard}>
-              <span className={styles.statIcon}>⏱️</span>
+              <span className={styles.statIcon}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
               <span className={styles.statVal}>40 Mins</span>
               <span className={styles.statLbl}>Section Duration</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statIcon}>📝</span>
+              <span className={styles.statIcon}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
               <span className={styles.statVal}>{rawQuestions.length} Questions</span>
               <span className={styles.statLbl}>{mcqCount} MCQ + {titaCount} TITA</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statIcon}>🎯</span>
+              <span className={styles.statIcon}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
               <span className={styles.statVal}>+{maxPossibleMarks} Marks</span>
               <span className={styles.statLbl}>Maximum Score</span>
             </div>
@@ -198,25 +201,28 @@ export default function PYQAttemptModal({
           {/* Official Scoring Scheme */}
           <div className={styles.rulesSection}>
             <div className={styles.rulesHeading}>
-              <span>⚖️ Official CAT Scoring & Negative Marking Scheme</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+              <span>Official CAT Scoring & Negative Marking Scheme</span>
             </div>
             <div className={styles.ruleItem}>
-              <span className={styles.ruleIcon}>🟢</span>
+              <span className={styles.ruleIcon}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="#16a34a"/></svg></span>
               <span><strong>Multiple Choice (MCQ):</strong> +3 marks for correct answer, <strong>-1 mark</strong> for incorrect answer, 0 for unattempted.</span>
             </div>
             <div className={styles.ruleItem}>
-              <span className={styles.ruleIcon}>⌨️</span>
+              <span className={styles.ruleIcon}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg></span>
               <span><strong>Type In The Answer (TITA):</strong> +3 marks for correct answer, <strong>0 marks</strong> for incorrect answer (No Negative Marking).</span>
             </div>
             <div className={styles.ruleItem}>
-              <span className={styles.ruleIcon}>🔒</span>
+              <span className={styles.ruleIcon}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <span><strong>Exam Window Lock:</strong> Interface cannot be closed until your quiz is finalized and submitted.</span>
             </div>
           </div>
 
           {/* Anti-cheat & Proctoring Security */}
           <div className={styles.proctorNotice}>
-            <span className={styles.proctorNoticeIcon}>⚠️</span>
+            <span className={styles.proctorNoticeIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
             <div>
               <h4 className={styles.proctorNoticeTitle}>Anti-Cheating & Proctoring Regulations</h4>
               <p className={styles.proctorNoticeDesc}>
@@ -227,7 +233,9 @@ export default function PYQAttemptModal({
 
           {/* Subject-Level Locking Notice */}
           <div className={styles.lockoutWarning}>
-            <span className={styles.lockoutWarningIcon}>🔒</span>
+            <span className={styles.lockoutWarningIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
             <div>
               <h4 className={styles.lockoutWarningTitle}>
                 Subject Attempts Policy ({subjectAttemptsCount} of 3 Used for {section})

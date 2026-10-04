@@ -33,6 +33,60 @@ import {
 } from "recharts";
 import styles from "./analytics.module.css";
 
+function renderBadgeIcon(iconName: string) {
+  switch (iconName) {
+    case "trophy":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+        </svg>
+      );
+    case "star":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      );
+    case "flame":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c3.5 0 5-2.5 5-5.5 0-3-2-5.5-4-7.5C11 7 9 9 9 11c0 1.5.5 2.5-.5 3.5z" />
+          <path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-7 5-9 1 2 2 3 3 0z" />
+        </svg>
+      );
+    case "trend":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+          <polyline points="17 6 23 6 23 12" />
+        </svg>
+      );
+    case "bolt":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      );
+    case "puzzle":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19.439 7.85c0-1.57.802-2.54 1.636-3.55a.8.8 0 0 0-.616-1.3H17a1 1 0 0 0-1-1c0-.834-.98-1.636-2.55-1.636-1.57 0-2.55.802-2.55 1.636a1 1 0 0 0-1 1H6.46a.8.8 0 0 0-.615 1.3c.834 1.01 1.635 1.98 1.635 3.55 0 1.57-.801 2.54-1.635 3.55a.8.8 0 0 0 .615 1.3H9.9a1 1 0 0 0 1 1c0 .834.98 1.636 2.55 1.636 1.57 0 2.55-.802 2.55-1.636a1 1 0 0 0 1-1h3.46a.8.8 0 0 0 .615-1.3c-.834-1.01-1.635-1.98-1.635-3.55z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      );
+  }
+}
+
 function AnalyticsPageContent() {
   const { user } = useAuth();
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
@@ -264,8 +318,8 @@ function AnalyticsPageContent() {
 
   return (
     <div className={styles.analyticsWrapper}>
-      {/* ===== DARK UPPER HEADER ===== */}
-      <header className={styles.darkHeader}>
+      {/* ===== STICKY TOP NAVBAR ===== */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
           {/* Top Navigation Bar */}
           <nav className={styles.topNav} aria-label="Analytics Navigation">
@@ -294,11 +348,21 @@ function AnalyticsPageContent() {
 
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* ===== HEADER SECTION ===== */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Header Title & Quick Actions */}
           <div className={styles.headerContent}>
             <div>
-              <div className={styles.pillBadge}>★ AI-Powered Diagnostics</div>
+              <div className={styles.pillBadge}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span>AI-Powered Diagnostics</span>
+              </div>
               <h1 className={styles.pageTitle}>
                 My Performance & <span className={styles.headingHighlight}>Analytics</span>
               </h1>
@@ -312,7 +376,10 @@ function AnalyticsPageContent() {
                 className={styles.drillWeakCta}
                 onClick={() => handleDrill("qa-quantitative-ability", "CAT Diagnostic Drill")}
               >
-                <span>⚡ Drill Weak Areas</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Drill Weak Areas</span>
               </button>
               <button
                 className={styles.exportBtn}
@@ -331,22 +398,69 @@ function AnalyticsPageContent() {
           {/* View Mode Tabs */}
           <div className={styles.viewTabs}>
             {[
-              { id: "overview", label: "📊 Diagnostic Overview" },
-              { id: "topics", label: "🎯 Topic Mastery & Weak Areas" },
-              { id: "mocks", label: "📝 Proctored Mock History" },
-              { id: "achievements", label: "🏆 Badges & Certificates" },
+              {
+                id: "overview",
+                label: "Diagnostic Overview",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                ),
+              },
+              {
+                id: "topics",
+                label: "Topic Mastery & Weak Areas",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                ),
+              },
+              {
+                id: "mocks",
+                label: "Proctored Mock History",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                ),
+              },
+              {
+                id: "achievements",
+                label: "Badges & Certificates",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                    <path d="M4 22h16" />
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+                  </svg>
+                ),
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`${styles.viewTab} ${activeTab === tab.id ? styles.viewTabActive : ""}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               >
-                {tab.label}
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN ANALYTICS CONTENT ===== */}
       <main className={styles.mainContent}>
@@ -379,11 +493,21 @@ function AnalyticsPageContent() {
             {/* 4 Hero CAT KPI Cards */}
             <div>
               <div className={styles.sectionHeaderRow}>
-                <h2 className={styles.sectionTitle}>
-                  <span>🎯</span> Core CAT 2026 Examination Indicators
+                <h2 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                  <span>Core CAT 2026 Examination Indicators</span>
                 </h2>
-                <div className={styles.interactiveHint}>
-                  <span>💡 Click any card to inspect calculation formula</span>
+                <div className={styles.interactiveHint} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18h6" />
+                    <path d="M10 22h4" />
+                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                  </svg>
+                  <span>Click any card to inspect calculation formula</span>
                 </div>
               </div>
 
@@ -395,9 +519,19 @@ function AnalyticsPageContent() {
                   title="Click to view Gaussian normal percentile calculation"
                 >
                   <div className={styles.cardTopRow}>
-                    <div className={styles.cardIconBox}>🎯</div>
-                    <span className={styles.inspectBadge}>
-                      Inspect Formula 🔍
+                    <div className={styles.cardIconBox}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                    </div>
+                    <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <span>Inspect Formula</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
                     </span>
                   </div>
                   <div className={styles.cardName}>Projected CAT 2026 %ile</div>
@@ -423,9 +557,18 @@ function AnalyticsPageContent() {
                   title="Click to inspect question accuracy data"
                 >
                   <div className={styles.cardTopRow}>
-                    <div className={styles.cardIconBox} style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>📈</div>
-                    <span className={styles.inspectBadge}>
-                      Inspect Data 🔍
+                    <div className={styles.cardIconBox} style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        <polyline points="17 6 23 6 23 12" />
+                      </svg>
+                    </div>
+                    <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <span>Inspect Data</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
                     </span>
                   </div>
                   <div className={styles.cardName}>Overall Accuracy Rate</div>
@@ -453,9 +596,17 @@ function AnalyticsPageContent() {
                   title="Click to inspect question pacing and throughput"
                 >
                   <div className={styles.cardTopRow}>
-                    <div className={styles.cardIconBox} style={{ background: "#EEF2FF", borderColor: "#C7D2FE" }}>⚡</div>
-                    <span className={styles.inspectBadge}>
-                      Inspect Pacing 🔍
+                    <div className={styles.cardIconBox} style={{ background: "#EEF2FF", borderColor: "#C7D2FE" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                    </div>
+                    <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <span>Inspect Pacing</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
                     </span>
                   </div>
                   <div className={styles.cardName}>Speed Index (Avg Pacing)</div>
@@ -481,9 +632,19 @@ function AnalyticsPageContent() {
                   title="Click to inspect negative mark deduction impact"
                 >
                   <div className={styles.cardTopRow}>
-                    <div className={styles.cardIconBox} style={{ background: "#FEF2F2", borderColor: "#FECACA" }}>⚠️</div>
-                    <span className={styles.inspectBadge}>
-                      Inspect Loss 🔍
+                    <div className={styles.cardIconBox} style={{ background: "#FEF2F2", borderColor: "#FECACA" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                    </div>
+                    <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <span>Inspect Loss</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
                     </span>
                   </div>
                   <div className={styles.cardName}>Marks Lost to Negatives</div>
@@ -507,8 +668,12 @@ function AnalyticsPageContent() {
             {/* 4 Study Habits & Consistency Cards */}
             <div>
               <div className={styles.sectionHeaderRow}>
-                <h2 className={styles.sectionTitle}>
-                  <span>⏱️</span> Study Habits & Learning Consistency
+                <h2 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span>Study Habits & Learning Consistency</span>
                 </h2>
                 <div className={styles.interactiveHint}>
                   <span>Click for habit logs</span>
@@ -521,7 +686,12 @@ function AnalyticsPageContent() {
                   className={styles.habitCard}
                   onClick={() => setInspectingMetricId("dailyConsistency")}
                 >
-                  <div className={styles.habitIconBox} style={{ background: "#EFF6FF", color: "#2563EB" }}>⏱️</div>
+                  <div className={styles.habitIconBox} style={{ background: "#EFF6FF", color: "#2563EB" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
                   <div className={styles.habitInfo}>
                     <div className={styles.habitTitle}>Daily Consistency</div>
                     <div className={styles.habitValue}>
@@ -536,7 +706,14 @@ function AnalyticsPageContent() {
                   className={styles.habitCard}
                   onClick={() => setInspectingMetricId("weeklyVolume")}
                 >
-                  <div className={styles.habitIconBox} style={{ background: "#ECFDF5", color: "#059669" }}>📅</div>
+                  <div className={styles.habitIconBox} style={{ background: "#ECFDF5", color: "#059669" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  </div>
                   <div className={styles.habitInfo}>
                     <div className={styles.habitTitle}>Weekly Volume</div>
                     <div className={styles.habitValue}>
@@ -551,7 +728,12 @@ function AnalyticsPageContent() {
                   className={styles.habitCard}
                   onClick={() => setInspectingMetricId("deepFocus")}
                 >
-                  <div className={styles.habitIconBox} style={{ background: "#FAF5FF", color: "#9333EA" }}>🧠</div>
+                  <div className={styles.habitIconBox} style={{ background: "#FAF5FF", color: "#9333EA" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z" />
+                      <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
+                    </svg>
+                  </div>
                   <div className={styles.habitInfo}>
                     <div className={styles.habitTitle}>Deep Focus Session</div>
                     <div className={styles.habitValue}>
@@ -566,7 +748,12 @@ function AnalyticsPageContent() {
                   className={styles.habitCard}
                   onClick={() => setInspectingMetricId("streak")}
                 >
-                  <div className={styles.habitIconBox} style={{ background: "#FFF7ED", color: "#1D4ED8" }}>🔥</div>
+                  <div className={styles.habitIconBox} style={{ background: "#FFF7ED", color: "#EA580C" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c3.5 0 5-2.5 5-5.5 0-3-2-5.5-4-7.5C11 7 9 9 9 11c0 1.5.5 2.5-.5 3.5z" />
+                      <path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-7 5-9 1 2 2 3 3 0z" />
+                    </svg>
+                  </div>
                   <div className={styles.habitInfo}>
                     <div className={styles.habitTitle}>Active Study Streak</div>
                     <div className={styles.habitValue}>
@@ -804,8 +991,12 @@ function AnalyticsPageContent() {
                           className={styles.drillTableBtn}
                           onClick={() => handleDrill(t.id, t.name)}
                           title={`Generate diagnostic quiz for ${t.name}`}
+                          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                         >
-                          <span>⚡ Drill Topic</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                          </svg>
+                          <span>Drill Topic</span>
                         </button>
                       </td>
                     </tr>
@@ -828,13 +1019,26 @@ function AnalyticsPageContent() {
 
             {!isDemo && realMockAttempts.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#F8FAFC", borderRadius: "16px", border: "1px dashed #CBD5E1", margin: "16px 0 24px 0" }}>
-                <div style={{ fontSize: "44px", marginBottom: "14px" }}>📝</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                  <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #DBEAFE", color: "#2563EB" }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  </div>
+                </div>
                 <h3 style={{ fontSize: "19px", fontWeight: "700", color: "#0F172A", margin: "0 0 8px 0" }}>No Proctored Mocks Attempted Yet</h3>
                 <p style={{ fontSize: "14px", color: "#64748B", maxWidth: "520px", margin: "0 auto 24px auto", lineHeight: "1.5" }}>
                   Complete your first full-length proctored CAT mock or past-year question paper to benchmark your all-India percentile, sectional scaled scores, and negative marking deductions.
                 </p>
-                <Link href="/pyq" className={styles.drillWeakCta} style={{ display: "inline-flex", textDecoration: "none" }}>
-                  <span>🚀 Attempt CAT Mock 01</span>
+                <Link href="/pyq" className={styles.drillWeakCta} style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>Attempt CAT Mock 01</span>
                 </Link>
               </div>
             ) : (
@@ -923,7 +1127,7 @@ function AnalyticsPageContent() {
               {userAchievements.map((b) => (
                 <div key={b.id} className={`${styles.badgeCard} ${!b.unlocked ? styles.badgeLocked : ""}`}>
                   <div className={styles.badgeIconBox} style={{ background: b.color }}>
-                    {b.icon}
+                    {renderBadgeIcon(b.icon)}
                   </div>
                   <div className={styles.badgeBody}>
                     <h3 className={styles.badgeTitle}>{b.title}</h3>

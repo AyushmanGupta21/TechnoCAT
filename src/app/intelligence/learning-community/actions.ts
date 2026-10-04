@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { query, getProfileById, getProfileByEmail } from "@/lib/db";
+import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 import { validateCommunityContent, validateCommentContent } from "@/lib/communityModeration";
 
 export type CommunityCategory =
@@ -87,10 +88,10 @@ async function resolveCurrentUser() {
     if (profile) {
       return {
         id: String(profile.id),
-        fullName: profile.full_name || "CAT Aspirant",
+        fullName: resolveStudentName(profile.full_name, profile.email),
         email: profile.email || "",
         role: profile.dream_school ? `Target: ${profile.dream_school}` : "CAT 2026 Aspirant",
-        avatarUrl: profile.avatar_url || null,
+        avatarUrl: sanitizeAvatarUrl(profile.avatar_url),
       };
     }
   }
@@ -99,10 +100,10 @@ async function resolveCurrentUser() {
   if (demoProfile) {
     return {
       id: String(demoProfile.id),
-      fullName: demoProfile.full_name || "Sabrina Gomez",
+      fullName: resolveStudentName(demoProfile.full_name, demoProfile.email),
       email: demoProfile.email || "student@technocat.edu",
       role: demoProfile.role ? (demoProfile.role.charAt(0).toUpperCase() + demoProfile.role.slice(1)) : "Student",
-      avatarUrl: demoProfile.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
+      avatarUrl: sanitizeAvatarUrl(demoProfile.avatar_url),
     };
   }
 
@@ -199,7 +200,7 @@ async function ensureCommunityTablesAndSeed() {
       authorAvatar: null,
       title: "How to approach DILR sets effectively?",
       content:
-        "I am able to solve individual questions but struggle with selecting the right set in mocks.\nHow do you all decide which set to attempt first? Any tips or strategies would be helpful! 🙏",
+        "I am able to solve individual questions but struggle with selecting the right set in mocks.\nHow do you all decide which set to attempt first? Any tips or strategies would be helpful!",
       category: "Doubt Solving",
       upvotesCount: 12,
       createdAt: new Date(now - 1000 * 60 * 120).toISOString(),
@@ -225,7 +226,7 @@ async function ensureCommunityTablesAndSeed() {
       authorAvatar: null,
       title: "Best resources for VARC RC practice?",
       content:
-        "I am looking for good RC practice sources (PYQs, sectional tests, or any other platform).\nWhich resources helped you the most? Please share your suggestions. 😊",
+        "I am looking for good RC practice sources (PYQs, sectional tests, or any other platform).\nWhich resources helped you the most? Please share your suggestions.",
       category: "Study Resources",
       upvotesCount: 18,
       createdAt: new Date(now - 1000 * 60 * 1440).toISOString(),

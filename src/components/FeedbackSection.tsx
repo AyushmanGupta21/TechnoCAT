@@ -88,7 +88,10 @@ export default function FeedbackSection() {
 
       <div className={styles.container}>
         <div className={styles.titleGroup}>
-          <div className={styles.pillBadge}>★ Real Stories, Real Results</div>
+          <div className={styles.pillBadge}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+            Real Stories, Real Results
+          </div>
           <h2 className={styles.heading}>
             What Our <span className={styles.headingGradient}>Students Say</span>
           </h2>

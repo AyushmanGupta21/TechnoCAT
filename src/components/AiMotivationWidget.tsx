@@ -10,18 +10,18 @@ interface AiMotivationWidgetProps {
 }
 
 const MESSAGES = [
-  "Wow, {streak} days in a row! 🔥 Keep up the incredible momentum, {name}.",
-  "You've earned {points} points so far. 🏆 You're on track for that 99+ percentile!",
-  "Great to see you again, {name}. A quick 20-minute session today can make all the difference. 💡",
-  "Hard work beats talent when talent doesn't work hard. Let's crush today's topics! 🚀",
-  "Consistency is your superpower. Your {streak}-day streak is proof of your dedication. 💪"
+  "Wow, {streak} days in a row! Keep up the incredible momentum, {name}.",
+  "You've earned {points} points so far. You're on track for that 99+ percentile!",
+  "Great to see you again, {name}. A quick 20-minute session today can make all the difference.",
+  "Hard work beats talent when talent doesn't work hard. Let's crush today's topics!",
+  "Consistency is your superpower. Your {streak}-day streak is proof of your dedication."
 ];
 
 const STARTER_MESSAGES = [
-  "Welcome to TechnoCAT, {name}! Dive into your first video masterclass to begin your streak! 🚀",
-  "Consistency is your superpower, {name}. Start today's session to build your study habit. 💡",
-  "Ready to conquer CAT 2026, {name}? Complete your first practice drill to earn your first points! 🏆",
-  "Great journey starts with a single step, {name}. Choose a topic from the CAT syllabus to begin! ✨"
+  "Welcome to TechnoCAT, {name}! Dive into your first video masterclass to begin your streak!",
+  "Consistency is your superpower, {name}. Start today's session to build your study habit.",
+  "Ready to conquer CAT 2026, {name}? Complete your first practice drill to earn your first points!",
+  "Great journey starts with a single step, {name}. Choose a topic from the CAT syllabus to begin!"
 ];
 
 export default function AiMotivationWidget({ firstName, streak, points }: AiMotivationWidgetProps) {

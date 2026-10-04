@@ -67,10 +67,9 @@ export default function TopicsListPage() {
 
   return (
     <div className={styles.topicsWrapper}>
-      {/* ===== DARK UPPER HEADER ===== */}
-      <header className={styles.darkHeader}>
+      {/* ===== STICKY TOP NAVBAR ===== */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
-          {/* Top Navigation Bar */}
           <nav className={styles.topNav} aria-label="Topics Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
@@ -105,11 +104,19 @@ export default function TopicsListPage() {
             {/* Right Utilities & Profile */}
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* ===== UPPER HEADER SECTION ===== */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Header Title and Search Bar */}
           <div className={styles.headerContent}>
             <div>
-              <div className={styles.pillBadge}>★ Comprehensive CAT Curriculum</div>
+              <div className={styles.pillBadge}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                Comprehensive CAT Curriculum
+              </div>
               <h1 className={styles.pageTitle}>
                 My <span className={styles.headingHighlight}>Topics</span>
               </h1>
@@ -148,7 +155,7 @@ export default function TopicsListPage() {
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN TOPICS GRID SECTION ===== */}
       <main className={styles.mainContent} style={{ paddingTop: "36px", paddingBottom: "80px" }}>

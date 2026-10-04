@@ -34,12 +34,6 @@ export default function AuthModal() {
     }
   };
 
-  const handleAutoFillDemo = () => {
-    setEmail("student@technocat.edu");
-    setPassword("techno123");
-    setError("");
-  };
-
   React.useEffect(() => {
     if (isAuthModalOpen) {
       setError("");
@@ -129,7 +123,7 @@ export default function AuthModal() {
             onClick={closeAuthModal}
             aria-label="Close"
           >
-            ✕
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div className={styles.brandLogo}>
             <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
@@ -164,27 +158,6 @@ export default function AuthModal() {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className={styles.formBody}>
           {error && <div className={styles.errorBanner}>{error}</div>}
-
-          {authModalTab === "signin" && (
-            <div className={styles.demoHintBox}>
-              <div className={styles.demoHintHeader}>
-                <div className={styles.demoHintTitle}>
-                  💡 <strong>Demo Login:</strong> <code>student@technocat.edu</code>
-                </div>
-                <button
-                  type="button"
-                  className={styles.demoFillBtn}
-                  onClick={handleAutoFillDemo}
-                  title="Auto-fill demo credentials"
-                >
-                  ⚡ Auto-fill
-                </button>
-              </div>
-              <div className={styles.demoHintSub}>
-                Password: <code>techno123</code> &bull; Or enter your registered account
-              </div>
-            </div>
-          )}
 
           {authModalTab === "signup" && (
             <div className={styles.fieldGroup}>
@@ -261,9 +234,15 @@ export default function AuthModal() {
               />
               {confirmPassword.length > 0 && (
                 confirmPassword === password ? (
-                  <span className={styles.inputHintSuccess}>✓ Passwords match</span>
+                  <span className={styles.inputHintSuccess}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12" /></svg>
+                    Passwords match
+                  </span>
                 ) : (
-                  <span className={styles.inputHintError}>✕ Passwords do not match</span>
+                  <span className={styles.inputHintError}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Passwords do not match
+                  </span>
                 )
               )}
             </div>

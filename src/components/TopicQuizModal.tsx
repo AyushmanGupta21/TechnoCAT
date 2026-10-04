@@ -101,7 +101,8 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
             </button>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#dc2626", fontWeight: "700", background: "#fef2f2", padding: "6px 12px", borderRadius: "8px", border: "1px solid #fecaca" }}>
-              🔒 Quiz Active
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Quiz Active</span>
             </div>
           )}
         </div>

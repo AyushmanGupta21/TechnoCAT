@@ -283,7 +283,8 @@ export default function QuizViewer({
 
             <div>
               <h2 style={{ color: "#0f172a", fontSize: "1.2rem", fontWeight: "800", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>🎯 {title}</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                <span>{title}</span>
               </h2>
               <p style={{ color: "#64748b", fontSize: "0.85rem", margin: "2px 0 0 0", fontWeight: "500" }}>
                 Interactive TechnoEEE Practice • {questions.length} High-Yield CAT Questions
@@ -324,7 +325,8 @@ export default function QuizViewer({
                 onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
                 onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
               >
-                Submit Quiz ✓
+                <span>Submit Quiz</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "6px" }}><polyline points="20 6 9 17 4 12" /></svg>
               </button>
             )}
           </div>
@@ -405,7 +407,22 @@ export default function QuizViewer({
                   color: score / questions.length >= 0.8 ? "#059669" : score / questions.length >= 0.5 ? "#2563eb" : "#dc2626",
                   fontWeight: "700", fontSize: "0.85rem", marginBottom: "16px"
                 }}>
-                  {score / questions.length >= 0.8 ? "🎉 99+ Percentile Ready!" : score / questions.length >= 0.5 ? "👍 Good Effort! Revise Traps" : "⚠️ Needs Revision"}
+                  {score / questions.length >= 0.8 ? (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                      <span>99+ Percentile Ready!</span>
+                    </>
+                  ) : score / questions.length >= 0.5 ? (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      <span>Good Effort! Revise Traps</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      <span>Needs Revision</span>
+                    </>
+                  )}
                 </div>
 
                 <button
@@ -416,10 +433,12 @@ export default function QuizViewer({
                     backgroundColor: "#1e293b", color: "#fff",
                     border: "none", borderRadius: "10px",
                     fontWeight: "700", fontSize: "0.9rem",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
                   }}
                 >
-                  ↺ Retake Quiz
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span>Retake Quiz</span>
                 </button>
               </div>
             )}
@@ -537,7 +556,8 @@ export default function QuizViewer({
                     color: "#b45309", margin: "0 0 18px 0", fontSize: "1.05rem",
                     fontWeight: "800", display: "flex", alignItems: "center", gap: "8px"
                   }}>
-                    <span>💡 Concept Review & Explanations</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                    <span>Concept Review & Explanations</span>
                   </h4>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>

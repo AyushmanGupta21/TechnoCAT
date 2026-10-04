@@ -354,25 +354,25 @@ export default function AiFeedbackLoop() {
                   <div className={styles.planItemsList}>
                     <div className={styles.planItem}>
                       <span className={styles.planItemIcon} style={{ background: "#FFE4E6", color: "#F43F5E" }}>
-                        ◎
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
                       </span>
                       <span>Topic-wise Practice</span>
                     </div>
                     <div className={styles.planItem}>
                       <span className={styles.planItemIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                        ▤
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
                       </span>
                       <span>Personalized Quizzes</span>
                     </div>
                     <div className={styles.planItem}>
                       <span className={styles.planItemIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
-                        ▮
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                       </span>
                       <span>Performance Tracking</span>
                     </div>
                     <div className={styles.planItem}>
                       <span className={styles.planItemIcon} style={{ background: "#EDE9FE", color: "#7C3AED" }}>
-                        ★
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                       </span>
                       <span>Smart Recommendations</span>
                     </div>

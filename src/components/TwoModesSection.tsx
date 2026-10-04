@@ -64,16 +64,16 @@ export default function TwoModesSection() {
 
             <div className={styles.classicFeatures}>
               <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}>✓</span> Actual CAT Interface
+                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Actual CAT Interface
               </div>
               <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}>✓</span> Smart Navigation
+                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smart Navigation
               </div>
               <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}>✓</span> Sectional Timing
+                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Sectional Timing
               </div>
               <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}>✓</span> Real Exam Simulation
+                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Real Exam Simulation
               </div>
             </div>
 
@@ -165,16 +165,16 @@ export default function TwoModesSection() {
 
             <div className={styles.modernFeatures}>
               <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}>✓</span> Smooth and Interactive UI
+                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smooth and Interactive UI
               </div>
               <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}>✓</span> Smart Navigation To Tabs
+                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smart Navigation To Tabs
               </div>
               <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}>✓</span> Enhanced Analytics
+                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Enhanced Analytics
               </div>
               <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}>✓</span> Distraction-Free Experience
+                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Distraction-Free Experience
               </div>
             </div>
 

@@ -48,7 +48,8 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
             loading="lazy"
           />
           <span className={styles.imageCaption}>
-            🔍 Click diagram to zoom in full resolution
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Click diagram to zoom in full resolution
           </span>
         </div>
       );
@@ -153,11 +154,11 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
               onClick={() => setActiveImage(null)}
               title="Close Zoom"
             >
-              ✕
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
             <img src={activeImage.src} alt={activeImage.alt} className={styles.lightboxImg} />
             <div className={styles.lightboxHint}>
-              {activeImage.alt} • Click outside or ✕ to close
+              {activeImage.alt} • Click outside or close button to dismiss
             </div>
           </div>
         </div>

@@ -94,7 +94,7 @@ export const TOPICS_DATA: Topic[] = [
         "reached": false
       }
     ],
-    "motivationalMessage": "Great momentum! 🚀 You are making rapid progress through Quantitative Ability (QA). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
+    "motivationalMessage": "Great momentum! You are making rapid progress through Quantitative Ability (QA). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
     "totalLessons": 51,
     "completedLessonsCount": 3,
     "modules": [
@@ -1516,7 +1516,7 @@ export const TOPICS_DATA: Topic[] = [
         "reached": false
       }
     ],
-    "motivationalMessage": "Great momentum! 🚀 You are making rapid progress through Data Interpretation & Logical Reasoning (DILR). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
+    "motivationalMessage": "Great momentum! You are making rapid progress through Data Interpretation & Logical Reasoning (DILR). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
     "totalLessons": 20,
     "completedLessonsCount": 2,
     "modules": [
@@ -2102,7 +2102,7 @@ export const TOPICS_DATA: Topic[] = [
         "reached": false
       }
     ],
-    "motivationalMessage": "Great momentum! 🚀 You are making rapid progress through Verbal Ability & Reading Comprehension (VARC). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
+    "motivationalMessage": "Great momentum! You are making rapid progress through Verbal Ability & Reading Comprehension (VARC). Consistency in watching lectures and solving PYQs will ensure 99+ percentile!",
     "totalLessons": 18,
     "completedLessonsCount": 2,
     "modules": [
@@ -2642,7 +2642,7 @@ export const TOPICS_DATA: Topic[] = [
         "reached": false
       }
     ],
-    "motivationalMessage": "Great Job! 🎉 You're on the path to becoming certified in Mastering Illustration. Your dedication to learning is impressive. Finish strong!",
+    "motivationalMessage": "Great Job! You're on the path to becoming certified in Mastering Illustration. Your dedication to learning is impressive. Finish strong!",
     "totalLessons": 7,
     "completedLessonsCount": 1,
     "modules": [

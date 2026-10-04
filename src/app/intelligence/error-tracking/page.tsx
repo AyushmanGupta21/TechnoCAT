@@ -176,7 +176,10 @@ export default function ErrorTrackingPage() {
         <div className={styles.heroContainer}>
           <div className={styles.heroLeft}>
             <div className={styles.heroBadge}>
-              <span>✦</span> AI ERROR LOG &amp; PATTERN DETECTOR
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
+                <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+              </svg>
+              AI ERROR LOG &amp; PATTERN DETECTOR
             </div>
             <h1 className={styles.heroTitle}>
               Stop Repeating the <span>Same Mistakes.</span>
@@ -275,7 +278,23 @@ export default function ErrorTrackingPage() {
                   </div>
                 </div>
                 <div className={styles.recoveryJumpPill}>
-                  {totalErrors > 0 ? "⚡ ~+9.4%ile Jump" : "🎯 99%ile Target"}
+                  {totalErrors > 0 ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                      ~+9.4%ile Jump
+                    </span>
+                  ) : (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                      99%ile Target
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -386,7 +405,11 @@ export default function ErrorTrackingPage() {
 
               {/* AI Top Alert Insight */}
               <div className={styles.radarInsightCallout}>
-                <span className={styles.radarInsightIcon} aria-hidden="true">⚡</span>
+                <span className={styles.radarInsightIcon} aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                </span>
                 <div className={styles.radarInsightText}>
                   {totalErrors > 0 ? (
                     <>
@@ -424,7 +447,13 @@ export default function ErrorTrackingPage() {
       <main className={styles.container}>
         {errors.length === 0 && !loading ? (
           <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFF", borderRadius: "18px", border: "1px dashed #CBD5E1", margin: "24px 0" }}>
-            <div style={{ fontSize: "44px", marginBottom: "16px" }}>🎯</div>
+            <div style={{ marginBottom: "16px", color: "#2563EB", display: "flex", justifyContent: "center" }}>
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            </div>
             <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", margin: "0 0 10px 0" }}>No Mistake Patterns Logged Yet</h2>
             <p style={{ fontSize: "14px", color: "#64748B", maxWidth: "540px", margin: "0 auto 24px auto", lineHeight: "1.6" }}>
               TechnoCAT AI analyzes your proctored mock attempts and past CAT papers to detect calculation slips, trap options, and timing panic. Attempt your first mock or past paper to populate this dashboard!
@@ -581,8 +610,12 @@ export default function ErrorTrackingPage() {
                   </div>
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     {renderErrorTypeBadge(err.errorType)}
-                    <span className={styles.timeSpentBadge}>
-                      ⏱️ {Math.floor(err.timeSpentSec / 60)}m {err.timeSpentSec % 60}s
+                    <span className={styles.timeSpentBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      {Math.floor(err.timeSpentSec / 60)}m {err.timeSpentSec % 60}s
                     </span>
                   </div>
                 </div>
@@ -606,10 +639,21 @@ export default function ErrorTrackingPage() {
                           <strong>{opt.label}.</strong> {opt.text}
                         </span>
                         {isSelected && !isCorrect && (
-                          <span className={styles.optionMarkerWrong}>Your Answer ✕</span>
+                          <span className={styles.optionMarkerWrong} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            Your Answer
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </span>
                         )}
                         {isCorrect && (
-                          <span className={styles.optionMarkerCorrect}>Correct Answer ✓</span>
+                          <span className={styles.optionMarkerCorrect} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            Correct Answer
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </span>
                         )}
                       </div>
                     );
@@ -618,7 +662,12 @@ export default function ErrorTrackingPage() {
 
                 <div className={styles.aiDiagnosticBox}>
                   <div className={styles.aiDiagTitle}>
-                    <span>💡</span> TechnoCAT AI Diagnostic
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
+                      <path d="M9 18h6" />
+                      <path d="M10 22h4" />
+                      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                    </svg>
+                    TechnoCAT AI Diagnostic
                   </div>
                   <p className={styles.aiDiagText}>{err.aiDiagnostic}</p>
                   <div className={styles.recoveryAction}>
@@ -686,7 +735,10 @@ export default function ErrorTrackingPage() {
                 onClick={() => setSelectedStatModal(null)}
                 aria-label="Close modal"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
 
               <div className={styles.statModalScrollContent}>
@@ -695,7 +747,10 @@ export default function ErrorTrackingPage() {
                 <>
                   <div className={styles.statModalHeader}>
                     <div className={styles.statModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                      📋
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                      </svg>
                     </div>
                     <h3 id="error-stat-modal-title" className={styles.statModalTitle}>
                       Mistakes Logged
@@ -721,8 +776,11 @@ export default function ErrorTrackingPage() {
                             {totalErrorsCount}
                           </span>
                         </div>
-                        <span className={styles.statModalHeroBadge}>
-                          ✦ Logged Across Recent Mocks
+                        <span className={styles.statModalHeroBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+                          </svg>
+                          Logged Across Recent Mocks
                         </span>
                       </div>
 
@@ -813,16 +871,26 @@ export default function ErrorTrackingPage() {
 
                       <div className={styles.statModalInfoGrid}>
                         <div className={styles.statModalMeaningBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8" }}>
-                            <span>💡</span> What This Means
+                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M9 18h6" />
+                              <path d="M10 22h4" />
+                              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                            </svg>
+                            What This Means
                           </div>
                           <p className={styles.statModalBoxText}>
                             “You made {totalErrorsCount} incorrect attempts in your recent mocks. Identifying recurring mistake patterns can help you avoid repeating them.”
                           </p>
                         </div>
                         <div className={styles.statModalTipBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#059669" }}>
-                            <span>🎯</span> Action Tip
+                          <div className={styles.statModalBoxTitle} style={{ color: "#059669", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" />
+                              <circle cx="12" cy="12" r="6" />
+                              <circle cx="12" cy="12" r="2" />
+                            </svg>
+                            Action Tip
                           </div>
                           <p className={styles.statModalBoxText}>
                             “Review these mistakes, understand the root cause, and practice similar questions.”
@@ -856,7 +924,10 @@ export default function ErrorTrackingPage() {
                 <>
                   <div className={styles.statModalHeader}>
                     <div className={styles.statModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                      📉
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                        <polyline points="17 18 23 18 23 12" />
+                      </svg>
                     </div>
                     <h3 id="error-stat-modal-title" className={styles.statModalTitle}>
                       Negative Marks Lost
@@ -882,8 +953,11 @@ export default function ErrorTrackingPage() {
                             −{negMarksCount}
                           </span>
                         </div>
-                        <span className={styles.statModalHeroBadge}>
-                          ⚡ +{negMarksCount} Net Score Recovery Potential
+                        <span className={styles.statModalHeroBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                          </svg>
+                          +{negMarksCount} Net Score Recovery Potential
                         </span>
                       </div>
 
@@ -951,16 +1025,26 @@ export default function ErrorTrackingPage() {
 
                       <div className={styles.statModalInfoGrid}>
                         <div className={styles.statModalMeaningBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8" }}>
-                            <span>💡</span> What This Means?
+                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M9 18h6" />
+                              <path d="M10 22h4" />
+                              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                            </svg>
+                            What This Means?
                           </div>
                           <p className={styles.statModalBoxText}>
                             “You lost {negMarksCount} marks due to incorrect attempts. Reducing avoidable negative marks can improve your overall score.”
                           </p>
                         </div>
                         <div className={styles.statModalTipBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#059669" }}>
-                            <span>🎯</span> Action Tip
+                          <div className={styles.statModalBoxTitle} style={{ color: "#059669", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" />
+                              <circle cx="12" cy="12" r="6" />
+                              <circle cx="12" cy="12" r="2" />
+                            </svg>
+                            Action Tip
                           </div>
                           <p className={styles.statModalBoxText}>
                             “Focus on improving accuracy and avoid random guesses.”
@@ -986,7 +1070,11 @@ export default function ErrorTrackingPage() {
                 <>
                   <div className={styles.statModalHeader}>
                     <div className={styles.statModalIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                      ⚠️
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
                     </div>
                     <h3 id="error-stat-modal-title" className={styles.statModalTitle}>
                       Silly / Trap Errors
@@ -1012,8 +1100,11 @@ export default function ErrorTrackingPage() {
                             {sillyRatePct}%
                           </span>
                         </div>
-                        <span className={styles.statModalHeroBadge}>
-                          🛡️ 100% Avoidable With Verification
+                        <span className={styles.statModalHeroBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          </svg>
+                          100% Avoidable With Verification
                         </span>
                       </div>
 
@@ -1074,16 +1165,26 @@ export default function ErrorTrackingPage() {
 
                       <div className={styles.statModalInfoGrid}>
                         <div className={styles.statModalMeaningBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8" }}>
-                            <span>💡</span> What This Means?
+                          <div className={styles.statModalBoxTitle} style={{ color: "#1D4ED8", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M9 18h6" />
+                              <path d="M10 22h4" />
+                              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                            </svg>
+                            What This Means?
                           </div>
                           <p className={styles.statModalBoxText}>
                             “{sillyRatePct}% of your mistakes are silly or trap errors. These are avoidable and can often be reduced through better checking and time management.”
                           </p>
                         </div>
                         <div className={styles.statModalTipBox}>
-                          <div className={styles.statModalBoxTitle} style={{ color: "#059669" }}>
-                            <span>🎯</span> Action Tip
+                          <div className={styles.statModalBoxTitle} style={{ color: "#059669", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" />
+                              <circle cx="12" cy="12" r="6" />
+                              <circle cx="12" cy="12" r="2" />
+                            </svg>
+                            Action Tip
                           </div>
                           <p className={styles.statModalBoxText}>
                             “Take timed practice sets and double-check important details before submitting.”

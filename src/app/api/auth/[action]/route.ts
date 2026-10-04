@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getProfileByEmail, getProfileById, createProfile, updateProfilePassword, deleteProfile } from "@/lib/db";
+import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 
 export async function POST(
   request: NextRequest,
@@ -50,9 +51,9 @@ export async function POST(
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.full_name,
+          fullName: resolveStudentName(user.full_name, user.email),
           role: user.role,
-          avatarUrl: user.avatar_url,
+          avatarUrl: sanitizeAvatarUrl(user.avatar_url),
           phone: user.phone || "",
           targetYear: user.target_year || "CAT 2026",
           dreamSchool: user.dream_school || "",
@@ -73,12 +74,12 @@ export async function POST(
     if (action === "signup") {
       const { fullName, email, password } = await request.json();
 
-      if (!fullName || !email || !password) {
-        return NextResponse.json({ error: "All fields are required." }, { status: 400 });
+      if (!email || !password) {
+        return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
       }
 
-      const trimmedName = fullName.trim();
       const cleanEmail = email.trim().toLowerCase();
+      const resolvedName = resolveStudentName(fullName, cleanEmail);
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(cleanEmail)) {
@@ -97,15 +98,15 @@ export async function POST(
       // Hash password with bcryptjs
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await createProfile(cleanEmail, hashedPassword, trimmedName);
+      const newUser = await createProfile(cleanEmail, hashedPassword, resolvedName);
 
       const response = NextResponse.json({
         user: {
           id: newUser.id,
           email: newUser.email,
-          fullName: newUser.full_name,
+          fullName: resolveStudentName(newUser.full_name, newUser.email),
           role: newUser.role,
-          avatarUrl: newUser.avatar_url,
+          avatarUrl: sanitizeAvatarUrl(newUser.avatar_url),
           phone: "",
           targetYear: "CAT 2026",
           dreamSchool: "",
@@ -216,18 +217,18 @@ export async function GET(
     const userId = request.cookies.get("technocat_user_id")?.value;
 
     if (!userId) {
-      // Return default Sabrina Gomez demo profile for guest / initial experience
+      // Default demo profile for guest / initial experience
       const defaultUser = await getProfileByEmail("student@technocat.edu");
       return NextResponse.json({
         user: defaultUser ? {
           id: defaultUser.id,
           email: defaultUser.email,
-          fullName: defaultUser.full_name,
+          fullName: resolveStudentName(defaultUser.full_name, defaultUser.email),
           role: defaultUser.role,
-          avatarUrl: defaultUser.avatar_url,
-          phone: defaultUser.phone || "+91 98765 43210",
+          avatarUrl: sanitizeAvatarUrl(defaultUser.avatar_url),
+          phone: defaultUser.phone || "",
           targetYear: defaultUser.target_year || "CAT 2026",
-          dreamSchool: defaultUser.dream_school || "IIM Ahmedabad",
+          dreamSchool: defaultUser.dream_school || "",
           preferences: defaultUser.preferences || {},
           isGuest: true,
         } : null,
@@ -243,9 +244,9 @@ export async function GET(
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.full_name,
+        fullName: resolveStudentName(user.full_name, user.email),
         role: user.role,
-        avatarUrl: user.avatar_url,
+        avatarUrl: sanitizeAvatarUrl(user.avatar_url),
         phone: user.phone || "",
         targetYear: user.target_year || "CAT 2026",
         dreamSchool: user.dream_school || "",

@@ -222,7 +222,10 @@ export default function BSchoolPredictorPage() {
       {/* Hero Section */}
       <section className={styles.heroSection}>
         <div className={styles.heroBadge}>
-          <span>✦</span> COMPOSITE SCORE &amp; ADMISSION ENGINE
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
+            <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+          </svg>
+          COMPOSITE SCORE &amp; ADMISSION ENGINE
         </div>
         <h1 className={styles.heroTitle}>
           Your Target B-Schools, <span>Projected from Your Journey.</span>
@@ -235,7 +238,13 @@ export default function BSchoolPredictorPage() {
         {/* Dynamic Learning Projection Banner */}
         <div className={styles.projectionBanner}>
           <div className={styles.bannerText}>
-            <span className={styles.bannerSparkle}>🎯</span>
+            <span className={styles.bannerSparkle}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            </span>
             <span>
               Based on your <strong>{learningSummary.readiness}% CAT Readiness</strong>, recent mock trajectory (~{learningSummary.mockAvgScore} marks),
               and course points ({learningSummary.points} pts), your projected baseline is{" "}
@@ -809,7 +818,11 @@ export default function BSchoolPredictorPage() {
             {/* Target Improvement Tip Box */}
             <div className={styles.whatIfBox}>
               <div className={styles.whatIfBulb} aria-hidden="true">
-                💡
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                </svg>
               </div>
               <div className={styles.whatIfText}>
                 <strong>Target Improvement Tip:</strong> An increase of{" "}
@@ -854,7 +867,12 @@ export default function BSchoolPredictorPage() {
                 onClick={() => setShowInfoCard(!showInfoCard)}
                 title="Click to view guide on Dream, Target, and Safe tiers"
               >
-                <span>ℹ️</span> {showInfoCard ? "Hide Tier Guide" : "What are Dream, Target & Safe?"}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                {showInfoCard ? "Hide Tier Guide" : "What are Dream, Target & Safe?"}
               </button>
 
               <div className={styles.tierTabs}>
@@ -865,9 +883,32 @@ export default function BSchoolPredictorPage() {
                     onClick={() => setActiveTier(tier)}
                   >
                     {tier === "ALL" && `All Schools (${results.length})`}
-                    {tier === "DREAM" && `🌟 Dream (${results.filter((r) => r.chanceTier === "Dream").length})`}
-                    {tier === "TARGET" && `🎯 Target (${results.filter((r) => r.chanceTier === "Target").length})`}
-                    {tier === "SAFE" && `🛡️ Safe (${results.filter((r) => r.chanceTier === "Safe").length})`}
+                    {tier === "DREAM" && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        Dream ({results.filter((r) => r.chanceTier === "Dream").length})
+                      </span>
+                    )}
+                    {tier === "TARGET" && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" />
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                        </svg>
+                        Target ({results.filter((r) => r.chanceTier === "Target").length})
+                      </span>
+                    )}
+                    {tier === "SAFE" && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        Safe ({results.filter((r) => r.chanceTier === "Safe").length})
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -879,7 +920,12 @@ export default function BSchoolPredictorPage() {
             <div className={styles.infoCard}>
               <div className={styles.infoCardTop}>
                 <div className={styles.infoCardTitle}>
-                  <span>ℹ️</span> Understanding Admission Call Tiers &amp; Composite Scores
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "text-bottom", marginRight: "6px" }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  Understanding Admission Call Tiers &amp; Composite Scores
                   <span className={styles.infoCardBadge}>Quick Student Guide</span>
                 </div>
                 <button
@@ -887,61 +933,100 @@ export default function BSchoolPredictorPage() {
                   style={{
                     background: "none",
                     border: "none",
-                    fontSize: "18px",
-                    fontWeight: "700",
                     cursor: "pointer",
                     color: "#94A3B8",
                     padding: "4px 8px",
+                    display: "inline-flex",
+                    alignItems: "center"
                   }}
                   title="Close Guide"
                 >
-                  ✕
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
 
               <div className={styles.infoTiersGrid}>
                 <div className={`${styles.infoTierBox} ${styles.infoTierDream}`}>
                   <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#6B21A8" }}>🌟 Dream (Ambitious)</span>
+                    <span className={styles.infoTierName} style={{ color: "#6B21A8", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                      Dream (Ambitious)
+                    </span>
                     <span className={styles.infoTierOdds} style={{ background: "#F3E8FF", color: "#7E22CE" }}>&lt; 60% Odds</span>
                   </div>
                   <p className={styles.infoTierDesc}>
                     Aspirational reach colleges (e.g. IIM A/B/C, FMS). Call is competitive under your current projected score or profile filters.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#7E22CE" }}>
-                    🎯 Strategy: Boost mock scores by +8 to +15 marks to shift into Target zone.
+                  <div className={styles.infoTierStrategy} style={{ color: "#7E22CE", display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    <span><strong>Strategy:</strong> Boost mock scores by +8 to +15 marks to shift into Target zone.</span>
                   </div>
                 </div>
 
                 <div className={`${styles.infoTierBox} ${styles.infoTierTarget}`}>
                   <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#1E40AF" }}>🎯 Target (Competitive)</span>
+                    <span className={styles.infoTierName} style={{ color: "#1E40AF", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                      Target (Competitive)
+                    </span>
                     <span className={styles.infoTierOdds} style={{ background: "#DBEAFE", color: "#1D4ED8" }}>60% – 84% Odds</span>
                   </div>
                   <p className={styles.infoTierDesc}>
                     Your primary sweet spot (e.g. IIM L/K/I, XLRI, SPJIMR). Your composite score strongly matches historical interview shortlists.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#1D4ED8" }}>
-                    🎯 Strategy: Maintain consistency, clear sectional cutoffs, and prepare for interviews.
+                  <div className={styles.infoTierStrategy} style={{ color: "#1D4ED8", display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    <span><strong>Strategy:</strong> Maintain consistency, clear sectional cutoffs, and prepare for interviews.</span>
                   </div>
                 </div>
 
                 <div className={`${styles.infoTierBox} ${styles.infoTierSafe}`}>
                   <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#065F46" }}>🛡️ Safe (Solid Bet)</span>
+                    <span className={styles.infoTierName} style={{ color: "#065F46", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                      Safe (Solid Bet)
+                    </span>
                     <span className={styles.infoTierOdds} style={{ background: "#DCFCE7", color: "#15803D" }}>85%+ Odds</span>
                   </div>
                   <p className={styles.infoTierDesc}>
                     High-probability calls (e.g. CAP IIMs, MDI Gurgaon, IIM Shillong). Your score exceeds cutoffs with a comfortable safety buffer.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#15803D" }}>
-                    🎯 Strategy: Reliable tier-1 backups that ensure admission even on a tough exam day.
+                  <div className={styles.infoTierStrategy} style={{ color: "#15803D", display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    <span><strong>Strategy:</strong> Reliable tier-1 backups that ensure admission even on a tough exam day.</span>
                   </div>
                 </div>
               </div>
 
               <div className={styles.infoFormulaNote}>
-                <span>💡</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px", flexShrink: 0 }}>
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                </svg>
                 <span>
                   <strong>Why not just CAT percentile?</strong> Top IIMs calculate a <em>Composite Score (0–100)</em> weighting CAT score (35–65%), 10th &amp; 12th boards, graduation, work experience, and gender/academic diversity points.
                 </span>
@@ -958,9 +1043,32 @@ export default function BSchoolPredictorPage() {
                       {item.school.shortName.charAt(0)}
                     </div>
                     <span className={getChancePillClass(item.chanceTier)}>
-                      {item.chanceTier === "Safe" && "🛡️ High Chance (85%+)"}
-                      {item.chanceTier === "Target" && "🎯 Competitive (60-84%)"}
-                      {item.chanceTier === "Dream" && "🌟 Ambitious (<60%)"}
+                      {item.chanceTier === "Safe" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          </svg>
+                          High Chance (85%+)
+                        </span>
+                      )}
+                      {item.chanceTier === "Target" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="12" r="6" />
+                            <circle cx="12" cy="12" r="2" />
+                          </svg>
+                          Competitive (60-84%)
+                        </span>
+                      )}
+                      {item.chanceTier === "Dream" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                          Ambitious (&lt;60%)
+                        </span>
+                      )}
                     </span>
                   </div>
 
@@ -1006,8 +1114,11 @@ export default function BSchoolPredictorPage() {
       {selectedSchool && (
         <div className={styles.modalOverlay} onClick={() => setSelectedSchool(null)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setSelectedSchool(null)}>
-              ✕
+            <button className={styles.modalClose} onClick={() => setSelectedSchool(null)} aria-label="Close modal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
               <div

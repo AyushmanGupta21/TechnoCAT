@@ -73,9 +73,9 @@ export default function IimPredictor() {
               Don't guess your chances. Use our AI-driven algorithm based on historical IIM admission data to check which top B-Schools you can convert.
             </p>
             <ul className={styles.features}>
-              <li>✓ Based on real selection criteria</li>
-              <li>✓ Considers academic diversity</li>
-              <li>✓ Highly accurate percentile mapping</li>
+              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Based on real selection criteria</li>
+              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Considers academic diversity</li>
+              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Highly accurate percentile mapping</li>
             </ul>
           </div>
 
@@ -139,7 +139,7 @@ export default function IimPredictor() {
               </form>
             ) : (
               <div className={styles.resultView}>
-                <div className={styles.successIcon}>✓</div>
+                <div className={styles.successIcon}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></div>
                 <h3 className={styles.formTitle}>Prediction Ready!</h3>
                 <p className={styles.resultDesc}>Based on your profile, you have a strong chance of converting <strong>4 Top IIMs</strong> and <strong>6 Non-IIM Tier-1 Colleges</strong>.</p>
                 <div className={styles.blurredList}>

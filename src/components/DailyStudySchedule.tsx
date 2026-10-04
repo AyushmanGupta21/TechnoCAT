@@ -299,7 +299,8 @@ export default function DailyStudySchedule({
             <span className={styles.codeBadge}>{task.code}</span>
             {task.isOverdue && task.originalDay && (
               <span className={styles.rescheduledBadge}>
-                ⚠️ Rolled Over from {months[task.originalMonthIndex ?? task.monthIndex ?? 8]?.slice(0, 3)} {task.originalDay}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Rolled Over from {months[task.originalMonthIndex ?? task.monthIndex ?? 8]?.slice(0, 3)} {task.originalDay}</span>
               </span>
             )}
           </div>
@@ -432,7 +433,8 @@ export default function DailyStudySchedule({
                 <h3 className={styles.schedulerTitle}>
                   TechnoCAT Intelligent Scheduler
                   <span className={styles.schedulerBadge}>
-                    ⚠️ {totalOverdueCount} Overdue Detected
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>{totalOverdueCount} Overdue Detected</span>
                   </span>
                 </h3>
                 <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0 0" }}>
@@ -442,7 +444,8 @@ export default function DailyStudySchedule({
             </div>
 
             <div className={styles.schedulerLoadBadge}>
-              📋 Today&apos;s Load: <strong>{assignedOverdueTasks.length} Overdue</strong> + <strong>{todayNewTopics.length} New Topics</strong> ({assignedOverdueTasks.length + todayNewTopics.length} Total)
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+              <span>Today&apos;s Load: <strong>{assignedOverdueTasks.length} Overdue</strong> + <strong>{todayNewTopics.length} New Topics</strong> ({assignedOverdueTasks.length + todayNewTopics.length} Total)</span>
             </div>
           </div>
 
@@ -518,7 +521,8 @@ export default function DailyStudySchedule({
                 </>
               ) : pendingCount === 0 && completedCount > 0 ? (
                 <>
-                  🎉 Outstanding work! All tasks for {monthName} {selectedDay} are completed.
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Outstanding work! All tasks for {monthName} {selectedDay} are completed.</span>
                 </>
               ) : (
                 <>
@@ -589,7 +593,7 @@ export default function DailyStudySchedule({
                 <div className={styles.backlogDrawerHeader}>
                   <div>
                     <div className={styles.backlogDrawerTitle}>
-                      <span>📦</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                       <span>Queued Backlog: <strong>{remainingBacklogTasks.length} pending tasks</strong></span>
                     </div>
                     <p className={styles.backlogDrawerDesc}>
@@ -601,7 +605,15 @@ export default function DailyStudySchedule({
                     className={styles.backlogToggleBtn}
                     onClick={() => setIsBacklogExpanded(!isBacklogExpanded)}
                   >
-                    {isBacklogExpanded ? "Hide Queued Backlog ▲" : `View Queued Backlog (${remainingBacklogTasks.length}) ▼`}
+                    {isBacklogExpanded ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        Hide Queued Backlog <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                      </span>
+                    ) : (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        View Queued Backlog ({remainingBacklogTasks.length}) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                      </span>
+                    )}
                   </button>
                 </div>
 
@@ -718,7 +730,8 @@ export default function DailyStudySchedule({
                 className={styles.autoPlanBtn}
                 onClick={() => onAutoAssignDay(selectedDay)}
               >
-                ✨ Auto-Assign Enrolled Topics to {monthName.slice(0, 3)} {selectedDay}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <span>Auto-Assign Enrolled Topics to {monthName.slice(0, 3)} {selectedDay}</span>
               </button>
             </div>
           )

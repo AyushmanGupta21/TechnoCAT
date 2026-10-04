@@ -97,7 +97,7 @@ export default function BrowsePage() {
             desc: `Successfully enrolled in ${topicTitle}. You can access it anytime from My Topics!`,
             actionUrl: `/topics/${topicId}`,
             actionLabel: "Go to Course",
-            icon: "🎓",
+            icon: "learning",
             iconBg: "#EFF6FF",
             iconColor: "#2563EB",
           },
@@ -276,7 +276,10 @@ export default function BrowsePage() {
 
       {/* ===== HERO SEARCH ===== */}
       <section className={styles.heroSection}>
-        <div className={styles.pillBadge}>★ Explore CAT Syllabus</div>
+        <div className={styles.pillBadge}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+          Explore CAT Syllabus
+        </div>
         <h1 className={styles.heroTitle}>
           What do you want to <span className={styles.headingHighlight}>learn today?</span>
         </h1>

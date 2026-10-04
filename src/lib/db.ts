@@ -246,22 +246,20 @@ export async function getDashboardData(userId: string) {
 
   // 1. Topic progress summary
   const progressRes = await query(
-    `SELECT topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned 
-     FROM public.topic_progress 
+    `SELECT topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned, updated_at
+     FROM public.topic_progress
      WHERE user_id = $1`,
     [userId]
   );
 
   const rows = progressRes.rows;
   const enrolledTopics = rows.map((r) => r.topic_id);
-  // Real user: all enrolled topics with progress < 100% count as in-progress learning topics
-  const inProgressTopics = isDemo
-    ? rows.filter((r) => r.progress_percent > 0 && r.progress_percent < 100)
-    : rows.filter((r) => (r.progress_percent || 0) < 100);
+  // All enrolled topics with progress < 100% count as in-progress
+  const inProgressTopics = rows.filter((r) => (r.progress_percent || 0) < 100);
   const completedTopics = rows.filter((r) => (r.progress_percent || 0) === 100);
-  
-  const inProgressCount = isDemo ? 3 : inProgressTopics.length;
-  const completedCount = isDemo ? 2 : completedTopics.length;
+
+  const inProgressCount = inProgressTopics.length;
+  const completedCount = completedTopics.length;
   const totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0);
   const totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0);
 
@@ -325,8 +323,8 @@ export async function getDashboardData(userId: string) {
   // Calculate weekly totals
   const totalLearning = weeklyStats.reduce((sum, item) => sum + (item.rawLearning || 0), 0);
   const totalChallenge = weeklyStats.reduce((sum, item) => sum + (item.rawChallenge || 0), 0);
-  const totalWeek = isDemo && totalLearning + totalChallenge === 0 ? 37 : Math.round(totalLearning + totalChallenge);
-  const avgDay = isDemo && totalWeek === 37 ? 5.2 : Math.round((totalWeek / 7) * 10) / 10;
+  const totalWeek = Math.round(totalLearning + totalChallenge);
+  const avgDay = Math.round((totalWeek / 7) * 10) / 10;
 
   // 3. Study tasks
   const tasksRes = await query(
@@ -361,8 +359,8 @@ export async function getDashboardData(userId: string) {
     summary: {
       totalHoursWeek: totalWeek,
       avgHoursDay: avgDay,
-      courseHoursWeek: isDemo && totalLearning === 0 ? 18 : Math.round(totalLearning),
-      challengeHoursWeek: isDemo && totalChallenge === 0 ? 20 : Math.round(totalChallenge),
+      courseHoursWeek: Math.round(totalLearning),
+      challengeHoursWeek: Math.round(totalChallenge),
     },
     tasks: tasksRes.rows,
   };

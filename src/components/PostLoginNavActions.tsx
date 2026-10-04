@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./PostLoginNavActions.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 import { createPortal } from "react-dom";
 import {
   NotificationItem,
@@ -23,6 +24,55 @@ const TABS: { id: NotificationCategory; label: string }[] = [
   { id: "mocks", label: "Mocks & Tests" },
   { id: "learning", label: "Learning & AI" },
 ];
+
+function renderNotificationIcon(notif: NotificationItem) {
+  const type = notif.type;
+  const iconKey = notif.icon;
+
+  if (iconKey === "alert" || type === "streak_alert") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+  }
+  if (iconKey === "brain" || type === "revision") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 .88.29 1.7.78 2.36A4 4 0 0 0 7 12a4 4 0 0 0 .5 1.93A4 4 0 0 0 8 18a4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0 .5-4.07A4 4 0 0 0 17 12a4 4 0 0 0-1.78-3.64A4 4 0 0 0 16 6a4 4 0 0 0-4-4Z"/></svg>;
+  }
+  if (iconKey === "target" || type === "mock") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+  }
+  if (iconKey === "bschool" || type === "bschool") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+  }
+  if (iconKey === "play" || type === "resume") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+  }
+  if (iconKey === "clipboard" || type === "mock_pyq" || iconKey === "notes") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>;
+  }
+  if (iconKey === "search" || type === "ai") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+  }
+  if (iconKey === "trophy" || type === "milestone") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+  }
+  if (iconKey === "rocket" || type === "system") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4.5c1.62-1.63 5-2.5 5-2.5"/><path d="M12 15v5s3.03-.55 4.5-2c1.63-1.62 2.5-5 2.5-5"/></svg>;
+  }
+  if (iconKey === "calendar") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+  }
+  if (iconKey === "flame") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
+  }
+  if (iconKey === "check") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+  }
+  if (iconKey === "schedule") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+  }
+  if (iconKey === "learning") {
+    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
+  }
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
+}
 
 export default function PostLoginNavActions() {
   const router = useRouter();
@@ -90,25 +140,20 @@ export default function PostLoginNavActions() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const displayName = user?.fullName || (isDemo ? "Sabrina Gomez" : "Student");
-  const firstName = displayName.split(" ")[0];
+  const displayName = resolveStudentName(user?.fullName, user?.email);
+  const firstName = displayName.split(" ")[0] || displayName;
 
   const userInitials = useMemo(() => {
-    if (!displayName) return "U";
+    if (!displayName) return "ST";
     const parts = displayName.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    if (parts.length === 1) return parts[0].slice(0, Math.min(2, parts[0].length)).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }, [displayName]);
 
-  // Demo user uses Sabrina's photo. Real user uses custom avatar if uploaded, or initials
-  const isHardcodedDemoAvatar = user?.avatarUrl?.includes("photo-1494790108377");
-  const showCustomImageAvatar = isDemo
-    ? true
-    : Boolean(user?.avatarUrl && !isHardcodedDemoAvatar);
-
-  const userAvatarUrl = isDemo
-    ? (user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80")
-    : user?.avatarUrl;
+  // Only show custom avatar if explicitly uploaded by the user, never show hardcoded mock photo
+  const cleanAvatarUrl = sanitizeAvatarUrl(user?.avatarUrl);
+  const showCustomImageAvatar = Boolean(cleanAvatarUrl);
+  const userAvatarUrl = cleanAvatarUrl || undefined;
 
   const userRole = user?.role
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
@@ -228,7 +273,7 @@ export default function PostLoginNavActions() {
               <div className={styles.dropdownHeaderInfo}>
                 <span className={styles.dropdownHeaderName}>{displayName}</span>
                 <span className={styles.dropdownHeaderRole} title={user?.email || ""}>
-                  {user?.email || (isDemo ? "student@technocat.edu" : "")}
+                  {user?.email || ""}
                 </span>
               </div>
             </div>
@@ -498,7 +543,7 @@ export default function PostLoginNavActions() {
                           color: notif.iconColor,
                         }}
                       >
-                        {notif.icon}
+                        {renderNotificationIcon(notif)}
                       </div>
 
                       <div className={styles.notifContent}>

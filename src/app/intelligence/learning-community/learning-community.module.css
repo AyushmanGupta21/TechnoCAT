@@ -2832,7 +2832,7 @@
   letter-spacing: 0.05em;
 }
 
-/* 2 Action Buttons Row: [ 📷 Take Photo ] [ 📁 From Device ] */
+/* 2 Action Buttons Row: [ Take Photo ] [ From Device ] */
 .modalActionButtonsRow {
   display: grid;
   grid-template-columns: 1fr 1fr;

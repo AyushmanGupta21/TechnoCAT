@@ -205,7 +205,7 @@ export default function ModuleQuizModal({
 
   const handleSafeClose = useCallback(() => {
     if (!isSubmitted) {
-      setProctorAlert("🔒 Exam in progress! The quiz interface can only be closed once it is ended.");
+      setProctorAlert("Exam in progress! The quiz interface can only be closed once it is ended.");
       return;
     }
     onClose();
@@ -396,12 +396,12 @@ export default function ModuleQuizModal({
           strikesCount: 3,
         });
         setProctorAlert(
-          "🚨 3 Proctoring Strikes Reached: Exam auto-submitted with penalties due to security policy violations."
+          "3 Proctoring Strikes Reached: Exam auto-submitted with penalties due to security policy violations."
         );
         handleSubmitRef.current();
       } else {
         setProctorAlert(
-          `⚠️ Proctoring Warning ${nextStrikes} of 3: ${reason} (-1 mark deducted from final score! Auto-submits on Strike 3)`
+          `Proctoring Warning ${nextStrikes} of 3: ${reason} (-1 mark deducted from final score! Auto-submits on Strike 3)`
         );
         if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
         proctorTimerRef.current = setTimeout(() => {
@@ -471,7 +471,7 @@ export default function ModuleQuizModal({
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        setProctorAlert("🔒 Exam in progress! The quiz interface can only be closed once it is ended.");
+        setProctorAlert("Exam in progress! The quiz interface can only be closed once it is ended.");
         return;
       }
     };
@@ -577,6 +577,11 @@ export default function ModuleQuizModal({
         {proctorAlert && (
           <div className={styles.proctorWarningBanner}>
             <div className={styles.proctorWarningLeft}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
               <span>{proctorAlert}</span>
             </div>
             <button
@@ -584,7 +589,11 @@ export default function ModuleQuizModal({
               className={styles.proctorDismissBtn}
               onClick={() => setProctorAlert(null)}
             >
-              Dismiss ✕
+              Dismiss
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         )}
@@ -592,12 +601,35 @@ export default function ModuleQuizModal({
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.headerLeft}>
-            <span className={isGrandQuiz ? styles.grandQuizBadge : styles.quizBadge}>
-              {initialReviewMode
-                ? `📊 Detailed Report Card (Attempt ${attemptNumber})`
-                : isGrandQuiz
-                ? "🏆 Grand Comprehensive Quiz"
-                : "📝 Compulsory Module Quiz"}
+            <span className={isGrandQuiz ? styles.grandQuizBadge : styles.quizBadge} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              {initialReviewMode ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                  {`Detailed Report Card (Attempt ${attemptNumber})`}
+                </>
+              ) : isGrandQuiz ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="8" r="7" />
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                  </svg>
+                  {"Grand Comprehensive Quiz"}
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  {"Compulsory Module Quiz"}
+                </>
+              )}
             </span>
             <h2 className={styles.modalTitle}>{title}</h2>
           </div>
@@ -704,13 +736,28 @@ export default function ModuleQuizModal({
                 onClick={() => setShowCalculator(false)}
                 title="Close Calculator"
               >
-                ✕
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
             <div className={styles.calcScreen}>{calcInput}</div>
             <div className={styles.calcGrid}>
               <button type="button" className={`${styles.calcBtn} ${styles.calcBtnClear}`} onClick={handleCalcClear}>C</button>
-              <button type="button" className={styles.calcBtn} onClick={handleCalcBackspace}>⌫</button>
+              <button
+                type="button"
+                className={styles.calcBtn}
+                onClick={handleCalcBackspace}
+                aria-label="Backspace"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
+                  <line x1="18" y1="9" x2="12" y2="15" />
+                  <line x1="12" y1="9" x2="18" y2="15" />
+                </svg>
+              </button>
               <button type="button" className={styles.calcBtn} onClick={handleCalcSqrt}>√</button>
               <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("÷")}>÷</button>
 
@@ -756,9 +803,17 @@ export default function ModuleQuizModal({
                       borderRadius: "6px",
                       border: "1px solid #fecaca",
                       animation: "pulse 1.5s infinite",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
                     }}
                   >
-                    ⚠️ Strikes: {strikes} / 3
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    Strikes: {strikes} / 3
                   </span>
                 )}
                 {!isGrandQuiz && (
@@ -767,7 +822,14 @@ export default function ModuleQuizModal({
                   </span>
                 )}
                 <div className={styles.cutoffNotice}>
-                  <span>🎯 {scoringScheme === "cat" ? "CAT Scoring: +3 / -1 (TITA: +3/0)" : "70% Cutoff Required to Pass"}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    {scoringScheme === "cat" ? "CAT Scoring: +3 / -1 (TITA: +3/0)" : "70% Cutoff Required to Pass"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -812,12 +874,20 @@ export default function ModuleQuizModal({
               <div className={styles.questionMeta}>
                 <span className={styles.conceptBadge}>Concept: {currentQ.concept}</span>
                 {currentQ.type === "TITA" ? (
-                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "6px" }}>
-                    ⌨️ TITA Question
+                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+                    </svg>
+                    TITA Question
                   </span>
                 ) : (
-                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: "6px" }}>
-                    🔘 Multiple Choice
+                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="4" />
+                    </svg>
+                    Multiple Choice
                   </span>
                 )}
                 {currentQ.isOutsideContext && (
@@ -832,7 +902,13 @@ export default function ModuleQuizModal({
               {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
                 <div className={styles.titaContainer}>
                   <div className={styles.titaLabel}>
-                    <span>⌨️ Type In The Answer (TITA)</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+                      </svg>
+                      Type In The Answer (TITA)
+                    </span>
                     <span className={styles.titaSubtext}>
                       Key in your numerical value or exact text answer below. (No negative marks apply in CAT).
                     </span>
@@ -903,7 +979,11 @@ export default function ModuleQuizModal({
                     className={`${styles.navActionBtn} ${styles.btnSubmit}`}
                     onClick={() => setShowSubmitConfirm(true)}
                   >
-                    Submit Quiz 🚀
+                    Submit Quiz
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
+                      <line x1="22" y1="2" x2="11" y2="13" />
+                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
                   </button>
                 )}
               </div>
@@ -917,7 +997,21 @@ export default function ModuleQuizModal({
                 analysis?.passed ? styles.trophyPass : styles.trophyFail
               }`}
             >
-              {analysis?.passed ? "🏆" : "⚠️"}
+              {analysis?.passed ? (
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7.5a1.5 1.5 0 0 0 0 3h9a1.5 1.5 0 0 0 0-3H15c-.55 0-1-.45-1-1v-2.34" />
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                </svg>
+              ) : (
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              )}
             </div>
 
             <h3 className={styles.resultHeading}>
@@ -940,7 +1034,12 @@ export default function ModuleQuizModal({
             {strikes > 0 && (
               <div className={styles.penaltyNoticeBanner}>
                 <div className={styles.penaltyNoticeTitle}>
-                  <span>⚠️ Proctoring Strike Penalty Applied (-{strikes} Mark{strikes > 1 ? "s" : ""})</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <span>Proctoring Strike Penalty Applied (-{strikes} Mark{strikes > 1 ? "s" : ""})</span>
                 </div>
                 <div className={styles.penaltyNoticeDesc}>
                   You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for security policy violations (screenshot or tab switching detected).
@@ -1003,7 +1102,13 @@ export default function ModuleQuizModal({
                 <span className={styles.analyticsVal}>
                   {formatTimer(analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft))}
                 </span>
-                <span className={styles.analyticsLbl}>⏱️ Time Taken</span>
+                <span className={styles.analyticsLbl}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  Time Taken
+                </span>
               </div>
               <div className={styles.analyticsCard}>
                 <span className={styles.analyticsVal}>
@@ -1015,7 +1120,12 @@ export default function ModuleQuizModal({
                     )
                   )}s / Q
                 </span>
-                <span className={styles.analyticsLbl}>⚡ Avg Speed</span>
+                <span className={styles.analyticsLbl}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  Avg Speed
+                </span>
               </div>
               <div className={styles.analyticsCard}>
                 <span
@@ -1025,7 +1135,12 @@ export default function ModuleQuizModal({
                 >
                   {strikes > 0 ? `-${strikes} Mark${strikes > 1 ? "s" : ""}` : "Clean (0)"}
                 </span>
-                <span className={styles.analyticsLbl}>🛡️ Proctoring</span>
+                <span className={styles.analyticsLbl}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  Proctoring
+                </span>
               </div>
               <div className={styles.analyticsCard}>
                 <span
@@ -1033,9 +1148,21 @@ export default function ModuleQuizModal({
                     analysis?.passed ? styles.analyticsPass : styles.analyticsStrike
                   }`}
                 >
-                  {analysis?.passed ? "Passed ✓" : "Cutoff 70%"}
+                  {analysis?.passed ? "Passed" : "Cutoff 70%"}
+                  {analysis?.passed && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "4px" }}>
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
                 </span>
-                <span className={styles.analyticsLbl}>🎯 Benchmark</span>
+                <span className={styles.analyticsLbl}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                  Benchmark
+                </span>
               </div>
             </div>
 
@@ -1061,7 +1188,10 @@ export default function ModuleQuizModal({
                         className={styles.resetAttemptsBtn}
                         onClick={onResetAttemptsAfterRewatch}
                       >
-                        ✓ I Have Re-watched the Lectures • Reset Attempts
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        I Have Re-watched the Lectures • Reset Attempts
                       </button>
                     )}
                   </div>
@@ -1101,7 +1231,10 @@ export default function ModuleQuizModal({
                           <div key={rec.lessonId} className={styles.recLectureRow}>
                             <div>
                               <div className={styles.recLectureTitle}>
-                                📺 {rec.lessonTitle}
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px", verticalAlign: "middle" }}>
+                                  <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                                {rec.lessonTitle}
                               </div>
                               <span style={{ fontSize: "11px", color: "#64748b" }}>
                                 {rec.reason}
@@ -1132,7 +1265,15 @@ export default function ModuleQuizModal({
             <div className={styles.solutionsSection}>
               <div className={styles.solutionsHeader}>
                 <div className={styles.solutionsTitle}>
-                  <span>📋 Detailed Solutions & Explanations</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    Detailed Solutions & Explanations
+                  </span>
                 </div>
                 <div className={styles.filterTabs}>
                   <button
@@ -1179,22 +1320,36 @@ export default function ModuleQuizModal({
                             Q{originalIdx + 1} • {q.concept}
                           </span>
                           {isTITA && (
-                            <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px" }}>
-                              ⌨️ TITA
+                            <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+                              </svg>
+                              TITA
                             </span>
                           )}
                         </div>
                         {isUserCorrect ? (
-                          <span className={styles.reviewStatusBadgeCorrect}>
-                            ✓ Correct {scoringScheme === "cat" ? "(+3)" : ""}
+                          <span className={styles.reviewStatusBadgeCorrect} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Correct {scoringScheme === "cat" ? "(+3)" : ""}
                           </span>
                         ) : userChoice === undefined || userChoice === null || userChoice === "" ? (
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", background: "#f1f5f9", padding: "3px 8px", borderRadius: "6px" }}>
-                            ⚪ Unattempted (0)
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", background: "#f1f5f9", padding: "3px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <circle cx="12" cy="12" r="10" />
+                            </svg>
+                            Unattempted (0)
                           </span>
                         ) : (
-                          <span className={styles.reviewStatusBadgeWrong}>
-                            ✗ Incorrect {scoringScheme === "cat" ? (isTITA ? "(0)" : "(-1)") : ""}
+                          <span className={styles.reviewStatusBadgeWrong} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            Incorrect {scoringScheme === "cat" ? (isTITA ? "(0)" : "(-1)") : ""}
                           </span>
                         )}
                       </div>
@@ -1240,13 +1395,35 @@ export default function ModuleQuizModal({
 
                             if (isSelectedByUser && isActualCorrect) {
                               rowClass += ` ${styles.reviewOptSelectedCorrect}`;
-                              tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Your Answer (Correct)</span>;
+                              tag = (
+                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                  Your Answer (Correct)
+                                </span>
+                              );
                             } else if (isSelectedByUser && !isActualCorrect) {
                               rowClass += ` ${styles.reviewOptSelectedWrong}`;
-                              tag = <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>✗ Your Answer (Incorrect)</span>;
+                              tag = (
+                                <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                  </svg>
+                                  Your Answer (Incorrect)
+                                </span>
+                              );
                             } else if (isActualCorrect) {
                               rowClass += ` ${styles.reviewOptCorrectAnswer}`;
-                              tag = <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>✓ Correct Answer</span>;
+                              tag = (
+                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                  Correct Answer
+                                </span>
+                              );
                             }
 
                             return (
@@ -1267,7 +1444,20 @@ export default function ModuleQuizModal({
                       {/* Step-by-Step Explanation Callout */}
                       <div className={styles.explanationCallout}>
                         <div className={styles.explanationTitle}>
-                          <span>💡 Step-by-Step Explanation & Shortcut:</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <circle cx="12" cy="12" r="5" />
+                              <line x1="12" y1="1" x2="12" y2="3" />
+                              <line x1="12" y1="21" x2="12" y2="23" />
+                              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                              <line x1="1" y1="12" x2="3" y2="12" />
+                              <line x1="21" y1="12" x2="23" y2="12" />
+                              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                            </svg>
+                            Step-by-Step Explanation & Shortcut:
+                          </span>
                         </div>
                         <div>
                           <PYQMarkdownViewer content={q.explanation} />
@@ -1315,14 +1505,23 @@ export default function ModuleQuizModal({
                       }
                     }}
                   >
-                    🔄 Retake Quiz with Fresh Questions (Improve Score)
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
+                      <polyline points="23 4 23 10 17 10" />
+                      <polyline points="1 20 1 14 7 14" />
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Retake Quiz with Fresh Questions (Improve Score)
                   </button>
                   <button
                     type="button"
                     className={`${styles.navActionBtn} ${styles.btnPrimary}`}
                     onClick={handleSafeClose}
                   >
-                    Continue Learning 🚀
+                    Continue Learning
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
                   </button>
                 </>
               ) : attemptNumber < maxAttempts ? (
@@ -1347,7 +1546,12 @@ export default function ModuleQuizModal({
                     }
                   }}
                 >
-                  Retake Quiz with Fresh Questions (Attempt {attemptNumber + 1} of {maxAttempts}) 🔄
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                  </svg>
+                  Retake Quiz with Fresh Questions (Attempt {attemptNumber + 1} of {maxAttempts})
                 </button>
               ) : (
                 <button
@@ -1366,7 +1570,14 @@ export default function ModuleQuizModal({
         {showSubmitConfirm && (
           <div className={styles.confirmOverlay} onClick={() => setShowSubmitConfirm(false)}>
             <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.confirmIcon}>📝</div>
+              <div className={styles.confirmIcon}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </div>
               <h3 className={styles.confirmTitle}>Submit Your Exam?</h3>
               <p className={styles.confirmDesc}>
                 You have answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
@@ -1391,7 +1602,10 @@ export default function ModuleQuizModal({
                     handleSubmit();
                   }}
                 >
-                  Yes, Submit Exam ✓
+                  Yes, Submit Exam
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1412,7 +1626,18 @@ export default function ModuleQuizModal({
               }}
             >
               <div className={styles.confirmIcon}>
-                {autoSubmitNotice.type === "cheat" ? "🚨" : "⏱️"}
+                {autoSubmitNotice.type === "cheat" ? (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                ) : (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                )}
               </div>
               <h3
                 className={styles.confirmTitle}
@@ -1440,7 +1665,12 @@ export default function ModuleQuizModal({
                     lineHeight: 1.5,
                   }}
                 >
-                  ⚠️ <strong>Security Advisory:</strong> Switching browser tabs, minimizing the exam window, taking screenshots, or developer tool access are strictly disallowed during testing.
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <strong>Security Advisory:</strong> Switching browser tabs, minimizing the exam window, taking screenshots, or developer tool access are strictly disallowed during testing.
                 </div>
               )}
               {autoSubmitNotice.type === "timeout" && (
@@ -1458,7 +1688,11 @@ export default function ModuleQuizModal({
                     lineHeight: 1.5,
                   }}
                 >
-                  ⏳ <strong>Time Allocation Notice:</strong> All answered questions have been safely graded. Unanswered questions are marked as unattempted.
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <strong>Time Allocation Notice:</strong> All answered questions have been safely graded. Unanswered questions are marked as unattempted.
                 </div>
               )}
               <div className={styles.confirmActions}>
@@ -1473,7 +1707,12 @@ export default function ModuleQuizModal({
                   }}
                   onClick={() => setAutoSubmitNotice(null)}
                 >
-                  View Score &amp; Detailed Analysis 📊
+                  View Score &amp; Detailed Analysis
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
                 </button>
               </div>
             </div>

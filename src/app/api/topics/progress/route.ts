@@ -1,27 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateLessonCompletion, getUserTopicProgress, getProfileByEmail } from "@/lib/db";
+import { updateLessonCompletion, getUserTopicProgress } from "@/lib/db";
 
-async function resolveUserId(request: NextRequest): Promise<{ userId: string | null; isDemo: boolean }> {
+async function resolveUserId(request: NextRequest): Promise<string | null> {
   const userId = request.cookies.get("technocat_user_id")?.value;
-  if (userId) {
-    return { userId, isDemo: false };
-  }
-  const defaultUser = await getProfileByEmail("student@technocat.edu");
-  return { userId: defaultUser?.id || null, isDemo: true };
+  return userId || null;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, isDemo } = await resolveUserId(request);
+    const userId = await resolveUserId(request);
     if (!userId) {
-      return NextResponse.json({ success: true, progress: [], isDemo: true });
+      return NextResponse.json({ success: true, progress: [], isDemo: false });
     }
 
     const rows = await getUserTopicProgress(userId);
     return NextResponse.json({
       success: true,
       progress: rows,
-      isDemo,
+      isDemo: false,
     });
   } catch (error: any) {
     console.error("[Progress API GET Error]", error);
@@ -31,7 +27,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await resolveUserId(request);
+    const userId = await resolveUserId(request);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

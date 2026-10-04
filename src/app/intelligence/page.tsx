@@ -238,8 +238,8 @@ export default function IntelligenceHubPage() {
 
   return (
     <div className={styles.dashboardWrapper}>
-      {/* ===== HEADER SECTION (Mirrored from Dashboard) ===== */}
-      <header className={styles.darkHeader}>
+      {/* ===== STICKY TOP NAVBAR ===== */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
           {/* Top Navigation */}
           <nav className={styles.topNav} aria-label="Dashboard Navigation">
@@ -270,12 +270,21 @@ export default function IntelligenceHubPage() {
             {/* Right Utilities & Profile Dropdown */}
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* ===== HEADER HERO SECTION ===== */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Intelligence Hub Hero */}
           <div className={styles.heroRow}>
             <div className={styles.heroLeft}>
               <div className={styles.badgeLabel}>
-                <span className={styles.sparkleIcon}>✨</span> AI-Powered Learning
+                <span className={styles.sparkleIcon}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+                  </svg>
+                </span> AI-Powered Learning
               </div>
               <h1 className={styles.heroHeading}>
                 Your CAT Preparation, <br />
@@ -287,7 +296,7 @@ export default function IntelligenceHubPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN CONTENT ===== */}
       <main className={styles.mainContent}>
@@ -1132,7 +1141,10 @@ export default function IntelligenceHubPage() {
                       onClick={() => setActiveFlowStep(null)}
                       aria-label="Close step details"
                     >
-                      ✕
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
                     </button>
                   </div>
 
@@ -1170,10 +1182,15 @@ export default function IntelligenceHubPage() {
                               style={{
                                 backgroundColor: currentStep.badgeBg,
                                 color: currentStep.themeColor,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center"
                               }}
                               aria-hidden="true"
                             >
-                              ✓
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
                             </span>
                             <span>{tip}</span>
                           </li>
@@ -1363,7 +1380,13 @@ export default function IntelligenceHubPage() {
                       </ul>
                       
                       <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipIcon}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M9 18h6" />
+                            <path d="M10 22h4" />
+                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                          </svg>
+                        </div>
                         <div className={styles.tipText}><strong>Tip:</strong> Try solving 1 timed QA set daily to improve your speed and confidence.</div>
                       </div>
                       
@@ -1413,7 +1436,13 @@ export default function IntelligenceHubPage() {
                       </ul>
                       
                       <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipIcon}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M9 18h6" />
+                            <path d="M10 22h4" />
+                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                          </svg>
+                        </div>
                         <div className={styles.tipText}><strong>Tip:</strong> Spend 1-2 minutes analyzing each set before attempting.</div>
                       </div>
                       
@@ -1463,7 +1492,13 @@ export default function IntelligenceHubPage() {
                       </ul>
                       
                       <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>💡</div>
+                        <div className={styles.tipIcon}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M9 18h6" />
+                            <path d="M10 22h4" />
+                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+                          </svg>
+                        </div>
                         <div className={styles.tipText}><strong>Tip:</strong> Consistency with analysis = real improvement.</div>
                       </div>
                       
@@ -1602,7 +1637,14 @@ export default function IntelligenceHubPage() {
                             gap: '6px',
                             transition: 'background 0.2s'
                           }}>
-                            {isComplete ? "Challenge Completed ✓" : "Start Today's Challenge"}
+                            {isComplete ? (
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                Challenge Completed
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              </span>
+                            ) : "Start Today's Challenge"}
                             {!isComplete && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>}
                           </button>
                         </div>
@@ -1807,7 +1849,15 @@ export default function IntelligenceHubPage() {
                               </ul>
                             </div>
                             <div style={{textAlign: 'center', flexShrink: 0, paddingLeft: '16px', borderLeft: '1px solid #D1FAE5'}}>
-                              <div style={{fontSize: '40px', marginBottom: '8px'}}>🏆</div>
+                              <div style={{marginBottom: '8px', color: '#059669', display: 'flex', justifyContent: 'center'}}>
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                  <path d="M4 22h16" />
+                                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34" />
+                                  <path d="M18 4H6v7a6 6 0 0 0 12 0V4z" />
+                                </svg>
+                              </div>
                               <div style={{fontSize: '14px', fontWeight: '700', color: '#065F46'}}>Keep Going!</div>
                               <div style={{fontSize: '11px', color: '#047857', marginTop: '4px'}}>Consistency creates results.</div>
                             </div>
@@ -1834,7 +1884,14 @@ export default function IntelligenceHubPage() {
                               cursor: isCompleted ? 'default' : 'pointer'
                             }}
                           >
-                            {isCompleted ? "Challenge Completed ✓" : (task1.done ? "Continue Analysis" : "Start Today's Challenge")}
+                            {isCompleted ? (
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                Challenge Completed
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              </span>
+                            ) : (task1.done ? "Continue Analysis" : "Start Today's Challenge")}
                             {!isCompleted && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>}
                           </Link>
                           <p style={{fontSize: '12px', color: '#94A3B8', margin: '12px 0 0 0', textAlign: 'center'}}>You'll be redirected to the relevant section. Your progress will be tracked automatically.</p>

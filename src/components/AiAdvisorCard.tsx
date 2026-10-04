@@ -104,7 +104,7 @@ export default function AiAdvisorCard({
           type: "rewatch" as const,
           heading: `Target 90%+ Mastery: ${shortName}`,
           text: `You passed ${shortName} with ${firstReview.quizScore}%. Review "${recTitle}" to solidify missed concepts and aim for 90%+ on your next retake!`,
-          buttonLabel: `📺 Watch "${recTitle}" Now →`,
+          buttonLabel: `Watch "${recTitle}" Now →`,
           buttonClass: styles.btnRewatch,
           icon: (
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -125,7 +125,7 @@ export default function AiAdvisorCard({
           type: "quiz" as const,
           heading: `Review Completed: ${shortName}`,
           text: `Great work! You have re-watched "${recTitle}". Your conceptual gaps are resolved. You are now prepared to retake the Compulsory Quiz with fresh questions!`,
-          buttonLabel: `📝 Retake ${shortName} Compulsory Quiz (Attempt ${(firstReview.attemptsUsed || 0) + 1}/3) →`,
+          buttonLabel: `Retake ${shortName} Compulsory Quiz (Attempt ${(firstReview.attemptsUsed || 0) + 1}/3) →`,
           buttonClass: styles.btnQuiz,
           icon: (
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -161,7 +161,7 @@ export default function AiAdvisorCard({
         type: "rewatch" as const,
         heading,
         text,
-        buttonLabel: `📺 Watch "${recTitle}" Now →`,
+        buttonLabel: `Watch "${recTitle}" Now →`,
         buttonClass: styles.btnRewatch,
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -184,7 +184,7 @@ export default function AiAdvisorCard({
         type: "quiz" as const,
         heading: `Quiz Ready: ${shortName}`,
         text: `All lectures completed in "${shortName}"! Take your 10-question compulsory quiz (70% cutoff) to earn +50 XP and unlock the next module.`,
-        buttonLabel: `📝 Start ${shortName} Compulsory Quiz (+50 XP) →`,
+        buttonLabel: `Start ${shortName} Compulsory Quiz (+50 XP) →`,
         buttonClass: styles.btnQuiz,
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -206,7 +206,7 @@ export default function AiAdvisorCard({
         type: "grand" as const,
         heading: "Grand Assessment Unlocked!",
         text: "All module quizzes passed! Take the 30-question CAT Comprehensive Exam to achieve full course certification and earn +100 XP.",
-        buttonLabel: "🏆 Start 30-Question Grand Quiz (+100 XP) →",
+        buttonLabel: "Start 30-Question Grand Quiz (+100 XP) →",
         buttonClass: styles.btnGrand,
         icon: (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -227,7 +227,7 @@ export default function AiAdvisorCard({
         type: "prompt" as const,
         heading: "Course Mastered!",
         text: "You have completed all lectures and assessments for this course with top accuracy!",
-        buttonLabel: "💬 Ask AI Tutor for Advanced Mock Strategy →",
+        buttonLabel: "Ask AI Tutor for Advanced Mock Strategy →",
         buttonClass: styles.btnPrompt,
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -250,7 +250,7 @@ export default function AiAdvisorCard({
       type: "prompt" as const,
       heading: "Recommended Next Action",
       text: `Focus on completing all lectures in "${shortActive}" to unlock your first Compulsory Module Quiz!`,
-      buttonLabel: `💬 Ask AI Tutor: Breakthrough Study Plan for ${shortActive} →`,
+      buttonLabel: `Ask AI Tutor: Breakthrough Study Plan for ${shortActive} →`,
       buttonClass: styles.btnPrompt,
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -303,13 +303,15 @@ export default function AiAdvisorCard({
       {/* Strong Modules */}
       <div className={styles.sectionGroup}>
         <div className={styles.sectionLabel}>
-          <span>🌟 Strong Areas (Score ≥ 80%)</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Strong Areas (Score ≥ 80%)</span>
         </div>
         <div className={styles.chipsRow}>
           {strongModules.length > 0 ? (
             strongModules.map((m) => (
               <span key={m.moduleTitle} className={styles.strongChip}>
-                ✓ {m.moduleTitle.split(":")[0]} ({m.quizScore}%)
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{m.moduleTitle.split(":")[0]} ({m.quizScore}%)</span>
               </span>
             ))
           ) : (
@@ -321,7 +323,8 @@ export default function AiAdvisorCard({
       {/* Review Recommended */}
       <div className={styles.sectionGroup}>
         <div className={styles.sectionLabel}>
-          <span>⚠️ Needs Review / Rewatch</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Needs Review / Rewatch</span>
         </div>
         <div className={styles.chipsRow}>
           {reviewModules.length > 0 ? (
@@ -331,8 +334,9 @@ export default function AiAdvisorCard({
                 className={m.recommendedLessonCompleted ? styles.reviewedChip : styles.reviewChip}
                 title={m.recommendedLessonTitle ? `Recommended: ${m.recommendedLessonTitle}` : "Review status"}
               >
-                📺 {m.moduleTitle.split(":")[0]} ({m.quizScore ? `${m.quizScore}%` : "Incomplete"}
-                {m.recommendedLessonCompleted ? " • Reviewed ✓" : ""})
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                <span>{m.moduleTitle.split(":")[0]} ({m.quizScore ? `${m.quizScore}%` : "Incomplete"}
+                {m.recommendedLessonCompleted ? " • Reviewed" : ""})</span>
               </span>
             ))
           ) : (
@@ -344,7 +348,8 @@ export default function AiAdvisorCard({
       {/* AI Recommendation Box */}
       <div className={styles.recommendationBox}>
         <div className={styles.recHeader}>
-          <span>👉 {agenticAction.heading}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>{agenticAction.heading}</span>
         </div>
         <p className={styles.recText}>{agenticAction.text}</p>
       </div>

@@ -59,11 +59,11 @@ function FormattedText({
   const lines = text.split("\n");
 
   const renderWithTimestamps = (content: string) => {
-    // Regex for [⏱ mm:ss] or [⏱ mm:ss - mm:ss] or standalone [⏱ mm:ss]
-    const parts = content.split(/(\[⏱\s*[\d:]+(?:\s*-\s*[\d:]+)?\])/g);
+    // Regex for [⏱ mm:ss] or [mm:ss] or [mm:ss - mm:ss]
+    const parts = content.split(/(\[(?:⏱\s*)?[\d:]+(?:\s*-\s*[\d:]+)?\])/g);
 
     return parts.map((part, i) => {
-      const match = part.match(/\[⏱\s*([\d:]+)(?:\s*-\s*([\d:]+))?\]/);
+      const match = part.match(/\[(?:⏱\s*)?([\d:]+)(?:\s*-\s*([\d:]+))?\]/);
       if (match) {
         const firstTime = match[1];
         const seconds = parseTimestampToSeconds(firstTime);
@@ -84,7 +84,7 @@ function FormattedText({
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-            {match[0].replace("[", "").replace("]", "")}
+            {match[0].replace("[", "").replace("]", "").replace("⏱", "").trim()}
           </button>
         );
       }
@@ -208,7 +208,8 @@ function InteractiveQuizBlock({
                 gap: "3px",
               }}
             >
-              <span>Full Screen ⛶</span>
+              <span>Full Screen</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
             </button>
           )}
           <span className={styles.quizQuestionCount}>
@@ -277,7 +278,7 @@ function InteractiveQuizBlock({
 
               {hasAnswered && question.explanation && (
                 <div className={styles.explanationBox}>
-                  <strong>💡 Explanation:</strong> {question.explanation}
+                  <strong>Explanation:</strong> {question.explanation}
                 </div>
               )}
             </div>
@@ -288,14 +289,16 @@ function InteractiveQuizBlock({
       {isComplete && (
         <div className={styles.scoreBanner}>
           <div className={styles.scoreText}>
-            🎉 Quiz Completed! You scored <strong>{score}</strong> / {quiz.questions.length} ({Math.round((score / quiz.questions.length) * 100)}%)
+            Quiz Completed! You scored <strong>{score}</strong> / {quiz.questions.length} ({Math.round((score / quiz.questions.length) * 100)}%)
           </div>
           <button
             type="button"
             className={styles.retakeBtn}
             onClick={handleReset}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            Retake Quiz ↺
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Retake Quiz</span>
           </button>
         </div>
       )}
@@ -317,7 +320,7 @@ export default function VideoAskPanel({
     {
       id: "welcome",
       role: "assistant",
-      content: `Hello! 👋 I am your **TechnoCAT AI Tutor** for **${lessonTitle}**.\n\nYou can ask me:\n- ⏱️ **"What topics are covered at which timestamp?"** to get an exact portion breakdown.\n- 🎯 **"Create an interactive quiz on this video"** to practice with instant grading.\n- 💡 Any concept, formula derivation, or CAT shortcut!`,
+      content: `Hello! I am your **TechnoCAT AI Tutor** for **${lessonTitle}**.\n\nYou can ask me:\n- **"What topics are covered at which timestamp?"** to get an exact portion breakdown.\n- **"Create an interactive quiz on this video"** to practice with instant grading.\n- Any concept, formula derivation, or CAT shortcut!`,
     },
   ]);
   const [inputQuery, setInputQuery] = useState("");
@@ -446,8 +449,14 @@ export default function VideoAskPanel({
             onClick={() => handleSend(chip)}
             disabled={loading}
           >
-            {chip.includes("quiz") ? "🎯 " : chip.includes("timestamp") ? "⏱️ " : "💡 "}
-            {chip}
+            {chip.includes("quiz") ? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            ) : chip.includes("timestamp") ? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            )}
+            <span>{chip}</span>
           </button>
         ))}
       </div>

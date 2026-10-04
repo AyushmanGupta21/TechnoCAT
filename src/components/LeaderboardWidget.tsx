@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const mockLeaderboard = [
   { id: "u1", name: "Ravi Kumar", points: 2450, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" },
-  { id: "u2", name: "Sabrina Gomez", points: 2100, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" },
+  { id: "u2", name: "Shreya Rao", points: 2100, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" },
   { id: "u3", name: "Aisha Patel", points: 1950, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80" },
   { id: "u4", name: "David Chen", points: 1820, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" },
   { id: "u5", name: "Priya Sharma", points: 1650, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" },

@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         questions: knowledge.quiz
       };
 
-      aiResponse = `### 🎯 Interactive Video Quiz Ready!
+      aiResponse = `### Interactive Video Quiz Ready!
 I have prepared an interactive multiple-choice quiz with **${knowledge.quiz.length} high-yield CAT questions** grounded directly in this lecture (*${lessonTitle}*). 
 
 Select your answers below to test your understanding, verify explanations, and earn study points:`;
@@ -82,27 +82,27 @@ Select your answers below to test your understanding, verify explanations, and e
       );
 
       if (matchedChapter) {
-        aiResponse = `### ⏱️ Video Portion Found: **${matchedChapter.title}**
+        aiResponse = `### Video Portion Found: **${matchedChapter.title}**
 
-This concept is covered in **[⏱ ${matchedChapter.displayTime}]** of this lecture.
+This concept is covered in **[${matchedChapter.displayTime}]** of this lecture.
 
 - **Topic:** ${matchedChapter.title}
 - **Lecture Portion:** ${matchedChapter.displayTime} (begins at ${Math.floor(matchedChapter.startTime / 60)}m ${matchedChapter.startTime % 60}s)
 - **Summary:** ${matchedChapter.summary}
 - **Key Concepts Covered:** ${matchedChapter.keyConcepts.join(" • ")}
 
-👉 *Click the timestamp badge [⏱ ${Math.floor(matchedChapter.startTime / 60)}:${(matchedChapter.startTime % 60).toString().padStart(2, "0")}] to jump the video directly to this portion!*`;
+*Click the timestamp badge [${Math.floor(matchedChapter.startTime / 60)}:${(matchedChapter.startTime % 60).toString().padStart(2, "0")}] to jump the video directly to this portion!*`;
       } else {
         const chapterList = knowledge.chapters.map((ch, idx) =>
-          `${idx + 1}. **[⏱ ${ch.displayTime}]**: **${ch.title}**\n   - *Summary:* ${ch.summary}\n   - *Key Focus:* ${ch.keyConcepts.join(" • ")}`
+          `${idx + 1}. **[${ch.displayTime}]**: **${ch.title}**\n   - *Summary:* ${ch.summary}\n   - *Key Focus:* ${ch.keyConcepts.join(" • ")}`
         ).join("\n\n");
 
-        aiResponse = `### ⏱️ Video Portions & Chapter Breakdown
+        aiResponse = `### Video Portions & Chapter Breakdown
 Here is the exact timestamp mapping for **${lessonCode ? `${lessonCode} - ` : ""}${lessonTitle}**:
 
 ${chapterList}
 
-💡 *You can click on any timestamp in the video controls or ask me: "Explain what is taught at 18:45" to get an instant breakdown!*`;
+*You can click on any timestamp in the video controls or ask me: "Explain what is taught at 18:45" to get an instant breakdown!*`;
       }
     } else {
       // ── CONCEPTUAL Q&A / RAG MODE ──
@@ -125,7 +125,7 @@ ${chaptersContext}
 INSTRUCTIONS:
 1. Answer the student's question accurately and thoroughly for the CAT exam.
 2. Structure your answer with clear headings, bullet points, and derivations.
-3. Explicitly reference which portion/timestamp of the lecture (e.g. "[⏱ 14:20 - 28:00]") explains this concept so the student can re-watch that portion.
+3. Explicitly reference which portion/timestamp of the lecture (e.g. "[14:20 - 28:00]") explains this concept so the student can re-watch that portion.
 4. Keep the tone encouraging, academic, and focused on CAT shortcuts.`;
 
           const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
@@ -181,15 +181,15 @@ INSTRUCTIONS:
         const startSec = bestChapter.startTime;
         const startMin = Math.floor(startSec / 60);
         const startSecRem = startSec % 60;
-        const timeBadge = `[⏱ ${startMin}:${startSecRem.toString().padStart(2, "0")}]`;
+        const timeBadge = `[${startMin}:${startSecRem.toString().padStart(2, "0")}]`;
 
-        aiResponse = `### 💡 AI Tutor: ${bestChapter.title}
+        aiResponse = `### AI Tutor: ${bestChapter.title}
 
 Regarding your query **"${question}"**:
 
 1. **Where This Is Taught in the Video:**
-   This concept is explained in detail during the **[⏱ ${bestChapter.displayTime}]** portion of this lecture.
-   👉 *Click ${timeBadge} to jump right to this explanation.*
+   This concept is explained in detail during the **[${bestChapter.displayTime}]** portion of this lecture.
+   *Click ${timeBadge} to jump right to this explanation.*
 
 2. **Core Lecture Summary:**
    ${bestChapter.summary}

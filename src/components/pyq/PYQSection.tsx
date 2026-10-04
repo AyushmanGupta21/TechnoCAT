@@ -46,7 +46,10 @@ export default function PYQSection({ onSelectTopicCategory }: PYQSectionProps) {
     <section className={styles.pyqSection} id="pyq-section">
       <div className={styles.sectionHeaderRow}>
         <div>
-          <div className={styles.pillBadge}>★ Official CAT Full Mocks &amp; Archives</div>
+          <div className={styles.pillBadge}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+            Official CAT Full Mocks &amp; Archives
+          </div>
           <h2 className={styles.sectionTitle}>TechnoCAT Full Mocks &amp; Previous Year Papers</h2>
           <p className={styles.sectionSubtitle}>
             Practice with authentic CAT question papers from 2017 to 2024. Read step-by-step solutions or test your percentile in timed exam simulations.

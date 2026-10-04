@@ -12,6 +12,7 @@ import DailyStudySchedule, { ScheduleItem } from "@/components/DailyStudySchedul
 import StudyCalendarWidget from "@/components/StudyCalendarWidget";
 import CatReadinessWidget from "@/components/CatReadinessWidget";
 import { useAuth } from "@/context/AuthContext";
+import { resolveStudentName } from "@/lib/nameUtils";
 import { notifyTaskCompleted, pushNotification } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
 
@@ -54,899 +55,7 @@ interface DashboardData {
   };
 }
 
-const defaultWeeklyStats: WeeklyStat[] = [
-  { day: "Sun", learning: 50, challenge: 40, rawLearning: 2.5, rawChallenge: 1.8 },
-  { day: "Mon", learning: 75, challenge: 60, rawLearning: 4.2, rawChallenge: 2.9 },
-  { day: "Tue", learning: 50, challenge: 42, rawLearning: 3.1, rawChallenge: 2.0 },
-  { day: "Wed", learning: 60, challenge: 50, rawLearning: 3.8, rawChallenge: 2.6 },
-  { day: "Thu", learning: 60, challenge: 52, rawLearning: 4.0, rawChallenge: 3.1 },
-  { day: "Fri", learning: 38, challenge: 32, rawLearning: 2.2, rawChallenge: 1.5 },
-  { day: "Sat", learning: 28, challenge: 22, rawLearning: 1.8, rawChallenge: 1.0 },
-];
 
-const initialCurriculumTasks: ScheduleItem[] = [
-  {
-    id: "d1-1",
-    day: 1,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-01",
-    title: "Percentages & Fraction Conversion Fundamentals",
-    subtitle: "Module 1.1 • Basic Arithmetic Foundations",
-    isCompleted: true,
-  },
-  {
-    id: "d1-2",
-    day: 1,
-    timeRange: "02:00 PM",
-    duration: "40 min",
-    category: "VARC",
-    code: "CAT-VARC-01",
-    title: "Daily Editorial Analysis & Vocabulary Builder",
-    subtitle: "The Hindu Editorial • 25 New Academic Words",
-    isCompleted: true,
-  },
-  {
-    id: "d2-1",
-    day: 2,
-    timeRange: "11:00 AM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-01",
-    title: "Data Interpretation: Tables & Bar Charts",
-    subtitle: "Module 2.1 • Multi-column percentage calculations",
-    isCompleted: true,
-  },
-  {
-    id: "d3-1",
-    day: 3,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-02",
-    title: "Profit, Loss, Discount & Marked Price",
-    subtitle: "Module 1.2 • Advanced Formula Drills",
-    isCompleted: true,
-  },
-  {
-    id: "d3-2",
-    day: 3,
-    timeRange: "04:30 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-02",
-    title: "Reading Comprehension: Central Idea Identification",
-    subtitle: "Social Sciences Passages • 12 Questions",
-    isCompleted: false,
-  },
-  {
-    id: "d4-1",
-    day: 4,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-01",
-    title: "CAT Diagnostic Full Mock 01",
-    subtitle: "National Benchmark • 66 Questions Timed",
-    isCompleted: true,
-  },
-  {
-    id: "d6-1",
-    day: 6,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-03",
-    title: "Simple & Compound Interest Compounding Rules",
-    subtitle: "Module 1.3 • Half-yearly & Quarterly Rates",
-    isCompleted: true,
-  },
-  {
-    id: "d7-1",
-    day: 7,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-04",
-    title: "Ratio, Proportion & Variations Advanced Sets",
-    subtitle: "Module 1.4 • Direct & Inverse Proportion",
-    isCompleted: true,
-  },
-  {
-    id: "d7-2",
-    day: 7,
-    timeRange: "03:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-02",
-    title: "Arrangements: Linear & Circular Seating",
-    subtitle: "Module 2.2 • Blood Relations & Constrained Seating",
-    isCompleted: true,
-  },
-  {
-    id: "d8-1",
-    day: 8,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-03",
-    title: "Tone & Author Attitude in Philosophy Passages",
-    subtitle: "Module 3.1 • Critical Inference Questions",
-    isCompleted: true,
-  },
-  {
-    id: "d9-1",
-    day: 9,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-05",
-    title: "Averages, Mixtures & Alligation Weighted Problems",
-    subtitle: "Module 1.5 • Replacement of Liquids Rules",
-    isCompleted: false,
-  },
-  {
-    id: "d9-2",
-    day: 9,
-    timeRange: "02:00 PM",
-    duration: "90 min",
-    category: "Mock",
-    code: "SEC-MOCK-01",
-    title: "Quant Sectional Speed Test 01",
-    subtitle: "22 Questions • 40 min Timed Assessment",
-    isCompleted: true,
-  },
-  {
-    id: "d10-1",
-    day: 10,
-    timeRange: "09:30 AM",
-    duration: "90 min",
-    category: "QA",
-    code: "CAT-QA-06",
-    title: "Time & Work, Men-Days & Negative Work (Pipes)",
-    subtitle: "Module 1.6 • Efficiency Drills & Alternating Days",
-    isCompleted: false,
-  },
-  {
-    id: "d10-2",
-    day: 10,
-    timeRange: "02:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-03",
-    title: "Games & Tournaments: Knockout & Round Robin",
-    subtitle: "Module 2.3 • Seedings & Point Tables",
-    isCompleted: false,
-  },
-  {
-    id: "d10-3",
-    day: 10,
-    timeRange: "05:00 PM",
-    duration: "45 min",
-    category: "VARC",
-    code: "CAT-VARC-04",
-    title: "Para Jumbles & Odd Sentence Out Strategy",
-    subtitle: "Module 3.2 • TITA Question Solving Techniques",
-    isCompleted: false,
-  },
-  {
-    id: "d11-1",
-    day: 11,
-    timeRange: "10:30 AM",
-    duration: "75 min",
-    category: "DILR",
-    code: "CAT-DILR-04",
-    title: "Selection & Grouping Logic Puzzles",
-    subtitle: "Module 2.4 • Conditional Constraints Matrix",
-    isCompleted: false,
-  },
-  {
-    id: "d11-2",
-    day: 11,
-    timeRange: "03:30 PM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-07",
-    title: "Linear Equations & Special Word Problems",
-    subtitle: "Module 1.7 • Advanced Variables & Integer Solutions",
-    isCompleted: false,
-  },
-  {
-    id: "d12-1",
-    day: 12,
-    timeRange: "10:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-02",
-    title: "National Sectional CAT Mock 02",
-    subtitle: "DILR & QA Intensive 2-hour Window",
-    isCompleted: false,
-  },
-  {
-    id: "d14-1",
-    day: 14,
-    timeRange: "09:30 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-06",
-    title: "Time & Work, Men-Days & Efficiency Drills",
-    subtitle: "Negative Work & Pipe Filling Rates",
-    isCompleted: false,
-  },
-  {
-    id: "d15-1",
-    day: 15,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-07",
-    title: "Pipes, Cisterns & Leakage Rates",
-    subtitle: "Module 1.6 • Past 5 Years PYQs",
-    isCompleted: false,
-  },
-  {
-    id: "d15-2",
-    day: 15,
-    timeRange: "04:00 PM",
-    duration: "50 min",
-    category: "VARC",
-    code: "CAT-VARC-04",
-    title: "Para Jumbles & Mandatory Pair Identification",
-    subtitle: "TITA Strategy & Eliminating Options",
-    isCompleted: false,
-  },
-  {
-    id: "d16-1",
-    day: 16,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-08",
-    title: "Time, Speed & Distance: Relative Speed & Trains",
-    subtitle: "Module 1.7 • Escalators & Circular Tracks",
-    isCompleted: false,
-  },
-  {
-    id: "d16-2",
-    day: 16,
-    timeRange: "02:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-05",
-    title: "Venn Diagrams: 3-Set and 4-Set Maxima/Minima",
-    subtitle: "Module 2.5 • Set Theory Formulae & Drills",
-    isCompleted: false,
-  },
-  {
-    id: "d16-3",
-    day: 16,
-    timeRange: "06:00 PM",
-    duration: "45 min",
-    category: "VARC",
-    code: "CAT-VARC-05",
-    title: "Critical Reasoning: Assumption & Flaw Questions",
-    subtitle: "Module 3.3 • Identifying Logical Leaps",
-    isCompleted: false,
-  },
-  {
-    id: "d17-1",
-    day: 17,
-    timeRange: "10:00 AM",
-    duration: "90 min",
-    category: "QA",
-    code: "CAT-QA-09",
-    title: "Geometry: Lines, Angles & Triangle Properties",
-    subtitle: "Module 4.1 • Similarity & Congruence Rules",
-    isCompleted: false,
-  },
-  {
-    id: "d17-2",
-    day: 17,
-    timeRange: "03:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-06",
-    title: "Binary Logic: Truth-Tellers, Liars & Alternators",
-    subtitle: "Module 2.6 • Case Building & Elimination",
-    isCompleted: false,
-  },
-  {
-    id: "d18-1",
-    day: 18,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-03",
-    title: "All-India Proctored CAT Full Mock 03",
-    subtitle: "Live National Percentile Ranking Test",
-    isCompleted: false,
-  },
-  {
-    id: "d20-2",
-    day: 20,
-    timeRange: "11:30 AM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-07",
-    title: "Logical Deductions & Syllogisms in DILR",
-    subtitle: "Module 2.7 • Venn & Matrix Verification Drills",
-    isCompleted: false,
-  },
-  {
-    id: "d20-1",
-    day: 20,
-    timeRange: "04:30 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-06",
-    title: "Para Summary: Eliminating Redundant Details",
-    subtitle: "Module 3.4 • Short Paragraph Drills",
-    isCompleted: false,
-  },
-  {
-    id: "d21-1",
-    day: 21,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-10",
-    title: "Circles, Tangents, Secants & Cyclic Quadrilaterals",
-    subtitle: "Module 4.2 • High-yield CAT Geometry Set",
-    isCompleted: false,
-  },
-  {
-    id: "d22-1",
-    day: 22,
-    timeRange: "02:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-07",
-    title: "Networks, Paths & Flow Diagrams",
-    subtitle: "Module 2.7 • Maximum Flow Algorithms",
-    isCompleted: false,
-  },
-  {
-    id: "d23-1",
-    day: 23,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-11",
-    title: "Mensuration 2D & 3D Solids Volume/Surface Area",
-    subtitle: "Module 4.3 • Prisms, Pyramids & Cones",
-    isCompleted: false,
-  },
-  {
-    id: "d23-2",
-    day: 23,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-07",
-    title: "Tone Analysis & Author Purpose Drills",
-    subtitle: "Module 3.5 • Science & Technology RC Sets",
-    isCompleted: false,
-  },
-  {
-    id: "d24-1",
-    day: 24,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-12",
-    title: "Linear & Quadratic Equations Theory",
-    subtitle: "Module 5.1 • Roots, Discriminant & Coefficients",
-    isCompleted: false,
-  },
-  {
-    id: "d24-2",
-    day: 24,
-    timeRange: "02:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-08",
-    title: "Cubes & Dice Visual Reasoning",
-    subtitle: "Module 2.8 • Painted Faces & Unfolding",
-    isCompleted: false,
-  },
-  {
-    id: "d24-3",
-    day: 24,
-    timeRange: "05:00 PM",
-    duration: "40 min",
-    category: "Mock",
-    code: "SEC-MOCK-02",
-    title: "VARC Sectional Speed Blitz 02",
-    subtitle: "24 Questions • 40 min Timed Challenge",
-    isCompleted: false,
-  },
-  {
-    id: "d25-1",
-    day: 25,
-    timeRange: "10:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-04",
-    title: "TechnoCAT National Benchmark Mock 04",
-    subtitle: "Full-length 3-Section Simulated Exam",
-    isCompleted: false,
-  },
-  {
-    id: "d27-1",
-    day: 27,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-13",
-    title: "Logarithms & Indices: Properties & PYQs",
-    subtitle: "Module 5.2 • Base Changing Rules & Inequalities",
-    isCompleted: false,
-  },
-  {
-    id: "d28-1",
-    day: 28,
-    timeRange: "02:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-09",
-    title: "Missing Data DI Tables & Caselets",
-    subtitle: "Module 2.9 • Equations from Table Conditions",
-    isCompleted: false,
-  },
-  {
-    id: "d29-1",
-    day: 29,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-08",
-    title: "Full RC Passage Marathon (4 Passages)",
-    subtitle: "Module 3.6 • Economics & Sociology Topics",
-    isCompleted: false,
-  },
-  {
-    id: "d30-1",
-    day: 30,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-05",
-    title: "End-of-Month Benchmark Full CAT Mock 05",
-    subtitle: "Comprehensive Progress Review & Percentile Tracker",
-    isCompleted: false,
-  },
-  // --- OCTOBER 2026 (Rolling 1-month active window through October 10) ---
-  {
-    id: "oct1-1",
-    day: 1,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:30 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-14",
-    title: "Permutations & Combinations: Fundamental Counting Principle",
-    subtitle: "Module 6.1 • Multiplication Rule & Factorials",
-    isCompleted: false,
-  },
-  {
-    id: "oct1-2",
-    day: 1,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "02:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-10",
-    title: "Games & Tournaments: Knockout & Round Robin Formats",
-    subtitle: "Module 2.10 • Seeding & Ranking Tables",
-    isCompleted: false,
-  },
-  {
-    id: "oct2-1",
-    day: 2,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-09",
-    title: "Reading Comprehension: Tone & Style Analysis",
-    subtitle: "Literary & Philosophy Passages • 14 Questions",
-    isCompleted: false,
-  },
-  {
-    id: "oct2-2",
-    day: 2,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-15",
-    title: "Circular Permutations & Grouping Theorem",
-    subtitle: "Module 6.2 • Division into Groups & Necklaces",
-    isCompleted: false,
-  },
-  {
-    id: "oct3-1",
-    day: 3,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:30 AM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-11",
-    title: "Complex Grid Logic & Multi-Variable Seating",
-    subtitle: "Module 2.11 • Case Analysis & Deduction",
-    isCompleted: false,
-  },
-  {
-    id: "oct3-2",
-    day: 3,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "05:00 PM",
-    duration: "40 min",
-    category: "Mock",
-    code: "SEC-MOCK-03",
-    title: "DILR Sectional Speed Test 03",
-    subtitle: "4 Advanced Sets • 40 min Timed Challenge",
-    isCompleted: false,
-  },
-  {
-    id: "oct4-1",
-    day: 4,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:30 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-16",
-    title: "Probability: Independent Events & Conditional Probability",
-    subtitle: "Module 6.3 • Bayes Theorem & Dice Problems",
-    isCompleted: false,
-  },
-  {
-    id: "oct4-2",
-    day: 4,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "03:30 PM",
-    duration: "50 min",
-    category: "VARC",
-    code: "CAT-VARC-10",
-    title: "Para Jumbles & Odd Sentence Elimination",
-    subtitle: "Module 3.7 • 20 High-Difficulty TITA Drills",
-    isCompleted: false,
-  },
-  {
-    id: "oct5-1",
-    day: 5,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-17",
-    title: "Number Systems: Divisibility Rules & Remainder Theorems",
-    subtitle: "Module 7.1 • Wilson's & Euler's Totient Theorem",
-    isCompleted: false,
-  },
-  {
-    id: "oct5-2",
-    day: 5,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "03:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-12",
-    title: "Truth-Tellers, Liars & Alternator Puzzles",
-    subtitle: "Module 2.12 • Contradiction Mapping Drills",
-    isCompleted: false,
-  },
-  {
-    id: "oct6-1",
-    day: 6,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-18",
-    title: "Highest Common Factor (HCF) & LCM Models",
-    subtitle: "Module 7.2 • Bells Ringing & Step Stepping Problems",
-    isCompleted: false,
-  },
-  {
-    id: "oct6-2",
-    day: 6,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "04:30 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-11",
-    title: "Critical Reasoning: Assumptions & Inferences",
-    subtitle: "Module 3.8 • Argument Breakdown & Strengthen/Weaken",
-    isCompleted: false,
-  },
-  {
-    id: "oct7-1",
-    day: 7,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-06",
-    title: "All-India Proctored CAT Full Mock 06",
-    subtitle: "Simulated Testing Interface • 66 Questions",
-    isCompleted: false,
-  },
-  {
-    id: "oct8-1",
-    day: 8,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:30 AM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-13",
-    title: "Networks, Paths & Flow Minimization",
-    subtitle: "Module 2.13 • Pipeline Flow Optimization",
-    isCompleted: false,
-  },
-  {
-    id: "oct8-2",
-    day: 8,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-12",
-    title: "Philosophy & Economics RC Passage Marathon",
-    subtitle: "Module 3.9 • Abstract Ideas & Complex Arguments",
-    isCompleted: false,
-  },
-  {
-    id: "oct9-1",
-    day: 9,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-20",
-    title: "Base System & Cyclicity of Unit Digits",
-    subtitle: "Module 7.3 • Base Conversion & Last 2 Digits",
-    isCompleted: false,
-  },
-  {
-    id: "oct9-2",
-    day: 9,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "02:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-14",
-    title: "Missing Data DI Tables & Caselet Solutions",
-    subtitle: "Module 2.14 • Ratio-Based Data Restoration",
-    isCompleted: false,
-  },
-  {
-    id: "oct10-1",
-    day: 10,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-21",
-    title: "Quadratic Inequalities & Modulus Equations",
-    subtitle: "Module 5.3 • Wavy Curve Method & Domain Checks",
-    isCompleted: false,
-  },
-  {
-    id: "oct10-2",
-    day: 10,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "04:00 PM",
-    duration: "50 min",
-    category: "VARC",
-    code: "CAT-VARC-13",
-    title: "Summary Writing & Sentence Insertion Drills",
-    subtitle: "Module 3.10 • Speed Reading & Coherence Matching",
-    isCompleted: false,
-  },
-  {
-    id: "oct11-1",
-    day: 11,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-22",
-    title: "Higher Degree Polynomials & Roots Theorem",
-    subtitle: "Module 5.4 • Remainder Theorem & Descarte's Rule",
-    isCompleted: false,
-  },
-  {
-    id: "oct11-2",
-    day: 11,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "02:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-15",
-    title: "Venn Diagrams: 4-Set Overlaps & Bound Conditions",
-    subtitle: "Module 2.15 • Complex Inclusion-Exclusion",
-    isCompleted: false,
-  },
-  {
-    id: "oct12-1",
-    day: 12,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-07",
-    title: "All-India Proctored CAT Full Mock 07",
-    subtitle: "Timed National Simulation • In-depth Analysis",
-    isCompleted: false,
-  },
-  {
-    id: "oct13-1",
-    day: 13,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:30 AM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-14",
-    title: "Critical Reasoning: Fallacies & Parallel Reasoning",
-    subtitle: "Module 3.11 • Logical Fallacy Identification",
-    isCompleted: false,
-  },
-  {
-    id: "oct13-2",
-    day: 13,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "03:30 PM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-23",
-    title: "Sequence & Series: AP, GP, HP & Special Series",
-    subtitle: "Module 5.5 • Telescoping Sums & Sigma Operations",
-    isCompleted: false,
-  },
-  {
-    id: "oct14-1",
-    day: 14,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "11:00 AM",
-    duration: "75 min",
-    category: "DILR",
-    code: "CAT-DILR-16",
-    title: "Scheduling & Resource Allocation Caselets",
-    subtitle: "Module 2.16 • Project Timelines & Critical Paths",
-    isCompleted: false,
-  },
-  {
-    id: "oct15-1",
-    day: 15,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-24",
-    title: "Functions & Graphs: Transformations & Max/Min",
-    subtitle: "Module 5.6 • Even/Odd Functions & Symmetry",
-    isCompleted: false,
-  },
-  {
-    id: "oct15-2",
-    day: 15,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "04:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-15",
-    title: "Advanced RC: Sociology & Anthropology Passages",
-    subtitle: "Module 3.12 • Structural Mapping & Inference Drills",
-    isCompleted: false,
-  },
-  {
-    id: "oct16-1",
-    day: 16,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "02:00 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-17",
-    title: "Scatter Plots & Bubble Charts Interpretation",
-    subtitle: "Module 2.17 • Multi-variate Trend Analysis",
-    isCompleted: false,
-  },
-  {
-    id: "oct17-1",
-    day: 17,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "10:00 AM",
-    duration: "75 min",
-    category: "QA",
-    code: "CAT-QA-25",
-    title: "Coordinate Geometry: Lines, Slopes & Distances",
-    subtitle: "Module 4.4 • Area of Triangles & Collinearity",
-    isCompleted: false,
-  },
-  {
-    id: "oct18-1",
-    day: 18,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:00 AM",
-    duration: "120 min",
-    category: "Mock",
-    code: "MOCK-08",
-    title: "TechnoCAT National Benchmark Mock 08",
-    subtitle: "Full-Length 3-Section Simulated Exam",
-    isCompleted: false,
-  },
-  {
-    id: "oct19-1",
-    day: 19,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "03:00 PM",
-    duration: "60 min",
-    category: "VARC",
-    code: "CAT-VARC-16",
-    title: "Para Completion & Paragraph Jumbles Mastery",
-    subtitle: "Module 3.13 • 25 High-Accuracy Benchmark Drills",
-    isCompleted: false,
-  },
-  {
-    id: "oct20-1",
-    day: 20,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "09:30 AM",
-    duration: "60 min",
-    category: "QA",
-    code: "CAT-QA-26",
-    title: "Trigonometry & Heights and Distances",
-    subtitle: "Module 4.5 • Standard Angles & Elevation Problems",
-    isCompleted: false,
-  },
-  {
-    id: "oct20-2",
-    day: 20,
-    monthIndex: 9,
-    year: 2026,
-    timeRange: "02:30 PM",
-    duration: "60 min",
-    category: "DILR",
-    code: "CAT-DILR-18",
-    title: "Spider Charts & Radar Graphs Interpretation",
-    subtitle: "Module 2.18 • High Density Data Comparison",
-    isCompleted: false,
-  },
-];
 
 interface AgendaSession {
   id: string;
@@ -1012,9 +121,7 @@ export default function DashboardPage() {
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(() => new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
-  const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>(() => {
-    return user?.email === "student@technocat.edu" ? initialCurriculumTasks : [];
-  });
+  const [scheduleTasks, setScheduleTasks] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
     const now = new Date();
@@ -1121,23 +228,48 @@ export default function DashboardPage() {
     ];
   }, []);
 
-  // Dynamic taskCategoryMap for the calendar indicator dots
+  // Calendar indicator dots — derived from real DB tasks + enrolled topics
   const taskCategoryMap = useMemo(() => {
     const map: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock">> = {};
+
+    // 1. Dots from real DB tasks (manually-added, with category inferred from title)
     scheduleTasks.forEach((t) => {
-      const taskMonth = t.monthIndex !== undefined ? t.monthIndex : 8;
-      const taskYear = t.year !== undefined ? t.year : 2026;
+      const taskMonth = t.monthIndex !== undefined ? t.monthIndex : selectedMonthIndex;
+      const taskYear = t.year !== undefined ? t.year : selectedYear;
       if (taskMonth === selectedMonthIndex && taskYear === selectedYear) {
-        if (!map[t.day]) {
-          map[t.day] = [];
-        }
-        if (!map[t.day].includes(t.category)) {
-          map[t.day].push(t.category);
+        if (!map[t.day]) map[t.day] = [];
+        const cat = t.category || "QA";
+        if (!map[t.day].includes(cat)) map[t.day].push(cat);
+      }
+    });
+
+    // 2. Dots from enrolled topics — show a realistic study pattern across the month
+    //    so the calendar reflects what the user is enrolled in even without manual tasks
+    const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+    const today = new Date();
+    const isFutureMonth =
+      selectedYear > today.getFullYear() ||
+      (selectedYear === today.getFullYear() && selectedMonthIndex > today.getMonth());
+
+    enrolledTopicsList.forEach((topicId, topicIdx) => {
+      let cat: "QA" | "DILR" | "VARC" | "Mock" = "QA";
+      if (topicId.includes("dilr") || topicId.includes("data")) cat = "DILR";
+      else if (topicId.includes("varc") || topicId.includes("verbal")) cat = "VARC";
+
+      // Offset pattern per topic so dots spread across different days
+      const offset = topicIdx % 3; // 0, 1, 2 → different days
+      for (let day = 1 + offset; day <= daysInMonth; day += 2) {
+        // For current/past months: only show up to today; for future: show all
+        const cutoff = isFutureMonth ? daysInMonth : today.getDate() + 14;
+        if (day <= cutoff) {
+          if (!map[day]) map[day] = [];
+          if (!map[day].includes(cat)) map[day].push(cat);
         }
       }
     });
+
     return map;
-  }, [scheduleTasks, selectedMonthIndex, selectedYear]);
+  }, [scheduleTasks, enrolledTopicsList, selectedMonthIndex, selectedYear]);
 
   const handleToggleTask = (id: string) => {
     // Only allow toggling tasks for today
@@ -1258,7 +390,13 @@ export default function DashboardPage() {
   // Fetch live dashboard analytics from Supabase
   const fetchDashboard = async () => {
     try {
-      const res = await fetch("/api/dashboard");
+      const headers: Record<string, string> = {};
+      // Send user ID as Authorization header as fallback if the httpOnly cookie
+      // isn't accessible in some deployment environments
+      if (user?.id) {
+        headers["Authorization"] = `Bearer ${user.id}`;
+      }
+      const res = await fetch("/api/dashboard", { headers });
       if (res.ok) {
         const text = await res.text();
         if (text && text.trim().length > 0) {
@@ -1274,7 +412,12 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    fetchDashboard();
+    if (user) {
+      fetchDashboard();
+    } else {
+      setIsLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const openAddTaskModal = () => {
@@ -1339,11 +482,20 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (isDemo) {
-      setScheduleTasks(initialCurriculumTasks);
-    } else if (dashboardData?.tasks) {
+    // All users: always use real DB tasks — no more hardcoded curriculum
+    if (dashboardData?.tasks) {
       const mapped: ScheduleItem[] = dashboardData.tasks.map((t, idx) => {
-        const d = new Date(t.task_date);
+        const d = new Date(t.task_date + "T00:00:00"); // force local date parse
+        // Infer category from task title keywords
+        const titleLower = t.title.toLowerCase();
+        let cat: "QA" | "DILR" | "VARC" | "Mock" = "QA";
+        if (titleLower.includes("dilr") || titleLower.includes("data") || titleLower.includes("logical") || titleLower.includes("arrangement")) {
+          cat = "DILR";
+        } else if (titleLower.includes("varc") || titleLower.includes("verbal") || titleLower.includes("reading") || titleLower.includes("rc") || titleLower.includes("comprehension")) {
+          cat = "VARC";
+        } else if (titleLower.includes("mock") || titleLower.includes("test") || titleLower.includes("exam")) {
+          cat = "Mock";
+        }
         return {
           id: t.id || `task-${idx}`,
           day: d.getDate(),
@@ -1351,54 +503,51 @@ export default function DashboardPage() {
           year: d.getFullYear(),
           timeRange: "Flexible",
           duration: "45 min",
-          category: "QA",
+          category: cat,
           code: "STUDY",
           title: t.title,
-          subtitle: "Target Study Task",
+          subtitle: "Study Task",
           isCompleted: t.is_completed,
         };
       });
       setScheduleTasks(mapped);
+    } else {
+      setScheduleTasks([]);
     }
-  }, [isDemo, dashboardData?.tasks]);
+  }, [dashboardData?.tasks]);
 
-  const displayName = user?.fullName || (isDemo ? "Sabrina Gomez" : "Student");
-  const firstName = displayName.split(" ")[0];
+  const displayName = resolveStudentName(user?.fullName, user?.email);
+  const firstName = displayName.split(" ")[0] || displayName;
 
-  const metrics = dashboardData?.metrics || (isDemo ? {
-    inProgressCourses: 3,
-    completedCourses: 2,
-    watchingTime: "18h 45 min",
-    pointsEarned: 840,
-  } : {
+  // Always use real DB data — no fake fallback values
+  const metrics = dashboardData?.metrics || {
     inProgressCourses: 0,
     completedCourses: 0,
     watchingTime: "0h 0 min",
     pointsEarned: 0,
-  });
+  };
 
-  const currentWeeklyStats = isDemo
-    ? (dashboardData?.weeklyStats && dashboardData.weeklyStats.length === 7 ? dashboardData.weeklyStats : defaultWeeklyStats)
-    : (dashboardData?.weeklyStats || [
-        { day: "Sun", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Mon", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Tue", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Wed", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Thu", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Fri", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-        { day: "Sat", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-      ]);
+  const ZERO_WEEK = [
+    { day: "Sun", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Mon", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Tue", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Wed", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Thu", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Fri", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+    { day: "Sat", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
+  ];
+  const currentWeeklyStats = dashboardData?.weeklyStats && dashboardData.weeklyStats.length === 7
+    ? dashboardData.weeklyStats
+    : ZERO_WEEK;
 
-  const streak = isDemo
-    ? 7
-    : (currentWeeklyStats.filter(s => (s.rawLearning || 0) > 0 || (s.rawChallenge || 0) > 0).length);
+  const streak = currentWeeklyStats.filter(s => (s.rawLearning || 0) > 0 || (s.rawChallenge || 0) > 0).length;
 
   return (
     <div className={styles.dashboardWrapper}>
       {/* ===== HEADER SECTION ===== */}
-      <header className={styles.darkHeader}>
+      {/* Sticky Top Navigation Bar */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
-          {/* Top Navigation */}
           <nav className={styles.topNav} aria-label="Dashboard Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
@@ -1433,11 +582,19 @@ export default function DashboardPage() {
             {/* Right Utilities & Profile Dropdown */}
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* Hero Welcome / Metrics Section */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Welcome Row */}
           <div className={styles.welcomeRow}>
             <div>
-              <div className={styles.pillBadge}>★ Welcome Back, Aspirant</div>
+              <div className={styles.pillBadge}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Welcome Back, Aspirant
+              </div>
               <h1 className={styles.welcomeHeading}>
                 Welcome back, <span className={styles.headingHighlight}>{firstName}</span>
               </h1>
@@ -1536,7 +693,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN DASHBOARD CONTENT AREA ===== */}
       <main className={styles.mainContent}>
@@ -1850,7 +1007,7 @@ export default function DashboardPage() {
                 onClick={() => setActiveModal(null)}
                 aria-label="Close"
               >
-                ✕
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
 
@@ -1965,7 +1122,7 @@ export default function DashboardPage() {
                 onClick={() => setIsTaskModalOpen(false)}
                 aria-label="Close"
               >
-                ✕
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
 
@@ -2038,8 +1195,9 @@ export default function DashboardPage() {
                   >
                     {selectedAgenda.activity}
                   </span>
-                  <span style={{ fontSize: "12px", color: "#6B7280" }}>
-                    👥 {selectedAgenda.enrolledCount} Aspirants Enrolled
+                  <span style={{ fontSize: "12px", color: "#6B7280", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>{selectedAgenda.enrolledCount} Aspirants Enrolled</span>
                   </span>
                 </div>
                 <h3 className={styles.modalTitle} style={{ fontSize: "19px", lineHeight: "1.3" }}>
@@ -2052,7 +1210,7 @@ export default function DashboardPage() {
                 onClick={() => setSelectedAgenda(null)}
                 aria-label="Close modal"
               >
-                ✕
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
 
@@ -2116,7 +1274,7 @@ export default function DashboardPage() {
                 type="button"
                 className={styles.agendaPrimaryAction}
                 onClick={() => {
-                  setLiveStreamAlert("🟢 Connecting to Live Classroom stream... Redirecting to Topic Masterclass!");
+                  setLiveStreamAlert("Connecting to Live Classroom stream... Redirecting to Topic Masterclass!");
                   setTimeout(() => {
                     const url = selectedAgenda.topicUrl;
                     setSelectedAgenda(null);
@@ -2141,19 +1299,29 @@ export default function DashboardPage() {
                     pushNotification({
                       type: "system",
                       category: "learning",
-                      title: `Reminder Set: ${selectedAgenda.title} ⏰`,
+                      title: `Reminder Set: ${selectedAgenda.title}`,
                       desc: `Session scheduled for ${selectedAgenda.dateFormatted}. We will alert you 15 minutes before start.`,
                       actionUrl: selectedAgenda.topicUrl,
                       actionLabel: "View Session",
                       priority: "normal",
-                      icon: "⏰",
+                      icon: "schedule",
                       iconBg: "#EFF6FF",
                       iconColor: "#2563EB",
                     }, user?.id);
                   }
                 }}
               >
-                {agendaReminderSaved[selectedAgenda.id] ? "✓ Reminder Set" : "⏰ Remind Me"}
+                {agendaReminderSaved[selectedAgenda.id] ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Reminder Set</span>
+                  </span>
+                ) : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Remind Me</span>
+                  </span>
+                )}
               </button>
 
               <Link

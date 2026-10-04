@@ -202,8 +202,8 @@ function SettingsContent() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* ===== HEADER & TOP NAVIGATION ===== */}
-      <header className={styles.darkHeader}>
+      {/* ===== STICKY TOP NAVIGATION ===== */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
@@ -227,11 +227,19 @@ function SettingsContent() {
 
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* ===== HERO HEADER SECTION ===== */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Breadcrumb & Hero Heading */}
           <div className={styles.heroRow}>
             <div className={styles.badgeRow}>
-              <span className={styles.badgeLabel}>★ Platform Preferences &amp; Security</span>
+              <span className={styles.badgeLabel}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                Platform Preferences &amp; Security
+              </span>
               {isDemo && (
                 <span
                   style={{
@@ -273,7 +281,7 @@ function SettingsContent() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN CONTENT GRID ===== */}
       <main className={styles.mainContent}>

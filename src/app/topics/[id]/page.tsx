@@ -698,7 +698,7 @@ export default function TopicDetailPage() {
         clearModuleQuizHistory(topic.id, modTitle);
         setLockedAlert({
           isOpen: true,
-          lessonTitle: "🎉 Lectures Rewatched!",
+          lessonTitle: "Lectures Rewatched!",
           moduleTitle: `You have successfully rewatched the lectures in ${modTitle.split(":")[0]}. The compulsory quiz is now unlocked with 3 fresh attempts!`,
         });
       }
@@ -909,7 +909,7 @@ export default function TopicDetailPage() {
         lessonTitle: `${modTitle.split(":")[0]} Locked`,
         moduleTitle:
           (currentProgress.consecutiveFailures || 0) >= 5
-            ? `⚠️ Streak of 5 Weak Scores (< 70% Cutoff): Module clearance is revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`
+            ? `Streak of 5 Weak Scores (< 70% Cutoff): Module clearance is revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`
             : `You have used 3 attempts without meeting the 70% cutoff. Please rewatch the module lectures to unlock 3 fresh quiz attempts!`,
       });
       return;
@@ -1539,7 +1539,7 @@ export default function TopicDetailPage() {
       setLockedAlert({
         isOpen: true,
         lessonTitle: `${modTitle.split(":")[0]} Locked (Weak Streak)`,
-        moduleTitle: `⚠️ Streak of 5 Weak Scores (< 70% Cutoff): Module clearance has been revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`,
+        moduleTitle: `Streak of 5 Weak Scores (< 70% Cutoff): Module clearance has been revoked and the quiz is locked! You must rewatch the lectures in ${modTitle.split(":")[0]} to unlock the quiz.`,
       });
       return;
     }
@@ -1706,7 +1706,12 @@ export default function TopicDetailPage() {
       {/* ===== SUBHEADER: BREADCRUMBS & MAIN TOPIC TITLE ===== */}
       <section className={styles.subHeader}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "8px" }}>
-          <div className={styles.pillBadge}>★ {topic.category || "CAT Preparation"} • Curriculum</div>
+          <div className={styles.pillBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            {topic.category || "CAT Preparation"} • Curriculum
+          </div>
           <Link
             href="/topics"
             style={{
@@ -1841,7 +1846,13 @@ export default function TopicDetailPage() {
                 {/* Lesson Completed Screen */}
                 {playerState === "ended" && (
                   <div className={styles.endedOverlay}>
-                    <span className={styles.endedBadge}>🎉 Lecture Completed (+10 XP)</span>
+                    <span className={styles.endedBadge} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                      Lecture Completed (+10 XP)
+                    </span>
                     <h3 className={styles.endedTitle}>{activeLesson.title}</h3>
                     <p className={styles.endedSubtitle}>
                       Great job! You earned +10 XP. Re-watch any part or continue with the next lecture.
@@ -2038,7 +2049,15 @@ export default function TopicDetailPage() {
             <div className={styles.activeLessonMetaRow}>
               {activeLesson.code && <span className={styles.codeBadge}>{activeLesson.code}</span>}
               {activeLesson.moduleTitle && <span className={styles.moduleTag}>{activeLesson.moduleTitle}</span>}
-              {activeLesson.duration && <span className={styles.moduleTag}>⏱ {activeLesson.duration}</span>}
+              {activeLesson.duration && (
+                <span className={styles.moduleTag} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span>{activeLesson.duration}</span>
+                </span>
+              )}
 
               {/* +10 XP Pill */}
               <span
@@ -2046,7 +2065,16 @@ export default function TopicDetailPage() {
                   completedLessonIds.includes(activeLesson.id) ? styles.lessonXpPillDone : ""
                 }`}
               >
-                {completedLessonIds.includes(activeLesson.id) ? "✓ +10 XP Earned" : "+10 XP on Complete"}
+                {completedLessonIds.includes(activeLesson.id) ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    +10 XP Earned
+                  </span>
+                ) : (
+                  "+10 XP on Complete"
+                )}
               </span>
 
               {/* If active lesson is recommended for review */}
@@ -2075,7 +2103,21 @@ export default function TopicDetailPage() {
                     }}
                     title="Click to mark this review as completed and update the AI Advisor"
                   >
-                    {isAlreadyReviewed ? "✓ Recommended Review Done" : "Mark Review Done ✓"}
+                    {isAlreadyReviewed ? (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Recommended Review Done
+                      </>
+                    ) : (
+                      <>
+                        Mark Review Done
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </>
+                    )}
                   </button>
                 );
               })()}
@@ -2083,6 +2125,7 @@ export default function TopicDetailPage() {
               <button
                 type="button"
                 className={styles.quizTriggerPill}
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                 onClick={() => {
                   const knowledge = getLessonKnowledge(
                     activeLesson.code,
@@ -2095,7 +2138,12 @@ export default function TopicDetailPage() {
                   });
                 }}
               >
-                🎯 Practice Quiz
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                </svg>
+                Practice Quiz
               </button>
             </div>
 
@@ -2106,7 +2154,13 @@ export default function TopicDetailPage() {
           <div className={styles.aboutLessonBox}>
             <div className={styles.aboutLessonHeader}>
               <h3 className={styles.aboutLessonHeading}>
-                <span>📖 About This Topic & Lecture Overview</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  </svg>
+                  About This Topic & Lecture Overview
+                </span>
               </h3>
               <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>
                 Read Before Watching
@@ -2233,14 +2287,25 @@ export default function TopicDetailPage() {
             <div className={styles.progressMetricsRow}>
               <div className={styles.metricBox}>
                 <div className={styles.metricBoxValue}>
-                  <span>⚡ {totalPoints} / {totalCourseXP} XP</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    {totalPoints} / {totalCourseXP} XP
+                  </span>
                 </div>
                 <span className={styles.metricBoxLabel}>Course Points Earned</span>
               </div>
 
               <div className={styles.metricBox}>
                 <div className={styles.metricBoxValue}>
-                  <span>⏱ {formatDurationReadable(completedTimeSeconds)}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>{formatDurationReadable(completedTimeSeconds)}</span>
+                  </span>
                 </div>
                 <span className={styles.metricBoxLabel}>
                   of ~{formatDurationReadable(totalExpectedSeconds)} Est.
@@ -2332,7 +2397,20 @@ export default function TopicDetailPage() {
                               : styles.statusIconLocked
                           }`}
                         >
-                          {isPassed ? "✓" : isUnlocked ? "▶" : "🔒"}
+                          {isPassed ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : isUnlocked ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                              <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          )}
                         </div>
 
                         <div className={styles.moduleInfoText}>
@@ -2407,11 +2485,18 @@ export default function TopicDetailPage() {
                               <div className={styles.lessonRowLeft}>
                                 <div className={styles.lessonPlayIcon}>
                                   {isDone ? (
-                                    <span style={{ color: "#10B981", fontWeight: 700 }}>✓</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                   ) : isUnlocked ? (
-                                    "▶"
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                      <polygon points="5 3 19 12 5 21 5 3" />
+                                    </svg>
                                   ) : (
-                                    "🔒"
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
                                   )}
                                 </div>
 
@@ -2421,7 +2506,13 @@ export default function TopicDetailPage() {
                                     {lesson.title}
                                   </span>
                                   <div className={styles.lessonRowMeta}>
-                                    <span>⏱ {lesson.duration}</span>
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                      </svg>
+                                      <span>{lesson.duration}</span>
+                                    </span>
                                     {isDone && <span>• Watched</span>}
                                   </div>
                                 </div>
@@ -2433,7 +2524,16 @@ export default function TopicDetailPage() {
                                     isDone ? styles.lessonXpDone : ""
                                   }`}
                                 >
-                                  {isDone ? "+10 XP ✓" : "+10 XP"}
+                                  {isDone ? (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                      +10 XP
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                      </svg>
+                                    </span>
+                                  ) : (
+                                    "+10 XP"
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -2456,7 +2556,17 @@ export default function TopicDetailPage() {
                                       isPassed ? styles.quizIconPassed : styles.quizIconFailed
                                     }`}
                                   >
-                                    {isPassed ? "✓" : "⚠️"}
+                                    {isPassed ? (
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                      </svg>
+                                    ) : (
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                        <line x1="12" y1="9" x2="12" y2="13" />
+                                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                                      </svg>
+                                    )}
                                   </div>
                                   <div>
                                     <h4 className={styles.quizCardHeading}>
@@ -2472,7 +2582,16 @@ export default function TopicDetailPage() {
                                     isPassed ? styles.quizXpBadgePassed : ""
                                   }`}
                                 >
-                                  {isPassed ? "+50 XP ✓" : "+50 XP"}
+                                  {isPassed ? (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                      +50 XP
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                      </svg>
+                                    </span>
+                                  ) : (
+                                    "+50 XP"
+                                  )}
                                 </span>
                               </div>
 
@@ -2502,39 +2621,62 @@ export default function TopicDetailPage() {
                               <button
                                 type="button"
                                 className={styles.viewSolutionsBtn}
+                                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                 onClick={() => handleOpenAttemptsHistoryModal(mod.title)}
                                 title="Open history popup to inspect all past attempts & detailed solutions"
                               >
-                                📜 View All Attempts ({(modProgress.attemptsHistory?.length || modProgress.attemptsUsed || 1)}) →
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="16" y1="13" x2="8" y2="13" />
+                                  <line x1="16" y1="17" x2="8" y2="17" />
+                                </svg>
+                                View All Attempts ({(modProgress.attemptsHistory?.length || modProgress.attemptsUsed || 1)}) →
                               </button>
 
                               {isPassed ? (
                                 <button
                                   type="button"
                                   className={styles.retakeImproveBtn}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  🔄 Retake Quiz
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="23 4 23 10 17 10" />
+                                    <polyline points="1 20 1 14 7 14" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                  </svg>
+                                  Retake Quiz
                                 </button>
                               ) : modProgress.attemptsUsed < 3 && (modProgress.consecutiveFailures || 0) < 5 ? (
                                 <button
                                   type="button"
                                   className={styles.retakeFromReportBtn}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3) 🔄
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="23 4 23 10 17 10" />
+                                    <polyline points="1 20 1 14 7 14" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                  </svg>
+                                  Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3)
                                 </button>
                               ) : (
                                 <button
                                   type="button"
                                   className={styles.rewatchRequiredBtn}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() =>
                                     handleAdvisorSelectRewatch(
                                       modProgress.recommendedLessonId || mod.lessons[0]?.id
                                     )
                                   }
                                 >
-                                  📺 Rewatch Lectures to Unlock
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                  </svg>
+                                  Rewatch Lectures to Unlock
                                 </button>
                               )}
                             </div>
@@ -2552,7 +2694,19 @@ export default function TopicDetailPage() {
                                   allModLessonsWatched ? styles.quizIconReady : styles.quizIconLocked
                                 }`}
                               >
-                                {allModLessonsWatched ? "📝" : "🔒"}
+                                {allModLessonsWatched ? (
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                  </svg>
+                                ) : (
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                  </svg>
+                                )}
                               </div>
                               <div className={styles.quizInfoCol}>
                                 <div className={styles.quizTitleRow}>
@@ -2579,7 +2733,13 @@ export default function TopicDetailPage() {
                                   Start Quiz (10 Qs) →
                                 </button>
                               ) : (
-                                <span className={styles.quizLockedPill}>🔒 Locked</span>
+                                <span className={styles.quizLockedPill} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                  </svg>
+                                  Locked
+                                </span>
                               )}
                             </div>
                           </div>
@@ -2602,7 +2762,23 @@ export default function TopicDetailPage() {
               >
                 <div className={styles.grandQuizHeaderRow}>
                   <div className={styles.grandQuizTrophyBox}>
-                    {grandQuizPassed ? "🏆" : isAllModulesPassed ? "🎯" : "🔒"}
+                    {grandQuizPassed ? (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="8" r="7" />
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                      </svg>
+                    ) : isAllModulesPassed ? (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    )}
                   </div>
                   <div className={styles.grandQuizHeaderInfo}>
                     <div className={styles.grandQuizTitleBadgeRow}>
@@ -2614,12 +2790,21 @@ export default function TopicDetailPage() {
                           grandQuizPassed ? styles.grandQuizXpBadgePassed : ""
                         }`}
                       >
-                        {grandQuizPassed ? "+100 XP ✓" : "+100 XP"}
+                        {grandQuizPassed ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                            +100 XP
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </span>
+                        ) : (
+                          "+100 XP"
+                        )}
                       </span>
                     </div>
                     <p className={styles.grandQuizSectionDesc}>
                       {grandQuizPassed
-                        ? "🎉 Outstanding achievement! You completed the Grand Comprehensive Assessment and mastered all modules in this course!"
+                        ? "Outstanding achievement! You completed the Grand Comprehensive Assessment and mastered all modules in this course!"
                         : isAllModulesPassed
                         ? "All modules passed! Take the 30-question final exam to achieve full course certification and earn +100 XP."
                         : `Unlocks after passing all ${modulesList.length} module quizzes (${
@@ -2634,21 +2819,37 @@ export default function TopicDetailPage() {
                     <button
                       type="button"
                       className={styles.grandQuizPassBtn}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                       onClick={handleOpenGrandQuiz}
                     >
-                      Review Grand Assessment (Passed) 🏆
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="8" r="7" />
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                      </svg>
+                      Review Grand Assessment (Passed)
                     </button>
                   ) : isAllModulesPassed ? (
                     <button
                       type="button"
                       className={styles.grandQuizActiveBtn}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                       onClick={handleOpenGrandQuiz}
                     >
-                      Start Grand Quiz (30 Questions) 🚀
+                      Start Grand Quiz (30 Questions)
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
                     </button>
                   ) : (
                     <div className={styles.grandQuizLockedHint}>
-                      <span>🔒 Pass all {modulesList.length} module quizzes to unlock Grand Quiz</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        Pass all {modulesList.length} module quizzes to unlock Grand Quiz
+                      </span>
                     </div>
                   )}
                 </div>
@@ -2728,7 +2929,12 @@ export default function TopicDetailPage() {
       {lockedAlert && lockedAlert.isOpen && (
         <div className={styles.lockedAlertModal}>
           <div className={styles.lockedAlertBox}>
-            <div className={styles.lockedAlertIcon}>🔒</div>
+            <div className={styles.lockedAlertIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
             <h3 className={styles.lockedAlertTitle}>Module Locked</h3>
             <p className={styles.lockedAlertDesc}>
               To ensure solid conceptual retention, you must first complete all lectures in active module{" "}
@@ -2777,7 +2983,10 @@ export default function TopicDetailPage() {
                   onClick={() => setHistoryModal(null)}
                   title="Close History"
                 >
-                  ✕
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
 
@@ -2813,17 +3022,36 @@ export default function TopicDetailPage() {
                         <span className={styles.metricChip}>
                           Accuracy: <strong>{att.percentage}%</strong>
                         </span>
-                        <span className={styles.metricChip}>
-                          ⏱️ {att.timeTakenSeconds ? `${Math.floor(att.timeTakenSeconds / 60)}m ${att.timeTakenSeconds % 60}s` : "Normal Pace"}
+                        <span className={styles.metricChip} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          {att.timeTakenSeconds ? `${Math.floor(att.timeTakenSeconds / 60)}m ${att.timeTakenSeconds % 60}s` : "Normal Pace"}
                         </span>
                         <span
                           className={`${styles.metricChip} ${
                             att.strikes && att.strikes > 0 ? styles.metricChipStrike : ""
                           }`}
+                          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                         >
-                          {att.strikes && att.strikes > 0
-                            ? `⚠️ -${att.strikes} Mark Penalty`
-                            : "🛡️ Clean Attempt"}
+                          {att.strikes && att.strikes > 0 ? (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                              </svg>
+                              {`-${att.strikes} Mark Penalty`}
+                            </>
+                          ) : (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                              </svg>
+                              Clean Attempt
+                            </>
+                          )}
                         </span>
                         {att.missedConcepts && att.missedConcepts.length > 0 && (
                           <span className={styles.metricChip} style={{ color: "#b91c1c" }}>
@@ -2835,9 +3063,16 @@ export default function TopicDetailPage() {
                       <button
                         type="button"
                         className={styles.attemptInspectBtn}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                         onClick={() => handleInspectAttempt(historyModal.moduleTitle, att)}
                       >
-                        📋 Inspect Detailed Results & Solutions (10 Qs) →
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        Inspect Detailed Results & Solutions (10 Qs) →
                       </button>
                     </div>
                   );
@@ -2850,30 +3085,46 @@ export default function TopicDetailPage() {
                   className={styles.quizReviewBtn}
                   onClick={() => setHistoryModal(null)}
                 >
-                  Close ✕
+                  Close
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
 
                 {isPassed ? (
                   <button
                     type="button"
                     className={styles.retakeImproveBtn}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                     onClick={() => {
                       setHistoryModal(null);
                       handleOpenModuleQuiz(historyModal.moduleTitle);
                     }}
                   >
-                    🔄 Retake Quiz (Improve Score)
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="23 4 23 10 17 10" />
+                      <polyline points="1 20 1 14 7 14" />
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Retake Quiz (Improve Score)
                   </button>
                 ) : (modProgress?.attemptsUsed || 0) < 3 && (modProgress?.consecutiveFailures || 0) < 5 ? (
                   <button
                     type="button"
                     className={styles.retakeFromReportBtn}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                     onClick={() => {
                       setHistoryModal(null);
                       handleOpenModuleQuiz(historyModal.moduleTitle);
                     }}
                   >
-                    Retake Quiz (Attempt {(modProgress?.attemptsUsed || 0) + 1}/3) 🔄
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="23 4 23 10 17 10" />
+                      <polyline points="1 20 1 14 7 14" />
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Retake Quiz (Attempt {(modProgress?.attemptsUsed || 0) + 1}/3)
                   </button>
                 ) : null}
               </div>

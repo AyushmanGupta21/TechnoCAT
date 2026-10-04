@@ -39,11 +39,7 @@ export default function EditProfilePage() {
       setLastName(parts.slice(1).join(" ") || "");
 
       const isHardcodedDemoAvatar = user.avatarUrl?.includes("photo-1494790108377");
-      if (isDemo) {
-        setAvatarPreview(user.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
-      } else {
-        setAvatarPreview(isHardcodedDemoAvatar ? "" : (user.avatarUrl || ""));
-      }
+      setAvatarPreview(isHardcodedDemoAvatar ? "" : (user.avatarUrl || ""));
 
       if (user.phone) {
         setPhone(user.phone);
@@ -72,12 +68,12 @@ export default function EditProfilePage() {
         } catch {}
       }
     } else if (isDemo) {
-      setFirstName("Sabrina");
-      setLastName("Gomez");
-      setPhone("+91 98765 43210");
+      setFirstName("Student");
+      setLastName("");
+      setPhone("");
       setTargetYear("CAT 2026");
-      setDreamSchool("IIM Ahmedabad");
-      setAvatarPreview("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80");
+      setDreamSchool("");
+      setAvatarPreview("");
     }
   }, [user, isDemo]);
 
@@ -92,8 +88,8 @@ export default function EditProfilePage() {
 
   const fullNameDisplay = useMemo(() => {
     const combined = `${firstName.trim()} ${lastName.trim()}`.trim();
-    return combined || (isDemo ? "Sabrina Gomez" : "CAT Aspirant");
-  }, [firstName, lastName, isDemo]);
+    return combined || "Student";
+  }, [firstName, lastName]);
 
   const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -206,8 +202,8 @@ export default function EditProfilePage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* ===== HEADER & TOP NAVIGATION ===== */}
-      <header className={styles.darkHeader}>
+      {/* ===== STICKY TOP NAVIGATION ===== */}
+      <header className={styles.stickyNavHeader}>
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
@@ -231,11 +227,19 @@ export default function EditProfilePage() {
 
             <PostLoginNavActions />
           </nav>
+        </div>
+      </header>
 
+      {/* ===== HERO HEADER SECTION ===== */}
+      <div className={styles.darkHeader}>
+        <div className={styles.headerInner}>
           {/* Breadcrumb & Hero Heading */}
           <div className={styles.heroRow}>
             <div className={styles.badgeRow}>
-              <span className={styles.badgeLabel}>★ Profile &amp; Aspirant Settings</span>
+              <span className={styles.badgeLabel}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                Profile &amp; Aspirant Settings
+              </span>
               {isDemo && (
                 <span className={styles.demoPill}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -264,7 +268,7 @@ export default function EditProfilePage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ===== MAIN CONTENT GRID ===== */}
       <main className={styles.mainContent}>
@@ -488,7 +492,7 @@ export default function EditProfilePage() {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="e.g. Sabrina"
+                        placeholder="e.g. Ayushman"
                         required
                         className={styles.textInput}
                       />

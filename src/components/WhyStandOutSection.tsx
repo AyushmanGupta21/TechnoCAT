@@ -296,11 +296,15 @@ const features: FeatureCardData[] = [
           {/* Right Feature Status Pills */}
           <div className={styles.mockFeaturePills}>
             <div className={styles.mockFeaturePill}>
-              <span className={`${styles.mockFeatIcon} ${styles.featGreen}`}>✓</span>
+              <span className={`${styles.mockFeatIcon} ${styles.featGreen}`}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </span>
               <span className={styles.mockFeatText}>Auto Save</span>
             </div>
             <div className={styles.mockFeaturePill}>
-              <span className={`${styles.mockFeatIcon} ${styles.featBlue}`}>↻</span>
+              <span className={`${styles.mockFeatIcon} ${styles.featBlue}`}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              </span>
               <span className={styles.mockFeatText}>Resume Anytime</span>
             </div>
             <div className={styles.mockFeaturePill}>

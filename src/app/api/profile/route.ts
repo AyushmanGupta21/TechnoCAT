@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProfileById, getProfileByEmail, updateProfile } from "@/lib/db";
+import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 
 async function resolveUserId(request: NextRequest): Promise<{ userId: string | null; isDemo: boolean }> {
   const userId = request.cookies.get("technocat_user_id")?.value;
@@ -26,9 +27,9 @@ export async function GET(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.full_name,
+        fullName: resolveStudentName(user.full_name, user.email),
         role: user.role,
-        avatarUrl: user.avatar_url,
+        avatarUrl: sanitizeAvatarUrl(user.avatar_url),
         phone: user.phone || "",
         targetYear: user.target_year || "CAT 2026",
         dreamSchool: user.dream_school || "",
@@ -94,9 +95,9 @@ export async function POST(request: NextRequest) {
         ? {
             id: updatedUser.id,
             email: updatedUser.email,
-            fullName: updatedUser.full_name,
+            fullName: resolveStudentName(updatedUser.full_name, updatedUser.email),
             role: updatedUser.role,
-            avatarUrl: updatedUser.avatar_url,
+            avatarUrl: sanitizeAvatarUrl(updatedUser.avatar_url),
             phone: updatedUser.phone || "",
             targetYear: updatedUser.target_year || "CAT 2026",
             dreamSchool: updatedUser.dream_school || "",

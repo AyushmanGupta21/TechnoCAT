@@ -159,7 +159,8 @@ export default function PYQStudyModal({
               className={styles.resumeBtn}
               onClick={() => setIsBlurred(false)}
             >
-              Resume Reading 👁️
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Resume Reading</span>
             </button>
           </div>
         )}
@@ -189,7 +190,8 @@ export default function PYQStudyModal({
               onClick={onClose}
               title="Close Study Mode (Progress is automatically saved)"
             >
-              <span>✕</span> Close Study
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>Close Study</span>
             </button>
           </div>
         </div>
@@ -269,8 +271,18 @@ export default function PYQStudyModal({
             <div className={styles.qMetaRow}>
               <div className={styles.qTagGroup}>
                 <span className={styles.qNumBadge}>Question {currentQ.question_number}</span>
-                <span className={`${styles.qListType} ${isTITA ? styles.typeTITA : styles.typeMCQ}`} style={{ fontSize: "12px", padding: "4px 8px" }}>
-                  {isTITA ? "⌨️ TITA (Type In The Answer)" : "🔘 Multiple Choice (MCQ)"}
+                <span className={`${styles.qListType} ${isTITA ? styles.typeTITA : styles.typeMCQ}`} style={{ fontSize: "12px", padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                  {isTITA ? (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+                      <span>TITA (Type In The Answer)</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                      <span>Multiple Choice (MCQ)</span>
+                    </>
+                  )}
                 </span>
                 <span className={styles.qConceptBadge}>Concept: {recommendation?.concept}</span>
               </div>
@@ -296,7 +308,10 @@ export default function PYQStudyModal({
                         <div className={styles.optionText}>{opt}</div>
                       </div>
                       {isCorrect && (
-                        <span className={styles.correctTag}>✓ Correct Option</span>
+                        <span className={styles.correctTag}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12"/></svg>
+                          <span>Correct Option</span>
+                        </span>
                       )}
                     </div>
                   );
@@ -305,8 +320,9 @@ export default function PYQStudyModal({
             ) : (
               <div className={styles.titaAnswerBox}>
                 <div className={styles.titaAnswerLeft}>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#166534" }}>
-                    ✓ Official Correct Answer:
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#166534", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Official Correct Answer:</span>
                   </span>
                   <span className={styles.titaAnswerVal}>{titaCleanAnswer || "Key-in Answer"}</span>
                 </div>
@@ -320,7 +336,10 @@ export default function PYQStudyModal({
             {recommendation && (
               <div className={styles.recBanner}>
                 <div className={styles.recLeft}>
-                  <span className={styles.recHeading}>📺 TechnoCAT Curriculum Alignment:</span>
+                  <span className={styles.recHeading}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                    <span>TechnoCAT Curriculum Alignment:</span>
+                  </span>
                   <span className={styles.recTitle}>{recommendation.lessonTitle}</span>
                   <span className={styles.recSubtitle}>
                     Topic: {recommendation.topicTitle} • Master the core theory and shortcuts
