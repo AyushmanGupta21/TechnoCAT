@@ -1,4 +1,9 @@
-import { Pool } from "pg";
+import { Pool, types } from "pg";
+import { CURRICULUM_TASKS_TEMPLATE } from "@/data/curriculumScheduleData";
+
+// Force PostgreSQL DATE column (OID 1082) to always parse as a clean 'YYYY-MM-DD' string
+// to avoid local/UTC timezone shifts when serializing task dates.
+types.setTypeParser(1082, (val: string) => val);
 
 // Create a single shared PostgreSQL connection pool for server-side routes
 let pool: Pool;
@@ -326,12 +331,19 @@ export async function getDashboardData(userId: string) {
   const totalWeek = Math.round(totalLearning + totalChallenge);
   const avgDay = Math.round((totalWeek / 7) * 10) / 10;
 
-  // 3. Study tasks
+  // 3. Ensure study tasks are auto-populated from curriculum for enrolled topics if not present
+  const topicsToUse = enrolledTopics.length > 0
+    ? enrolledTopics
+    : (isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"] : []);
+  if (topicsToUse.length > 0) {
+    await ensureCurriculumTasksForUser(userId, topicsToUse);
+  }
+
   const tasksRes = await query(
-    `SELECT id, title, task_date, is_completed 
+    `SELECT id, title, task_date, is_completed, category, code, time_range, duration, subtitle 
      FROM public.study_tasks 
      WHERE user_id = $1 
-     ORDER BY task_date ASC, created_at DESC`,
+     ORDER BY task_date ASC, created_at ASC`,
     [userId]
   );
 
@@ -366,15 +378,90 @@ export async function getDashboardData(userId: string) {
   };
 }
 
+// ── Automatic Curriculum Task Population ──
+export async function ensureCurriculumTasksForUser(userId: string, enrolledTopics: string[]) {
+  try {
+    // Check if the user already has curriculum tasks for October 2026
+    const countCheck = await query(
+      `SELECT count(*) FROM public.study_tasks 
+       WHERE user_id = $1 AND task_date >= '2026-10-01' AND task_date <= '2026-10-31'`,
+      [userId]
+    );
+    const existingCount = parseInt(countCheck.rows[0]?.count || "0", 10);
+    if (existingCount >= 5) {
+      return; // Already populated
+    }
+
+    const topicsToSchedule = enrolledTopics.length > 0
+      ? enrolledTopics
+      : ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
+
+    const isEnrolledQA = topicsToSchedule.some(t => t.includes("qa") || t.includes("quant"));
+    const isEnrolledDILR = topicsToSchedule.some(t => t.includes("dilr") || t.includes("data"));
+    const isEnrolledVARC = topicsToSchedule.some(t => t.includes("varc") || t.includes("verbal"));
+
+    // Filter October tasks matching enrolled subjects
+    const matchingTasks = CURRICULUM_TASKS_TEMPLATE.filter((t) => {
+      if (t.monthIndex !== 9 || t.year !== 2026) return false;
+      if (t.category === "QA" && !isEnrolledQA) return false;
+      if (t.category === "DILR" && !isEnrolledDILR) return false;
+      if (t.category === "VARC" && !isEnrolledVARC) return false;
+      return true;
+    });
+
+    for (const t of matchingTasks) {
+      const taskDate = `2026-10-${String(t.day).padStart(2, "0")}`;
+      await query(
+        `INSERT INTO public.study_tasks 
+         (user_id, title, task_date, is_completed, category, code, time_range, duration, subtitle)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          userId,
+          t.title,
+          taskDate,
+          t.isCompleted,
+          t.category,
+          t.code,
+          t.timeRange,
+          t.duration,
+          t.subtitle,
+        ]
+      ).catch(() => {});
+    }
+  } catch (err) {
+    console.error("[ensureCurriculumTasksForUser Error]", err);
+  }
+}
+
 // ── Calendar Task Operations ──
-export async function addStudyTask(userId: string, title: string, taskDate: string) {
+export async function addStudyTask(
+  userId: string,
+  title: string,
+  taskDate: string,
+  category: string = "QA",
+  code: string = "STUDY",
+  timeRange: string = "Flexible",
+  duration: string = "45 min",
+  subtitle: string = "Personal Target Task"
+) {
   const res = await query(
-    `INSERT INTO public.study_tasks (user_id, title, task_date)
-     VALUES ($1, $2, $3)
-     RETURNING id, title, task_date, is_completed`,
-    [userId, title, taskDate]
+    `INSERT INTO public.study_tasks (user_id, title, task_date, category, code, time_range, duration, subtitle)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, title, task_date, is_completed, category, code, time_range, duration, subtitle`,
+    [userId, title, taskDate, category, code, timeRange, duration, subtitle]
   );
   return res.rows[0];
+}
+
+export async function toggleStudyTask(userId: string, taskId: string, isCompleted: boolean) {
+  const res = await query(
+    `UPDATE public.study_tasks 
+     SET is_completed = $1 
+     WHERE id = $2 AND (user_id = $3 OR user_id IS NULL)
+     RETURNING id, title, task_date, is_completed, category, code, time_range, duration, subtitle`,
+    [isCompleted, taskId, userId]
+  );
+  return res.rows[0] || null;
 }
 
 // ── Topic Progress Operations ──
@@ -437,6 +524,10 @@ export async function enrollUserInTopic(userId: string, topicId: string) {
      RETURNING *`,
     [userId, topicId]
   );
+
+  // Auto-schedule curriculum tasks for this newly enrolled topic
+  await ensureCurriculumTasksForUser(userId, [topicId]).catch(() => {});
+
   if (res.rows.length > 0) {
     return res.rows[0];
   }

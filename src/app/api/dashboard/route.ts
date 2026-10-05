@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDashboardData, addStudyTask, getProfileById } from "@/lib/db";
+import { getDashboardData, addStudyTask, toggleStudyTask, getProfileById, getProfileByEmail } from "@/lib/db";
 
 // Zero-state for unauthenticated or new real users — NO fake demo values
 const EMPTY_DASHBOARD = {
@@ -62,22 +62,32 @@ async function resolveUserId(request: NextRequest): Promise<string | null> {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = await resolveUserId(request);
+    let userId = await resolveUserId(request);
 
     if (!userId) {
-      // No authenticated session — return clean zero state (not demo data)
+      // If unauthenticated visitor, provide demo student account data so schedule and backlog are interactive
+      try {
+        const demoUser = await getProfileByEmail("student@technocat.edu");
+        if (demoUser?.id) {
+          userId = demoUser.id;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!userId) {
       return NextResponse.json(EMPTY_DASHBOARD);
     }
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("DB timeout")), 5000)
+      setTimeout(() => reject(new Error("DB timeout")), 7000)
     );
 
     const data = await Promise.race([getDashboardData(userId), timeoutPromise]);
     return NextResponse.json(data);
   } catch (error: any) {
     console.warn("[Dashboard API Error]", error?.message);
-    // On DB failure, return zero state — not fake demo data
     return NextResponse.json(EMPTY_DASHBOARD);
   }
 }
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const { title, taskDate } = await request.json();
+    const { title, taskDate, category, code, duration, subtitle } = await request.json();
 
     if (!title) {
       return NextResponse.json({ error: "Task title is required" }, { status: 400 });
@@ -99,12 +109,44 @@ export async function POST(request: NextRequest) {
     const newTask = await addStudyTask(
       userId,
       title,
-      taskDate || new Date().toISOString().split("T")[0]
+      taskDate || new Date().toISOString().split("T")[0],
+      category || "QA",
+      code || "STUDY",
+      "Flexible",
+      duration || "45 min",
+      subtitle || "Personal Target Task"
     );
 
     return NextResponse.json({ task: newTask });
   } catch (error: any) {
     console.error("[Dashboard Task Error]", error);
     return NextResponse.json({ error: error.message || "Failed to create task" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    let userId = await resolveUserId(request);
+    if (!userId) {
+      const demoUser = await getProfileByEmail("student@technocat.edu");
+      if (demoUser?.id) userId = demoUser.id;
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { taskId, isCompleted } = await request.json();
+
+    if (!taskId) {
+      return NextResponse.json({ error: "Task ID is required" }, { status: 400 });
+    }
+
+    const updated = await toggleStudyTask(userId, taskId, Boolean(isCompleted));
+
+    return NextResponse.json({ success: true, task: updated });
+  } catch (error: any) {
+    console.error("[Dashboard PATCH Task Error]", error);
+    return NextResponse.json({ error: error.message || "Failed to toggle task" }, { status: 500 });
   }
 }

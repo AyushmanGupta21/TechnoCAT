@@ -29,6 +29,11 @@ interface StudyTask {
   title: string;
   task_date: string;
   is_completed: boolean;
+  category?: "QA" | "DILR" | "VARC" | "Mock";
+  code?: string;
+  time_range?: string;
+  duration?: string;
+  subtitle?: string;
 }
 
 interface DashboardData {
@@ -281,37 +286,49 @@ export default function DashboardPage() {
     if (!isToday) {
       return;
     }
-    setScheduleTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      const willBeCompleted = task ? !task.isCompleted : false;
-      const updated = prev.map((t) => (t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
 
-      if (task && willBeCompleted) {
+    let willBeCompleted = false;
+    let targetTask: ScheduleItem | undefined;
+
+    setScheduleTasks((prev) => {
+      targetTask = prev.find((t) => t.id === id);
+      if (!targetTask) return prev;
+      willBeCompleted = !targetTask.isCompleted;
+      const updated = prev.map((t) => (t.id === id ? { ...t, isCompleted: willBeCompleted } : t));
+
+      if (willBeCompleted) {
         const remaining = updated.filter(
           (t) =>
             t.day === selectedDay &&
-            (t.monthIndex ?? 8) === selectedMonthIndex &&
+            (t.monthIndex ?? 9) === selectedMonthIndex &&
             !t.isCompleted
         ).length;
-        notifyTaskCompleted(task.title, remaining, user?.id);
+        notifyTaskCompleted(targetTask.title, remaining, user?.id);
       }
       return updated;
     });
+
+    // Real PostgreSQL update via PATCH
+    fetch("/api/dashboard", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId: id, isCompleted: willBeCompleted }),
+    }).catch((err) => {
+      console.error("[Dashboard Task Sync Error]", err);
+    });
   };
 
-  const handleAutoAssignDay = (day: number) => {
-    if (!isDemo && enrolledCount === 0) {
-      return;
-    }
+  const handleAutoAssignDay = async (day: number) => {
+    const isEnrolledQA = isDemo || enrolledTopicsList.includes("qa-quantitative-ability") || enrolledCount === 0;
+    const isEnrolledDILR = isDemo || enrolledTopicsList.includes("dilr-data-interpretation") || enrolledCount === 0;
+    const isEnrolledVARC = isDemo || enrolledTopicsList.includes("varc-verbal-ability");
 
     const newItems: ScheduleItem[] = [];
-    const isEnrolledQA = isDemo || enrolledTopicsList.includes("qa-quantitative-ability");
-    const isEnrolledDILR = isDemo || enrolledTopicsList.includes("dilr-data-interpretation");
-    const isEnrolledVARC = isDemo || enrolledTopicsList.includes("varc-verbal-ability");
+    const taskDate = `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     if (isEnrolledQA) {
       newItems.push({
-        id: "auto-" + day + "-qa",
+        id: "auto-" + day + "-qa-" + Date.now(),
         day,
         monthIndex: selectedMonthIndex,
         year: selectedYear,
@@ -327,7 +344,7 @@ export default function DashboardPage() {
 
     if (isEnrolledDILR) {
       newItems.push({
-        id: "auto-" + day + "-dilr",
+        id: "auto-" + day + "-dilr-" + Date.now(),
         day,
         monthIndex: selectedMonthIndex,
         year: selectedYear,
@@ -343,7 +360,7 @@ export default function DashboardPage() {
 
     if (isEnrolledVARC && newItems.length === 0) {
       newItems.push({
-        id: "auto-" + day + "-varc",
+        id: "auto-" + day + "-varc-" + Date.now(),
         day,
         monthIndex: selectedMonthIndex,
         year: selectedYear,
@@ -359,16 +376,22 @@ export default function DashboardPage() {
 
     if (newItems.length > 0) {
       setScheduleTasks((prev) => [...prev, ...newItems]);
-      if (!isDemo && user) {
-        newItems.forEach((item) => {
-          const taskDate = `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          fetch("/api/dashboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: item.title, taskDate }),
-          }).catch(() => {});
-        });
+      // Persist to PostgreSQL database
+      for (const item of newItems) {
+        await fetch("/api/dashboard", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: item.title,
+            taskDate,
+            category: item.category,
+            code: item.code,
+            duration: item.duration,
+            subtitle: item.subtitle,
+          }),
+        }).catch(() => {});
       }
+      await fetchDashboard();
     }
   };
 
@@ -482,32 +505,41 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    // All users: always use real DB tasks — no more hardcoded curriculum
+    // All users: always use real DB tasks with rich fields and robust date parsing
     if (dashboardData?.tasks) {
       const mapped: ScheduleItem[] = dashboardData.tasks.map((t, idx) => {
-        const d = new Date(t.task_date + "T00:00:00"); // force local date parse
-        // Infer category from task title keywords
-        const titleLower = t.title.toLowerCase();
+        // Robust timezone-free date parsing for 'YYYY-MM-DD'
+        const rawDate = String(t.task_date || "").split("T")[0];
+        const parts = rawDate.split("-").map(Number);
+        const y = parts[0] || 2026;
+        const m = (parts[1] || 10) - 1; // 0-indexed month
+        const d = parts[2] || 1;
+
+        // Infer category if not explicitly provided
+        const titleLower = (t.title || "").toLowerCase();
         let cat: "QA" | "DILR" | "VARC" | "Mock" = "QA";
-        if (titleLower.includes("dilr") || titleLower.includes("data") || titleLower.includes("logical") || titleLower.includes("arrangement")) {
+        if (t.category) {
+          cat = t.category;
+        } else if (titleLower.includes("dilr") || titleLower.includes("data") || titleLower.includes("logical") || titleLower.includes("arrangement")) {
           cat = "DILR";
         } else if (titleLower.includes("varc") || titleLower.includes("verbal") || titleLower.includes("reading") || titleLower.includes("rc") || titleLower.includes("comprehension")) {
           cat = "VARC";
         } else if (titleLower.includes("mock") || titleLower.includes("test") || titleLower.includes("exam")) {
           cat = "Mock";
         }
+
         return {
           id: t.id || `task-${idx}`,
-          day: d.getDate(),
-          monthIndex: d.getMonth(),
-          year: d.getFullYear(),
-          timeRange: "Flexible",
-          duration: "45 min",
+          day: d,
+          monthIndex: m,
+          year: y,
+          timeRange: t.time_range || "Flexible",
+          duration: t.duration || "60 min",
           category: cat,
-          code: "STUDY",
+          code: t.code || "STUDY",
           title: t.title,
-          subtitle: "Study Task",
-          isCompleted: t.is_completed,
+          subtitle: t.subtitle || (cat + " Topic Module"),
+          isCompleted: Boolean(t.is_completed),
         };
       });
       setScheduleTasks(mapped);
