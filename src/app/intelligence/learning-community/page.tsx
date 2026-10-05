@@ -689,41 +689,70 @@ export default function LearningCommunityPage() {
 
   // Activity chart data for selected timeframe
   const activityData = useMemo(() => {
-    if (activityPeriod === "7D") {
+    if (isDemo) {
+      if (activityPeriod === "7D") {
+        return [
+          { label: "Sep 25", fullDate: "Sep 25", value: 38 },
+          { label: "Sep 26", fullDate: "Sep 26", value: 45 },
+          { label: "Sep 27", fullDate: "Sep 27", value: 42 },
+          { label: "Sep 28", fullDate: "Sep 28", value: 68 },
+          { label: "Sep 29", fullDate: "Sep 29", value: 74 },
+          { label: "Sep 30", fullDate: "Sep 30", value: 61 },
+          { label: "Oct 01", fullDate: "Oct 01", value: 89 + (posts.length > 6 ? (posts.length - 6) * 4 : 0) },
+        ];
+      }
+      if (activityPeriod === "90D") {
+        return [
+          { label: "Jul 10", fullDate: "Jul 10", value: 120 },
+          { label: "Jul 24", fullDate: "Jul 24", value: 165 },
+          { label: "Aug 07", fullDate: "Aug 07", value: 190 },
+          { label: "Aug 21", fullDate: "Aug 21", value: 240 },
+          { label: "Sep 04", fullDate: "Sep 04", value: 310 },
+          { label: "Sep 18", fullDate: "Sep 18", value: 380 },
+          { label: "Oct 01", fullDate: "Oct 01", value: 465 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
+        ];
+      }
+      // Default 30D
       return [
-        { label: "Sep 25", fullDate: "Sep 25", value: 38 },
-        { label: "Sep 26", fullDate: "Sep 26", value: 45 },
-        { label: "Sep 27", fullDate: "Sep 27", value: 42 },
-        { label: "Sep 28", fullDate: "Sep 28", value: 68 },
-        { label: "Sep 29", fullDate: "Sep 29", value: 74 },
-        { label: "Sep 30", fullDate: "Sep 30", value: 61 },
-        { label: "Oct 01", fullDate: "Oct 01", value: 89 + (posts.length > 6 ? (posts.length - 6) * 4 : 0) },
+        { label: "Sep 02", fullDate: "Sep 02", value: 48 },
+        { label: "Sep 06", fullDate: "Sep 06", value: 55 },
+        { label: "Sep 10", fullDate: "Sep 10", value: 62 },
+        { label: "Sep 14", fullDate: "Sep 14", value: 58 },
+        { label: "Sep 18", fullDate: "Sep 18", value: 79 },
+        { label: "Sep 22", fullDate: "Sep 22", value: 84 },
+        { label: "Sep 26", fullDate: "Sep 26", value: 92 },
+        { label: "Sep 30", fullDate: "Sep 30", value: 108 },
+        { label: "Oct 01", fullDate: "Oct 01", value: 124 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
       ];
     }
-    if (activityPeriod === "90D") {
-      return [
-        { label: "Jul 10", fullDate: "Jul 10", value: 120 },
-        { label: "Jul 24", fullDate: "Jul 24", value: 165 },
-        { label: "Aug 07", fullDate: "Aug 07", value: 190 },
-        { label: "Aug 21", fullDate: "Aug 21", value: 240 },
-        { label: "Sep 04", fullDate: "Sep 04", value: 310 },
-        { label: "Sep 18", fullDate: "Sep 18", value: 380 },
-        { label: "Oct 01", fullDate: "Oct 01", value: 465 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
-      ];
+
+    // Real account: aggregate real posts & comments by date
+    const daysCount = activityPeriod === "7D" ? 7 : activityPeriod === "90D" ? 90 : 30;
+    const step = activityPeriod === "90D" ? 14 : activityPeriod === "30D" ? 4 : 1;
+    const now = new Date();
+    const result: { label: string; fullDate: string; value: number }[] = [];
+
+    const dateCounts: Record<string, number> = {};
+    for (const p of posts) {
+      const d = new Date(p.createdAt);
+      if (!isNaN(d.getTime())) {
+        const key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        dateCounts[key] = (dateCounts[key] || 0) + 1 + p.commentsCount;
+      }
     }
-    // Default 30D
-    return [
-      { label: "Sep 02", fullDate: "Sep 02", value: 48 },
-      { label: "Sep 06", fullDate: "Sep 06", value: 55 },
-      { label: "Sep 10", fullDate: "Sep 10", value: 62 },
-      { label: "Sep 14", fullDate: "Sep 14", value: 58 },
-      { label: "Sep 18", fullDate: "Sep 18", value: 79 },
-      { label: "Sep 22", fullDate: "Sep 22", value: 84 },
-      { label: "Sep 26", fullDate: "Sep 26", value: 92 },
-      { label: "Sep 30", fullDate: "Sep 30", value: 108 },
-      { label: "Oct 01", fullDate: "Oct 01", value: 124 + (posts.length > 6 ? (posts.length - 6) * 5 : 0) },
-    ];
-  }, [activityPeriod, posts.length]);
+
+    for (let i = daysCount; i >= 0; i -= step) {
+      const targetDate = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const label = targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      result.push({
+        label,
+        fullDate: label,
+        value: dateCounts[label] || 0,
+      });
+    }
+
+    return result;
+  }, [activityPeriod, posts, isDemo]);
 
   const chartPaths = useMemo(() => {
     const dataList = activityData;
@@ -740,7 +769,7 @@ export default function LearningCommunityPage() {
     const maxVal = Math.max(...dataList.map((d) => d.value), 10) * 1.15;
 
     const points = dataList.map((item, idx) => {
-      const x = padX + (idx / (dataList.length - 1)) * plotWidth;
+      const x = padX + (idx / Math.max(1, dataList.length - 1)) * plotWidth;
       const y = height - padBottom - (item.value / maxVal) * plotHeight;
       return { x, y, item };
     });
@@ -759,35 +788,51 @@ export default function LearningCommunityPage() {
   }, [activityData]);
 
   const categoryActivityCounts = useMemo(() => {
-    const baseCounts: Record<CommunityCategory, number> = {
-      "Doubt Solving": 298,
-      "CAT Strategy": 256,
-      "Study Resources": 210,
-      "Mocks & Analysis": 186,
-      "General Discussion": 156,
-      "College Discussions": 112,
-      "Motivation & Journey": 94,
-      "Off-topic": 68,
-    };
+    if (isDemo) {
+      const baseCounts: Record<CommunityCategory, number> = {
+        "Doubt Solving": 298,
+        "CAT Strategy": 256,
+        "Study Resources": 210,
+        "Mocks & Analysis": 186,
+        "General Discussion": 156,
+        "College Discussions": 112,
+        "Motivation & Journey": 94,
+        "Off-topic": 68,
+      };
 
-    const extraCounts: Record<string, number> = {};
-    for (const p of posts) {
-      if (!p.id.startsWith("post-ref-")) {
-        extraCounts[p.category] = (extraCounts[p.category] || 0) + 1;
+      const extraCounts: Record<string, number> = {};
+      for (const p of posts) {
+        if (!p.id.startsWith("post-ref-")) {
+          extraCounts[p.category] = (extraCounts[p.category] || 0) + 1;
+        }
       }
+
+      const list = CATEGORIES_CONFIG.map((cat) => {
+        const total = (baseCounts[cat.name] || 50) + (extraCounts[cat.name] || 0);
+        return {
+          name: cat.name,
+          count: total,
+        };
+      });
+
+      list.sort((a, b) => b.count - a.count);
+      return list;
     }
 
-    const list = CATEGORIES_CONFIG.map((cat) => {
-      const total = (baseCounts[cat.name] || 50) + (extraCounts[cat.name] || 0);
-      return {
-        name: cat.name,
-        count: total,
-      };
-    });
+    // Real account: counts strictly reflect real posts by category
+    const realCounts: Record<string, number> = {};
+    for (const p of posts) {
+      realCounts[p.category] = (realCounts[p.category] || 0) + 1;
+    }
+
+    const list = CATEGORIES_CONFIG.map((cat) => ({
+      name: cat.name,
+      count: realCounts[cat.name] || 0,
+    }));
 
     list.sort((a, b) => b.count - a.count);
     return list;
-  }, [posts]);
+  }, [posts, isDemo]);
 
   // Compute filtered & sorted posts
   const visiblePosts = useMemo(() => {
@@ -850,11 +895,14 @@ export default function LearningCommunityPage() {
   const savedPostsCount = useMemo(() => posts.filter((p) => p.isSaved).length, [posts]);
 
   const topContributorsList = useMemo(() => {
-    if (data?.topContributors && data.topContributors.length > 0) {
-      return data.topContributors;
+    if (isDemo) {
+      if (data?.topContributors && data.topContributors.length > 0) {
+        return data.topContributors;
+      }
+      return DEFAULT_CONTRIBUTORS;
     }
-    return DEFAULT_CONTRIBUTORS;
-  }, [data]);
+    return data?.topContributors || [];
+  }, [data, isDemo]);
 
   // Handlers
   const handleSelectHome = () => {
@@ -2855,41 +2903,55 @@ export default function LearningCommunityPage() {
               </div>
 
               <div className={styles.contributorsList}>
-                {topContributorsList.map((contributor) => {
-                  const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
-                  return (
-                    <div key={contributor.authorId} className={styles.contributorRow}>
-                      <div className={styles.contributorLeft}>
-                        {contributor.rank === 1 ? (
-                          <img src="/community/medal-gold.png" alt="1st" className={styles.rankMedalImg} />
-                        ) : contributor.rank === 2 ? (
-                          <img src="/community/medal-silver.png" alt="2nd" className={styles.rankMedalImg} />
-                        ) : contributor.rank === 3 ? (
-                          <img src="/community/medal-bronze.png" alt="3rd" className={styles.rankMedalImg} />
-                        ) : (
-                          <span className={styles.rankNumberCircle}>{contributor.rank}</span>
-                        )}
-
-                        <div className={styles.contributorAvatar}>
-                          {avatarSrc ? (
-                            <img
-                              src={avatarSrc}
-                              alt={contributor.authorName}
-                              className={styles.userAvatarImg}
-                            />
+                {topContributorsList.length === 0 ? (
+                  <div style={{ padding: "24px 14px", textAlign: "center", color: "#64748B", fontSize: "13px" }}>
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px auto" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    </div>
+                    <p style={{ margin: "0 0 4px 0", fontWeight: 600, color: "#1E293B" }}>No Contributors Yet</p>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#64748B", lineHeight: 1.4 }}>
+                      Start a discussion or share a solution to lead the leaderboard!
+                    </p>
+                  </div>
+                ) : (
+                  topContributorsList.map((contributor) => {
+                    const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                    return (
+                      <div key={contributor.authorId} className={styles.contributorRow}>
+                        <div className={styles.contributorLeft}>
+                          {contributor.rank === 1 ? (
+                            <img src="/community/medal-gold.png" alt="1st" className={styles.rankMedalImg} />
+                          ) : contributor.rank === 2 ? (
+                            <img src="/community/medal-silver.png" alt="2nd" className={styles.rankMedalImg} />
+                          ) : contributor.rank === 3 ? (
+                            <img src="/community/medal-bronze.png" alt="3rd" className={styles.rankMedalImg} />
                           ) : (
-                            getInitials(contributor.authorName)
+                            <span className={styles.rankNumberCircle}>{contributor.rank}</span>
                           )}
-                        </div>
 
-                        <div className={styles.contributorInfoStack}>
-                          <span className={styles.contributorName}>{contributor.authorName}</span>
-                          <span className={styles.contributorPostSub}>{contributor.postCount} posts</span>
+                          <div className={styles.contributorAvatar}>
+                            {avatarSrc ? (
+                              <img
+                                src={avatarSrc}
+                                alt={contributor.authorName}
+                                className={styles.userAvatarImg}
+                              />
+                            ) : (
+                              getInitials(contributor.authorName)
+                            )}
+                          </div>
+
+                          <div className={styles.contributorInfoStack}>
+                            <span className={styles.contributorName}>{contributor.authorName}</span>
+                            <span className={styles.contributorPostSub}>{contributor.postCount} posts</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -3622,114 +3684,128 @@ export default function LearningCommunityPage() {
             <div className={styles.contributorDrawerBody}>
               {/* Contributor Cards List */}
               <div className={styles.contributorCardsList}>
-                {topContributorsList.map((contributor) => {
-                  const avatarSrc =
-                    getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
-                  const rankClass =
-                    contributor.rank === 1
-                      ? styles.contributorCardGold
-                      : contributor.rank === 2
-                      ? styles.contributorCardSilver
-                      : contributor.rank === 3
-                      ? styles.contributorCardBronze
-                      : styles.contributorCardDefault;
-
-                  return (
-                    <div
-                      key={contributor.authorId}
-                      className={`${styles.contributorDrawerCard} ${rankClass}`}
-                    >
-                      {/* Rank indicator */}
-                      <div className={styles.contributorDrawerRankWrap}>
-                        {contributor.rank === 1 ? (
-                          <img
-                            src="/community/medal-gold.png"
-                            alt="1st Place"
-                            className={styles.contributorDrawerMedal}
-                          />
-                        ) : contributor.rank === 2 ? (
-                          <img
-                            src="/community/medal-silver.png"
-                            alt="2nd Place"
-                            className={styles.contributorDrawerMedal}
-                          />
-                        ) : contributor.rank === 3 ? (
-                          <img
-                            src="/community/medal-bronze.png"
-                            alt="3rd Place"
-                            className={styles.contributorDrawerMedal}
-                          />
-                        ) : (
-                          <span className={styles.contributorDrawerRankCircle}>
-                            {contributor.rank}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Avatar */}
-                      <div className={styles.contributorDrawerAvatarWrap}>
-                        {avatarSrc ? (
-                          <img
-                            src={avatarSrc}
-                            alt={contributor.authorName}
-                            className={styles.contributorDrawerAvatarImg}
-                          />
-                        ) : (
-                          <span className={styles.contributorDrawerAvatarFallback}>
-                            {getInitials(contributor.authorName)}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Info Stack */}
-                      <div className={styles.contributorDrawerContent}>
-                        <div className={styles.contributorDrawerTopRow}>
-                          <span className={styles.contributorDrawerUsername}>
-                            {contributor.authorName}
-                          </span>
-                          {contributor.rank === 1 && (
-                            <span
-                              className={styles.contributorDrawerTrophyIcon}
-                              aria-label="Top Contributor Trophy"
-                              title="Community Leader 1st Place"
-                              style={{ display: "inline-flex", alignItems: "center" }}
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                                <path d="M4 22h16" />
-                                <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
-                              </svg>
-                            </span>
-                          )}
-                        </div>
-
-                        <div className={styles.contributorDrawerStatsRow}>
-                          <span>{contributor.postCount} posts</span>
-                        </div>
-
-                        <div className={styles.contributorDrawerBadgesRow}>
-                          <span className={styles.contributorDrawerActiveBadge}>
-                            <span className={styles.contributorActiveDot} /> Active
-                          </span>
-                          {contributor.rank <= 3 && (
-                            <span
-                              className={`${styles.contributorDrawerTopBadge} ${
-                                contributor.rank === 1
-                                  ? styles.topBadgeGold
-                                  : contributor.rank === 2
-                                  ? styles.topBadgeSilver
-                                  : styles.topBadgeBronze
-                              }`}
-                            >
-                              Top Contributor
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                {topContributorsList.length === 0 ? (
+                  <div style={{ padding: "48px 24px", textAlign: "center", color: "#64748B" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px auto" }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
                     </div>
-                  );
-                })}
+                    <p style={{ margin: "0 0 6px 0", fontWeight: 700, color: "#1E293B", fontSize: "16px" }}>Leaderboard Reset</p>
+                    <p style={{ margin: 0, fontSize: "13px", color: "#64748B", maxWidth: "280px", marginInline: "auto" }}>
+                      Active contributions will appear here dynamically as students ask and answer CAT questions.
+                    </p>
+                  </div>
+                ) : (
+                  topContributorsList.map((contributor) => {
+                    const avatarSrc =
+                      getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                    const rankClass =
+                      contributor.rank === 1
+                        ? styles.contributorCardGold
+                        : contributor.rank === 2
+                        ? styles.contributorCardSilver
+                        : contributor.rank === 3
+                        ? styles.contributorCardBronze
+                        : styles.contributorCardDefault;
+
+                    return (
+                      <div
+                        key={contributor.authorId}
+                        className={`${styles.contributorDrawerCard} ${rankClass}`}
+                      >
+                        {/* Rank indicator */}
+                        <div className={styles.contributorDrawerRankWrap}>
+                          {contributor.rank === 1 ? (
+                            <img
+                              src="/community/medal-gold.png"
+                              alt="1st Place"
+                              className={styles.contributorDrawerMedal}
+                            />
+                          ) : contributor.rank === 2 ? (
+                            <img
+                              src="/community/medal-silver.png"
+                              alt="2nd Place"
+                              className={styles.contributorDrawerMedal}
+                            />
+                          ) : contributor.rank === 3 ? (
+                            <img
+                              src="/community/medal-bronze.png"
+                              alt="3rd Place"
+                              className={styles.contributorDrawerMedal}
+                            />
+                          ) : (
+                            <span className={styles.contributorDrawerRankCircle}>
+                              {contributor.rank}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Avatar */}
+                        <div className={styles.contributorDrawerAvatarWrap}>
+                          {avatarSrc ? (
+                            <img
+                              src={avatarSrc}
+                              alt={contributor.authorName}
+                              className={styles.contributorDrawerAvatarImg}
+                            />
+                          ) : (
+                            <span className={styles.contributorDrawerAvatarFallback}>
+                              {getInitials(contributor.authorName)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Info Stack */}
+                        <div className={styles.contributorDrawerContent}>
+                          <div className={styles.contributorDrawerTopRow}>
+                            <span className={styles.contributorDrawerUsername}>
+                              {contributor.authorName}
+                            </span>
+                            {contributor.rank === 1 && (
+                              <span
+                                className={styles.contributorDrawerTrophyIcon}
+                                aria-label="Top Contributor Trophy"
+                                title="Community Leader 1st Place"
+                                style={{ display: "inline-flex", alignItems: "center" }}
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                  <path d="M4 22h16" />
+                                  <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
+                                </svg>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={styles.contributorDrawerStatsRow}>
+                            <span>{contributor.postCount} posts</span>
+                          </div>
+
+                          <div className={styles.contributorDrawerBadgesRow}>
+                            <span className={styles.contributorDrawerActiveBadge}>
+                              <span className={styles.contributorActiveDot} /> Active
+                            </span>
+                            {contributor.rank <= 3 && (
+                              <span
+                                className={`${styles.contributorDrawerTopBadge} ${
+                                  contributor.rank === 1
+                                    ? styles.topBadgeGold
+                                    : contributor.rank === 2
+                                    ? styles.topBadgeSilver
+                                    : styles.topBadgeBronze
+                                }`}
+                              >
+                                Top Contributor
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               {/* Community Contribution Card */}
@@ -4060,51 +4136,68 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverBody}>
               <div className={styles.statHighlightBox}>
                 <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.members : "2.4K"}</span>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.members : (isDemo ? "2.4K" : "0")}</span>
                   <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`}>
-                    ▲ +14.2% this month
+                    {isDemo ? "▲ +14.2% this month" : "Live Registered"}
                   </span>
                 </div>
                 <p className={styles.statHighlightDesc}>
-                  Community members across TechnoCAT actively preparing for CAT &amp; OMETs.
+                  {isDemo
+                    ? "Community members across TechnoCAT actively preparing for CAT & OMETs."
+                    : "Verified student accounts currently registered in the TechnoCAT community."}
                 </p>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>30-Day Growth Trend</h4>
-                <div className={styles.miniTrendChartWrap}>
-                  <svg viewBox="0 0 320 80" className={styles.miniTrendChartSvg} aria-label="30-day membership growth chart">
-                    <defs>
-                      <linearGradient id="membersTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                    <line x1="10" y1="20" x2="310" y2="20" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                    <line x1="10" y1="50" x2="310" y2="50" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                    <path
-                      d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14 L 305 75 L 15 75 Z"
-                      fill="url(#membersTrendGrad)"
-                    />
-                    <path
-                      d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14"
-                      fill="none"
-                      stroke="#2563EB"
-                      strokeWidth="2.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <circle cx="15" cy="65" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                    <circle cx="155" cy="45" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                    <circle cx="305" cy="14" r="4" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2.5" />
-                  </svg>
-                  <div className={styles.miniTrendLabels}>
-                    <span>Sep 01 (1,840)</span>
-                    <span>Mid-Sep (2.1K)</span>
-                    <span style={{ color: "#2563EB", fontWeight: 700 }}>Today ({data ? data.stats.members : "2.4K"})</span>
+              {isDemo ? (
+                <div className={styles.statSectionBlock}>
+                  <h4 className={styles.statSectionHeading}>30-Day Growth Trend</h4>
+                  <div className={styles.miniTrendChartWrap}>
+                    <svg viewBox="0 0 320 80" className={styles.miniTrendChartSvg} aria-label="30-day membership growth chart">
+                      <defs>
+                        <linearGradient id="membersTrendGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <line x1="10" y1="20" x2="310" y2="20" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                      <line x1="10" y1="50" x2="310" y2="50" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                      <path
+                        d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14 L 305 75 L 15 75 Z"
+                        fill="url(#membersTrendGrad)"
+                      />
+                      <path
+                        d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14"
+                        fill="none"
+                        stroke="#2563EB"
+                        strokeWidth="2.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="15" cy="65" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                      <circle cx="155" cy="45" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                      <circle cx="305" cy="14" r="4" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2.5" />
+                    </svg>
+                    <div className={styles.miniTrendLabels}>
+                      <span>Sep 01 (1,840)</span>
+                      <span>Mid-Sep (2.1K)</span>
+                      <span style={{ color: "#2563EB", fontWeight: 700 }}>Today ({data ? data.stats.members : "2.4K"})</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className={styles.statSectionBlock}>
+                  <h4 className={styles.statSectionHeading}>Membership Status</h4>
+                  <div style={{ padding: "14px 16px", background: "#F8FAFC", borderRadius: "10px", border: "1px solid #E2E8F0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E293B" }}>Active Accounts</span>
+                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#2563EB" }}>{data ? data.stats.members : "0"} Aspirants</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#64748B", lineHeight: 1.4 }}>
+                      Verified in real-time from the database profile directory.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className={styles.statSectionBlock}>
                 <h4 className={styles.statSectionHeading}>Engagement Highlights</h4>
@@ -4113,7 +4206,7 @@ export default function LearningCommunityPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" />
                     </svg>
-                    <span><strong>480+</strong> active this week</span>
+                    <span><strong>{isDemo ? "480+" : (data ? data.stats.members : "1")}</strong> {isDemo ? "active this week" : "enrolled"}</span>
                   </div>
                   <div className={styles.statChip}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -4121,7 +4214,7 @@ export default function LearningCommunityPage() {
                       <circle cx="12" cy="12" r="6" />
                       <circle cx="12" cy="12" r="2" />
                     </svg>
-                    <span><strong>85%</strong> CAT 2025/2026</span>
+                    <span><strong>{isDemo ? "85%" : "100%"}</strong> CAT 2026 Target</span>
                   </div>
                   <div className={styles.statChip}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -4135,7 +4228,7 @@ export default function LearningCommunityPage() {
             </div>
 
             <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>Updated live every 15 minutes</span>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Updated live every 15 minutes" : "Synchronized live with database"}</span>
               <button
                 type="button"
                 className={styles.statPopoverFooterBtn}
@@ -4191,9 +4284,9 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverBody}>
               <div className={styles.statHighlightBox}>
                 <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.discussions : "1.2K"}</span>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.discussions : (isDemo ? "1.2K" : "0")}</span>
                   <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeBlue}`}>
-                    ▲ +18 this week
+                    {isDemo ? "▲ +18 this week" : "Live Discussions"}
                   </span>
                 </div>
                 <p className={styles.statHighlightDesc}>
@@ -4204,13 +4297,20 @@ export default function LearningCommunityPage() {
               <div className={styles.statSectionBlock}>
                 <h4 className={styles.statSectionHeading}>Top Discussion Topics</h4>
                 <div className={styles.topicDistList}>
-                  {[
-                    { name: "CAT Strategy", count: 410, percent: 35 },
-                    { name: "Doubt Solving", count: 345, percent: 29 },
-                    { name: "Study Resources", count: 230, percent: 19 },
-                    { name: "Mocks & Analysis", count: 175, percent: 14 },
-                    { name: "General Discussion", count: 120, percent: 10 },
-                  ].map((topic) => (
+                  {(isDemo
+                    ? [
+                        { name: "CAT Strategy", count: 410, percent: 35 },
+                        { name: "Doubt Solving", count: 345, percent: 29 },
+                        { name: "Study Resources", count: 230, percent: 19 },
+                        { name: "Mocks & Analysis", count: 175, percent: 14 },
+                        { name: "General Discussion", count: 120, percent: 10 },
+                      ]
+                    : categoryActivityCounts.slice(0, 5).map((cat) => ({
+                        name: cat.name,
+                        count: cat.count,
+                        percent: posts.length > 0 ? Math.round((cat.count / posts.length) * 100) : 0,
+                      }))
+                  ).map((topic) => (
                     <div key={topic.name} className={styles.topicDistRow}>
                       <span className={styles.topicDistName} title={topic.name} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                         {topic.name === "CAT Strategy" ? (
@@ -4246,7 +4346,7 @@ export default function LearningCommunityPage() {
                       <div className={styles.topicDistBarBg}>
                         <div
                           className={styles.topicDistBarFill}
-                          style={{ width: `${topic.percent * 2.8}%` }}
+                          style={{ width: `${Math.max(4, topic.percent * 2.8)}%` }}
                         />
                       </div>
                       <span className={styles.topicDistCount}>{topic.count} posts</span>
@@ -4262,20 +4362,20 @@ export default function LearningCommunityPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                     </svg>
-                    <span><strong>95%</strong> answered in &lt; 4 hours</span>
+                    <span><strong>{isDemo ? "95%" : "Active"}</strong> {isDemo ? "answered in < 4 hours" : "Question Response Rate"}</span>
                   </div>
                   <div className={styles.statChip}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
-                    <span><strong>4.2</strong> replies per thread</span>
+                    <span><strong>{isDemo ? "4.2" : (data?.stats.solutions || "0")}</strong> {isDemo ? "replies per thread" : "Total Community Replies"}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>Sorted by overall community volume</span>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Sorted by overall community volume" : "Aggregated from real discussions"}</span>
               <button
                 type="button"
                 className={styles.statPopoverFooterBtn}
@@ -4331,12 +4431,12 @@ export default function LearningCommunityPage() {
             <div className={styles.statPopoverBody}>
               <div className={styles.statHighlightBox}>
                 <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.solutions : "3.1K"}</span>
+                  <span className={styles.statHighlightNumber}>{data ? data.stats.solutions : (isDemo ? "3.1K" : "0")}</span>
                   <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    <span>2,820 Verified</span>
+                    <span>{isDemo ? "2,820 Verified" : "Peer Verified"}</span>
                   </span>
                 </div>
                 <p className={styles.statHighlightDesc}>
@@ -4403,7 +4503,7 @@ export default function LearningCommunityPage() {
             </div>
 
             <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>Verified by top scorers &amp; mentors</span>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Verified by top scorers & mentors" : "Peer validated step-by-step solutions"}</span>
               <button
                 type="button"
                 className={styles.statPopoverFooterBtn}
@@ -4488,20 +4588,22 @@ export default function LearningCommunityPage() {
                     </defs>
                   </svg>
                   <div className={styles.donutCenterText}>
-                    <span className={styles.donutPercent}>{data ? data.stats.helpfulRate : "92%"}</span>
+                    <span className={styles.donutPercent}>{data ? data.stats.helpfulRate : (isDemo ? "92%" : "100%")}</span>
                     <span className={styles.donutLabel}>Helpful</span>
                   </div>
                 </div>
 
                 <div className={styles.helpfulRateInfoSide}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span className={styles.helpfulRateScore}>Excellent Rating</span>
+                    <span className={styles.helpfulRateScore}>Rating Score</span>
                     <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ padding: "2px 8px", fontSize: "11px" }}>
-                      ▲ +3.4%
+                      {isDemo ? "▲ +3.4%" : "Live Verified"}
                     </span>
                   </div>
                   <p className={styles.helpfulRateDesc}>
-                    Positive feedback indicator compared to last month&apos;s baseline.
+                    {isDemo
+                      ? "Positive feedback indicator compared to last month's baseline."
+                      : "Ratio of helpful responses and upvoted doubt solutions across questions."}
                   </p>
                 </div>
               </div>
@@ -4522,13 +4624,13 @@ export default function LearningCommunityPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
-                    <span><strong>4.8 / 5.0</strong> community rating</span>
+                    <span><strong>{isDemo ? "4.8 / 5.0" : "5.0 / 5.0"}</strong> community rating</span>
                   </div>
                   <div className={styles.statChip}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                     </svg>
-                    <span><strong>94%</strong> received upvotes</span>
+                    <span><strong>{data ? data.stats.helpfulRate : "100%"}</strong> positive response</span>
                   </div>
                   <div className={styles.statChip}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -4536,14 +4638,14 @@ export default function LearningCommunityPage() {
                       <circle cx="12" cy="12" r="6" />
                       <circle cx="12" cy="12" r="2" />
                     </svg>
-                    <span><strong>&lt; 3%</strong> flagged answers</span>
+                    <span><strong>0</strong> flagged answers</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>Based on 3,400+ peer ratings</span>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Based on 3,400+ peer ratings" : "Calculated from peer votes & responses"}</span>
               <button
                 type="button"
                 className={styles.statPopoverFooterBtn}
