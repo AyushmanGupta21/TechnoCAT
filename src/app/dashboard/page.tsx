@@ -233,11 +233,10 @@ export default function DashboardPage() {
     ];
   }, []);
 
-  // Calendar indicator dots — derived from real DB tasks + enrolled topics
+  // Calendar indicator dots — derived 100% from real DB tasks
   const taskCategoryMap = useMemo(() => {
     const map: Record<number, Array<"QA" | "DILR" | "VARC" | "Mock">> = {};
 
-    // 1. Dots from real DB tasks (manually-added, with category inferred from title)
     scheduleTasks.forEach((t) => {
       const taskMonth = t.monthIndex !== undefined ? t.monthIndex : selectedMonthIndex;
       const taskYear = t.year !== undefined ? t.year : selectedYear;
@@ -248,33 +247,8 @@ export default function DashboardPage() {
       }
     });
 
-    // 2. Dots from enrolled topics — show a realistic study pattern across the month
-    //    so the calendar reflects what the user is enrolled in even without manual tasks
-    const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
-    const today = new Date();
-    const isFutureMonth =
-      selectedYear > today.getFullYear() ||
-      (selectedYear === today.getFullYear() && selectedMonthIndex > today.getMonth());
-
-    enrolledTopicsList.forEach((topicId, topicIdx) => {
-      let cat: "QA" | "DILR" | "VARC" | "Mock" = "QA";
-      if (topicId.includes("dilr") || topicId.includes("data")) cat = "DILR";
-      else if (topicId.includes("varc") || topicId.includes("verbal")) cat = "VARC";
-
-      // Offset pattern per topic so dots spread across different days
-      const offset = topicIdx % 3; // 0, 1, 2 → different days
-      for (let day = 1 + offset; day <= daysInMonth; day += 2) {
-        // For current/past months: only show up to today; for future: show all
-        const cutoff = isFutureMonth ? daysInMonth : today.getDate() + 14;
-        if (day <= cutoff) {
-          if (!map[day]) map[day] = [];
-          if (!map[day].includes(cat)) map[day].push(cat);
-        }
-      }
-    });
-
     return map;
-  }, [scheduleTasks, enrolledTopicsList, selectedMonthIndex, selectedYear]);
+  }, [scheduleTasks, selectedMonthIndex, selectedYear]);
 
   const handleToggleTask = (id: string) => {
     // Only allow toggling tasks for today

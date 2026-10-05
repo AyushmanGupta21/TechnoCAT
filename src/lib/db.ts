@@ -378,20 +378,9 @@ export async function getDashboardData(userId: string) {
   };
 }
 
-// ── Automatic Curriculum Task Population ──
+// ── Automatic Curriculum Task Population (Continuous 30-Day Rolling Window) ──
 export async function ensureCurriculumTasksForUser(userId: string, enrolledTopics: string[]) {
   try {
-    // Check if the user already has curriculum tasks for October 2026
-    const countCheck = await query(
-      `SELECT count(*) FROM public.study_tasks 
-       WHERE user_id = $1 AND task_date >= '2026-10-01' AND task_date <= '2026-10-31'`,
-      [userId]
-    );
-    const existingCount = parseInt(countCheck.rows[0]?.count || "0", 10);
-    if (existingCount >= 5) {
-      return; // Already populated
-    }
-
     const topicsToSchedule = enrolledTopics.length > 0
       ? enrolledTopics
       : ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
@@ -400,33 +389,88 @@ export async function ensureCurriculumTasksForUser(userId: string, enrolledTopic
     const isEnrolledDILR = topicsToSchedule.some(t => t.includes("dilr") || t.includes("data"));
     const isEnrolledVARC = topicsToSchedule.some(t => t.includes("varc") || t.includes("verbal"));
 
-    // Filter October tasks matching enrolled subjects
-    const matchingTasks = CURRICULUM_TASKS_TEMPLATE.filter((t) => {
-      if (t.monthIndex !== 9 || t.year !== 2026) return false;
-      if (t.category === "QA" && !isEnrolledQA) return false;
-      if (t.category === "DILR" && !isEnrolledDILR) return false;
-      if (t.category === "VARC" && !isEnrolledVARC) return false;
-      return true;
-    });
+    // Rolling 30-day window: starts at 1st of current month up through (today + 30 days)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const todayDay = now.getDate();
 
-    for (const t of matchingTasks) {
-      const taskDate = `2026-10-${String(t.day).padStart(2, "0")}`;
-      await query(
-        `INSERT INTO public.study_tasks 
-         (user_id, title, task_date, is_completed, category, code, time_range, duration, subtitle)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          userId,
-          t.title,
-          taskDate,
-          t.isCompleted,
-          t.category,
-          t.code,
-          t.timeRange,
-          t.duration,
-          t.subtitle,
-        ]
-      ).catch(() => {});
+    const startDate = new Date(currentYear, currentMonth, 1); // 1st of current month (e.g. Oct 1)
+    const todayDate = new Date(currentYear, currentMonth, todayDay);
+    const rollingEndDate = new Date(currentYear, currentMonth, todayDay + 30); // 30-day rolling window
+
+    const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-01`;
+    const rollingEndStr = `${rollingEndDate.getFullYear()}-${String(rollingEndDate.getMonth() + 1).padStart(2, "0")}-${String(rollingEndDate.getDate()).padStart(2, "0")}`;
+    const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+
+    // Fetch existing task dates for this user in this rolling window range
+    const existingDatesRes = await query(
+      `SELECT DISTINCT task_date::text as task_date 
+       FROM public.study_tasks 
+       WHERE user_id = $1 AND task_date >= $2 AND task_date <= $3`,
+      [userId, startDateStr, rollingEndStr]
+    );
+
+    const existingDateSet = new Set(existingDatesRes.rows.map((r: any) => r.task_date));
+
+    // Iterate through every single day in the continuous range [startDate, rollingEndDate]
+    const cur = new Date(startDate);
+    while (cur <= rollingEndDate) {
+      const curYear = cur.getFullYear();
+      const curMonth = cur.getMonth(); // 0-indexed (9 for Oct, 10 for Nov)
+      const curDay = cur.getDate();
+      const curDateStr = `${curYear}-${String(curMonth + 1).padStart(2, "0")}-${String(curDay).padStart(2, "0")}`;
+
+      // If this date is NOT yet populated, assign from curriculum template
+      if (!existingDateSet.has(curDateStr)) {
+        let templateMatches = CURRICULUM_TASKS_TEMPLATE.filter(
+          (t) => t.monthIndex === curMonth && t.day === curDay && t.year === curYear
+        );
+
+        // Fallback: If template is keyed by general day, match day and appropriate month
+        if (templateMatches.length === 0) {
+          templateMatches = CURRICULUM_TASKS_TEMPLATE.filter(
+            (t) => t.day === curDay && (t.monthIndex === curMonth || t.monthIndex === 9 || t.monthIndex === 10)
+          );
+        }
+
+        // Filter by enrolled categories
+        const filteredMatches = templateMatches.filter((t) => {
+          if (t.category === "QA" && !isEnrolledQA) return false;
+          if (t.category === "DILR" && !isEnrolledDILR) return false;
+          if (t.category === "VARC" && !isEnrolledVARC) return false;
+          return true;
+        });
+
+        // Insert tasks for this date
+        for (const t of filteredMatches) {
+          // Status: Day 1 of month marked completed; other past days uncompleted (overdue backlog); today & future uncompleted
+          let isCompleted = false;
+          if (curDateStr < todayStr && curDay === 1) {
+            isCompleted = true;
+          }
+
+          await query(
+            `INSERT INTO public.study_tasks 
+             (user_id, title, task_date, is_completed, category, code, time_range, duration, subtitle)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [
+              userId,
+              t.title,
+              curDateStr,
+              isCompleted,
+              t.category,
+              t.code,
+              t.timeRange,
+              t.duration,
+              t.subtitle,
+            ]
+          ).catch(() => {});
+        }
+      }
+
+      // Increment by 1 day
+      cur.setDate(cur.getDate() + 1);
     }
   } catch (err) {
     console.error("[ensureCurriculumTasksForUser Error]", err);

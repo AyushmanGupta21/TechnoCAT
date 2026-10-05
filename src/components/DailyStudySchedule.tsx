@@ -90,6 +90,8 @@ export default function DailyStudySchedule({
   const isPast = selectedDateVal < todayDateVal;
   const isWithinRollingWindow = selectedDateVal >= todayDateVal && selectedDateVal <= maxRollingDateVal;
   const isBeyondRollingWindow = selectedDateVal > maxRollingDateVal;
+  const maxRollingMonthName = months[maxRollingDate.getMonth()] || "November";
+  const maxRollingDay = maxRollingDate.getDate();
 
   // 1. Current day's regular curriculum topics
   const currentDayTasks = useMemo(() => {
@@ -680,7 +682,7 @@ export default function DailyStudySchedule({
             </div>
             <h3 className={styles.autoPlanTitle}>Upcoming Task Scheduler</h3>
             <p className={styles.autoPlanDesc}>
-              Dynamic study tasks are assigned for a 1-month rolling window (currently scheduled through October 10). As each day passes from today to tomorrow, tasks for <strong>{monthName} {selectedDay}</strong> will be automatically scheduled one-by-one based on your enrolled syllabus.
+              Dynamic study tasks are assigned for a 1-month rolling window (currently scheduled through {maxRollingMonthName} {maxRollingDay}). As each day passes from today to tomorrow, tasks for <strong>{monthName} {selectedDay}</strong> will be automatically scheduled one-by-one based on your enrolled syllabus.
             </p>
             <button
               type="button"
