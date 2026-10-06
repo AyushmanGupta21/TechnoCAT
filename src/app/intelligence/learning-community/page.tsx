@@ -1516,7 +1516,16 @@ export default function LearningCommunityPage() {
   const handleReportPost = async (postId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setOpenMenuPostId(null);
+    const targetPost = (data?.posts || []).find((p) => p.id === postId);
+    if (targetPost?.isOwnPost) {
+      showToast("You cannot report your own discussion.");
+      return;
+    }
     const res = await reportCommunityPostAction(postId);
+    if (res?.error) {
+      showToast(res.error);
+      return;
+    }
     if (res?.autoDeleted && res?.payload) {
       setData(res.payload);
       if (activePostId === postId) {
@@ -2693,17 +2702,19 @@ export default function LearningCommunityPage() {
                                 </svg>
                                 <span>{post.isSaved ? "Unsave" : "Save"}</span>
                               </button>
-                              <button
-                                type="button"
-                                className={styles.dropdownItem}
-                                onClick={(e) => handleReportPost(post.id, e)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                                  <line x1="4" y1="22" x2="4" y2="15" />
-                                </svg>
-                                <span>Report</span>
-                              </button>
+                              {!post.isOwnPost && (
+                                <button
+                                  type="button"
+                                  className={styles.dropdownItem}
+                                  onClick={(e) => handleReportPost(post.id, e)}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                    <line x1="4" y1="22" x2="4" y2="15" />
+                                  </svg>
+                                  <span>Report</span>
+                                </button>
+                              )}
                               {post.isOwnPost && (
                                 <button
                                   type="button"
@@ -3464,7 +3475,7 @@ export default function LearningCommunityPage() {
                   </button>
                 </div>
 
-                {activePost.isOwnPost && (
+                {activePost.isOwnPost ? (
                   <button
                     type="button"
                     className={`${styles.actionMetricBtn} ${styles.dropdownItemDanger}`}
@@ -3475,6 +3486,19 @@ export default function LearningCommunityPage() {
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                     </svg>
                     <span>Delete Post</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.actionMetricBtn}
+                    onClick={(e) => handleReportPost(activePost.id, e)}
+                    title="Report discussion"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                      <line x1="4" y1="22" x2="4" y2="15" />
+                    </svg>
+                    <span>Report</span>
                   </button>
                 )}
               </div>

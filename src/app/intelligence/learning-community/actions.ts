@@ -888,12 +888,23 @@ export async function deleteCommunityPostAction(postId: string): Promise<{
 
 export async function reportCommunityPostAction(postId: string, reason?: string): Promise<{
   success: boolean;
+  error?: string;
   autoDeleted?: boolean;
   payload?: CommunityPayload;
 }> {
   try {
     await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
+
+    const pInfo = await query(`SELECT title, author_id FROM public.community_posts WHERE id = $1`, [postId]);
+    if (pInfo.rows.length === 0) {
+      return { success: false, error: "Discussion not found or already removed." };
+    }
+
+    if (String(pInfo.rows[0].author_id) === user.id) {
+      return { success: false, error: "You cannot report your own discussion." };
+    }
+
     await query(
       `INSERT INTO public.community_reports (post_id, user_id, reason) VALUES ($1, $2, $3)`,
       [postId, user.id, reason || "Flagged by community member"]
@@ -908,27 +919,24 @@ export async function reportCommunityPostAction(postId: string, reason?: string)
 
     // Auto-delete if reported by 2 or more distinct members
     if (count >= 2) {
-      const pInfo = await query(`SELECT title, author_id FROM public.community_posts WHERE id = $1`, [postId]);
-      if (pInfo.rows.length > 0) {
-        await query(
-          `INSERT INTO public.community_moderation_logs (post_id, author_id, reason, violating_snippet, action_taken)
-           VALUES ($1, $2, $3, $4, 'auto_deleted_community_reports')`,
-          [
-            postId,
-            pInfo.rows[0].author_id,
-            `Auto-deleted after ${count} community reports (${reason || "Flagged"})`,
-            String(pInfo.rows[0].title).slice(0, 100),
-          ]
-        ).catch(() => {});
-      }
+      await query(
+        `INSERT INTO public.community_moderation_logs (post_id, author_id, reason, violating_snippet, action_taken)
+         VALUES ($1, $2, $3, $4, 'auto_deleted_community_reports')`,
+        [
+          postId,
+          pInfo.rows[0].author_id,
+          `Auto-deleted after ${count} community reports (${reason || "Flagged"})`,
+          String(pInfo.rows[0].title).slice(0, 100),
+        ]
+      ).catch(() => {});
       await query(`DELETE FROM public.community_posts WHERE id = $1`, [postId]);
       const payload = await getCommunityDataAction();
       return { success: true, autoDeleted: true, payload };
     }
 
     return { success: true, autoDeleted: false };
-  } catch (err) {
+  } catch (err: any) {
     console.error("[reportCommunityPostAction Error]", err);
-    return { success: false };
+    return { success: false, error: err?.message || "Failed to submit report." };
   }
 }
