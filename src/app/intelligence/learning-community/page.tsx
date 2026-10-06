@@ -417,7 +417,7 @@ export default function LearningCommunityPage() {
   const cleanCommunityAvatar = sanitizeAvatarUrl(user?.avatarUrl || data?.currentUser.avatarUrl);
   const currentUserAvatarUrl = isGuest
     ? "/community/avatar-user.png"
-    : cleanCommunityAvatar;
+    : cleanCommunityAvatar || "/profile_icon.png";
 
   const currentUserInitials = useMemo(() => {
     if (isGuest || !currentUserName) return "ST";
@@ -1812,6 +1812,9 @@ export default function LearningCommunityPage() {
                       src={currentUserAvatarUrl}
                       alt={currentUserName}
                       className={styles.sidebarUserAvatarImg}
+                      onError={(e) => {
+                        e.currentTarget.src = "/profile_icon.png";
+                      }}
                     />
                   ) : (
                     <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
@@ -2088,6 +2091,9 @@ export default function LearningCommunityPage() {
                     src={currentUserAvatarUrl}
                     alt={currentUserName}
                     className={styles.sidebarUserAvatarImg}
+                    onError={(e) => {
+                      e.currentTarget.src = "/profile_icon.png";
+                    }}
                   />
                 ) : (
                   <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
@@ -2116,6 +2122,9 @@ export default function LearningCommunityPage() {
                       src={currentUserAvatarUrl}
                       alt={currentUserName}
                       className={styles.userAvatarImg}
+                      onError={(e) => {
+                        e.currentTarget.src = "/profile_icon.png";
+                      }}
                     />
                   ) : (
                     <span style={{ fontSize: "14px", fontWeight: 700, color: "#2563EB" }}>
@@ -2621,7 +2630,7 @@ export default function LearningCommunityPage() {
             ) : (
               <div className={styles.postsList}>
                 {visiblePosts.map((post) => {
-                  const avatarSrc = getAuthorAvatar(post.authorName) || post.authorAvatar;
+                  const avatarSrc = getAuthorAvatar(post.authorName) || post.authorAvatar || "/profile_icon.png";
                   return (
                     <article
                       key={post.id}
@@ -2634,15 +2643,14 @@ export default function LearningCommunityPage() {
                       <div className={styles.postHeaderRow}>
                         <div className={styles.postAuthorMeta}>
                           <div className={styles.userAvatarCircle}>
-                            {avatarSrc ? (
-                              <img
-                                src={avatarSrc}
-                                alt={post.authorName}
-                                className={styles.userAvatarImg}
-                              />
-                            ) : (
-                              getInitials(post.authorName)
-                            )}
+                            <img
+                              src={avatarSrc}
+                              alt={post.authorName}
+                              className={styles.userAvatarImg}
+                              onError={(e) => {
+                                e.currentTarget.src = "/profile_icon.png";
+                              }}
+                            />
                           </div>
                           <div className={styles.authorMetaStack}>
                             <div className={styles.authorNameAndBadgeRow}>
@@ -2935,7 +2943,7 @@ export default function LearningCommunityPage() {
                   </div>
                 ) : (
                   topContributorsList.map((contributor) => {
-                    const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                    const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
                     return (
                       <div key={contributor.authorId} className={styles.contributorRow}>
                         <div className={styles.contributorLeft}>
@@ -2950,15 +2958,14 @@ export default function LearningCommunityPage() {
                           )}
 
                           <div className={styles.contributorAvatar}>
-                            {avatarSrc ? (
-                              <img
-                                src={avatarSrc}
-                                alt={contributor.authorName}
-                                className={styles.userAvatarImg}
-                              />
-                            ) : (
-                              getInitials(contributor.authorName)
-                            )}
+                            <img
+                              src={avatarSrc}
+                              alt={contributor.authorName}
+                              className={styles.userAvatarImg}
+                              onError={(e) => {
+                                e.currentTarget.src = "/profile_icon.png";
+                              }}
+                            />
                           </div>
 
                           <div className={styles.contributorInfoStack}>
@@ -3372,15 +3379,14 @@ export default function LearningCommunityPage() {
             <div className={styles.modalHeader}>
               <div className={styles.postAuthorMeta}>
                 <div className={styles.userAvatarCircle}>
-                  {getAuthorAvatar(activePost.authorName) || activePost.authorAvatar ? (
-                    <img
-                      src={getAuthorAvatar(activePost.authorName) || activePost.authorAvatar!}
-                      alt={activePost.authorName}
-                      className={styles.userAvatarImg}
-                    />
-                  ) : (
-                    getInitials(activePost.authorName)
-                  )}
+                  <img
+                    src={getAuthorAvatar(activePost.authorName) || activePost.authorAvatar || "/profile_icon.png"}
+                    alt={activePost.authorName}
+                    className={styles.userAvatarImg}
+                    onError={(e) => {
+                      e.currentTarget.src = "/profile_icon.png";
+                    }}
+                  />
                 </div>
                 <div>
                   <div className={styles.authorNameRow}>
@@ -3509,7 +3515,7 @@ export default function LearningCommunityPage() {
                 <div className={styles.commentsThreadList}>
                   {rootComments.map((comment) => {
                     const replies = getRepliesForComment(comment.id);
-                    const commentAvatar = getAuthorAvatar(comment.authorName) || comment.authorAvatar;
+                    const commentAvatar = getAuthorAvatar(comment.authorName) || comment.authorAvatar || "/profile_icon.png";
                     return (
                       <div key={comment.id} className={styles.commentCard}>
                         <div className={styles.postAuthorMeta}>
@@ -3517,15 +3523,14 @@ export default function LearningCommunityPage() {
                             className={styles.userAvatarCircle}
                             style={{ width: "32px", height: "32px", fontSize: "12px" }}
                           >
-                            {commentAvatar ? (
-                              <img
-                                src={commentAvatar}
-                                alt={comment.authorName}
-                                className={styles.userAvatarImg}
-                              />
-                            ) : (
-                              getInitials(comment.authorName)
-                            )}
+                            <img
+                              src={commentAvatar}
+                              alt={comment.authorName}
+                              className={styles.userAvatarImg}
+                              onError={(e) => {
+                                e.currentTarget.src = "/profile_icon.png";
+                              }}
+                            />
                           </div>
                           <div>
                             <div className={styles.authorNameRow}>
@@ -3581,7 +3586,7 @@ export default function LearningCommunityPage() {
                         {replies.length > 0 && (
                           <div className={styles.nestedRepliesList}>
                             {replies.map((rep) => {
-                              const repAvatar = getAuthorAvatar(rep.authorName) || rep.authorAvatar;
+                              const repAvatar = getAuthorAvatar(rep.authorName) || rep.authorAvatar || "/profile_icon.png";
                               return (
                                 <div key={rep.id} className={styles.nestedReplyCard}>
                                   <div className={styles.postAuthorMeta} style={{ marginBottom: "4px" }}>
@@ -3589,15 +3594,14 @@ export default function LearningCommunityPage() {
                                       className={styles.userAvatarCircle}
                                       style={{ width: "26px", height: "26px", fontSize: "10px" }}
                                     >
-                                      {repAvatar ? (
-                                        <img
-                                          src={repAvatar}
-                                          alt={rep.authorName}
-                                          className={styles.userAvatarImg}
-                                        />
-                                      ) : (
-                                        getInitials(rep.authorName)
-                                      )}
+                                      <img
+                                        src={repAvatar}
+                                        alt={rep.authorName}
+                                        className={styles.userAvatarImg}
+                                        onError={(e) => {
+                                          e.currentTarget.src = "/profile_icon.png";
+                                        }}
+                                      />
                                     </div>
                                     <div className={styles.authorNameRow}>
                                       <span className={styles.authorName} style={{ fontSize: "12.5px" }}>
@@ -3717,7 +3721,7 @@ export default function LearningCommunityPage() {
                 ) : (
                   topContributorsList.map((contributor) => {
                     const avatarSrc =
-                      getAuthorAvatar(contributor.authorName) || contributor.authorAvatar;
+                      getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
                     const rankClass =
                       contributor.rank === 1
                         ? styles.contributorCardGold
@@ -3761,17 +3765,14 @@ export default function LearningCommunityPage() {
 
                         {/* Avatar */}
                         <div className={styles.contributorDrawerAvatarWrap}>
-                          {avatarSrc ? (
-                            <img
-                              src={avatarSrc}
-                              alt={contributor.authorName}
-                              className={styles.contributorDrawerAvatarImg}
-                            />
-                          ) : (
-                            <span className={styles.contributorDrawerAvatarFallback}>
-                              {getInitials(contributor.authorName)}
-                            </span>
-                          )}
+                          <img
+                            src={avatarSrc}
+                            alt={contributor.authorName}
+                            className={styles.contributorDrawerAvatarImg}
+                            onError={(e) => {
+                              e.currentTarget.src = "/profile_icon.png";
+                            }}
+                          />
                         </div>
 
                         {/* Info Stack */}

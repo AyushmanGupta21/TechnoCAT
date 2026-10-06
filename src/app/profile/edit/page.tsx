@@ -5,6 +5,7 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { DEFAULT_PROFILE_ICON } from "@/lib/nameUtils";
 import styles from "./edit-profile.module.css";
 
 const navLinks = [
@@ -77,14 +78,14 @@ export default function EditProfilePage() {
     }
   }, [user, isDemo]);
 
-  // Derived user initials for avatar fallback
-  const userInitials = useMemo(() => {
-    const fn = firstName.trim();
-    const ln = lastName.trim();
-    if (fn && ln) return (fn[0] + ln[0]).toUpperCase();
-    if (fn) return fn.slice(0, 2).toUpperCase();
-    return "TC";
-  }, [firstName, lastName]);
+  const isCustomAvatar = useMemo(() => {
+    if (!avatarPreview) return false;
+    if (avatarPreview === DEFAULT_PROFILE_ICON) return false;
+    if (avatarPreview.includes("photo-1494790108377")) return false;
+    return true;
+  }, [avatarPreview]);
+
+  const displayedAvatar = isCustomAvatar ? avatarPreview : DEFAULT_PROFILE_ICON;
 
   const fullNameDisplay = useMemo(() => {
     const combined = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -133,7 +134,7 @@ export default function EditProfilePage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    setFeedback({ type: "success", message: "Profile picture set to initials avatar. Click Save Changes to confirm." });
+    setFeedback({ type: "success", message: "Profile picture reset to default profile icon. Click Save Changes to confirm." });
   };
 
   const handleSaveChanges = async (e: React.FormEvent) => {
@@ -154,7 +155,7 @@ export default function EditProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: fullTrimmedName,
-          avatarUrl: avatarPreview || null,
+          avatarUrl: isCustomAvatar ? avatarPreview : null,
           phone,
           targetYear,
           dreamSchool,
@@ -177,7 +178,7 @@ export default function EditProfilePage() {
       // Update AuthContext so navbar, user badge, and all pages re-render immediately
       updateUser?.({
         fullName: fullTrimmedName,
-        avatarUrl: avatarPreview || undefined,
+        avatarUrl: isCustomAvatar ? avatarPreview : undefined,
         phone,
         targetYear,
         dreamSchool,
@@ -186,7 +187,7 @@ export default function EditProfilePage() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent("technocat_profile_updated", {
-            detail: { fullName: fullTrimmedName, avatarUrl: avatarPreview },
+            detail: { fullName: fullTrimmedName, avatarUrl: isCustomAvatar ? avatarPreview : null },
           })
         );
       }
@@ -276,12 +277,15 @@ export default function EditProfilePage() {
           {/* Left Column: Profile Card */}
           <aside className={styles.sidebarCard}>
             <div className={styles.sidebarAvatarWrap}>
-              {avatarPreview ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={avatarPreview} alt={fullNameDisplay} className={styles.sidebarAvatar} />
-              ) : (
-                <div className={styles.sidebarAvatarFallback}>{userInitials}</div>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayedAvatar}
+                alt={fullNameDisplay}
+                className={styles.sidebarAvatar}
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_PROFILE_ICON;
+                }}
+              />
               <span className={styles.sidebarStatusBadge} title="Active Status" />
             </div>
 
@@ -419,12 +423,15 @@ export default function EditProfilePage() {
 
                 <div className={styles.avatarUploadRow}>
                   <div className={styles.avatarPreviewContainer}>
-                    {avatarPreview ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={avatarPreview} alt="Avatar Preview" className={styles.avatarImage} />
-                    ) : (
-                      <div className={styles.avatarFallback}>{userInitials}</div>
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={displayedAvatar}
+                      alt="Avatar Preview"
+                      className={styles.avatarImage}
+                      onError={(e) => {
+                        e.currentTarget.src = DEFAULT_PROFILE_ICON;
+                      }}
+                    />
                   </div>
 
                   <input
@@ -447,10 +454,10 @@ export default function EditProfilePage() {
                           <polyline points="17 8 12 3 7 8" />
                           <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
-                        {avatarPreview ? "Upload New Photo" : "Upload Photo"}
+                        {isCustomAvatar ? "Upload New Photo" : "Upload Photo"}
                       </button>
 
-                      {avatarPreview && (
+                      {isCustomAvatar && (
                         <button type="button" onClick={handleRemovePhoto} className={styles.removeBtn}>
                           Remove Photo
                         </button>

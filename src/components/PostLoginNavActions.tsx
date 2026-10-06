@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./PostLoginNavActions.module.css";
 import { useAuth } from "@/context/AuthContext";
-import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
+import { resolveStudentName, resolveUserAvatarUrl } from "@/lib/nameUtils";
 import { createPortal } from "react-dom";
 import {
   NotificationItem,
@@ -162,17 +162,8 @@ export default function PostLoginNavActions() {
   const displayName = resolveStudentName(user?.fullName, user?.email);
   const firstName = displayName.split(" ")[0] || displayName;
 
-  const userInitials = useMemo(() => {
-    if (!displayName) return "ST";
-    const parts = displayName.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].slice(0, Math.min(2, parts[0].length)).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }, [displayName]);
-
-  // Only show custom avatar if explicitly uploaded by the user, never show hardcoded mock photo
-  const cleanAvatarUrl = sanitizeAvatarUrl(user?.avatarUrl);
-  const showCustomImageAvatar = Boolean(cleanAvatarUrl);
-  const userAvatarUrl = cleanAvatarUrl || undefined;
+  // Default profile icon is /profile_icon.png, replaced by custom photo if provided by user
+  const userAvatarUrl = resolveUserAvatarUrl(user?.avatarUrl);
 
   const userRole = user?.role
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
@@ -243,18 +234,15 @@ export default function PostLoginNavActions() {
           className={styles.userPill}
           onClick={() => setIsProfileOpen(!isProfileOpen)}
         >
-          {showCustomImageAvatar ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={userAvatarUrl}
-              alt={displayName}
-              className={styles.userAvatar}
-            />
-          ) : (
-            <div className={styles.avatarInitials} aria-hidden="true">
-              {userInitials}
-            </div>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={userAvatarUrl}
+            alt={displayName}
+            className={styles.userAvatar}
+            onError={(e) => {
+              e.currentTarget.src = "/profile_icon.png";
+            }}
+          />
           <div className={styles.userInfo}>
             <span className={styles.userName}>{firstName}</span>
             <span className={styles.userRole}>{userRole}</span>
@@ -277,18 +265,15 @@ export default function PostLoginNavActions() {
         {isProfileOpen && (
           <div className={styles.profileDropdown}>
             <div className={styles.dropdownHeader}>
-              {showCustomImageAvatar ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={userAvatarUrl}
-                  alt="Profile"
-                  className={styles.dropdownHeaderAvatar}
-                />
-              ) : (
-                <div className={styles.dropdownHeaderInitials} aria-hidden="true">
-                  {userInitials}
-                </div>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={userAvatarUrl}
+                alt="Profile"
+                className={styles.dropdownHeaderAvatar}
+                onError={(e) => {
+                  e.currentTarget.src = "/profile_icon.png";
+                }}
+              />
               <div className={styles.dropdownHeaderInfo}>
                 <span className={styles.dropdownHeaderName}>{displayName}</span>
                 <span className={styles.dropdownHeaderRole} title={user?.email || ""}>

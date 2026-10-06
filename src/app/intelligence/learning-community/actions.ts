@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { query, getProfileById, getProfileByEmail } from "@/lib/db";
-import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
+import { resolveStudentName, sanitizeAvatarUrl, resolveUserAvatarUrl } from "@/lib/nameUtils";
 import { validateCommunityContent, validateCommentContent } from "@/lib/communityModeration";
 
 export type CommunityCategory =
@@ -91,7 +91,7 @@ async function resolveCurrentUser() {
         fullName: resolveStudentName(profile.full_name, profile.email),
         email: profile.email || "",
         role: profile.dream_school ? `Target: ${profile.dream_school}` : "CAT 2026 Aspirant",
-        avatarUrl: sanitizeAvatarUrl(profile.avatar_url),
+        avatarUrl: resolveUserAvatarUrl(profile.avatar_url),
       };
     }
   }
@@ -103,7 +103,7 @@ async function resolveCurrentUser() {
       fullName: resolveStudentName(demoProfile.full_name, demoProfile.email),
       email: demoProfile.email || "student@technocat.edu",
       role: demoProfile.role ? (demoProfile.role.charAt(0).toUpperCase() + demoProfile.role.slice(1)) : "Student",
-      avatarUrl: sanitizeAvatarUrl(demoProfile.avatar_url),
+      avatarUrl: resolveUserAvatarUrl(demoProfile.avatar_url),
     };
   }
 
@@ -112,7 +112,7 @@ async function resolveCurrentUser() {
     fullName: "cat_aspirant",
     email: "student@technocat.edu",
     role: "CAT 2026 Aspirant",
-    avatarUrl: null,
+    avatarUrl: "/profile_icon.png",
   };
 }
 
