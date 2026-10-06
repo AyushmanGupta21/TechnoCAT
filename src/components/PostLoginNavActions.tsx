@@ -140,6 +140,25 @@ export default function PostLoginNavActions() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Handle escape key and lock body scroll when notification drawer is open
+  useEffect(() => {
+    if (!isNotifOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsNotifOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isNotifOpen]);
+
   const displayName = resolveStudentName(user?.fullName, user?.email);
   const firstName = displayName.split(" ")[0] || displayName;
 
