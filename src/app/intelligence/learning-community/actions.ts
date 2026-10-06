@@ -630,12 +630,23 @@ export async function createCommunityPostAction(input: {
     await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
-    const cleanTitle = (input.title || "").trim();
+    let cleanTitle = (input.title || "").trim();
     const cleanContent = (input.content || "").trim();
     const cleanCategory = input.category || "CAT Strategy";
 
-    if (!cleanTitle || !cleanContent) {
-      return { success: false, error: "Please enter both a title and content for your discussion." };
+    if (!cleanContent) {
+      return { success: false, error: "Please enter content for your discussion." };
+    }
+
+    if (!cleanTitle) {
+      cleanTitle = cleanContent.split("\n")[0].trim().slice(0, 100);
+      if (cleanTitle.length < 3) {
+        cleanTitle = "CAT Prep Discussion";
+      }
+    }
+
+    if (cleanTitle.length > 120) {
+      cleanTitle = cleanTitle.slice(0, 117) + "...";
     }
 
     // 1. Content Moderation & Anti-Spam Validation
@@ -653,31 +664,31 @@ export async function createCommunityPostAction(input: {
       };
     }
 
-    // 2. Velocity / Rate Limiting (Prevent spam flooding: 30s cooldown between posts)
+    // 2. Velocity / Rate Limiting (5s cooldown between posts)
     const recentPostRes = await query(
       `SELECT created_at FROM public.community_posts
-       WHERE author_id = $1 AND created_at > NOW() - INTERVAL '30 seconds'
+       WHERE author_id = $1 AND created_at > NOW() - INTERVAL '5 seconds'
        LIMIT 1`,
       [user.id]
     );
     if (recentPostRes.rows.length > 0) {
       return {
         success: false,
-        error: "You are posting too quickly. Please wait 30 seconds before creating another discussion.",
+        error: "Please wait a moment before creating another discussion.",
       };
     }
 
-    // 3. Duplicate Post Check (Within 2 hours)
+    // 3. Duplicate Post Check (Prevent identical re-submissions within 5 minutes)
     const duplicateRes = await query(
       `SELECT id FROM public.community_posts
-       WHERE author_id = $1 AND title = $2 AND created_at > NOW() - INTERVAL '2 hours'
+       WHERE author_id = $1 AND title = $2 AND content = $3 AND created_at > NOW() - INTERVAL '5 minutes'
        LIMIT 1`,
-      [user.id, cleanTitle]
+      [user.id, cleanTitle, cleanContent]
     );
     if (duplicateRes.rows.length > 0) {
       return {
         success: false,
-        error: "A discussion with this exact title was already posted recently. Please avoid duplicate posts.",
+        error: "You have already posted this exact discussion recently.",
       };
     }
 
@@ -807,6 +818,11 @@ export async function addCommentOrReplyAction(input: {
         success: false,
         error: modCheck.reason || "Comment violates community guidelines.",
       };
+    }
+
+    const postCheck = await query(`SELECT id FROM public.community_posts WHERE id = $1 LIMIT 1`, [input.postId]);
+    if (postCheck.rows.length === 0) {
+      return { success: false, error: "This discussion could not be found or was removed." };
     }
 
     const commentId = `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;

@@ -57,27 +57,27 @@ export function validateCommunityContent(
 
   // 1. Length constraints
   if (cleanTitle) {
-    if (cleanTitle.length < 6) {
+    if (cleanTitle.length < 3) {
       return {
         isValid: false,
         flagType: "length",
-        reason: "Discussion title must be at least 6 characters long.",
+        reason: "Discussion title must be at least 3 characters long.",
       };
     }
-    if (cleanTitle.length > 50) {
+    if (cleanTitle.length > 120) {
       return {
         isValid: false,
         flagType: "length",
-        reason: "Discussion title cannot exceed 50 characters.",
+        reason: "Discussion title cannot exceed 120 characters.",
       };
     }
   }
 
-  if (cleanContent.length < 15) {
+  if (cleanContent.length < 5) {
     return {
       isValid: false,
       flagType: "length",
-      reason: "Please provide a bit more detail in your discussion (at least 15 characters).",
+      reason: "Please provide a bit more detail in your discussion (at least 5 characters).",
     };
   }
 
@@ -199,7 +199,8 @@ export function validateCommunityContent(
 }
 
 /**
- * Validates comments and replies for spam and abuse.
+ * Validates comments and replies for spam, abuse, and safety.
+ * Sensibly decoupled from post discussion constraints.
  */
 export function validateCommentContent(content: string): ModerationResult {
   const clean = (content || "").trim();
@@ -219,5 +220,74 @@ export function validateCommentContent(content: string): ModerationResult {
     };
   }
 
-  return validateCommunityContent("", clean);
+  // 1. Scams / Commercial gambling
+  for (const pattern of SPAM_SCAM_PATTERNS) {
+    if (pattern.test(clean)) {
+      return {
+        isValid: false,
+        flagType: "scam",
+        reason: "Comment contains prohibited promotional or scam-related content.",
+      };
+    }
+  }
+
+  // 2. Suspicious URL shorteners
+  for (const pattern of SUSPICIOUS_LINK_PATTERNS) {
+    if (pattern.test(clean)) {
+      return {
+        isValid: false,
+        flagType: "link_spam",
+        reason: "Masked links and suspicious invites are not permitted in comments.",
+      };
+    }
+  }
+
+  // 3. Contact harvesting
+  for (const pattern of CONTACT_HARVESTING_PATTERNS) {
+    if (pattern.test(clean)) {
+      return {
+        isValid: false,
+        flagType: "spam",
+        reason: "Posting personal phone numbers or payment links is not permitted.",
+      };
+    }
+  }
+
+  // 4. Abuse / Profanity
+  for (const pattern of ABUSE_PATTERNS) {
+    if (pattern.test(clean)) {
+      return {
+        isValid: false,
+        flagType: "toxicity",
+        reason: "Comment contains inappropriate or abusive language.",
+      };
+    }
+  }
+
+  // 5. Gibberish / repeated characters
+  if (clean.length >= 15 && GIBBERISH_CONSONANT_CLUSTER.test(clean)) {
+    return {
+      isValid: false,
+      flagType: "gibberish",
+      reason: "Comment appears to be random keyboard mash.",
+    };
+  }
+
+  if (REPEATED_CHARACTERS.test(clean)) {
+    return {
+      isValid: false,
+      flagType: "gibberish",
+      reason: "Please avoid repeating the same character continuously.",
+    };
+  }
+
+  if (REPEATED_WORDS.test(clean)) {
+    return {
+      isValid: false,
+      flagType: "spam",
+      reason: "Repetitive word spam detected in comment.",
+    };
+  }
+
+  return { isValid: true };
 }

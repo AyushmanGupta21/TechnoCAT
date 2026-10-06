@@ -1371,8 +1371,14 @@ export default function LearningCommunityPage() {
 
     setIsPostingFromFeed(true);
     try {
-      const firstLine = text.split("\n")[0].trim().slice(0, 80);
-      const title = firstLine || "Community Discussion";
+      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      let title = lines[0] || text.slice(0, 100);
+      if (title.length > 100) {
+        title = title.slice(0, 97) + "...";
+      }
+      if (title.length < 3) {
+        title = "CAT Discussion: " + text.slice(0, 50);
+      }
       const res = await createCommunityPostAction({
         title,
         content: text,
@@ -1392,6 +1398,8 @@ export default function LearningCommunityPage() {
       } else {
         showToast(res.error || "Could not publish discussion.");
       }
+    } catch (err: any) {
+      showToast(err?.message || "Could not publish discussion.");
     } finally {
       setIsPostingFromFeed(false);
     }
@@ -1416,7 +1424,9 @@ export default function LearningCommunityPage() {
       });
 
       if (!res.success || !res.payload) {
-        setCreateError(res.error || "Could not publish discussion.");
+        const errMsg = res.error || "Could not publish discussion.";
+        setCreateError(errMsg);
+        showToast(errMsg);
         return;
       }
 
@@ -1533,7 +1543,11 @@ export default function LearningCommunityPage() {
         setData(res.payload);
         setCommentInput("");
         showToast("Comment added to discussion.");
+      } else {
+        showToast(res.error || "Could not post comment. Please try again.");
       }
+    } catch (err: any) {
+      showToast(err?.message || "Failed to post comment.");
     } finally {
       setIsSubmittingComment(false);
     }
@@ -1555,7 +1569,11 @@ export default function LearningCommunityPage() {
         setReplyInput("");
         setReplyingToCommentId(null);
         showToast("Reply posted.");
+      } else {
+        showToast(res.error || "Could not post reply. Please try again.");
       }
+    } catch (err: any) {
+      showToast(err?.message || "Failed to post reply.");
     } finally {
       setIsSubmittingComment(false);
     }
