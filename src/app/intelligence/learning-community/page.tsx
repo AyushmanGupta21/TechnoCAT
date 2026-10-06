@@ -545,6 +545,7 @@ export default function LearningCommunityPage() {
     x: number;
     y: number;
   } | null>(null);
+  const statsDrawerBodyRef = useRef<HTMLDivElement | null>(null);
 
   // Top Contributors Right Drawer state
   const [isContributorsDrawerOpen, setIsContributorsDrawerOpen] = useState(false);
@@ -637,7 +638,7 @@ export default function LearningCommunityPage() {
       if (!target) return;
       // Allow internal scrolling ONLY inside active scrollable modal/panel containers
       const scrollable = target.closest(
-        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.statsDrawerBody}, .${styles.contributorDrawerBody}, .${styles.contributorDrawerPanel}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
+        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.drawerBody}, .${styles.statsDrawerBody}, .${styles.statsDrawerPanel}, .${styles.contributorDrawerBody}, .${styles.contributorDrawerPanel}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
       );
       if (!scrollable) {
         if (e.cancelable) {
@@ -3957,6 +3958,14 @@ export default function LearningCommunityPage() {
           <div
             className={styles.statsDrawerPanel}
             onClick={(e) => e.stopPropagation()}
+            onWheel={(e) => {
+              if (
+                statsDrawerBodyRef.current &&
+                !statsDrawerBodyRef.current.contains(e.target as Node)
+              ) {
+                statsDrawerBodyRef.current.scrollTop += e.deltaY;
+              }
+            }}
           >
             {/* Drawer Header */}
             <div className={styles.drawerHeader}>
@@ -3983,7 +3992,10 @@ export default function LearningCommunityPage() {
             </div>
 
             {/* Drawer Body */}
-            <div className={styles.drawerBody}>
+            <div
+              ref={statsDrawerBodyRef}
+              className={`${styles.drawerBody} ${styles.statsDrawerBody || ""}`}
+            >
               {/* 3. Stat Summary Cards 2x2 */}
               <div className={styles.drawerStatsGrid}>
                 {/* Card 1: Members */}

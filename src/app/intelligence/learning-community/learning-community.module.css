@@ -3471,6 +3471,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: contain;
   animation: slideInDrawer 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -3542,14 +3543,18 @@
   transform: scale(1.05);
 }
 
-.drawerBody {
+.drawerBody,
+.statsDrawerBody {
   padding: 24px 28px 40px;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 22px;
   flex: 1;
+  min-height: 0;
 }
 
 /* 2x2 Stat Cards in Drawer */
