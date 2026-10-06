@@ -12,6 +12,14 @@ const EMPTY_DASHBOARD = {
     watchingTimeMinutes: 0,
     pointsEarned: 0,
   },
+  readiness: {
+    readiness: 0,
+    concepts: 0,
+    accuracy: 0,
+    speed: 0,
+    consistency: 0,
+    hasActivity: false,
+  },
   detailed: {
     inProgressTopics: [],
     completedTopics: [],
@@ -62,19 +70,7 @@ async function resolveUserId(request: NextRequest): Promise<string | null> {
 
 export async function GET(request: NextRequest) {
   try {
-    let userId = await resolveUserId(request);
-
-    if (!userId) {
-      // If unauthenticated visitor, provide demo student account data so schedule and backlog are interactive
-      try {
-        const demoUser = await getProfileByEmail("student@technocat.edu");
-        if (demoUser?.id) {
-          userId = demoUser.id;
-        }
-      } catch {
-        // ignore
-      }
-    }
+    const userId = await resolveUserId(request);
 
     if (!userId) {
       return NextResponse.json(EMPTY_DASHBOARD);

@@ -2209,6 +2209,49 @@
   margin-top: 2px;
 }
 
+/* Empty State for Affecting Section */
+.emptyAffectingState {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 14px;
+}
+
+.emptyAffectingIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emptyAffectingText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emptyAffectingTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.emptyAffectingSubtitle {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* Challenge Section */
 .challengeSection {
   background: linear-gradient(to right, #F8FAFC, #FFFFFF);

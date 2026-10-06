@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./intelligence.module.css";
 import Image from "next/image";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
+import { useAuth } from "@/context/AuthContext";
 
 interface ChallengeData {
   startDate: string;
@@ -34,6 +35,14 @@ interface DashboardData {
     avgHoursDay: number;
     courseHoursWeek: number;
     challengeHoursWeek: number;
+  };
+  readiness?: {
+    readiness: number;
+    concepts: number;
+    accuracy: number;
+    speed: number;
+    consistency: number;
+    hasActivity: boolean;
   };
 }
 
@@ -150,6 +159,7 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
 ];
 
 export default function IntelligenceHubPage() {
+  const { user, loading: authLoading } = useAuth();
   const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
@@ -177,11 +187,14 @@ export default function IntelligenceHubPage() {
   }, [activeFlowStep]);
 
   useEffect(() => {
-            const fetchDashboard = async () => {
+    if (authLoading) return;
+
+    const fetchDashboard = async () => {
       try {
+        const authHeaders: HeadersInit = user?.id ? { Authorization: `Bearer ${user.id}` } : {};
         const [dashRes, chalRes] = await Promise.all([
-          fetch("/api/dashboard"),
-          fetch("/api/intelligence/challenge")
+          fetch("/api/dashboard", { headers: authHeaders }),
+          fetch("/api/intelligence/challenge", { headers: authHeaders })
         ]);
 
         if (dashRes.ok) {
@@ -204,40 +217,19 @@ export default function IntelligenceHubPage() {
         setIsLoading(false);
       }
     };
-      fetchDashboard();
-  }, []);
+    fetchDashboard();
+  }, [user?.id, authLoading]);
 
-
-  const calcConcepts = () => {
-    if (!dashboardData) return 85;
-    const completed = dashboardData.metrics.completedCourses || 0;
-    const inProgress = dashboardData.metrics.inProgressCourses || 0;
-    return Math.min(100, Math.max(10, Math.floor(((completed * 2 + inProgress) / 10) * 100)));
-  };
-
-  const calcSpeed = () => {
-    if (!dashboardData) return 64;
-    const challenge = dashboardData.summary.challengeHoursWeek || 0;
-    return Math.min(100, Math.max(10, Math.floor((challenge / 30) * 100)));
-  };
-
-  const calcConsistency = () => {
-    if (!dashboardData) return 90;
-    const avg = dashboardData.summary.avgHoursDay || 0;
-    return Math.min(100, Math.max(10, Math.floor((avg / 6) * 100)));
-  };
-
-  const calcAccuracy = () => {
-    if (!dashboardData) return 72;
-    const points = dashboardData.metrics.pointsEarned || 0;
-    return Math.min(100, Math.max(10, Math.floor((points / 1200) * 100)));
-  };
-
-  const concepts = isLoading ? 0 : calcConcepts();
-  const speed = isLoading ? 0 : calcSpeed();
-  const consistency = isLoading ? 0 : calcConsistency();
-  const accuracy = isLoading ? 0 : calcAccuracy();
-  const readiness = isLoading ? 0 : Math.floor((concepts + speed + consistency + accuracy) / 4);
+  // Real CAT Readiness metrics from backend source of truth
+  const readinessData = dashboardData?.readiness;
+  const concepts = isLoading ? 0 : (readinessData?.concepts ?? 0);
+  const accuracy = isLoading ? 0 : (readinessData?.accuracy ?? 0);
+  const speed = isLoading ? 0 : (readinessData?.speed ?? 0);
+  const consistency = isLoading ? 0 : (readinessData?.consistency ?? 0);
+  const readiness = isLoading ? 0 : (readinessData?.readiness ?? 0);
+  const hasActivity = !isLoading && Boolean(
+    readinessData?.hasActivity && (readiness > 0 || concepts > 0 || accuracy > 0 || speed > 0 || consistency > 0)
+  );
   
   const strokeOffset = 264 - (264 * readiness) / 100;
 
@@ -1315,38 +1307,58 @@ export default function IntelligenceHubPage() {
             {/* Affecting Readiness */}
             <div className={styles.affectingSection}>
               <h3 className={styles.affectingTitle}>What is affecting your readiness?</h3>
-              <div className={styles.insightCards}>
-                <div className={`${styles.insightCard} ${selectedInsight === 'speed' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('speed')}>
-                  <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              {hasActivity ? (
+                <div className={styles.insightCards}>
+                  <div className={`${styles.insightCard} ${selectedInsight === 'speed' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('speed')}>
+                    <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div className={styles.insightContent}>
+                      <span className={styles.insightName}>Speed Under Pressure</span>
+                      <span className={styles.insightDesc}>Taking too long on tricky QA questions.</span>
+                    </div>
+                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
                   </div>
-                  <div className={styles.insightContent}>
-                    <span className={styles.insightName}>Speed Under Pressure</span>
-                    <span className={styles.insightDesc}>Taking too long on tricky QA questions.</span>
+                  <div className={`${styles.insightCard} ${selectedInsight === 'dilr' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('dilr')}>
+                    <div className={`${styles.insightIconBox} ${styles.iconGood}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div className={styles.insightContent}>
+                      <span className={styles.insightName}>DILR Set Selection</span>
+                      <span className={styles.insightDesc}>Excellent accuracy in choosing the right sets.</span>
+                    </div>
+                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
                   </div>
-                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
+                  <div className={`${styles.insightCard} ${selectedInsight === 'mock' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('mock')}>
+                    <div className={`${styles.insightIconBox} ${styles.iconNeutral}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </div>
+                    <div className={styles.insightContent}>
+                      <span className={styles.insightName}>Mock Consistency</span>
+                      <span className={styles.insightDesc}>Consistent scores, but lacking breakthroughs.</span>
+                    </div>
+                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
+                  </div>
                 </div>
-                <div className={`${styles.insightCard} ${selectedInsight === 'dilr' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('dilr')}>
-                  <div className={`${styles.insightIconBox} ${styles.iconGood}`}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              ) : (
+                <div className={styles.emptyAffectingState}>
+                  <div className={styles.emptyAffectingIcon}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
                   </div>
-                  <div className={styles.insightContent}>
-                    <span className={styles.insightName}>DILR Set Selection</span>
-                    <span className={styles.insightDesc}>Excellent accuracy in choosing the right sets.</span>
+                  <div className={styles.emptyAffectingText}>
+                    <p className={styles.emptyAffectingTitle}>
+                      Start your CAT preparation to unlock personalized readiness insights.
+                    </p>
+                    <p className={styles.emptyAffectingSubtitle}>
+                      Complete your first lesson or attempt a mock to start building your readiness profile.
+                    </p>
                   </div>
-                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
                 </div>
-                <div className={`${styles.insightCard} ${selectedInsight === 'mock' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('mock')}>
-                  <div className={`${styles.insightIconBox} ${styles.iconNeutral}`}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                  </div>
-                  <div className={styles.insightContent}>
-                    <span className={styles.insightName}>Mock Consistency</span>
-                    <span className={styles.insightDesc}>Consistent scores, but lacking breakthroughs.</span>
-                  </div>
-                  <div className={styles.insightTap}>Tap to understand &rarr;</div>
-                </div>
-              </div>
+              )}
             </div>
 
             {selectedInsight && (

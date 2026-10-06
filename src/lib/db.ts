@@ -347,6 +347,9 @@ export async function getDashboardData(userId: string) {
     [userId]
   );
 
+  // 4. Calculate real CAT Readiness metrics
+  const readiness = await getUserReadinessMetrics(userId, rows);
+
   return {
     isDemo,
     enrolledTopics,
@@ -357,6 +360,7 @@ export async function getDashboardData(userId: string) {
       watchingTimeMinutes: totalWatchingMinutes,
       pointsEarned: totalPointsEarned,
     },
+    readiness,
     detailed: {
       inProgressTopics: inProgressTopics,
       completedTopics: completedTopics,
@@ -376,6 +380,179 @@ export async function getDashboardData(userId: string) {
     },
     tasks: tasksRes.rows,
   };
+}
+
+export interface ReadinessMetrics {
+  readiness: number;
+  concepts: number;
+  accuracy: number;
+  speed: number;
+  consistency: number;
+  hasActivity: boolean;
+}
+
+export async function getUserReadinessMetrics(
+  userId: string,
+  preloadedTopicRows?: any[]
+): Promise<ReadinessMetrics> {
+  const zeroState: ReadinessMetrics = {
+    readiness: 0,
+    concepts: 0,
+    accuracy: 0,
+    speed: 0,
+    consistency: 0,
+    hasActivity: false,
+  };
+
+  try {
+    const userProfile = await getProfileById(userId);
+    const isDemo = userProfile?.email?.toLowerCase() === "student@technocat.edu";
+
+    // 1. Fetch real topic progress for Concept mastery (or use preloaded)
+    let topicRows = preloadedTopicRows;
+    if (!topicRows) {
+      const progressRes = await query(
+        `SELECT topic_id, progress_percent, completed_lessons, points_earned
+         FROM public.topic_progress
+         WHERE user_id = $1`,
+        [userId]
+      );
+      topicRows = progressRes.rows || [];
+    }
+
+    const totalLessonsCompleted = topicRows.reduce((sum: number, r: any) => {
+      if (Array.isArray(r.completed_lessons)) return sum + r.completed_lessons.length;
+      if (typeof r.completed_lessons === "string") {
+        const cleaned = r.completed_lessons.replace(/^\{|\}$/g, "").trim();
+        return sum + (cleaned ? cleaned.split(",").length : 0);
+      }
+      return sum;
+    }, 0);
+
+    const avgProgressPercent = topicRows.length > 0
+      ? Math.round(topicRows.reduce((sum: number, r: any) => sum + (Number(r.progress_percent) || 0), 0) / topicRows.length)
+      : 0;
+
+    // 2. Fetch real PYQ / Mock attempts for Accuracy, Speed, and Consistency
+    const attemptsRes = await query(
+      `SELECT score, total, percentage, mcq_correct, mcq_wrong, tita_correct, tita_wrong, unattempted, time_taken_seconds, completed_at
+       FROM public.pyq_attempts
+       WHERE user_id = $1
+       ORDER BY completed_at DESC`,
+      [userId]
+    );
+    const attempts = attemptsRes.rows || [];
+
+    const hasLessons = totalLessonsCompleted > 0 || avgProgressPercent > 0;
+    const hasAttempts = attempts.length > 0;
+
+    // Demo showcase account fallback
+    if (isDemo && !hasAttempts) {
+      const demoConcepts = Math.min(100, Math.round(Math.max(avgProgressPercent, (totalLessonsCompleted / 50) * 100))) || 85;
+      const demoAccuracy = 72;
+      const demoSpeed = 64;
+      const demoConsistency = 90;
+      return {
+        readiness: Math.round((demoConcepts + demoAccuracy + demoSpeed + demoConsistency) / 4),
+        concepts: demoConcepts,
+        accuracy: demoAccuracy,
+        speed: demoSpeed,
+        consistency: demoConsistency,
+        hasActivity: true,
+      };
+    }
+
+    // For any real user with zero activity:
+    if (!hasLessons && !hasAttempts) {
+      return zeroState;
+    }
+
+    // Calculate Concepts (0-100) based strictly on real completed lessons
+    let concepts = 0;
+    if (hasLessons) {
+      concepts = Math.min(100, Math.round(Math.max(avgProgressPercent, (totalLessonsCompleted / 50) * 100)));
+    }
+
+    // Calculate Accuracy (0-100) based strictly on real mock attempts
+    let accuracy = 0;
+    if (hasAttempts) {
+      let totalCorrect = 0;
+      let totalAnswered = 0;
+      attempts.forEach((a: any) => {
+        const corr = (Number(a.mcq_correct) || 0) + (Number(a.tita_correct) || 0);
+        const wrng = (Number(a.mcq_wrong) || 0) + (Number(a.tita_wrong) || 0);
+        totalCorrect += corr;
+        totalAnswered += corr + wrng;
+      });
+
+      if (totalAnswered > 0) {
+        accuracy = Math.min(100, Math.round((totalCorrect / totalAnswered) * 100));
+      } else {
+        const avgPct = attempts.reduce((sum: number, a: any) => sum + (Number(a.percentage) || 0), 0) / attempts.length;
+        accuracy = Math.min(100, Math.round(avgPct));
+      }
+    }
+
+    // Calculate Speed (0-100) based strictly on real mock attempts
+    let speed = 0;
+    if (hasAttempts) {
+      let totalAttempted = 0;
+      let totalQuestions = 0;
+      let totalTimeSec = 0;
+      attempts.forEach((a: any) => {
+        const att = (Number(a.mcq_correct) || 0) + (Number(a.mcq_wrong) || 0) + (Number(a.tita_correct) || 0) + (Number(a.tita_wrong) || 0);
+        const unatt = Number(a.unattempted) || 0;
+        totalAttempted += att;
+        totalQuestions += att + unatt;
+        totalTimeSec += Number(a.time_taken_seconds) || 0;
+      });
+
+      if (totalQuestions > 0 && totalAttempted > 0) {
+        const attemptRate = totalAttempted / totalQuestions;
+        const avgTimePerQ = totalTimeSec > 0 ? (totalTimeSec / totalAttempted) : 120;
+        const paceFactor = Math.min(1, Math.max(0.2, 1 - Math.max(0, avgTimePerQ - 100) / 200));
+        speed = Math.min(100, Math.round((attemptRate * 0.7 + paceFactor * 0.3) * 100));
+      } else if (totalAttempted > 0) {
+        speed = Math.min(100, Math.round((totalAttempted / 22) * 100));
+      }
+    }
+
+    // Calculate Consistency (0-100) based strictly on real mock attempts
+    let consistency = 0;
+    if (hasAttempts) {
+      if (attempts.length === 1) {
+        consistency = Math.min(100, Math.max(20, Math.round(Number(attempts[0].percentage) || 50)));
+      } else {
+        const pcts = attempts.map((a: any) => Number(a.percentage) || 0);
+        const mean = pcts.reduce((sum: number, p: number) => sum + p, 0) / pcts.length;
+        const variance = pcts.reduce((sum: number, p: number) => sum + Math.pow(p - mean, 2), 0) / pcts.length;
+        const stdDev = Math.sqrt(variance);
+        consistency = Math.min(100, Math.max(20, Math.round(100 - stdDev * 1.5)));
+      }
+    }
+
+    // Calculate Overall Readiness
+    let readiness = 0;
+    if (hasAttempts && hasLessons) {
+      readiness = Math.min(100, Math.round((concepts + accuracy + speed + consistency) / 4));
+    } else if (hasAttempts) {
+      readiness = Math.min(100, Math.round((accuracy + speed + consistency) / 3));
+    } else if (hasLessons) {
+      readiness = Math.min(100, Math.round(concepts * 0.4));
+    }
+
+    return {
+      readiness,
+      concepts,
+      accuracy,
+      speed,
+      consistency,
+      hasActivity: true,
+    };
+  } catch (err) {
+    console.warn("[getUserReadinessMetrics Error]", err);
+    return zeroState;
+  }
 }
 
 // ── Automatic Curriculum Task Population (Continuous 30-Day Rolling Window) ──
