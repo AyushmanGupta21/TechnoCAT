@@ -1547,7 +1547,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 124px 20px 32px;
+  overflow-y: auto;
   animation: flowFadeOverlay 0.18s ease-out;
 }
 
@@ -1562,12 +1563,14 @@
   border-radius: 24px;
   width: 100%;
   max-width: 540px;
+  max-height: calc(100vh - 156px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
   animation: flowScaleModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  margin: auto;
 }
 
 @keyframes flowScaleModal {
@@ -1644,7 +1647,7 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
-  max-height: 70vh;
+  max-height: calc(100vh - 300px);
 }
 
 .flowModalTitleRow {
@@ -1793,8 +1796,12 @@
 }
 
 @media (max-width: 640px) {
+  .flowModalOverlay {
+    padding: 110px 14px 24px;
+  }
   .flowModalCard {
     max-width: 100%;
+    max-height: calc(100vh - 134px);
     border-radius: 20px;
   }
   .flowModalHeader {
@@ -1802,6 +1809,7 @@
   }
   .flowModalBody {
     padding: 18px 18px;
+    max-height: calc(100vh - 270px);
   }
   .flowModalMainTitle {
     font-size: 17.5px;

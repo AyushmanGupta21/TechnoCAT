@@ -158,17 +158,22 @@ export default function IntelligenceHubPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setActiveFlowStep(null);
-      }
-    };
     if (activeFlowStep !== null) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setActiveFlowStep(null);
+        }
+      };
+
       document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.removeEventListener("keydown", handleKeyDown);
+      };
     }
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
   }, [activeFlowStep]);
 
   useEffect(() => {
