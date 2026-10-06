@@ -26,6 +26,7 @@ export interface CommunityCommentItem {
   content: string;
   upvotesCount: number;
   createdAt: string;
+  isOwnComment?: boolean;
 }
 
 export interface CommunityPostItem {
@@ -402,6 +403,7 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
       content: String(row.content),
       upvotesCount: Number(row.upvotes_count || 0),
       createdAt: new Date(row.created_at).toISOString(),
+      isOwnComment: String(row.author_id) === currentUser.id,
     };
     const list = commentsByPost.get(item.postId) || [];
     list.push(item);
@@ -883,6 +885,45 @@ export async function deleteCommunityPostAction(postId: string): Promise<{
   } catch (err: any) {
     console.error("[deleteCommunityPostAction Error]", err);
     return { success: false, error: err.message || "Failed to delete discussion." };
+  }
+}
+
+export async function deleteCommunityCommentAction(commentId: string): Promise<{
+  success: boolean;
+  error?: string;
+  payload?: CommunityPayload;
+}> {
+  try {
+    await ensureCommunityTablesAndSeed();
+    const user = await resolveCurrentUser();
+
+    const cmtRes = await query(
+      `SELECT author_id FROM public.community_comments WHERE id = $1 LIMIT 1`,
+      [commentId]
+    );
+
+    if (cmtRes.rows.length === 0) {
+      return { success: false, error: "Comment not found or already deleted." };
+    }
+
+    if (String(cmtRes.rows[0].author_id) !== user.id) {
+      return { success: false, error: "You can only delete your own comments." };
+    }
+
+    // Delete any nested replies first if it's a parent comment
+    await query(`DELETE FROM public.community_comments WHERE parent_comment_id = $1`, [commentId]);
+
+    // Delete the comment itself
+    await query(`DELETE FROM public.community_comments WHERE id = $1 AND author_id = $2`, [
+      commentId,
+      user.id,
+    ]);
+
+    const payload = await getCommunityDataAction();
+    return { success: true, payload };
+  } catch (err: any) {
+    console.error("[deleteCommunityCommentAction Error]", err);
+    return { success: false, error: err.message || "Failed to delete comment." };
   }
 }
 

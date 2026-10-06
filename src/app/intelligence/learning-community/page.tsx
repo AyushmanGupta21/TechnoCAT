@@ -18,6 +18,7 @@ import {
   toggleSavePostAction,
   addCommentOrReplyAction,
   deleteCommunityPostAction,
+  deleteCommunityCommentAction,
   reportCommunityPostAction,
 } from "./actions";
 
@@ -1508,6 +1509,16 @@ export default function LearningCommunityPage() {
       setData(res.payload);
       if (activePostId === postId) setActivePostId(null);
       showToast("Your discussion has been deleted.");
+    } else if (res.error) {
+      showToast(res.error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const res = await deleteCommunityCommentAction(commentId);
+    if (res.success && res.payload) {
+      setData(res.payload);
+      showToast("Your comment has been deleted.");
     } else if (res.error) {
       showToast(res.error);
     }
@@ -3571,18 +3582,37 @@ export default function LearningCommunityPage() {
 
                         <p className={styles.commentText}>{comment.content}</p>
 
-                        <button
-                          type="button"
-                          className={styles.commentReplyTriggerBtn}
-                          onClick={() => {
-                            setReplyingToCommentId((prev) =>
-                              prev === comment.id ? null : comment.id
-                            );
-                            setReplyInput("");
-                          }}
-                        >
-                          ↩ Reply
-                        </button>
+                        <div className={styles.commentActionsRow}>
+                          <button
+                            type="button"
+                            className={styles.commentReplyTriggerBtn}
+                            onClick={() => {
+                              setReplyingToCommentId((prev) =>
+                                prev === comment.id ? null : comment.id
+                              );
+                              setReplyInput("");
+                            }}
+                          >
+                            ↩ Reply
+                          </button>
+
+                          {(comment.isOwnComment ||
+                            (user && user.id === comment.authorId) ||
+                            (data?.currentUser && data.currentUser.id === comment.authorId)) && (
+                            <button
+                              type="button"
+                              className={styles.commentDeleteTriggerBtn}
+                              onClick={() => handleDeleteComment(comment.id)}
+                              title="Delete comment"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                              <span>Delete</span>
+                            </button>
+                          )}
+                        </div>
 
                         {replyingToCommentId === comment.id && (
                           <form
@@ -3639,6 +3669,24 @@ export default function LearningCommunityPage() {
                                   <p className={styles.commentText} style={{ margin: "2px 0 0" }}>
                                     {rep.content}
                                   </p>
+                                  {(rep.isOwnComment ||
+                                    (user && user.id === rep.authorId) ||
+                                    (data?.currentUser && data.currentUser.id === rep.authorId)) && (
+                                    <div className={styles.commentActionsRow} style={{ marginTop: "4px" }}>
+                                      <button
+                                        type="button"
+                                        className={styles.commentDeleteTriggerBtn}
+                                        onClick={() => handleDeleteComment(rep.id)}
+                                        title="Delete reply"
+                                      >
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                          <polyline points="3 6 5 6 21 6" />
+                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                        <span>Delete</span>
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}

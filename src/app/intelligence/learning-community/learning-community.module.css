@@ -3293,6 +3293,13 @@
   white-space: pre-line;
 }
 
+.commentActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
 .commentReplyTriggerBtn {
   border: none;
   background: transparent;
@@ -3302,6 +3309,37 @@
   cursor: pointer;
   padding: 2px 0;
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.commentReplyTriggerBtn:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+.commentDeleteTriggerBtn {
+  border: none;
+  background: transparent;
+  color: #EF4444;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.85;
+  transition: all 0.15s ease;
+}
+
+.commentDeleteTriggerBtn:hover {
+  color: #DC2626;
+  opacity: 1;
+  text-decoration: underline;
 }
 
 .nestedRepliesList {
