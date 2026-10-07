@@ -25,6 +25,7 @@ export interface CommunityCommentItem {
   authorAvatar: string | null;
   content: string;
   upvotesCount: number;
+  isUpvoted?: boolean;
   createdAt: string;
   isOwnComment?: boolean;
 }
@@ -166,6 +167,15 @@ async function ensureCommunityTablesAndSeed() {
       user_id TEXT NOT NULL,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       PRIMARY KEY (post_id, user_id)
+    )
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS public.community_comment_upvotes (
+      comment_id TEXT NOT NULL REFERENCES public.community_comments(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      PRIMARY KEY (comment_id, user_id)
     )
   `);
 
@@ -372,7 +382,7 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
   await ensureCommunityTablesAndSeed();
   const currentUser = await resolveCurrentUser();
 
-  const [postsRes, commentsRes, upvotesRes, savedRes] = await Promise.all([
+  const [postsRes, commentsRes, upvotesRes, savedRes, commentUpvotesRes] = await Promise.all([
     query(`
       SELECT id, author_id, author_name, author_role, author_avatar, title, content, category, image_url, upvotes_count, created_at
       FROM public.community_posts
@@ -385,10 +395,12 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
     `),
     query(`SELECT post_id FROM public.community_post_upvotes WHERE user_id = $1`, [currentUser.id]),
     query(`SELECT post_id FROM public.community_saved_posts WHERE user_id = $1`, [currentUser.id]),
+    query(`SELECT comment_id FROM public.community_comment_upvotes WHERE user_id = $1`, [currentUser.id]).catch(() => ({ rows: [] })),
   ]);
 
   const upvotedSet = new Set(upvotesRes.rows.map((r: any) => String(r.post_id)));
   const savedSet = new Set(savedRes.rows.map((r: any) => String(r.post_id)));
+  const commentUpvotedSet = new Set((commentUpvotesRes.rows || []).map((r: any) => String(r.comment_id)));
 
   const commentsByPost = new Map<string, CommunityCommentItem[]>();
   for (const row of commentsRes.rows) {
@@ -402,6 +414,7 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
       authorAvatar: row.author_avatar || null,
       content: String(row.content),
       upvotesCount: Number(row.upvotes_count || 0),
+      isUpvoted: commentUpvotedSet.has(String(row.id)),
       createdAt: new Date(row.created_at).toISOString(),
       isOwnComment: String(row.author_id) === currentUser.id,
     };
@@ -767,6 +780,47 @@ export async function togglePostUpvoteAction(postId: string): Promise<{
   }
 }
 
+export async function toggleCommentUpvoteAction(commentId: string): Promise<{
+  success: boolean;
+  payload?: CommunityPayload;
+}> {
+  try {
+    await ensureCommunityTablesAndSeed();
+    const user = await resolveCurrentUser();
+
+    const existing = await query(
+      `SELECT 1 FROM public.community_comment_upvotes WHERE comment_id = $1 AND user_id = $2`,
+      [commentId, user.id]
+    );
+
+    if (existing.rows.length > 0) {
+      await query(
+        `DELETE FROM public.community_comment_upvotes WHERE comment_id = $1 AND user_id = $2`,
+        [commentId, user.id]
+      );
+      await query(
+        `UPDATE public.community_comments SET upvotes_count = GREATEST(0, upvotes_count - 1) WHERE id = $1`,
+        [commentId]
+      );
+    } else {
+      await query(
+        `INSERT INTO public.community_comment_upvotes (comment_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [commentId, user.id]
+      );
+      await query(
+        `UPDATE public.community_comments SET upvotes_count = upvotes_count + 1 WHERE id = $1`,
+        [commentId]
+      );
+    }
+
+    const payload = await getCommunityDataAction();
+    return { success: true, payload };
+  } catch (err) {
+    console.error("[toggleCommentUpvoteAction Error]", err);
+    return { success: false };
+  }
+}
+
 export async function toggleSavePostAction(postId: string): Promise<{
   success: boolean;
   payload?: CommunityPayload;
@@ -909,6 +963,12 @@ export async function deleteCommunityCommentAction(commentId: string): Promise<{
     if (String(cmtRes.rows[0].author_id) !== user.id) {
       return { success: false, error: "You can only delete your own comments." };
     }
+
+    // Clean up upvotes for this comment and any child replies
+    await query(`
+      DELETE FROM public.community_comment_upvotes 
+      WHERE comment_id = $1 OR comment_id IN (SELECT id FROM public.community_comments WHERE parent_comment_id = $1)
+    `, [commentId]).catch(() => {});
 
     // Delete any nested replies first if it's a parent comment
     await query(`DELETE FROM public.community_comments WHERE parent_comment_id = $1`, [commentId]);

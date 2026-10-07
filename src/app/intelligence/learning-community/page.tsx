@@ -15,6 +15,7 @@ import {
   getCommunityDataAction,
   createCommunityPostAction,
   togglePostUpvoteAction,
+  toggleCommentUpvoteAction,
   toggleSavePostAction,
   addCommentOrReplyAction,
   deleteCommunityPostAction,
@@ -1472,6 +1473,35 @@ export default function LearningCommunityPage() {
     });
 
     const res = await togglePostUpvoteAction(postId);
+    if (res.success && res.payload) {
+      setData(res.payload);
+    }
+  };
+
+  const handleToggleCommentUpvote = async (commentId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+
+    // Optimistic update
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        posts: prev.posts.map((p) => ({
+          ...p,
+          comments: p.comments.map((c) => {
+            if (c.id !== commentId) return c;
+            const nextUpvoted = !c.isUpvoted;
+            return {
+              ...c,
+              isUpvoted: nextUpvoted,
+              upvotesCount: Math.max(0, (c.upvotesCount || 0) + (nextUpvoted ? 1 : -1)),
+            };
+          }),
+        })),
+      };
+    });
+
+    const res = await toggleCommentUpvoteAction(commentId);
     if (res.success && res.payload) {
       setData(res.payload);
     }
@@ -3586,6 +3616,16 @@ export default function LearningCommunityPage() {
                         <div className={styles.commentActionsRow}>
                           <button
                             type="button"
+                            className={`${styles.commentUpvoteTriggerBtn} ${comment.isUpvoted ? styles.commentUpvoted : ""}`}
+                            onClick={(e) => handleToggleCommentUpvote(comment.id, e)}
+                            aria-label={`Upvote comment (${comment.upvotesCount || 0})`}
+                          >
+                            <span className={styles.upvoteArrowIcon}>▲</span>
+                            <span>Upvote &bull; {comment.upvotesCount || 0}</span>
+                          </button>
+
+                          <button
+                            type="button"
                             className={styles.commentReplyTriggerBtn}
                             onClick={() => {
                               setReplyingToCommentId((prev) =>
@@ -3670,10 +3710,20 @@ export default function LearningCommunityPage() {
                                   <p className={styles.commentText} style={{ margin: "2px 0 0" }}>
                                     {rep.content}
                                   </p>
-                                  {(rep.isOwnComment ||
-                                    (user && user.id === rep.authorId) ||
-                                    (data?.currentUser && data.currentUser.id === rep.authorId)) && (
-                                    <div className={styles.commentActionsRow} style={{ marginTop: "4px" }}>
+                                  <div className={styles.commentActionsRow} style={{ marginTop: "4px" }}>
+                                    <button
+                                      type="button"
+                                      className={`${styles.commentUpvoteTriggerBtn} ${rep.isUpvoted ? styles.commentUpvoted : ""}`}
+                                      onClick={(e) => handleToggleCommentUpvote(rep.id, e)}
+                                      aria-label={`Upvote reply (${rep.upvotesCount || 0})`}
+                                    >
+                                      <span className={styles.upvoteArrowIcon}>▲</span>
+                                      <span>Upvote &bull; {rep.upvotesCount || 0}</span>
+                                    </button>
+
+                                    {(rep.isOwnComment ||
+                                      (user && user.id === rep.authorId) ||
+                                      (data?.currentUser && data.currentUser.id === rep.authorId)) && (
                                       <button
                                         type="button"
                                         className={styles.commentDeleteTriggerBtn}
@@ -3686,8 +3736,8 @@ export default function LearningCommunityPage() {
                                         </svg>
                                         <span>Delete</span>
                                       </button>
-                                    </div>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
