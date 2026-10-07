@@ -6,6 +6,7 @@ import styles from "./intelligence.module.css";
 import Image from "next/image";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { useAuth } from "@/context/AuthContext";
+import AIMentorDrawer from "@/components/AIMentorDrawer";
 
 interface ChallengeData {
   startDate: string;
@@ -166,6 +167,7 @@ export default function IntelligenceHubPage() {
   const [selectedChallengeDay, setSelectedChallengeDay] = useState<number | null>(null);
   const [activeFlowStep, setActiveFlowStep] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMentorDrawerOpen, setIsMentorDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (activeFlowStep !== null) {
@@ -1682,7 +1684,13 @@ export default function IntelligenceHubPage() {
             <div className={styles.actionGrid}>
               <Link href="/browse#pyq-section" className={styles.actionBtn}>Start a Mock</Link>
               <Link href="/analytics" className={styles.actionBtnSecondary}>View My Analytics</Link>
-              <Link href="/intelligence/ai-analysis" className={styles.actionBtnSecondary}>Ask AI Mentor</Link>
+              <button
+                type="button"
+                onClick={() => setIsMentorDrawerOpen(true)}
+                className={styles.actionBtnSecondary}
+              >
+                Ask AI Mentor
+              </button>
               <Link href="/intelligence/error-tracking" className={styles.actionBtnSecondary}>Review Mistakes</Link>
             </div>
           </section>
@@ -1919,6 +1927,15 @@ export default function IntelligenceHubPage() {
                 </div>
               </>
             )}
+
+        {/* Ask AI Mentor Right-Side Drawer */}
+        <AIMentorDrawer
+          isOpen={isMentorDrawerOpen}
+          onClose={() => setIsMentorDrawerOpen(false)}
+          userName={user?.fullName}
+          userId={user?.id}
+          readinessData={readinessData}
+        />
 
         </main>
     </div>
