@@ -1655,7 +1655,7 @@ export default function LearningCommunityPage() {
               <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>
                 Intelligence Hub
               </Link>
-              <Link href="#" onClick={(e) => e.preventDefault()} className={styles.navLink}>
+              <Link href="/mock-viva-prep" className={styles.navLink}>
                 Mock Viva Prep
               </Link>
             </div>
