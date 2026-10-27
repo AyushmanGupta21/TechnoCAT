@@ -158,7 +158,7 @@ export default function ErrorTrackingPage() {
               <Link href="/browse" className={styles.navLink}>Browse</Link>
               <Link href="/topics" className={styles.navLink}>My Topics</Link>
               <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
-              <Link href="#" onClick={(e) => e.preventDefault()} className={styles.navLink}>Mock Viva Prep</Link>
+              <Link href="/mock-viva-prep" className={styles.navLink}>Mock Viva Prep</Link>
             </div>
 
             <PostLoginNavActions />

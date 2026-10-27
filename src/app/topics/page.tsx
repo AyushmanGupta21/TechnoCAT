@@ -83,7 +83,7 @@ export default function TopicsListPage() {
                 { name: "Browse", href: "/browse" },
                 { name: "My Topics", href: "/topics" },
                 { name: "Intelligence Hub", href: "/intelligence" },
-                { name: "Mock Viva Prep", href: "#" },
+                { name: "Mock Viva Prep", href: "/mock-viva-prep" },
               ].map((item) => (
                 <Link
                   key={item.name}
