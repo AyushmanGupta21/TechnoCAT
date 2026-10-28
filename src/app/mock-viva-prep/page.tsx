@@ -1572,127 +1572,143 @@ export default function MockVivaPrepPage() {
 
       {/* ===== BREADCRUMB ===== */}
       <div className={styles.breadcrumb}>
-        <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link> &gt; <span>Mock Viva Prep</span>
+        <div className={styles.breadcrumbInner}>
+          <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
+          <span className={styles.breadcrumbSep}>&gt;</span>
+          <span className={styles.breadcrumbCurrent}>Mock Viva Prep</span>
+        </div>
       </div>
 
       {/* ===== HERO ===== */}
       <section className={styles.heroSection}>
-        <div className={styles.heroLeft}>
-          <div className={styles.heroBadge}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
-            </svg>
-            GD-PI &amp; Interview Prep
+        <div className={styles.heroCircleDecor1} aria-hidden="true" />
+        <div className={styles.heroCircleDecor2} aria-hidden="true" />
+        <div className={styles.heroDotsDecor} aria-hidden="true" />
+
+        <div className={styles.heroInner}>
+          <div className={styles.heroLeft}>
+            <div className={styles.heroBadge}>
+              ✦ GD-PI &amp; INTERVIEW PREP
+            </div>
+            <h1 className={styles.heroTitle}>
+              Crack the<br />
+              <span className={styles.heroHighlight}>Mock Viva,</span><br />
+              Walk in Confident.
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Practice real IIM-style personal interview questions across HR, academics, current affairs and stress rounds — with timers, expert pointers and a prep checklist all in one place.
+            </p>
+            <div className={styles.heroActions}>
+              <button
+                type="button"
+                className={styles.btnPrimary}
+                onClick={() => startPractice("personal-hr")}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+                <span>Start a Mock Session &rarr;</span>
+              </button>
+              <a
+                href="#checklist"
+                className={styles.btnSecondary}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+                <span>View Prep Checklist</span>
+              </a>
+            </div>
           </div>
-          <h1 className={styles.heroTitle}>
-            Crack the <span>Mock Viva</span>,<br />
-            Walk in Confident.
-          </h1>
-          <p className={styles.heroSubtitle}>
-            Practice real IIM-style personal interview questions across HR, academics, current affairs and stress rounds — with timers, expert pointers and a prep checklist all in one place.
-          </p>
-          <div className={styles.heroActions}>
+
+          {/* ===== THREE INTERACTIVE SUMMARY CARDS (Click to open respective drawers) ===== */}
+          <div className={styles.heroStats}>
+            {/* Card 1: 68+ Curated viva questions */}
             <button
-              className={styles.btnPrimary}
-              onClick={() => startPractice("personal-hr")}
+              type="button"
+              className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "questions" ? styles.statCardActiveBlue : ""}`}
+              onClick={() => setActiveDrawer("questions")}
+              title="Explore 68+ Curated Viva Questions"
             >
-              Start a Mock Session &rarr;
+              <div className={styles.statCardLeft}>
+                <div className={styles.statIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2v4M16 2v4M3 10h18" />
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                  </svg>
+                </div>
+                <div className={styles.statTextCol}>
+                  <span className={styles.statValue}>68+</span>
+                  <span className={styles.statLabel}>Curated viva questions</span>
+                </div>
+              </div>
+              <div className={styles.statChevron}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
             </button>
-            <a
-              href="#checklist"
-              className={styles.btnSecondary}
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" });
+
+            {/* Card 2: 6 Interview round categories */}
+            <button
+              type="button"
+              className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "rounds" ? styles.statCardActiveGreen : ""}`}
+              onClick={() => {
+                setSelectedRoundDetailId(null);
+                setActiveDrawer("rounds");
               }}
+              title="Explore 6 Interview Round Categories"
             >
-              View Prep Checklist
-            </a>
+              <div className={styles.statCardLeft}>
+                <div className={styles.statIcon} style={{ background: "#F0FDF4", color: "#059669" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </div>
+                <div className={styles.statTextCol}>
+                  <span className={styles.statValue}>6</span>
+                  <span className={styles.statLabel}>Interview round categories</span>
+                </div>
+              </div>
+              <div className={styles.statChevron}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </button>
+
+            {/* Card 3: Timed Response practice mode */}
+            <button
+              type="button"
+              className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "timed" ? styles.statCardActiveOrange : ""}`}
+              onClick={() => setActiveDrawer("timed")}
+              title="Start Timed Response Practice Mode"
+            >
+              <div className={styles.statCardLeft}>
+                <div className={styles.statIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div className={styles.statTextCol}>
+                  <span className={styles.statValue}>Timed</span>
+                  <span className={styles.statLabel}>Response practice mode</span>
+                </div>
+              </div>
+              <div className={styles.statChevron}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </button>
           </div>
-        </div>
-
-        {/* ===== THREE INTERACTIVE SUMMARY CARDS (Click to open respective drawers) ===== */}
-        <div className={styles.heroStats}>
-          {/* Card 1: 68+ Curated viva questions */}
-          <button
-            type="button"
-            className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "questions" ? styles.statCardActiveBlue : ""}`}
-            onClick={() => setActiveDrawer("questions")}
-            title="Explore 68+ Curated Viva Questions"
-          >
-            <div className={styles.statCardLeft}>
-              <div className={styles.statIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8 2v4M16 2v4M3 10h18" />
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                </svg>
-              </div>
-              <div className={styles.statTextCol}>
-                <span className={styles.statValue}>68+</span>
-                <span className={styles.statLabel}>Curated viva questions</span>
-              </div>
-            </div>
-            <div className={styles.statChevron}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </div>
-          </button>
-
-          {/* Card 2: 6 Interview round categories */}
-          <button
-            type="button"
-            className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "rounds" ? styles.statCardActiveGreen : ""}`}
-            onClick={() => {
-              setSelectedRoundDetailId(null);
-              setActiveDrawer("rounds");
-            }}
-            title="Explore 6 Interview Round Categories"
-          >
-            <div className={styles.statCardLeft}>
-              <div className={styles.statIcon} style={{ background: "#F0FDF4", color: "#059669" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div className={styles.statTextCol}>
-                <span className={styles.statValue}>6</span>
-                <span className={styles.statLabel}>Interview round categories</span>
-              </div>
-            </div>
-            <div className={styles.statChevron}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </div>
-          </button>
-
-          {/* Card 3: Timed Response practice mode */}
-          <button
-            type="button"
-            className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "timed" ? styles.statCardActiveOrange : ""}`}
-            onClick={() => setActiveDrawer("timed")}
-            title="Start Timed Response Practice Mode"
-          >
-            <div className={styles.statCardLeft}>
-              <div className={styles.statIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <div className={styles.statTextCol}>
-                <span className={styles.statValue}>Timed</span>
-                <span className={styles.statLabel}>Response practice mode</span>
-              </div>
-            </div>
-            <div className={styles.statChevron}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </div>
-          </button>
         </div>
       </section>
 
