@@ -1784,13 +1784,33 @@ export default function MockVivaPrepPage() {
       {/* ===== CONTENT ===== */}
       <div className={styles.contentWrapper}>
         {/* CATEGORIES */}
-        <section>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Choose an Interview Round</h2>
-            <p className={styles.sectionSubtitle}>
-              Pick a category to start a timed practice session with sample questions and expert pointers.
-            </p>
+        <section id="interview-rounds">
+          <div className={styles.roundSectionHead}>
+            <div className={styles.roundHeadLeft}>
+              <div className={styles.roundTitleRow}>
+                <span className={styles.titleAccentBar} aria-hidden="true" />
+                <h2 className={styles.sectionTitle}>Choose an Interview Round</h2>
+              </div>
+              <p className={styles.sectionSubtitle}>
+                Pick a category to start a timed practice session with sample questions and expert pointers.
+              </p>
+            </div>
+            <button
+              type="button"
+              className={styles.btnViewAllRounds}
+              onClick={() => {
+                setSelectedRoundDetailId(null);
+                setActiveDrawer("rounds");
+              }}
+              title="Explore all 6 interview round categories in detail"
+            >
+              <span>View All Rounds</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
+
           <div className={styles.catGrid}>
             {CATEGORIES.map((cat) => (
               <button
@@ -1798,15 +1818,25 @@ export default function MockVivaPrepPage() {
                 type="button"
                 className={`${styles.catCard} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
                 onClick={() => startPractice(cat.id)}
+                title={`Practice ${cat.title}`}
               >
-                <div className={styles.catTopBorder} style={{ background: cat.bg }} />
-                <div className={styles.catIcon} style={{ background: cat.bg }}>{cat.icon}</div>
-                <div className={styles.catTitle}>{cat.title}</div>
-                <div className={styles.catDesc}>{cat.desc}</div>
-                <div className={styles.catMeta}>
-                  <span className={styles.catChip} style={{ color: cat.chipColor, background: cat.chipBg }}>
+                <div className={styles.catCardTop}>
+                  <div className={styles.catIcon} style={{ background: cat.chipBg, color: cat.color }}>
+                    {cat.icon}
+                  </div>
+                  <h3 className={styles.catTitle}>{cat.title}</h3>
+                  <p className={styles.catDesc}>{cat.desc}</p>
+                </div>
+                
+                <div className={styles.catFooter}>
+                  <span className={styles.catQuestionBadge} style={{ color: cat.chipColor, background: cat.chipBg }}>
                     {cat.chip}
                   </span>
+                  <div className={styles.catArrowCircle} aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </button>
             ))}
