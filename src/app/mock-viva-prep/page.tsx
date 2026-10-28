@@ -1813,7 +1813,7 @@ export default function MockVivaPrepPage() {
 
           <div className={styles.catGrid}>
             {CATEGORIES.map((cat) => {
-              const catKey = cat.id.replace(/-/g, "_");
+              const catKey = cat.id === "career-goals" || cat.id === "goals" ? "goals" : cat.id.replace(/-/g, "_");
               const cardClass = styles[`catCard_${catKey}`] || "";
               const topClass = styles[`catTop_${catKey}`] || "";
               const iconClass = styles[`catIcon_${catKey}`] || "";
