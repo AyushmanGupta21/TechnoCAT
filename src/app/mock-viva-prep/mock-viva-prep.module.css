@@ -570,35 +570,65 @@
 }
 
 .catCard {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 22px;
+  border-radius: 18px;
+  padding: 22px 22px 18px 22px;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03), 0 1px 3px rgba(15, 23, 42, 0.02);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 200px;
+  min-height: 205px;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  overflow: hidden;
 }
 
 .catCard:hover {
   transform: translateY(-3px);
-  border-color: #BAE6FD;
-  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 .catCardActive {
-  border-color: #0EA5E9;
-  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15), 0 10px 24px rgba(14, 165, 233, 0.08);
+  border-color: #BAE6FD !important;
+  box-shadow: 0 0 0 1.5px #BAE6FD, 0 4px 16px rgba(186, 230, 253, 0.4) !important;
+}
+
+.catCard:focus-visible {
+  outline: 2px solid #BAE6FD;
+  outline-offset: 2px;
+}
+
+.catCardTopBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  border-radius: 18px 18px 0 0;
+  z-index: 2;
+}
+
+.catCardDecor {
+  position: absolute;
+  top: -24px;
+  right: -24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .catCardTop {
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 2;
 }
 
 .catIcon {
@@ -623,11 +653,12 @@
   color: #0F172A;
   margin: 0 0 6px 0;
   line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .catDesc {
   font-size: 13px;
-  color: #64748B;
+  color: #475569;
   line-height: 1.5;
   margin: 0;
   display: -webkit-box;
@@ -642,38 +673,111 @@
   justify-content: space-between;
   gap: 10px;
   padding-top: 14px;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
   margin-top: 14px;
+  position: relative;
+  z-index: 2;
 }
 
 .catQuestionBadge {
   font-size: 11.5px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 3.5px 10px;
   border-radius: 100px;
   letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
 }
 
 .catArrowCircle {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #64748B;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s ease;
   flex-shrink: 0;
 }
 
 .catCard:hover .catArrowCircle {
-  background: #EFF6FF;
-  border-color: #BAE6FD;
-  color: #0284C7;
-  transform: translateX(2px);
+  transform: translateX(3px);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
+
+/* Specific Category Pastel Themes */
+.catCard_personal_hr {
+  background: linear-gradient(135deg, #F5F9FF 0%, #EAF3FF 100%);
+  border-color: #DBEAFE;
+}
+.catCard_personal_hr:hover {
+  border-color: #93C5FD;
+}
+.catTop_personal_hr { background: #2563EB; }
+.catIcon_personal_hr { background: #DBEAFE; color: #1D4ED8; }
+.catBadge_personal_hr { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.catArrow_personal_hr { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+.catCard_academics {
+  background: linear-gradient(135deg, #FBF7FF 0%, #F1E8FF 100%);
+  border-color: #EDE9FE;
+}
+.catCard_academics:hover {
+  border-color: #C4B5FD;
+}
+.catTop_academics { background: #7C3AED; }
+.catIcon_academics { background: #EDE9FE; color: #6D28D9; }
+.catBadge_academics { background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; }
+.catArrow_academics { background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; }
+
+.catCard_current_affairs {
+  background: linear-gradient(135deg, #F3FCFF 0%, #E5F7FF 100%);
+  border-color: #E0F2FE;
+}
+.catCard_current_affairs:hover {
+  border-color: #7DD3FC;
+}
+.catTop_current_affairs { background: #0284C7; }
+.catIcon_current_affairs { background: #E0F2FE; color: #0369A1; }
+.catBadge_current_affairs { background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD; }
+.catArrow_current_affairs { background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD; }
+
+.catCard_gd_stress {
+  background: linear-gradient(135deg, #FFF7F7 0%, #FFECEC 100%);
+  border-color: #FFE4E6;
+}
+.catCard_gd_stress:hover {
+  border-color: #FDA4AF;
+}
+.catTop_gd_stress { background: #E11D48; }
+.catIcon_gd_stress { background: #FFE4E6; color: #BE123C; }
+.catBadge_gd_stress { background: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3; }
+.catArrow_gd_stress { background: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3; }
+
+.catCard_career_goals {
+  background: linear-gradient(135deg, #F2FFF9 0%, #E2F8EE 100%);
+  border-color: #D1FAE5;
+}
+.catCard_career_goals:hover {
+  border-color: #6EE7B7;
+}
+.catTop_career_goals { background: #059669; }
+.catIcon_career_goals { background: #D1FAE5; color: #047857; }
+.catBadge_career_goals { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+.catArrow_career_goals { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+
+.catCard_situational {
+  background: linear-gradient(135deg, #FFFAF2 0%, #FFF0D9 100%);
+  border-color: #FEF3C7;
+}
+.catCard_situational:hover {
+  border-color: #FCD34D;
+}
+.catTop_situational { background: #D97706; }
+.catIcon_situational { background: #FEF3C7; color: #B45309; }
+.catBadge_situational { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+.catArrow_situational { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
 
 /* ===== QUESTION PANEL ===== */
 .qaPanel { background: #FFF; border-radius: 22px; border: 1px solid #E2E8F0; box-shadow: 0 10px 40px rgba(0,0,0,0.04); overflow: hidden; }

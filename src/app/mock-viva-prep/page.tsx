@@ -1812,34 +1812,46 @@ export default function MockVivaPrepPage() {
           </div>
 
           <div className={styles.catGrid}>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`${styles.catCard} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
-                onClick={() => startPractice(cat.id)}
-                title={`Practice ${cat.title}`}
-              >
-                <div className={styles.catCardTop}>
-                  <div className={styles.catIcon} style={{ background: cat.chipBg, color: cat.color }}>
-                    {cat.icon}
+            {CATEGORIES.map((cat) => {
+              const catKey = cat.id.replace(/-/g, "_");
+              const cardClass = styles[`catCard_${catKey}`] || "";
+              const topClass = styles[`catTop_${catKey}`] || "";
+              const iconClass = styles[`catIcon_${catKey}`] || "";
+              const badgeClass = styles[`catBadge_${catKey}`] || "";
+              const arrowClass = styles[`catArrow_${catKey}`] || "";
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`${styles.catCard} ${cardClass} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
+                  onClick={() => startPractice(cat.id)}
+                  title={`Practice ${cat.title}`}
+                >
+                  <div className={`${styles.catCardTopBorder} ${topClass}`} />
+                  <div className={styles.catCardDecor} aria-hidden="true" />
+
+                  <div className={styles.catCardTop}>
+                    <div className={`${styles.catIcon} ${iconClass}`}>
+                      {cat.icon}
+                    </div>
+                    <h3 className={styles.catTitle}>{cat.title}</h3>
+                    <p className={styles.catDesc}>{cat.desc}</p>
                   </div>
-                  <h3 className={styles.catTitle}>{cat.title}</h3>
-                  <p className={styles.catDesc}>{cat.desc}</p>
-                </div>
-                
-                <div className={styles.catFooter}>
-                  <span className={styles.catQuestionBadge} style={{ color: cat.chipColor, background: cat.chipBg }}>
-                    {cat.chip}
-                  </span>
-                  <div className={styles.catArrowCircle} aria-hidden="true">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+
+                  <div className={styles.catFooter}>
+                    <span className={`${styles.catQuestionBadge} ${badgeClass}`}>
+                      {cat.chip}
+                    </span>
+                    <div className={`${styles.catArrowCircle} ${arrowClass}`} aria-hidden="true">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </section>
 
