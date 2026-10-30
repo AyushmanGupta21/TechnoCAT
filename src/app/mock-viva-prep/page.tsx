@@ -1572,11 +1572,7 @@ export default function MockVivaPrepPage() {
 
       {/* ===== BREADCRUMB ===== */}
       <div className={styles.breadcrumb}>
-        <div className={styles.breadcrumbInner}>
-          <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
-          <span className={styles.breadcrumbSep}>&gt;</span>
-          <span className={styles.breadcrumbCurrent}>Mock Viva Prep</span>
-        </div>
+        <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link> &gt; <span>Mock Viva Prep</span>
       </div>
 
       {/* ===== HERO ===== */}
