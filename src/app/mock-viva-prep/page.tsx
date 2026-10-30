@@ -1854,7 +1854,10 @@ export default function MockVivaPrepPage() {
         {/* PRACTICE PANEL */}
         <section ref={panelRef}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Practice Session</h2>
+            <div className={styles.roundTitleRow}>
+              <span className={styles.titleAccentBar} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Practice Session</h2>
+            </div>
             <p className={styles.sectionSubtitle}>
               Read the question, start speaking out loud, and keep an eye on your response time.
             </p>
@@ -2171,7 +2174,10 @@ export default function MockVivaPrepPage() {
         {/* CHECKLIST */}
         <section id="checklist">
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Your Viva Readiness Checklist</h2>
+            <div className={styles.roundTitleRow}>
+              <span className={styles.titleAccentBar} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Your Viva Readiness Checklist</h2>
+            </div>
             <p className={styles.sectionSubtitle}>
               Tick these off as you prepare — a solid process beats last-minute cramming.
             </p>
