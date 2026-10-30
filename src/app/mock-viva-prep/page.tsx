@@ -1780,7 +1780,7 @@ export default function MockVivaPrepPage() {
       {/* ===== CONTENT ===== */}
       <div className={styles.contentWrapper}>
         {/* CATEGORIES */}
-        <section id="interview-rounds">
+        <section id="interview-rounds" className={styles.roundSection}>
           <div className={styles.roundSectionHead}>
             <div className={styles.roundHeadLeft}>
               <div className={styles.roundTitleRow}>

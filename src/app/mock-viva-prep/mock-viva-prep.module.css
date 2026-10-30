@@ -95,9 +95,10 @@
 /* ===== HERO ===== */
 .heroSection {
   background: linear-gradient(135deg, #F0F9FF 0%, #E0E7FF 100%);
-  padding: 44px 40px 92px 40px;
+  padding: 44px 40px 52px 40px;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid #BAE6FD;
 }
 
 .heroInner {
@@ -511,38 +512,65 @@
 }
 
 /* ===== CONTENT ===== */
-.contentWrapper { max-width: 1300px; margin: -55px auto 0; padding: 0 40px; display: flex; flex-direction: column; gap: 44px; position: relative; z-index: 10; }
+.contentWrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 36px 40px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  position: relative;
+  z-index: 10;
+}
+
+.roundSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
 .sectionHead { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
-.sectionTitle { font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.01em; }
-.sectionSubtitle { font-size: 14px; color: #64748B; }
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.25;
+}
+.sectionSubtitle {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.5;
+}
 
 /* ===== INTERVIEW ROUNDS SECTION HEADER ===== */
 .roundSectionHead {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
 }
 
 .roundHeadLeft {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .roundTitleRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .titleAccentBar {
   width: 4px;
-  height: 22px;
-  background: linear-gradient(180deg, #0284C7 0%, #2563EB 100%);
+  height: 24px;
+  background: #2563EB;
   border-radius: 4px;
   flex-shrink: 0;
 }
@@ -561,6 +589,8 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btnViewAllRounds:hover {
@@ -575,18 +605,37 @@
 .catGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 22px;
+  width: 100%;
 }
 
 @media (max-width: 1024px) {
   .catGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentWrapper {
+    padding: 28px 20px 0;
+    gap: 36px;
   }
 }
 
 @media (max-width: 640px) {
+  .roundSectionHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .btnViewAllRounds {
+    align-self: flex-start;
+  }
   .catGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
