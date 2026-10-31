@@ -1894,22 +1894,29 @@ export default function MockVivaPrepPage() {
                   </div>
                 </div>
 
-                <div className={styles.qaBody}>
-                  <div className={styles.qaProgress}>
-                    <div className={styles.qaProgressBar}>
-                      <div
-                        className={styles.qaProgressFill}
-                        style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
-                      />
+                <div className={styles.qaProgressStrip}>
+                  <div className={styles.qaProgressMeta}>
+                    <div className={styles.qaProgressCount}>
+                      <span className={styles.qaProgressNum}>Question {questionIndex + 1}</span>
+                      <span className={styles.qaProgressTotal}> of {activeCategory.questions.length}</span>
                     </div>
-                    <span className={styles.qaProgressLabel}>
-                      Q{questionIndex + 1} of {activeCategory.questions.length}
+                    <span className={styles.qaProgressPercent}>
+                      {Math.round(((questionIndex + 1) / activeCategory.questions.length) * 100)}% Completed
                     </span>
                   </div>
+                  <div className={styles.qaProgressBar}>
+                    <div
+                      className={styles.qaProgressFill}
+                      style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
 
+                <div className={styles.qaBody}>
                   <div className={styles.qaQuestionCard}>
                     <span className={styles.qaQuestionTag}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                         <line x1="12" y1="17" x2="12.01" y2="17" />
                       </svg>
@@ -1920,14 +1927,19 @@ export default function MockVivaPrepPage() {
 
                   <div className={styles.qaTips}>
                     <div className={styles.qaTipsTitle}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                      </svg>
-                      How to answer this well
+                      <div className={styles.qaTipsIcon} aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+                        </svg>
+                      </div>
+                      <span>How to answer this well</span>
                     </div>
                     <ul className={styles.qaTipsList}>
                       {currentQuestion.tips.map((tip, i) => (
-                        <li key={i}>{tip}</li>
+                        <li key={i}>
+                          <span className={styles.tipArrow} aria-hidden="true">&rarr;</span>
+                          <span>{tip}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -1936,11 +1948,13 @@ export default function MockVivaPrepPage() {
                   <div className={styles.answerBlock}>
                     <div className={styles.answerHead}>
                       <div className={styles.answerTitle}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
-                        </svg>
-                        Your Answer
+                        <div className={styles.answerTitleIcon} aria-hidden="true">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+                          </svg>
+                        </div>
+                        <span>Your Answer</span>
                       </div>
                       <div className={styles.answerModeToggle}>
                         <button
