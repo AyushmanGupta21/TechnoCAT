@@ -35,6 +35,16 @@ export default function PYQAttemptModal({
   onExamFinished,
 }: PYQAttemptModalProps) {
   const [inExam, setInExam] = useState(false);
+  // Attempt number frozen at the moment the student clicks "Start Exam".
+  // Saving an attempt refreshes subjectAttemptsCount in the parent; if that fed
+  // straight into the exam it would look like a new attempt and auto-start it.
+  const [examAttemptNumber, setExamAttemptNumber] = useState<number | null>(null);
+
+  const startExam = () => {
+    if (isSubjectLocked) return;
+    setExamAttemptNumber(subjectAttemptsCount + 1);
+    setInExam(true);
+  };
 
   // Raw PYQ questions
   const rawQuestions = useMemo(() => {
@@ -131,12 +141,13 @@ export default function PYQAttemptModal({
         isOpen={true}
         title={`CAT ${year} • ${slot} • ${sectionMeta?.title || section}`}
         questions={mappedQuestions}
-        attemptNumber={subjectAttemptsCount + 1}
+        attemptNumber={examAttemptNumber ?? subjectAttemptsCount + 1}
         maxAttempts={3}
         customDurationSeconds={40 * 60} // 40 minutes strict official CAT regulations
         scoringScheme="cat"
         onClose={() => {
           setInExam(false);
+          setExamAttemptNumber(null);
           onClose();
         }}
         onPass={(_score, _total, _points, analysis) => {
@@ -263,7 +274,7 @@ export default function PYQAttemptModal({
           <button
             type="button"
             className={styles.startBtn}
-            onClick={() => setInExam(true)}
+            onClick={startExam}
             disabled={isSubjectLocked}
           >
             <span>I Understand & Agree — Start Exam</span>
