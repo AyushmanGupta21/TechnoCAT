@@ -1656,7 +1656,7 @@ export default function LearningCommunityPage() {
                 Intelligence Hub
               </Link>
               <Link href="/mock-viva-prep" className={styles.navLink}>
-                Mock Viva Prep
+                Speak & Assess
               </Link>
             </div>
 

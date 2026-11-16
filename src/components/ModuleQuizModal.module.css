@@ -5,7 +5,7 @@
   inset: 0;
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(8px);
-  z-index: 9999;
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,14 +14,14 @@
   box-sizing: border-box;
 }
 
+/* Opacity-only fade: animating transform on a full-screen fixed overlay with
+   backdrop-filter caused Chrome to paint the page nav over the exam until a repaint. */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -99,12 +99,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.headerLeft .quizBadge,
+.headerLeft .grandQuizBadge {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .quizBadge {
@@ -136,12 +148,17 @@
   font-weight: 700;
   color: #0f172a;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 
 .timerBadge {
@@ -152,10 +169,14 @@
   border: 1px solid #cbd5e1;
   padding: 6px 12px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 78px;
+  justify-content: center;
 }
 
 .timerDanger {
@@ -1434,3 +1455,13 @@
 }
 
 
+
+/* Keep timer / lock badge / proctor banner always visible */
+.proctorWarningBanner { flex-shrink: 0; }
+.examLockedBadge { flex-shrink: 0; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .modalHeader { flex-wrap: wrap; padding: 14px 16px; }
+  .headerLeft { flex: 1 1 100%; }
+  .headerRight { width: 100%; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+}

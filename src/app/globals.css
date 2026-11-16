@@ -215,3 +215,8 @@ section { width: 100%; }
 .pricingBtn.pro:hover {
   transform: scale(1.05);
 }
+
+/* While a timed exam is open, hide page nav bars so they can't cover the exam header/timer */
+body.exam-active header {
+  visibility: hidden !important;
+}

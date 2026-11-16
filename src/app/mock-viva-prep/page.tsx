@@ -1551,7 +1551,7 @@ export default function MockVivaPrepPage() {
       {/* ===== STICKY NAV ===== */}
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Mock Viva Prep Navigation">
+          <nav className={styles.topNav} aria-label="Speak & Assess Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
@@ -1562,7 +1562,7 @@ export default function MockVivaPrepPage() {
               <Link href="/browse" className={styles.navLink}>Browse</Link>
               <Link href="/topics" className={styles.navLink}>My Topics</Link>
               <Link href="/intelligence" className={styles.navLink}>Intelligence Hub</Link>
-              <Link href="/mock-viva-prep" className={`${styles.navLink} ${styles.navLinkActive}`}>Mock Viva Prep</Link>
+              <Link href="/mock-viva-prep" className={`${styles.navLink} ${styles.navLinkActive}`}>Speak & Assess</Link>
             </div>
 
             <PostLoginNavActions />
@@ -1572,7 +1572,7 @@ export default function MockVivaPrepPage() {
 
       {/* ===== BREADCRUMB ===== */}
       <div className={styles.breadcrumb}>
-        <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link> &gt; <span>Mock Viva Prep</span>
+        <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link> &gt; <span>Speak & Assess</span>
       </div>
 
       {/* ===== HERO ===== */}
@@ -1587,12 +1587,12 @@ export default function MockVivaPrepPage() {
               ✦ GD-PI &amp; INTERVIEW PREP
             </div>
             <h1 className={styles.heroTitle}>
-              Crack the<br />
-              <span className={styles.heroHighlight}>Mock Viva,</span><br />
+              Speak Up,<br />
+              <span className={styles.heroHighlight}>Assess Yourself,</span><br />
               Walk in Confident.
             </h1>
             <p className={styles.heroSubtitle}>
-              Practice real IIM-style personal interview questions across HR, academics, current affairs and stress rounds — with timers, expert pointers and a prep checklist all in one place.
+              Answer real IIM-style interview questions out loud, play back your own recording and assess yourself with AI feedback — across HR, academics, current affairs and stress rounds.
             </p>
             <div className={styles.heroActions}>
               <button
@@ -1651,12 +1651,12 @@ export default function MockVivaPrepPage() {
 
             {/* Three Feature Cards */}
             <div className={styles.glanceCardsList}>
-              {/* Card 1: 68+ Curated viva questions */}
+              {/* Card 1: 68+ Curated interview questions */}
               <button
                 type="button"
                 className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "questions" ? styles.statCardActiveBlue : ""}`}
                 onClick={() => setActiveDrawer("questions")}
-                title="Explore 68+ Curated Viva Questions"
+                title="Explore 68+ Curated Interview Questions"
               >
                 <div className={styles.statCardLeft}>
                   <div className={styles.statIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
@@ -1667,7 +1667,7 @@ export default function MockVivaPrepPage() {
                   </div>
                   <div className={styles.statTextCol}>
                     <span className={styles.statValue}>68+</span>
-                    <span className={styles.statLabel}>Curated viva questions</span>
+                    <span className={styles.statLabel}>Curated interview questions</span>
                   </div>
                 </div>
                 <div className={styles.statChevron}>
@@ -1741,7 +1741,7 @@ export default function MockVivaPrepPage() {
                 </svg>
 
                 <div className={styles.flowStep}>
-                  <div className={styles.flowStepCircle} title="Step 1: Practice real viva questions">
+                  <div className={styles.flowStepCircle} title="Step 1: Practice real interview questions">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -2190,7 +2190,7 @@ export default function MockVivaPrepPage() {
           <div className={styles.sectionHead}>
             <div className={styles.roundTitleRow}>
               <span className={styles.titleAccentBar} aria-hidden="true" />
-              <h2 className={styles.sectionTitle}>Your Viva Readiness Checklist</h2>
+              <h2 className={styles.sectionTitle}>Your Self-Assessment Checklist</h2>
             </div>
             <p className={styles.sectionSubtitle}>
               Tick these off as you prepare — a solid process beats last-minute cramming.
@@ -2240,7 +2240,7 @@ export default function MockVivaPrepPage() {
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="Curated Viva Questions Explorer"
+            aria-label="Curated Interview Questions Explorer"
           >
             {/* Fixed Header */}
             <div className={styles.drawerHeader}>
@@ -2252,7 +2252,7 @@ export default function MockVivaPrepPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className={styles.drawerHeaderTitle}>Curated Viva Questions</h3>
+                  <h3 className={styles.drawerHeaderTitle}>Curated Interview Questions</h3>
                   <p className={styles.drawerHeaderSub}>Practice handpicked interview questions from multiple categories.</p>
                 </div>
               </div>

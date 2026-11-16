@@ -220,7 +220,7 @@ export default function DashboardPage() {
       },
       {
         id: "notice-gdpi-prep",
-        title: "IIM Mock Viva & GD-PI Preparation Schedules Released",
+        title: "IIM Interview & GD-PI Preparation Schedules Released",
         badge: "Interview Prep",
         badgeBg: "#ECFDF5",
         badgeColor: "#059669",
@@ -567,7 +567,7 @@ export default function DashboardPage() {
                 { name: "Browse", href: "/browse" },
                 { name: "My Topics", href: "/topics" },
                 { name: "Intelligence Hub", href: "/intelligence" },
-                { name: "Mock Viva Prep", href: "/mock-viva-prep" },
+                { name: "Speak & Assess", href: "/mock-viva-prep" },
               ].map((item) => (
                 <Link
                   key={item.name}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
 import { notifyQuizCompleted } from "@/services/notificationService";
 import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
@@ -57,6 +58,9 @@ export default function ModuleQuizModal({
   // Timer: 12 minutes (720s) for module quiz (10 questions), 35 minutes (2100s) for grand quiz (30 questions)
   const initialDuration = customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60);
   const [timeLeft, setTimeLeft] = useState(initialDuration);
+  // Absolute deadline (ms epoch). The countdown is derived from the real clock so it
+  // stays accurate even when the browser throttles timers (tab/window switches).
+  const endAtRef = useRef<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(initialReviewMode);
   const [analysis, setAnalysis] = useState<QuizAnalysis | null>(initialAnalysis || null);
 
@@ -280,21 +284,41 @@ export default function ModuleQuizModal({
     handleSubmitRef.current = handleSubmit;
   }, [handleSubmit]);
 
-  // Timer effect
+  // Timer effect: derive remaining time from a fixed deadline instead of decrementing,
+  // so throttled/background timers can never make the clock fall behind.
   useEffect(() => {
     if (!isOpen || isSubmitted) return;
-    if (timeLeft <= 0) {
-      setShowSubmitConfirm(false);
-      setAutoSubmitNotice({
-        type: "timeout",
-        title: "Time's Up! Exam Auto-Submitted",
-        description: "The allocated time for this assessment has expired. Your recorded answers have been automatically evaluated and submitted.",
-      });
-      handleSubmitRef.current();
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
+
+    const tick = () => {
+      if (endAtRef.current === null) {
+        endAtRef.current = Date.now() + initialDuration * 1000;
+      }
+      const remaining = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
+      setTimeLeft((prev) => (prev === remaining ? prev : remaining));
+    };
+
+    tick();
+    const timer = setInterval(tick, 250);
+    // Re-sync immediately when the user returns to the tab/window.
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+      window.removeEventListener("focus", tick);
+    };
+  }, [isOpen, isSubmitted, initialDuration]);
+
+  // Auto-submit when the time runs out
+  useEffect(() => {
+    if (!isOpen || isSubmitted || timeLeft > 0) return;
+    setShowSubmitConfirm(false);
+    setAutoSubmitNotice({
+      type: "timeout",
+      title: "Time's Up! Exam Auto-Submitted",
+      description: "The allocated time for this assessment has expired. Your recorded answers have been automatically evaluated and submitted.",
+    });
+    handleSubmitRef.current();
   }, [isOpen, isSubmitted, timeLeft]);
 
   // Reset when modal is OPENED, RETAKEN, or viewing a different session
@@ -352,7 +376,9 @@ export default function ModuleQuizModal({
       setStrikes(0);
       strikesRef.current = 0;
       lastViolationTimeRef.current = 0;
-      setTimeLeft(customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60));
+      const freshDuration = customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60);
+      setTimeLeft(freshDuration);
+      endAtRef.current = Date.now() + freshDuration * 1000;
     }
     setProctorAlert(null);
     setReviewFilter("all");
@@ -509,6 +535,19 @@ export default function ModuleQuizModal({
     };
   }, [isOpen, isSubmitted]);
 
+  // Lock the page behind the exam and hide the site nav bar so it can never
+  // be painted over the exam header (timer, strikes, lock badge).
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.classList.add("exam-active");
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.classList.remove("exam-active");
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const currentQ = questions[currentIdx] || questions[0];
@@ -563,7 +602,7 @@ export default function ModuleQuizModal({
   });
 
 
-  return (
+  const modalContent = (
     <div
       className={styles.overlay}
       onContextMenu={(e) => e.preventDefault()}
@@ -1721,4 +1760,9 @@ export default function ModuleQuizModal({
       </div>
     </div>
   );
+
+  // Render at the document root so no page header/stacking context can cover the exam
+  // header (timer, strikes, lock badge). Falls back to inline render during SSR.
+  if (typeof document === "undefined") return modalContent;
+  return createPortal(modalContent, document.body);
 }
