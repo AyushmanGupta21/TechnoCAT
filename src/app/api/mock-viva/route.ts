@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
+import { consumeRateLimit } from "@/lib/auth/rateLimit";
 
 interface VivaFeedback {
   score: number;
@@ -86,6 +88,18 @@ function buildFallbackFeedback(
 
 export async function POST(request: NextRequest) {
   try {
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Please sign in to get feedback." }, { status: 401 });
+    }
+    const limit = consumeRateLimit(`mock-viva:${session.userId}`, 30, 10 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many feedback requests. Please wait a few minutes." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
+    }
+
     const body = await request.json();
     const question: string = (body?.question || "").toString();
     const answer: string = (body?.answer || "").toString();

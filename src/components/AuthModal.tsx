@@ -77,8 +77,8 @@ export default function AuthModal() {
         setLoading(false);
         return;
       }
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters.");
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters.");
         setLoading(false);
         return;
       }
@@ -216,8 +216,8 @@ export default function AuthModal() {
                 )}
               </button>
             </div>
-            {authModalTab === "signup" && password.length > 0 && password.length < 6 && (
-              <span className={styles.inputHintError}>Must be at least 6 characters</span>
+            {authModalTab === "signup" && password.length > 0 && password.length < 8 && (
+              <span className={styles.inputHintError}>Must be at least 8 characters</span>
             )}
           </div>
 

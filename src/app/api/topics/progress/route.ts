@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateLessonCompletion, getUserTopicProgress } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 async function resolveUserId(request: NextRequest): Promise<string | null> {
-  const userId = request.cookies.get("technocat_user_id")?.value;
-  return userId || null;
+  return getSession(request)?.userId ?? null;
 }
 
 export async function GET(request: NextRequest) {
   try {
     const userId = await resolveUserId(request);
     if (!userId) {
-      return NextResponse.json({ success: true, progress: [], isDemo: false });
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const rows = await getUserTopicProgress(userId);

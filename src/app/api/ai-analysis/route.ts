@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileByEmail } from "@/lib/db";
+import { query } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
-    let userId = request.cookies.get("technocat_user_id")?.value;
-
-    if (!userId) {
-      // Fallback to demo user for testing
-      const defaultUser = await getProfileByEmail("student@technocat.edu");
-      if (defaultUser) {
-        userId = defaultUser.id;
-      }
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
-
-    if (!userId) {
-      return NextResponse.json({ hasData: false, message: "User not found." });
-    }
+    const userId = session.userId;
 
     // 1. Fetch Latest Mock Attempt
     const attemptsRes = await query(

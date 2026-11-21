@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileByEmail, savePYQAttempt, getPYQAttempts, unlockPYQSubject } from "@/lib/db";
+import { query, savePYQAttempt, getPYQAttempts, unlockPYQSubject } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 async function resolveUserId(request: NextRequest): Promise<string | null> {
-  let userId = request.cookies.get("technocat_user_id")?.value;
-  if (!userId) {
-    const defaultUser = await getProfileByEmail("student@technocat.edu");
-    if (defaultUser) {
-      userId = defaultUser.id;
-    }
-  }
-  return userId || null;
+  return getSession(request)?.userId ?? null;
 }
 
 // GET: Fetch all attempt history and subject lockout status

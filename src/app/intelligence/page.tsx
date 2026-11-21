@@ -193,10 +193,10 @@ export default function IntelligenceHubPage() {
 
     const fetchDashboard = async () => {
       try {
-        const authHeaders: HeadersInit = user?.id ? { Authorization: `Bearer ${user.id}` } : {};
+        // Auth is carried by the httpOnly session cookie.
         const [dashRes, chalRes] = await Promise.all([
-          fetch("/api/dashboard", { headers: authHeaders }),
-          fetch("/api/intelligence/challenge", { headers: authHeaders })
+          fetch("/api/dashboard"),
+          fetch("/api/intelligence/challenge")
         ]);
 
         if (dashRes.ok) {

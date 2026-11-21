@@ -387,13 +387,8 @@ export default function DashboardPage() {
   // Fetch live dashboard analytics from Supabase
   const fetchDashboard = async () => {
     try {
-      const headers: Record<string, string> = {};
-      // Send user ID as Authorization header as fallback if the httpOnly cookie
-      // isn't accessible in some deployment environments
-      if (user?.id) {
-        headers["Authorization"] = `Bearer ${user.id}`;
-      }
-      const res = await fetch("/api/dashboard", { headers });
+      // Auth is carried by the httpOnly session cookie.
+      const res = await fetch("/api/dashboard");
       if (res.ok) {
         const text = await res.text();
         if (text && text.trim().length > 0) {

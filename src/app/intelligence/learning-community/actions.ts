@@ -1,7 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { query, getProfileById, getProfileByEmail } from "@/lib/db";
+import { query, getProfileById } from "@/lib/db";
+import { getServerSession } from "@/lib/auth/session";
+import { isDemoEmail, DEMO_EMAIL } from "@/lib/demo";
 import { resolveStudentName, sanitizeAvatarUrl, resolveUserAvatarUrl } from "@/lib/nameUtils";
 import { validateCommunityContent, validateCommentContent } from "@/lib/communityModeration";
 
@@ -79,320 +80,53 @@ export interface CommunityPayload {
   topContributors: ContributorItem[];
 }
 
-let schemaInitialized = false;
-
+// Server Functions are public HTTP endpoints: always derive the caller from the signed
+// session cookie and refuse to act when there is none (no guest / demo fallback).
 async function resolveCurrentUser() {
-  const cookieStore = await cookies();
-  const cookieUserId = cookieStore.get("technocat_user_id")?.value;
-
-  if (cookieUserId) {
-    const profile = await getProfileById(cookieUserId).catch(() => null);
-    if (profile) {
-      return {
-        id: String(profile.id),
-        fullName: resolveStudentName(profile.full_name, profile.email),
-        email: profile.email || "",
-        role: profile.dream_school ? `Target: ${profile.dream_school}` : "CAT 2026 Aspirant",
-        avatarUrl: resolveUserAvatarUrl(profile.avatar_url),
-      };
-    }
+  const session = await getServerSession();
+  if (!session) {
+    throw new Error("Please sign in to use the community.");
   }
 
-  const demoProfile = await getProfileByEmail("student@technocat.edu").catch(() => null);
-  if (demoProfile) {
-    return {
-      id: String(demoProfile.id),
-      fullName: resolveStudentName(demoProfile.full_name, demoProfile.email),
-      email: demoProfile.email || "student@technocat.edu",
-      role: demoProfile.role ? (demoProfile.role.charAt(0).toUpperCase() + demoProfile.role.slice(1)) : "Student",
-      avatarUrl: resolveUserAvatarUrl(demoProfile.avatar_url),
-    };
+  const profile = await getProfileById(session.userId);
+  if (!profile) {
+    throw new Error("Your account could not be found. Please sign in again.");
   }
 
   return {
-    id: "guest-aspirant",
-    fullName: "cat_aspirant",
-    email: "student@technocat.edu",
-    role: "CAT 2026 Aspirant",
-    avatarUrl: "/profile_icon.png",
+    id: String(profile.id),
+    fullName: resolveStudentName(profile.full_name, profile.email),
+    email: profile.email || "",
+    role: profile.dream_school ? `Target: ${profile.dream_school}` : "CAT 2026 Aspirant",
+    avatarUrl: resolveUserAvatarUrl(profile.avatar_url),
   };
 }
 
-async function ensureCommunityTablesAndSeed() {
-  if (schemaInitialized) return;
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_posts (
-      id TEXT PRIMARY KEY,
-      author_id TEXT NOT NULL,
-      author_name TEXT NOT NULL,
-      author_role TEXT DEFAULT 'CAT 2026 Aspirant',
-      author_avatar TEXT,
-      title TEXT NOT NULL,
-      content TEXT NOT NULL,
-      category TEXT NOT NULL,
-      image_url TEXT,
-      upvotes_count INTEGER DEFAULT 0,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_comments (
-      id TEXT PRIMARY KEY,
-      post_id TEXT NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
-      parent_comment_id TEXT,
-      author_id TEXT NOT NULL,
-      author_name TEXT NOT NULL,
-      author_role TEXT DEFAULT 'CAT 2026 Aspirant',
-      author_avatar TEXT,
-      content TEXT NOT NULL,
-      upvotes_count INTEGER DEFAULT 0,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_post_upvotes (
-      post_id TEXT NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
-      user_id TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      PRIMARY KEY (post_id, user_id)
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_saved_posts (
-      post_id TEXT NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
-      user_id TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      PRIMARY KEY (post_id, user_id)
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_comment_upvotes (
-      comment_id TEXT NOT NULL REFERENCES public.community_comments(id) ON DELETE CASCADE,
-      user_id TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      PRIMARY KEY (comment_id, user_id)
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_reports (
-      id SERIAL PRIMARY KEY,
-      post_id TEXT NOT NULL,
-      user_id TEXT NOT NULL,
-      reason TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    )
-  `);
-
-  await query(`
-    CREATE TABLE IF NOT EXISTS public.community_moderation_logs (
-      id SERIAL PRIMARY KEY,
-      post_id TEXT,
-      author_id TEXT,
-      reason TEXT NOT NULL,
-      violating_snippet TEXT,
-      action_taken TEXT DEFAULT 'rejected_at_submit',
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    )
-  `);
-
-  const now = Date.now();
-  const seedPosts = [
-    {
-      id: "post-ref-1",
-      authorId: "user-aditi",
-      authorName: "aditi_sharma",
-      authorRole: "CAT 2026 Aspirant • Target: IIM-A",
-      authorAvatar: null,
-      title: "How to approach DILR sets effectively?",
-      content:
-        "I am able to solve individual questions but struggle with selecting the right set in mocks.\nHow do you all decide which set to attempt first? Any tips or strategies would be helpful!",
-      category: "Doubt Solving",
-      upvotesCount: 12,
-      createdAt: new Date(now - 1000 * 60 * 120).toISOString(),
-    },
-    {
-      id: "post-ref-2",
-      authorId: "user-rahul",
-      authorName: "rahul_k",
-      authorRole: "CAT 2026 • 99%ile Target",
-      authorAvatar: null,
-      title: "My 3-month CAT preparation plan (Feedback Needed)",
-      content:
-        "Sharing my plan for the next 3 months. Please suggest what I can improve or add.\nIs 2 mocks per week enough at this stage?",
-      category: "CAT Strategy",
-      upvotesCount: 25,
-      createdAt: new Date(now - 1000 * 60 * 300).toISOString(),
-    },
-    {
-      id: "post-ref-3",
-      authorId: "user-megha",
-      authorName: "megha_17",
-      authorRole: "VARC Enthusiast • Target: FMS",
-      authorAvatar: null,
-      title: "Best resources for VARC RC practice?",
-      content:
-        "I am looking for good RC practice sources (PYQs, sectional tests, or any other platform).\nWhich resources helped you the most? Please share your suggestions.",
-      category: "Study Resources",
-      upvotesCount: 18,
-      createdAt: new Date(now - 1000 * 60 * 1440).toISOString(),
-    },
-    {
-      id: "post-ref-4",
-      authorId: "user-priya",
-      authorName: "priya_singh",
-      authorRole: "99.4%ile Mentor • Top Contributor",
-      authorAvatar: null,
-      title: "Mock Analysis Checklist: Converting silly errors into +15 marks",
-      content:
-        "Most aspirants spend 2 hours taking a mock and only 30 minutes analyzing it. Flip that ratio! Track every single mistake across 4 buckets: Calculation Slip, Concept Gap, Misread Constraint, and Ego Time-Trap.",
-      category: "Mocks & Analysis",
-      upvotesCount: 31,
-      createdAt: new Date(now - 1000 * 60 * 2100).toISOString(),
-    },
-    {
-      id: "post-ref-5",
-      authorId: "user-aniket",
-      authorName: "aniket_verma",
-      authorRole: "Working Professional • 24m Work-Ex",
-      authorAvatar: null,
-      title: "Staying consistent with a full-time job: My 90-day streak reflection",
-      content:
-        "Completed 90 consecutive days of solving 2 DILR sets and 15 QA questions before 8:30 AM. Even on hectic sprint days, showing up for 90 minutes keeps momentum alive!",
-      category: "Motivation & Journey",
-      upvotesCount: 22,
-      createdAt: new Date(now - 1000 * 60 * 2800).toISOString(),
-    },
-    {
-      id: "post-ref-6",
-      authorId: "user-shruti",
-      authorName: "shruti_agarwal",
-      authorRole: "Target: SPJIMR & IIM Mumbai",
-      authorAvatar: null,
-      title: "Profile-based calls vs High CAT Percentile: Non-Engineer perspective",
-      content:
-        "For candidates with 8/8/8 academics, how should we prioritize profile-cum-score institutes like SPJIMR and MDI Gurgaon alongside BLACKI?",
-      category: "College Discussions",
-      upvotesCount: 14,
-      createdAt: new Date(now - 1000 * 60 * 3400).toISOString(),
-    },
-  ];
-
-  for (const p of seedPosts) {
-    await query(
-      `INSERT INTO public.community_posts (
-        id, author_id, author_name, author_role, author_avatar, title, content, category, upvotes_count, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      ON CONFLICT (id) DO NOTHING`,
-      [
-        p.id,
-        p.authorId,
-        p.authorName,
-        p.authorRole,
-        p.authorAvatar,
-        p.title,
-        p.content,
-        p.category,
-        p.upvotesCount,
-        p.createdAt,
-      ]
-    );
-  }
-
-  const seedComments = [
-    {
-      id: "cmt-ref-1",
-      postId: "post-ref-1",
-      parentCommentId: null,
-      authorId: "user-priya",
-      authorName: "priya_singh",
-      authorRole: "99.4%ile Mentor",
-      content:
-        "Spend the first 5 minutes scanning all 4 sets without picking up the pen. Look for sets with direct tabular data or <= 5 entities first, and avoid games/tournaments with conditional branching in Round 1.",
-      upvotesCount: 9,
-      createdAt: new Date(now - 1000 * 60 * 95).toISOString(),
-    },
-    {
-      id: "cmt-ref-2",
-      postId: "post-ref-1",
-      parentCommentId: "cmt-ref-1",
-      authorId: "user-aditi",
-      authorName: "aditi_sharma",
-      authorRole: "CAT 2026 Aspirant",
-      content:
-        "Thank you Priya! That 5-minute no-pen scanning rule makes a lot of sense—I usually jump straight into Set 1.",
-      upvotesCount: 4,
-      createdAt: new Date(now - 1000 * 60 * 80).toISOString(),
-    },
-    {
-      id: "cmt-ref-3",
-      postId: "post-ref-2",
-      parentCommentId: null,
-      authorId: "user-aniket",
-      authorName: "aniket_verma",
-      authorRole: "Working Professional",
-      content:
-        "2 full mocks per week + 3 sectional tests is the sweet spot right now. Make sure you spend at least 3 hours analyzing each mock before taking the next one!",
-      upvotesCount: 7,
-      createdAt: new Date(now - 1000 * 60 * 240).toISOString(),
-    },
-    {
-      id: "cmt-ref-4",
-      postId: "post-ref-3",
-      parentCommentId: null,
-      authorId: "user-karthik",
-      authorName: "karthik_r",
-      authorRole: "CAT 2026 Aspirant",
-      content:
-        "CAT 2017–2024 Official PYQ RC passages are unmatched for understanding actual CAT inference traps. Pair them with 1 daily Aeon Philosophy/Sociology article.",
-      upvotesCount: 6,
-      createdAt: new Date(now - 1000 * 60 * 1100).toISOString(),
-    },
-  ];
-
-  for (const c of seedComments) {
-    await query(
-      `INSERT INTO public.community_comments (
-        id, post_id, parent_comment_id, author_id, author_name, author_role, content, upvotes_count, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      ON CONFLICT (id) DO NOTHING`,
-      [
-        c.id,
-        c.postId,
-        c.parentCommentId,
-        c.authorId,
-        c.authorName,
-        c.authorRole,
-        c.content,
-        c.upvotesCount,
-        c.createdAt,
-      ]
-    );
-  }
-
-  schemaInitialized = true;
-}
-
 export async function getCommunityDataAction(): Promise<CommunityPayload> {
-  await ensureCommunityTablesAndSeed();
   const currentUser = await resolveCurrentUser();
+  const isDemo = isDemoEmail(currentUser.email);
+
+  // Visibility rule: the demo showcase account sees everything (including seeded example
+  // discussions). Real accounts never see seeded rows or content written by the demo account.
+  const visibilityFilter = `($1::boolean OR (is_seed = FALSE AND author_id NOT IN (
+      SELECT id::text FROM public.profiles WHERE lower(email) = $2
+    )))`;
 
   const [postsRes, commentsRes, upvotesRes, savedRes, commentUpvotesRes] = await Promise.all([
-    query(`
-      SELECT id, author_id, author_name, author_role, author_avatar, title, content, category, image_url, upvotes_count, created_at
-      FROM public.community_posts
-      ORDER BY created_at DESC
-    `),
-    query(`
-      SELECT id, post_id, parent_comment_id, author_id, author_name, author_role, author_avatar, content, upvotes_count, created_at
-      FROM public.community_comments
-      ORDER BY created_at ASC
-    `),
+    query(
+      `SELECT id, author_id, author_name, author_role, author_avatar, title, content, category, image_url, upvotes_count, created_at
+       FROM public.community_posts
+       WHERE ${visibilityFilter}
+       ORDER BY created_at DESC`,
+      [isDemo, DEMO_EMAIL]
+    ),
+    query(
+      `SELECT id, post_id, parent_comment_id, author_id, author_name, author_role, author_avatar, content, upvotes_count, created_at
+       FROM public.community_comments
+       WHERE ${visibilityFilter}
+       ORDER BY created_at ASC`,
+      [isDemo, DEMO_EMAIL]
+    ),
     query(`SELECT post_id FROM public.community_post_upvotes WHERE user_id = $1`, [currentUser.id]),
     query(`SELECT post_id FROM public.community_saved_posts WHERE user_id = $1`, [currentUser.id]),
     query(`SELECT comment_id FROM public.community_comment_upvotes WHERE user_id = $1`, [currentUser.id]).catch(() => ({ rows: [] })),
@@ -423,12 +157,10 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
     commentsByPost.set(item.postId, list);
   }
 
-  // Reference baseline comment counts for the primary seeded posts so they match the reference UI while incrementing with real new comments
-  const baselineCommentBonus: Record<string, number> = {
-    "post-ref-1": 6,
-    "post-ref-2": 13,
-    "post-ref-3": 10,
-  };
+  // Showcase-only: inflated comment counts on seeded example posts (demo account only).
+  const baselineCommentBonus: Record<string, number> = isDemo
+    ? { "post-ref-1": 6, "post-ref-2": 13, "post-ref-3": 10 }
+    : {};
 
   const validRows: any[] = [];
   for (const row of postsRes.rows) {
@@ -471,8 +203,6 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
         comments: postComments,
       };
     });
-
-  const isDemo = !currentUser.email || currentUser.email.toLowerCase() === "student@technocat.edu";
 
   if (isDemo) {
     // Top Contributors list seeded with the 5 community leaders + live user activity
@@ -560,9 +290,10 @@ export async function getCommunityDataAction(): Promise<CommunityPayload> {
   const realSolutionsCount = commentsRes.rows.length;
 
   const upvotedComments = commentsRes.rows.filter((c: any) => Number(c.upvotes_count || 0) > 0).length;
+  // Share of answers that received at least one upvote; no answers yet => no rate.
   const realHelpfulRate = realSolutionsCount > 0
-    ? `${Math.max(80, Math.round((upvotedComments / realSolutionsCount) * 100))}%`
-    : "100%";
+    ? `${Math.round((upvotedComments / realSolutionsCount) * 100)}%`
+    : "—";
 
   const formatCount = (val: number) => {
     if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
@@ -642,7 +373,6 @@ export async function createCommunityPostAction(input: {
   imageUrl?: string | null;
 }): Promise<{ success: boolean; error?: string; payload?: CommunityPayload }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     let cleanTitle = (input.title || "").trim();
@@ -744,7 +474,6 @@ export async function togglePostUpvoteAction(postId: string): Promise<{
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const existing = await query(
@@ -785,7 +514,6 @@ export async function toggleCommentUpvoteAction(commentId: string): Promise<{
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const existing = await query(
@@ -826,7 +554,6 @@ export async function toggleSavePostAction(postId: string): Promise<{
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const existing = await query(
@@ -860,7 +587,6 @@ export async function addCommentOrReplyAction(input: {
   parentCommentId?: string | null;
 }): Promise<{ success: boolean; error?: string; payload?: CommunityPayload }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
     const cleanContent = (input.content || "").trim();
 
@@ -913,7 +639,6 @@ export async function deleteCommunityPostAction(postId: string): Promise<{
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const postRes = await query(
@@ -948,7 +673,6 @@ export async function deleteCommunityCommentAction(commentId: string): Promise<{
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const cmtRes = await query(
@@ -994,7 +718,6 @@ export async function reportCommunityPostAction(postId: string, reason?: string)
   payload?: CommunityPayload;
 }> {
   try {
-    await ensureCommunityTablesAndSeed();
     const user = await resolveCurrentUser();
 
     const pInfo = await query(`SELECT title, author_id FROM public.community_posts WHERE id = $1`, [postId]);

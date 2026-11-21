@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enrollUserInTopic } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 async function resolveUserId(request: NextRequest): Promise<string | null> {
-  return request.cookies.get("technocat_user_id")?.value || null;
+  return getSession(request)?.userId ?? null;
 }
 
 export async function POST(request: NextRequest) {

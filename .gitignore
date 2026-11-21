@@ -46,3 +46,7 @@ proxy-3000.js
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+!.env.example
+
+# local database backups (contain personal data)
+/backups/

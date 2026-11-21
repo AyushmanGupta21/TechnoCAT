@@ -1,99 +1,81 @@
-import { Pool, types } from "pg";
+import { Pool, types, type PoolConfig, type PoolClient } from "pg";
 import { CURRICULUM_TASKS_TEMPLATE } from "@/data/curriculumScheduleData";
+import { isDemoEmail } from "@/lib/demo";
 
 // Force PostgreSQL DATE column (OID 1082) to always parse as a clean 'YYYY-MM-DD' string
 // to avoid local/UTC timezone shifts when serializing task dates.
 types.setTypeParser(1082, (val: string) => val);
 
-// Create a single shared PostgreSQL connection pool for server-side routes
-let pool: Pool;
+// Create a single shared PostgreSQL connection pool for server-side routes.
+//
+// Credentials come ONLY from the environment (.env.local locally, project env vars in
+// deployment). Either set PGHOST / PGPORT / PGUSER / PGPASSWORD / PGDATABASE, or a single
+// DATABASE_URL. For Supabase on IPv4-only hosts (e.g. Vercel) use the pooler host
+// (aws-0-<region>.pooler.supabase.com:6543) with the tenant user "postgres.<project-ref>".
+//
+// TLS: set DATABASE_CA_CERT to the Supabase CA certificate (PEM) to enable full
+// certificate verification; without it the connection is encrypted but unverified.
 
-// Candidate passwords for self-healing pooler connection
-const CANDIDATE_PASSWORDS = [
-  "DebAyush@31",
-  process.env.PGPASSWORD,
-  "KoJPbri8cQ5rAwtN",
-].filter((pw, idx, arr): pw is string => Boolean(pw) && arr.indexOf(pw) === idx);
+function buildPoolConfig(): PoolConfig {
+  const ssl = process.env.DATABASE_CA_CERT
+    ? { ca: process.env.DATABASE_CA_CERT.replace(/\\n/g, "\n"), rejectUnauthorized: true }
+    : { rejectUnauthorized: false };
 
-let activePasswordIndex = 0;
+  const shared = { ssl, max: 10, idleTimeoutMillis: 30000, connectionTimeoutMillis: 15000 };
 
-// Helper function to resolve IPv4 pooler for Supabase in Vercel/serverless environments
-function createPgPool(overridePassword?: string): Pool {
-  const effectivePassword = overridePassword || CANDIDATE_PASSWORDS[activePasswordIndex] || "DebAyush@31";
-
-  let host = process.env.PGHOST || "aws-0-ap-southeast-1.pooler.supabase.com";
-  let port = parseInt(process.env.PGPORT || "6543", 10);
-  let user = process.env.PGUSER || "postgres.bcpisnqisnhiuxwhjuvo";
-
-  // Enforce the Supabase IPv4 pooler and tenant username so Vercel never attempts
-  // direct IPv6 connections or un-namespaced 'postgres' auth which fails on poolers.
-  if (!host || host.includes("db.bcpisnqisnhiuxwhjuvo.supabase.co")) {
-    host = "aws-0-ap-southeast-1.pooler.supabase.com";
-    port = 6543;
-  }
-  if (!user || user === "postgres" || !user.includes(".")) {
-    user = "postgres.bcpisnqisnhiuxwhjuvo";
+  if (process.env.PGHOST && process.env.PGUSER && process.env.PGPASSWORD) {
+    return {
+      ...shared,
+      host: process.env.PGHOST,
+      port: parseInt(process.env.PGPORT || "5432", 10),
+      user: process.env.PGUSER,
+      password: process.env.PGPASSWORD,
+      database: process.env.PGDATABASE || "postgres",
+    };
   }
 
-  return new Pool({
-    host,
-    port,
-    user,
-    password: effectivePassword,
-    database: process.env.PGDATABASE || "postgres",
-    ssl: { rejectUnauthorized: false },
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 15000,
-  });
-}
+  if (process.env.DATABASE_URL) {
+    return { ...shared, connectionString: process.env.DATABASE_URL };
+  }
 
-
-if (!global._pgPool) {
-  global._pgPool = createPgPool();
+  throw new Error(
+    "Database is not configured. Set PGHOST, PGUSER, PGPASSWORD (and optionally PGPORT, PGDATABASE) " +
+      "or DATABASE_URL in .env.local / deployment environment."
+  );
 }
-pool = global._pgPool;
 
 declare global {
   // eslint-disable-next-line no-var
   var _pgPool: Pool | undefined;
 }
 
+// Created lazily so a missing configuration fails the request (with a clear log line)
+// instead of crashing the build or module import.
+function getPool(): Pool {
+  if (!global._pgPool) {
+    global._pgPool = new Pool(buildPoolConfig());
+    global._pgPool.on("error", (err) => {
+      console.error("[PostgreSQL Pool Error]", err.message);
+    });
+  }
+  return global._pgPool;
+}
+
 export async function query<T = any>(text: string, params?: any[]): Promise<{ rows: T[]; rowCount: number | null }> {
   const start = Date.now();
   try {
-    const res = await pool.query(text, params);
+    const res = await getPool().query(text, params);
     const duration = Date.now() - start;
     if (process.env.NODE_ENV === "development") {
       console.log("[PostgreSQL Exec]", { text: text.slice(0, 80), duration: `${duration}ms`, rows: res.rowCount });
     }
     return res;
   } catch (error: any) {
-    // If password authentication failed (error 28P01), automatically try alternate candidate credentials
-    if (error?.code === "28P01" || error?.message?.includes("password authentication failed")) {
-      console.warn(`[PostgreSQL Auth] Password authentication failed. Trying alternate credentials...`);
-      for (let i = 0; i < CANDIDATE_PASSWORDS.length; i++) {
-        if (i === activePasswordIndex) continue;
-        const candidate = CANDIDATE_PASSWORDS[i];
-        try {
-          const fallbackPool = createPgPool(candidate);
-          const res = await fallbackPool.query(text, params);
-          const oldPool = pool;
-          pool = fallbackPool;
-          global._pgPool = fallbackPool;
-          activePasswordIndex = i;
-          oldPool.end().catch(() => {});
-          console.log(`[PostgreSQL Auth] Successfully re-authenticated with candidate credential #${i}.`);
-          return res;
-        } catch (retryErr: any) {
-          if (retryErr?.code === "28P01" || retryErr?.message?.includes("password authentication failed")) {
-            continue;
-          }
-          throw retryErr;
-        }
-      }
+    if (error?.code === "28P01") {
+      console.error("[PostgreSQL Auth] Password authentication failed. Check PGPASSWORD / DATABASE_URL.");
+    } else {
+      console.error("[PostgreSQL Error]", { text: text.slice(0, 120), code: error?.code, error: error?.message });
     }
-    console.error("[PostgreSQL Error]", { text, error: error.message });
     throw error;
   }
 }
@@ -178,20 +160,45 @@ export async function updateProfile(
   return res.rows[0] || null;
 }
 
-export async function deleteProfile(id: string) {
+/** Run `fn` inside a single transaction on one pooled connection. */
+export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getPool().connect();
   try {
-    await query(`DELETE FROM public.topic_progress WHERE user_id = $1`, [id]).catch(() => {});
-    await query(`DELETE FROM public.study_tasks WHERE user_id = $1`, [id]).catch(() => {});
-    await query(`DELETE FROM public.study_sessions WHERE user_id = $1`, [id]).catch(() => {});
-    await query(`DELETE FROM public.pyq_attempts WHERE user_id = $1`, [id]).catch(() => {});
-    await query(`DELETE FROM public.user_course_enrollments WHERE user_id = $1`, [id]).catch(() => {});
-    await query(`DELETE FROM public.user_module_progress WHERE user_id = $1`, [id]).catch(() => {});
+    await client.query("BEGIN");
+    const result = await fn(client);
+    await client.query("COMMIT");
+    return result;
   } catch (err) {
-    console.warn("[DeleteProfile non-fatal cleanup warning]", err);
+    await client.query("ROLLBACK").catch(() => {});
+    throw err;
+  } finally {
+    client.release();
   }
+}
 
-  const res = await query(`DELETE FROM public.profiles WHERE id = $1 RETURNING id`, [id]);
-  return Boolean(res.rowCount && res.rowCount > 0);
+/**
+ * Permanently deletes an account and everything it owns, atomically.
+ * Tables with a FOREIGN KEY to profiles (topic_progress, study_tasks, study_sessions,
+ * pyq_attempts, mock_attempts -> answers/sections, ai_chat_messages) are removed by
+ * ON DELETE CASCADE. Tables keyed by a plain user id column are cleaned up explicitly.
+ */
+export async function deleteProfile(id: string) {
+  return withTransaction(async (client) => {
+    // Community: the user's votes/saves/reports, their comments (and replies to them via
+    // post cascade), and their posts (cascade removes comments/votes/saves on those posts).
+    await client.query(`DELETE FROM public.community_post_upvotes WHERE user_id = $1`, [id]);
+    await client.query(`DELETE FROM public.community_comment_upvotes WHERE user_id = $1`, [id]);
+    await client.query(`DELETE FROM public.community_saved_posts WHERE user_id = $1`, [id]);
+    await client.query(`DELETE FROM public.community_reports WHERE user_id = $1`, [id]);
+    await client.query(`DELETE FROM public.community_comments WHERE author_id = $1`, [id]);
+    await client.query(`DELETE FROM public.community_posts WHERE author_id = $1`, [id]);
+    // Intelligence Hub tracking.
+    await client.query(`DELETE FROM public.analysis_views WHERE user_id = $1`, [id]);
+    await client.query(`DELETE FROM public.user_challenges WHERE user_id = $1`, [id]);
+
+    const res = await client.query(`DELETE FROM public.profiles WHERE id = $1 RETURNING id`, [id]);
+    return Boolean(res.rowCount && res.rowCount > 0);
+  });
 }
 
 export async function createProfile(email: string, passwordHash: string, fullName: string) {
@@ -205,7 +212,7 @@ export async function createProfile(email: string, passwordHash: string, fullNam
 
   // NOTE: Only seed starter mock data if it is the demo account ("student@technocat.edu").
   // Real accounts start clean with real data and real progress.
-  if (email.toLowerCase() === "student@technocat.edu") {
+  if (isDemoEmail(email)) {
     try {
       await query(
         `INSERT INTO public.topic_progress (user_id, topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned)
@@ -247,7 +254,7 @@ export async function createProfile(email: string, passwordHash: string, fullNam
 export async function getDashboardData(userId: string) {
   // Check if this user is the demo user
   const userProfile = await getProfileById(userId);
-  const isDemo = userProfile?.email?.toLowerCase() === "student@technocat.edu";
+  const isDemo = isDemoEmail(userProfile?.email);
 
   // 1. Topic progress summary
   const progressRes = await query(
@@ -406,7 +413,7 @@ export async function getUserReadinessMetrics(
 
   try {
     const userProfile = await getProfileById(userId);
-    const isDemo = userProfile?.email?.toLowerCase() === "student@technocat.edu";
+    const isDemo = isDemoEmail(userProfile?.email);
 
     // 1. Fetch real topic progress for Concept mastery (or use preloaded)
     let topicRows = preloadedTopicRows;
@@ -678,7 +685,7 @@ export async function toggleStudyTask(userId: string, taskId: string, isComplete
   const res = await query(
     `UPDATE public.study_tasks 
      SET is_completed = $1 
-     WHERE id = $2 AND (user_id = $3 OR user_id IS NULL)
+     WHERE id = $2 AND user_id = $3
      RETURNING id, title, task_date, is_completed, category, code, time_range, duration, subtitle`,
     [isCompleted, taskId, userId]
   );

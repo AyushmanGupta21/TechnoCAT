@@ -1,45 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProfileByEmail, getProfileById, query } from "@/lib/db";
-
-const FALLBACK_USER_ID = "00000000-0000-0000-0000-000000000000";
+import { query } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
-    let userId = request.cookies.get("technocat_user_id")?.value;
-
-    if (!userId) {
-      const defaultUser = await getProfileByEmail("student@technocat.edu");
-      userId = defaultUser?.id || FALLBACK_USER_ID;
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+    const userId = session.userId;
 
-    // Ensure analysis_views table exists for tracking task 2
-    await query(`
-      CREATE TABLE IF NOT EXISTS public.analysis_views (
-        id SERIAL PRIMARY KEY,
-        user_id UUID NOT NULL,
-        viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      )
-    `, []);
-
-    // 1. Get or Initialize Challenge Start Date
-    await query(`
-      CREATE TABLE IF NOT EXISTS public.user_challenges (
-        user_id UUID PRIMARY KEY,
-        challenge_start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      )
-    `, []);
-
-    let challengeRes = await query(
-      `SELECT challenge_start_date FROM public.user_challenges WHERE user_id = $1 LIMIT 1`,
+    // 1. Get or initialize the challenge start date (tables: db/migrations/0002_*).
+    //    Single round trip and race-safe: concurrent first requests cannot double-insert.
+    const challengeRes = await query(
+      `INSERT INTO public.user_challenges (user_id) VALUES ($1)
+       ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+       RETURNING challenge_start_date`,
       [userId]
     );
-
-    if (challengeRes.rows.length === 0) {
-      challengeRes = await query(
-        `INSERT INTO public.user_challenges (user_id) VALUES ($1) RETURNING challenge_start_date`,
-        [userId]
-      );
-    }
 
     const startDate = new Date(challengeRes.rows[0].challenge_start_date);
     startDate.setUTCHours(0, 0, 0, 0);

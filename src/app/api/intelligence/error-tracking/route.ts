@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileByEmail, getProfileById, getPYQAttempts } from "@/lib/db";
-
-async function resolveUser(request: NextRequest): Promise<{ userId: string | null; isDemo: boolean }> {
-  const userId = request.cookies.get("technocat_user_id")?.value;
-  if (userId) {
-    const profile = await getProfileById(userId);
-    const isDemo = profile?.email?.toLowerCase() === "student@technocat.edu";
-    return { userId, isDemo };
-  }
-  const defaultUser = await getProfileByEmail("student@technocat.edu");
-  return { userId: defaultUser?.id || null, isDemo: true };
-}
+import { query, getPYQAttempts } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 
 export interface ErrorRecord {
   id: string;
@@ -181,7 +171,11 @@ const DEFAULT_ERRORS: ErrorRecord[] = [
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, isDemo } = await resolveUser(request);
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    const { userId, isDemo } = session;
     
     // Check if user has real PYQ attempts
     let pyqAttempts: any[] = [];

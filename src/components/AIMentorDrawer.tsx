@@ -186,10 +186,8 @@ export default function AIMentorDrawer({
     }
 
     try {
+      // Auth is carried by the httpOnly session cookie.
       const authHeaders: HeadersInit = { "Content-Type": "application/json" };
-      if (userId) {
-        authHeaders["Authorization"] = `Bearer ${userId}`;
-      }
 
       // Send recent context (filter out errors)
       const contextToSend = newMessages

@@ -1,45 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query, getProfileById, getUserReadinessMetrics } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
+import { consumeRateLimit } from "@/lib/auth/rateLimit";
 
-async function resolveUserId(request: NextRequest): Promise<string | null> {
-  const cookieUserId = request.cookies.get("technocat_user_id")?.value;
-  if (cookieUserId && cookieUserId.trim().length > 0) {
-    return cookieUserId.trim();
-  }
-
-  const authHeader = request.headers.get("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.slice(7).trim();
-    if (token.length > 0) {
-      try {
-        const profile = await getProfileById(token);
-        if (profile?.id) return profile.id;
-      } catch {
-        // ignore lookup error
-      }
-    }
-  }
-
-  return null;
-}
+const MAX_HISTORY_MESSAGES = 12;
+const MAX_MESSAGE_CHARS = 2000;
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await resolveUserId(request);
-    const body = await request.json();
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Please sign in to chat with the AI Mentor." }, { status: 401 });
+    }
+    const userId = session.userId;
+
+    const limit = consumeRateLimit(`mentor:${userId}`, 30, 10 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "You're sending messages too quickly. Please wait a few minutes." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const { messages = [], question } = body;
 
-    // Normalise incoming message history
+    // Normalise incoming message history (bounded to control prompt size / cost)
     let conversation: Array<{ role: "user" | "assistant"; content: string }> = [];
     if (Array.isArray(messages) && messages.length > 0) {
       conversation = messages
         .filter((m: any) => m && m.content && (m.role === "user" || m.role === "assistant"))
+        .slice(-MAX_HISTORY_MESSAGES)
         .map((m: any) => ({
           role: m.role as "user" | "assistant",
-          content: String(m.content).trim(),
+          content: String(m.content).trim().slice(0, MAX_MESSAGE_CHARS),
         }));
     } else if (question && typeof question === "string" && question.trim()) {
-      conversation = [{ role: "user", content: question.trim() }];
+      conversation = [{ role: "user", content: question.trim().slice(0, MAX_MESSAGE_CHARS) }];
     }
 
     if (conversation.length === 0) {
@@ -68,9 +65,10 @@ export async function POST(request: NextRequest) {
       try {
         const profile = await getProfileById(userId);
         if (profile) {
-          studentName = profile.fullName || studentName;
-          targetYear = profile.targetYear || targetYear;
-          dreamSchool = profile.dreamSchool || dreamSchool;
+          // DB rows are snake_case (full_name, target_year, dream_school).
+          studentName = profile.full_name || studentName;
+          targetYear = profile.target_year || targetYear;
+          dreamSchool = profile.dream_school || dreamSchool;
         }
 
         readinessInfo = await getUserReadinessMetrics(userId);

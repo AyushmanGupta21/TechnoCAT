@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileByEmail } from "@/lib/db";
+import { query } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
+import { consumeRateLimit } from "@/lib/auth/rateLimit";
 import { getTopicById } from "@/data/topicsData";
 import { getLessonKnowledge, QuizQuestion } from "@/data/videoPortions";
 
 export async function POST(request: NextRequest) {
   try {
-    let userId = request.cookies.get("technocat_user_id")?.value;
-    if (!userId) {
-      const defaultUser = await getProfileByEmail("student@technocat.edu");
-      if (defaultUser) userId = defaultUser.id;
+    const session = getSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Please sign in to use the lesson assistant." }, { status: 401 });
+    }
+    const userId = session.userId;
+
+    const limit = consumeRateLimit(`chat:${userId}`, 40, 10 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "You're asking questions too quickly. Please wait a few minutes." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
     }
 
     const {

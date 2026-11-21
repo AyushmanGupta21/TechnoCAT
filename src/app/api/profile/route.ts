@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProfileById, getProfileByEmail, updateProfile } from "@/lib/db";
+import { getProfileById, updateProfile } from "@/lib/db";
 import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
+import { getSession } from "@/lib/auth/session";
 
 async function resolveUserId(request: NextRequest): Promise<{ userId: string | null; isDemo: boolean }> {
-  const userId = request.cookies.get("technocat_user_id")?.value;
-  if (userId) {
-    return { userId, isDemo: false };
-  }
-  const defaultUser = await getProfileByEmail("student@technocat.edu");
-  return { userId: defaultUser?.id || null, isDemo: true };
+  const session = getSession(request);
+  return { userId: session?.userId ?? null, isDemo: session?.isDemo ?? false };
 }
 
 export async function GET(request: NextRequest) {
@@ -34,12 +31,13 @@ export async function GET(request: NextRequest) {
         targetYear: user.target_year || "CAT 2026",
         dreamSchool: user.dream_school || "",
         preferences: user.preferences || {},
-        isGuest: isDemo,
+        isGuest: false,
+        isDemo,
       },
     });
   } catch (error: any) {
     console.error("[Profile GET API Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch profile." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch profile." }, { status: 500 });
   }
 }
 
