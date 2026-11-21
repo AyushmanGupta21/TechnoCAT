@@ -1122,7 +1122,7 @@
     "question_number": 1,
     "type": "MCQ",
     "context": "",
-    "question": "f(x) = \\\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}) is negative if and only if",
+    "question": "f(x) = \\(\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}\\) is negative if and only if",
     "options": [
       "-5 < x < -2 or 3 < x < 9",
       "-2 < x < 3 or x > 9",
@@ -1130,7 +1130,7 @@
       "x < -5 or -2 < x < 3"
     ],
     "correct_answer": "Choice A\n-5 < x < -2 or 3 < x < 9",
-    "explanation": "f(x) = \\\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}) f(x) = \\\\frac{(x+5)(x-3)}{(x-9)(x+2)}) -5, -2, 3, 9 are the roots of the function f(x). \n\n![Q1 graph - roots](/pyq/2021/images/s1_quant_q1_0_image003.png)\n\n Keeping these roots on the number line and checking for the range where f(x) becomes negative. For the numbers below -5, f(x) is positive. For the numbers between -5 and -2, the value f(x) is negative. For the numbers between -2 and 3, the value of f(x) is positive. For the numbers between 3 and 9, the value of f(x) is negative. For the numbers above 9, the value of f(x) is positive. Hence the range should be -5 < x < -2 and 3 < x < 9.\n\nThe question is \" f(x) = \\\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}) is negative if and only if \"\n\nHence, the answer is '-5 < x < -2 or 3 < x < 9'\n\nChoice A is the correct answer.",
+    "explanation": "f(x) = \\(\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}\\) f(x) = \\(\\frac{(x+5)(x-3)}{(x-9)(x+2)}\\) -5, -2, 3, 9 are the roots of the function f(x). \n\n![Q1 graph - roots](/pyq/2021/images/s1_quant_q1_0_image003.png)\n\n Keeping these roots on the number line and checking for the range where f(x) becomes negative. For the numbers below -5, f(x) is positive. For the numbers between -5 and -2, the value f(x) is negative. For the numbers between -2 and 3, the value of f(x) is positive. For the numbers between 3 and 9, the value of f(x) is negative. For the numbers above 9, the value of f(x) is positive. Hence the range should be -5 < x < -2 and 3 < x < 9.\n\nThe question is \" f(x) = \\(\\frac{x^{2}+2 x-15}{x^{2}-7 x-18}\\) is negative if and only if \"\n\nHence, the answer is '-5 < x < -2 or 3 < x < 9'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=9",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-1.shtml",
     "images": [
@@ -1177,7 +1177,7 @@
       "144"
     ],
     "correct_answer": "Choice A\n127",
-    "explanation": "Let's consider the selling prices of small and large chocolate boxes be ‘x’ and ‘2x’ respectively. Let's also consider the weights of the small and large chocolate boxes to be 100(to make it easy) and y respectively. Given that, the selling price per gram of chocolate in the large box is 12% less than that in the small box. Therefore, \\\\frac{x}{100}) x 0.88 = \\\\frac{2 x}{y}) y = \\\\frac{200}{0.88}) y \\\\cong) 227 Hence, the weight of chocolate in a large box exceeds 127% of that of a small box.  Hence the answer is 127.\n\nThe answer is '127'\n\nChoice A is the correct answer.",
+    "explanation": "Let's consider the selling prices of small and large chocolate boxes be ‘x’ and ‘2x’ respectively. Let's also consider the weights of the small and large chocolate boxes to be 100(to make it easy) and y respectively. Given that, the selling price per gram of chocolate in the large box is 12% less than that in the small box. Therefore, \\(\\frac{x}{100}\\) x 0.88 = \\(\\frac{2 x}{y}\\) y = \\(\\frac{200}{0.88}\\) y \\\\cong) 227 Hence, the weight of chocolate in a large box exceeds 127% of that of a small box.  Hence the answer is 127.\n\nThe answer is '127'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=265",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-3.shtml",
     "images": []
@@ -1190,10 +1190,10 @@
     "question_number": 4,
     "type": "TITA",
     "context": "",
-    "question": "If 5 - \\\\log _{10} \\sqrt{1+x}) + 4 \\\\log _{10} \\sqrt{1-x}) = \\\\log _{10} \\frac{1}{\\sqrt{1-x^{2}}}) , then 100 x equals",
+    "question": "If \\(5 - \\log_{10}\\sqrt{1+x} + 4\\log_{10}\\sqrt{1-x} = \\log_{10}\\frac{1}{\\sqrt{1-x^2}}\\) , then 100 x equals",
     "options": [],
     "correct_answer": "99",
-    "explanation": "5 - \\\\log _{10} \\sqrt{1 + x}) + 4\\\\log _{10} \\sqrt{1 - x}) = \\\\log _{10} \\frac{1}{\\sqrt{1-x^{2}}}) 5 - \\\\log _{10} \\sqrt{1 + x}) + 4\\\\log _{10} \\sqrt{1 - x}) = \\\\log _{10} { \\left( \\frac{1}{\\sqrt{1-x}} \\frac{1}{\\sqrt{1+x}} \\right)}) 5 - \\\\log _{10} \\sqrt{1 + x}) + 4\\\\log _{10} \\sqrt{1 - x}) = - \\\\log _{10} \\sqrt{1 - x}) - \\\\log _{10} \\sqrt{1 + x}) 4\\\\log _{10} \\sqrt{1 - x}) + \\\\log _{10} \\sqrt{1 - x}) = -5 \\\\log _{10} \\sqrt{1 - x}) = -1 \\\\sqrt{1-x}) = \\\\frac{1}{10}) 100x = 99. Therefore the answer should be 99.\n\nThe question is \" If 5 - \\\\log _{10} \\sqrt{1+x}) + 4 \\\\log _{10} \\sqrt{1-x}) = \\\\log _{10} \\frac{1}{\\sqrt{1-x^{2}}}) , then 100 x equals \"\n\nHence, the answer is '99'",
+    "explanation": "5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = \\log _{10} \\frac{1}{\\sqrt{1-x^{2}}}) 5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = \\log _{10} { \\left( \\(\\frac{1}{\\sqrt{1-x}}\\) \\(\\frac{1}{\\sqrt{1+x}}\\) \\right)}) 5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = - \\log _{10} \\sqrt{1 - x}) - \\log _{10} \\sqrt{1 + x}) 4\\log _{10} \\sqrt{1 - x}) + \\log _{10} \\sqrt{1 - x}) = -5 \\log _{10} \\sqrt{1 - x}) = -1 \\sqrt{1-x}) = \\(\\frac{1}{10}\\) 100x = 99. Therefore the answer should be 99.\n\nThe question is \" If \\(5 - \\log_{10}\\sqrt{1+x} + 4\\log_{10}\\sqrt{1-x} = \\log_{10}\\frac{1}{\\sqrt{1-x^2}}\\) , then 100 x equals \"\n\nHence, the answer is '99'",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=446",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-4.shtml",
     "images": []
@@ -1214,7 +1214,7 @@
       "10"
     ],
     "correct_answer": "Choice B\n13",
-    "explanation": "Let’s consider Apple, orange, mango to be x, y, z respectively. Let's take the first two baskets and solve from there. 2x + 4y + 6z = x + 4y + 8z  x = 2z. Now, let’s take any other two different baskets and try to find the number of oranges in terms of the number of mangoes. 2x + 4y + 6z = 8y + 7z 2(2z) + 4y + 6z = 8y + 7z y = \\\\frac{3}{4})z. We need to find the value of one basket in terms of mangoes. So substitute x and y values in any one of the equations.  2x + 4y + 6z = 2(2z) + 4(\\\\frac{3}{4})z) + 6z = 13z. 13 mangoes worth of fruits is there in every basket. Hence the answer is 13.\n\nThe answer is '13'\n\nChoice B is the correct answer.",
+    "explanation": "Let’s consider Apple, orange, mango to be x, y, z respectively. Let's take the first two baskets and solve from there. 2x + 4y + 6z = x + 4y + 8z  x = 2z. Now, let’s take any other two different baskets and try to find the number of oranges in terms of the number of mangoes. 2x + 4y + 6z = 8y + 7z 2(2z) + 4y + 6z = 8y + 7z y = \\(\\frac{3}{4}\\)z. We need to find the value of one basket in terms of mangoes. So substitute x and y values in any one of the equations.  2x + 4y + 6z = 2(2z) + 4(\\(\\frac{3}{4}\\)z) + 6z = 13z. 13 mangoes worth of fruits is there in every basket. Hence the answer is 13.\n\nThe answer is '13'\n\nChoice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=570",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-5.shtml",
     "images": []
@@ -1229,13 +1229,13 @@
     "context": "",
     "question": "If the area of a regular hexagon is equal to the area of an equilateral triangle of side 12 cm, then the length, in cm, of each side of the hexagon is",
     "options": [
-      "4 √6",
-      "6 √6",
-      "2 √6",
-      "√6"
+      "\\(4 \\sqrt{6}\\)",
+      "\\(6 \\sqrt{6}\\)",
+      "\\(2 \\sqrt{6}\\)",
+      "\\(\\sqrt{6}\\)"
     ],
-    "correct_answer": "Choice C\n2 √6",
-    "explanation": "Given that, the area of a regular hexagon is equal to the area of an equilateral triangle of side 12cm. Let’s consider ‘a’ be the side of the regular hexagon. 6 x \\\\frac{\\sqrt{3}}{4} a^{2}) = \\\\frac{\\sqrt{3}}{4} 12^{2}) a2 = 24 a = 2√6\n\nThe question is \" If the area of a regular hexagon is equal to the area of an equilateral triangle of side 12 cm, then the length, in cm, of each side of the hexagon is \"\n\nHence, the answer is '2 √6'\n\nChoice C is the correct answer.",
+    "correct_answer": "Choice C\n\\(2 \\sqrt{6}\\)",
+    "explanation": "Given that, the area of a regular hexagon is equal to the area of an equilateral triangle of side 12cm. Let’s consider ‘a’ be the side of the regular hexagon. 6 x \\(\\frac{\\sqrt{3}}{4}\\) a^{2}) = \\(\\frac{\\sqrt{3}}{4}\\) 12^{2}) a2 = 24 a = 2\\sqrt{6}\n\nThe question is \" If the area of a regular hexagon is equal to the area of an equilateral triangle of side 12 cm, then the length, in cm, of each side of the hexagon is \"\n\nHence, the answer is '2 \\sqrt{6}'\n\nChoice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=744",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-6.shtml",
     "images": []
@@ -1256,7 +1256,7 @@
       "20"
     ],
     "correct_answer": "Choice A\n18",
-    "explanation": "Given that onion is sold for 5 consecutive months at the rate of Rs 10, 20, 25, 25, and 50 per kg respectively.  Let’s consider the amount spend on onions in these five months to be 100, 100, 100, 50, 50. Hence, the number of kgs in these five months should be 10, 5, 4, 2, 1 respectively. The average expense on onions per kg over these five months is given by  = \\\\frac{\\text { total expense on onions in these five months }}{\\text { total number of kgs of onions }}) = \\\\frac{400}{22}) = 18.181818  Therefore, the closest average would be 18.\n\nThe answer is '18'\n\nChoice A is the correct answer.",
+    "explanation": "Given that onion is sold for 5 consecutive months at the rate of Rs 10, 20, 25, 25, and 50 per kg respectively.  Let’s consider the amount spend on onions in these five months to be 100, 100, 100, 50, 50. Hence, the number of kgs in these five months should be 10, 5, 4, 2, 1 respectively. The average expense on onions per kg over these five months is given by  = \\(\\frac{\\text { total expense on onions in these five months }}{\\text { total number of kgs of onions }}\\) = \\(\\frac{400}{22}\\) = 18.181818  Therefore, the closest average would be 18.\n\nThe answer is '18'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=801",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-7.shtml",
     "images": []
@@ -1348,7 +1348,7 @@
     "question": "Amar, Akbar and Anthony are working on a project. Working together Amar and Akbar can complete the project in 1 year, Akbar and Anthony can complete in 16 months, Anthony and Amar can complete in 2 years. If the person who is neither the fastest nor the slowest works alone, the time in months he will take to complete the project is",
     "options": [],
     "correct_answer": "32",
-    "explanation": "Let's consider the efficiencies of Amar, Akbar, and Anthony to be x, y, z respectively. x + y = \\\\frac{1}{12}) y + z = \\\\frac{1}{16}) z + x = \\\\frac{1}{24}) If we add the above equations, we will get 2(x + y + z) = \\\\frac{3}{16}) x + y + z = \\\\frac{3}{32}) From the above equations, we can get x = \\\\frac{1}{32}), y = \\\\frac{5}{96}), z = \\\\frac{1}{96}) Hence, x is neither the fastest nor the slowest. Amar can complete the project in 32 months.\n\nThe answer is '32'",
+    "explanation": "Let's consider the efficiencies of Amar, Akbar, and Anthony to be x, y, z respectively. x + y = \\(\\frac{1}{12}\\) y + z = \\(\\frac{1}{16}\\) z + x = \\(\\frac{1}{24}\\) If we add the above equations, we will get 2(x + y + z) = \\(\\frac{3}{16}\\) x + y + z = \\(\\frac{3}{32}\\) From the above equations, we can get x = \\(\\frac{1}{32}\\), y = \\(\\frac{5}{96}\\), z = \\(\\frac{1}{96}\\) Hence, x is neither the fastest nor the slowest. Amar can complete the project in 32 months.\n\nThe answer is '32'",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=1622",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-12.shtml",
     "images": []
@@ -1380,7 +1380,7 @@
     "question": "A circle of diameter 8 inches is inscribed in a triangle ABC where ∠ABC = 90°. If BC = 10 inches then the area of the triangle in square inches is",
     "options": [],
     "correct_answer": "120",
-    "explanation": "![Circle and a triangle](/pyq/2021/images/s1_quant_q14_0_image058.png)\n\n From, Pythagoras theorem (x + 4)2 + (10)2 = (x + 6)2 We will get x = 20. The area of the triangle = \\\\frac{1}{2}) x b x h = \\\\frac{1}{2}) x 10 x 24 = 120 sq inches\n\nThe question is \" A circle of diameter 8 inches is inscribed in a triangle ABC where ∠ABC = 90°. If BC = 10 inches then the area of the triangle in square inches is \"\n\nHence, the answer is '120'",
+    "explanation": "![Circle and a triangle](/pyq/2021/images/s1_quant_q14_0_image058.png)\n\n From, Pythagoras theorem (x + 4)2 + (10)2 = (x + 6)2 We will get x = 20. The area of the triangle = \\(\\frac{1}{2}\\) x b x h = \\(\\frac{1}{2}\\) x 10 x 24 = 120 sq inches\n\nThe question is \" A circle of diameter 8 inches is inscribed in a triangle ABC where ∠ABC = 90°. If BC = 10 inches then the area of the triangle in square inches is \"\n\nHence, the answer is '120'",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=2011",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-14.shtml",
     "images": [
@@ -1397,13 +1397,13 @@
     "context": "",
     "question": "Suppose the length of each side of a regular hexagon ABCDEF is 2 cm. It T is the mid point of CD, then the length of AT, in cm, is",
     "options": [
-      "√15",
-      "√13",
-      "√12",
-      "√14"
+      "\\(\\sqrt{15}\\)",
+      "\\(\\sqrt{13}\\)",
+      "\\(\\sqrt{12}\\)",
+      "\\(\\sqrt{14}\\)"
     ],
-    "correct_answer": "Choice B\n√13",
-    "explanation": "![Hexagon construction](/pyq/2021/images/s1_quant_q15_0_image063.png)\n\n In a regular hexagon, each internal angle is equal to 120°. From isosceles triangle ABC, we know the length of two sides and including angle. We will be able to find the third side (AC) using the Pythagoras theorem or the sine rule. Hence, AC = 2√3cm Given that, T is the midpoint.  So, CT = 1cm. From the right-angled △ ACT, AC2 + CT2 = AT2 AT2 = (2 √3)2 + (1)2 = 13 AT = √(13)\n\nThe question is \" Suppose the length of each side of a regular hexagon ABCDEF is 2 cm. It T is the mid point of CD, then the length of AT, in cm, is \"\n\nHence, the answer is '√13'\n\nChoice B is the correct answer.",
+    "correct_answer": "Choice B\n\\(\\sqrt{13}\\)",
+    "explanation": "![Hexagon construction](/pyq/2021/images/s1_quant_q15_0_image063.png)\n\n In a regular hexagon, each internal angle is equal to 120°. From isosceles triangle ABC, we know the length of two sides and including angle. We will be able to find the third side (AC) using the Pythagoras theorem or the sine rule. Hence, AC = 2\\sqrt{3}cm Given that, T is the midpoint.  So, CT = 1cm. From the right-angled △ ACT, AC2 + CT2 = AT2 AT2 = (2 \\sqrt{3})2 + (1)2 = 13 AT = \\sqrt{13}\n\nThe question is \" Suppose the length of each side of a regular hexagon ABCDEF is 2 cm. It T is the mid point of CD, then the length of AT, in cm, is \"\n\nHence, the answer is '\\sqrt{13}'\n\nChoice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=2101",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-15.shtml",
     "images": [
@@ -1421,7 +1421,7 @@
     "question": "Suppose hospital A admitted 21 less Covid infected patients than hospital B, and all eventually recovered. The sum of recovery days for patients in hospitals A and B were 200 and 152, respectively. If the average recovery days for patients admitted in hospital A was 3 more than the average in hospital B then the number admitted in hospital A was",
     "options": [],
     "correct_answer": "35",
-    "explanation": "Let's consider the number of patients admitted in hospital A and hospital B to be 'x' and ‘x + 21'  Given that, the sum of recovery days for patients in hospitals A and B were 200 and 152, respectively.  The average recovery days for patients admitted in hospital A was 3 more than the average in-hospital B. \\\\frac{200}{x}) = \\\\frac{152}{x + 21}) + 3 By solving the above equation we get x = 35. Hence, the number of patients admitted to hospital A is 35.\n\nThe answer is '35'",
+    "explanation": "Let's consider the number of patients admitted in hospital A and hospital B to be 'x' and ‘x + 21'  Given that, the sum of recovery days for patients in hospitals A and B were 200 and 152, respectively.  The average recovery days for patients admitted in hospital A was 3 more than the average in-hospital B. \\(\\frac{200}{x}\\) = \\(\\frac{152}{x + 21}\\) + 3 By solving the above equation we get x = 35. Hence, the number of patients admitted to hospital A is 35.\n\nThe answer is '35'",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=2324",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-16.shtml",
     "images": []
@@ -1463,7 +1463,7 @@
       "6090"
     ],
     "correct_answer": "Choice A\n6119",
-    "explanation": "The natural numbers are divided into groups as (1), (2, 3, 4), (5, 6, 7, 8, 9), ….. and so on. If you observe that the first group ends with 12, the second group ends with 22and the third group ends with 32  Hence, the 15th group ends with 152 = 225. The 14th group ends with 142 = 196. Therefore, the 15th group contains (197, 198, . . . . . . . . . . ,225) The sum of the numbers in the 15th group =\\\\frac{29}{2})(197 + 225) = 6119.\n\nThe question is \" The natural numbers are divided into groups as (1), (2, 3, 4), (5, 6, 7, 8, 9), �.. and so on. Then, the sum of the numbers in the 15th group is equal to \"\n\nHence, the answer is '6119'\n\nChoice A is the correct answer.",
+    "explanation": "The natural numbers are divided into groups as (1), (2, 3, 4), (5, 6, 7, 8, 9), ….. and so on. If you observe that the first group ends with 12, the second group ends with 22and the third group ends with 32  Hence, the 15th group ends with 152 = 225. The 14th group ends with 142 = 196. Therefore, the 15th group contains (197, 198, . . . . . . . . . . ,225) The sum of the numbers in the 15th group =\\(\\frac{29}{2}\\)(197 + 225) = 6119.\n\nThe question is \" The natural numbers are divided into groups as (1), (2, 3, 4), (5, 6, 7, 8, 9), �.. and so on. Then, the sum of the numbers in the 15th group is equal to \"\n\nHence, the answer is '6119'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=2710",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-18.shtml",
     "images": []
@@ -1484,7 +1484,7 @@
       "7"
     ],
     "correct_answer": "Choice D\n7",
-    "explanation": "Anu can do \\\\frac{1}{15}) of work in one day. Vinu can do \\\\frac{1}{12}) of work in one day. Manu can do \\\\frac{1}{20}) of work in one day. On the odd days, Anu and Vinu work together. They together can do \\\\frac{9}{60}) of work in one day. On the even days, Manu and Vinu work together. They together can do \\\\frac{8}{60}) of work in one day. \\\\frac{9}{60}) + \\\\frac{8}{60}) + \\\\frac{9}{60}) + \\\\frac{8}{60}) + \\\\frac{9}{60})+ \\\\frac{8}{60}) + \\\\frac{9}{60}) = \\\\frac{60}{60}) Therefore, the work was completed in 7 days.\n\nThe answer is '7'\n\nChoice D is the correct answer.",
+    "explanation": "Anu can do \\(\\frac{1}{15}\\) of work in one day. Vinu can do \\(\\frac{1}{12}\\) of work in one day. Manu can do \\(\\frac{1}{20}\\) of work in one day. On the odd days, Anu and Vinu work together. They together can do \\(\\frac{9}{60}\\) of work in one day. On the even days, Manu and Vinu work together. They together can do \\(\\frac{8}{60}\\) of work in one day. \\(\\frac{9}{60}\\) + \\(\\frac{8}{60}\\) + \\(\\frac{9}{60}\\) + \\(\\frac{8}{60}\\) + \\(\\frac{9}{60}\\)+ \\(\\frac{8}{60}\\) + \\(\\frac{9}{60}\\) = \\(\\frac{60}{60}\\) Therefore, the work was completed in 7 days.\n\nThe answer is '7'\n\nChoice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=2852",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-19.shtml",
     "images": []
@@ -1521,7 +1521,7 @@
       "192"
     ],
     "correct_answer": "Choice C\n190",
-    "explanation": "The faster train is 160 m long and crosses a lamp post in 12 seconds. The speed of the faster train = \\\\frac{160}{12}) = \\\\frac{40}{3}) m/s Given that, the speed of the other train is 6 km/hr (\\\\frac{5}{3}) m/s) less than the faster one. [we can convert speeds from km/h to m/s by multiplying with 5/18] The speed of the slower train = \\\\frac{35}{3}) m/s. Given that, the two trains cross each other in 14 seconds when running in opposite directions along parallel tracks. Relative speed = \\\\frac{\\text { total length of two trains }}{\\text { time taken to cross each other }}) 25m/s = \\\\frac{160+\\text { length of second train }}{14}) Length of the second train = 190m.\n\nThe answer is '190'\n\nChoice C is the correct answer.",
+    "explanation": "The faster train is 160 m long and crosses a lamp post in 12 seconds. The speed of the faster train = \\(\\frac{160}{12}\\) = \\(\\frac{40}{3}\\) m/s Given that, the speed of the other train is 6 km/hr (\\(\\frac{5}{3}\\) m/s) less than the faster one. [we can convert speeds from km/h to m/s by multiplying with 5/18] The speed of the slower train = \\(\\frac{35}{3}\\) m/s. Given that, the two trains cross each other in 14 seconds when running in opposite directions along parallel tracks. Relative speed = \\(\\frac{\\text { total length of two trains }}{\\text { time taken to cross each other }}\\) 25m/s = \\(\\frac{160+\\text { length of second train }}{14}\\) Length of the second train = 190m.\n\nThe answer is '190'\n\nChoice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=3046",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-21.shtml",
     "images": []
@@ -1534,7 +1534,7 @@
     "question_number": 22,
     "type": "MCQ",
     "context": "",
-    "question": "If x0 = 1, x1 = 2, and xn + 2 = \\\\frac{1+x_{n+1}}{x_{n}}), n = 0, 1, 2, 3,..., then x2021 is equal to?",
+    "question": "If \\(x_0 = 1, x_1 = 2\\), and xn + 2 = \\(\\frac{1+x_{n+1}}{x_{n}}\\), n = 0, 1, 2, 3,..., then \\(x_{2021}\\) is equal to?",
     "options": [
       "4",
       "3",
@@ -1542,7 +1542,7 @@
       "2"
     ],
     "correct_answer": "Choice D\n2",
-    "explanation": "Given that, xn + 2 = \\\\frac{1+x_{n+1}}{x_{n}}) x0 = 1 x1 = 2, x2 = \\\\frac{1+x_{1}}{x_{0}}) = \\\\frac{1+2}{1}) = 3 x3 = 2, x4= 1, x5= 1, x6= 2, x7= 3, x8= 2, x9= 1 The sequence is going on steps of 5. Hence, x2021 = 2\n\nThe question is \" If x0 = 1, x1 = 2, and xn + 2 = \\\\frac{1+x_{n+1}}{x_{n}}), n = 0, 1, 2, 3,..., then x2021 is equal to? \"\n\nHence, the answer is '2'\n\nChoice D is the correct answer.",
+    "explanation": "Given that, xn + 2 = \\(\\frac{1+x_{n+1}}{x_{n}}\\) x0 = 1 x1 = 2, x2 = \\(\\frac{1+x_{1}}{x_{0}}\\) = \\(\\frac{1+2}{1}\\) = 3 x3 = 2, x4= 1, x5= 1, x6= 2, x7= 3, x8= 2, x9= 1 The sequence is going on steps of 5. Hence, x2021 = 2\n\nThe question is \" If \\(x_0 = 1, x_1 = 2\\), and xn + 2 = \\(\\frac{1+x_{n+1}}{x_{n}}\\), n = 0, 1, 2, 3,..., then \\(x_{2021}\\) is equal to? \"\n\nHence, the answer is '2'\n\nChoice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=3185",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-22.shtml",
     "images": []
@@ -2704,7 +2704,7 @@
     "question": "If log2[3 + log3{4 + log4(x - 1)}] - 2 = 0 then 4x equals",
     "options": [],
     "correct_answer": "5",
-    "explanation": "log2[3+log3{4+log4(x-1)}]- 2= 0 log2[3 +  log3{4 +  log4(x - 1)}] = 2 3 +  log3{4 +  log4(x - 1)} = 4 ( ∵   logaN = x ⇒ N = ax ) log3{4 +  log4(x - 1)} = 1 4 +  log4(x - 1) = 3 log4(x - 1) = -1 x - 1 = \\\\frac{1}{4}) 4x = 5\n\nThe question is \" If log2[3 + log3{4 + log4(x - 1)}] - 2 = 0 then 4x equals \"\n\nHence, the answer is '5'",
+    "explanation": "log2[3+log3{4+log4(x-1)}]- 2= 0 log2[3 +  log3{4 +  log4(x - 1)}] = 2 3 +  log3{4 +  log4(x - 1)} = 4 ( ∵   logaN = x ⇒ N = ax ) log3{4 +  log4(x - 1)} = 1 4 +  log4(x - 1) = 3 log4(x - 1) = -1 x - 1 = \\(\\frac{1}{4}\\) 4x = 5\n\nThe question is \" If log2[3 + log3{4 + log4(x - 1)}] - 2 = 0 then 4x equals \"\n\nHence, the answer is '5'",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=243",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-2.shtml",
     "images": []
@@ -2741,7 +2741,7 @@
     "question": "From a container filled with milk, 9 litres of milk are drawn and replaced with water. Next, from the same container, 9 litres are drawn and again replaced with water. If the volumes of milk and water in the container are now in the ratio of 16 : 9, then the capacity of the container, in litres, is",
     "options": [],
     "correct_answer": "45",
-    "explanation": "Let’s assume the capacity of the container is ‘c’ Let’s track down the milk which is retained. The milk retained after taking first 9 litres from the container is (c × \\\\frac{c - 9}{c}) )  The milk retained after taking next 9 litres from the container is ( c × \\\\frac{c - 9}{c}) × \\\\frac{c - 9}{c}) ) The volumes of milk and water in the container are now in the ratio of 16 : 9. The milk in the container is \\\\frac{16}{25}) \\\\frac{c \\times \\frac{c - 9}{c} \\times \\frac{c - 9}{c}}{c}) = \\\\frac{16}{25}) (\\\\frac{c - 9}{c}) )2 = \\\\frac{16}{25}) \\\\frac{c - 9}{c}) = \\\\frac{4}{5}) c = 45\n\nThe answer is '45'",
+    "explanation": "Let’s assume the capacity of the container is ‘c’ Let’s track down the milk which is retained. The milk retained after taking first 9 litres from the container is (c × \\(\\frac{c - 9}{c}\\) )  The milk retained after taking next 9 litres from the container is ( c × \\(\\frac{c - 9}{c}\\) × \\(\\frac{c - 9}{c}\\)) ) The volumes of milk and water in the container are now in the ratio of 16 : 9. The milk in the container is \\(\\frac{16}{25}\\) \\(\\frac{c \\times \\frac{c - 9}{c} \\times \\frac{c - 9}{c}}{c}\\) = \\(\\frac{16}{25}\\) (\\(\\frac{c - 9}{c}\\) )2 = \\(\\frac{16}{25}\\) \\(\\frac{c - 9}{c}\\) = \\(\\frac{4}{5}\\) c = 45\n\nThe answer is '45'",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=397",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-4.shtml",
     "images": []
@@ -2762,7 +2762,7 @@
       "3 : 2"
     ],
     "correct_answer": "Choice D\n3 : 2",
-    "explanation": "Two trains A and B were moving in opposite directions, their speeds being in the ratio of 5 : 3. The speed of train A is 5x. The speed of train B is 3x. Let's assume length of train A and train B are La and Lb The front end of A crossed the rear end of B 46 seconds after the front ends of the trains had crossed each other. So, the distance travelled is Lb. For this, the time taken is 46 sec. Trains took another 69 seconds for the rear ends of the trains to cross each other. So, the distance travelled is La. For this, the time taken is 69 sec. \\\\frac{\\frac{L_{a}}{5x + 3x}}{\\frac{L_{b}}{5x + 3x}}) =\\\\frac{69}{46})  The relative speed is (5x + 3x), since they are moving opposite to each other. \\\\frac{L_{a}}{L_{b}}) = \\\\frac{3}{2})\n\nThe answer is '3 : 2'\n\nChoice D is the correct answer.",
+    "explanation": "Two trains A and B were moving in opposite directions, their speeds being in the ratio of 5 : 3. The speed of train A is 5x. The speed of train B is 3x. Let's assume length of train A and train B are La and Lb The front end of A crossed the rear end of B 46 seconds after the front ends of the trains had crossed each other. So, the distance travelled is Lb. For this, the time taken is 46 sec. Trains took another 69 seconds for the rear ends of the trains to cross each other. So, the distance travelled is La. For this, the time taken is 69 sec. \\frac{\\(\\frac{L_{a}}{5x + 3x}\\)}{\\(\\frac{L_{b}}{5x + 3x}\\)}) =\\(\\frac{69}{46}\\)  The relative speed is (5x + 3x), since they are moving opposite to each other. \\(\\frac{L_{a}}{L_{b}}\\) = \\(\\frac{3}{2}\\)\n\nThe answer is '3 : 2'\n\nChoice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=554",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-5.shtml",
     "images": []
@@ -2783,7 +2783,7 @@
       "9150"
     ],
     "correct_answer": "Choice B\n9100",
-    "explanation": "Anil can paint a house in 60 days. So, he can do \\\\frac{1}{60}) of work per day. Bimal can paint it in 84 days. So, he can do \\\\frac{1}{84}) of work per day. Let’s assume charu can paint it in ‘c’ days. So, he can do \\\\frac{1}{c}) of work per day. Anil alone does the work for 10 days. So, the work completed is \\\\frac{1}{6}) The remaining work is \\\\frac{5}{6}). After that, for 14 days they worked together. \\\\frac{14}{60})+ \\\\frac{14}{84}) + \\\\frac{14}{c}) = \\\\frac{5}{6}) \\\\frac{1}{c}) = \\\\frac{13}{30 \\times 14}) Charu does his work for 14 days. So, the total work done by charu is \\\\frac{13}{30}). The amount earned by charu = \\\\frac{13}{30}) x 21000 = Rs 9100\n\nThe answer is '9100'\n\nChoice B is the correct answer.",
+    "explanation": "Anil can paint a house in 60 days. So, he can do \\(\\frac{1}{60}\\) of work per day. Bimal can paint it in 84 days. So, he can do \\(\\frac{1}{84}\\) of work per day. Let’s assume charu can paint it in ‘c’ days. So, he can do \\(\\frac{1}{c}\\) of work per day. Anil alone does the work for 10 days. So, the work completed is \\(\\frac{1}{6}\\) The remaining work is \\(\\frac{5}{6}\\). After that, for 14 days they worked together. \\(\\frac{14}{60}\\)+ \\(\\frac{14}{84}\\) + \\(\\frac{14}{c}\\) = \\(\\frac{5}{6}\\) \\(\\frac{1}{c}\\) = \\(\\frac{13}{30 \\times 14}\\) Charu does his work for 14 days. So, the total work done by charu is \\(\\frac{13}{30}\\). The amount earned by charu = \\(\\frac{13}{30}\\) x 21000 = Rs 9100\n\nThe answer is '9100'\n\nChoice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=772",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-6.shtml",
     "images": []
@@ -2840,7 +2840,7 @@
       "\\(\\sqrt{37}+\\sqrt{13}\\)",
       "\\(\\sqrt{13}+\\sqrt{12}\\)"
     ],
-    "correct_answer": "Choice C\n√(37) + √(13)",
+    "correct_answer": "Choice C\n\\(\\sqrt{37}+\\sqrt{13}\\)",
     "explanation": "Let’s consider the length of the longer and shorter diagonal of the rhombus to be ‘2a’ and ‘2b’ respectively. \n\n![rhombus](/pyq/2021/images/s2_quant_q9_0_image048.png)\n\n The area of the rhombus = 12 sq cm \\( \\frac{1}{2} \\) x 2a x 2b = 12 sq cm. ab = 6. The side of the rhombus = 5 cm. So, \\( a ^ { 2 } + b ^ { 2 } \\) = 25. \\( ( a + b ) ^ { 2 } = a ^ { 2 } + b ^ { 2 } + 2 a b \\) \\( ( a + b ) ^ { 2 } = 25 + 2 ( 6 ) = 37 \\) \\( a + b = \\sqrt { 37 } \\) → eq(1) \\( ( a - b ) ^ { 2 } = a ^ { 2 } + b ^ { 2 } - 2 a b \\) \\( ( a - b ) ^ { 2 } = 25 - 2 ( 6 ) = 13 \\)  \\( a - b = \\sqrt { 13 } \\) → eq(2) By solving eq(1) & (2) we get  Long diagonal = 2a = \\( \\sqrt { 37 } + \\sqrt { 13 } \\)\n\nThe question is \" If a rhombus has area 12 sq cm and side length 5 cm, then the length, in cm, of its longer diagonal is \"\n\nHence, the answer is '\\(\\sqrt{37}+\\sqrt{13}\\)'\n\nChoice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=1243",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-9.shtml",
@@ -2880,7 +2880,7 @@
     "question": "Let D and E be points on sides AB and AC, respectively, of a triangle ABC, such that AD : BD = 2 : 1 and AE : CE = 2 : 3. If the area of the triangle ADE is 8 sq cm, then the area of the triangle ABC, in sq cm, is",
     "options": [],
     "correct_answer": "30",
-    "explanation": "![Triangle](/pyq/2021/images/s2_quant_q11_0_image058.png)\n\n The area of the triangle ADE = 8 sqcm. \\\\frac{1}{2}) × (AD) (AE) × sin(A) = 8 \\\\frac{1}{2}) × (2x) (2y) × sin(A) = 8 xy × sin(A) = 4 The area of the triangle ABC = \\\\frac{1}{2}) × (AB) (AC) × sin(A) = \\\\frac{1}{2}) × (3x) (5y) × sin(A) = \\\\frac{15}{2}) × (xy) × sin(A) = \\\\frac{15}{2}) (4) (since xy sin A = 4) = 30 sq cm\n\nThe answer is '30'",
+    "explanation": "![Triangle](/pyq/2021/images/s2_quant_q11_0_image058.png)\n\n The area of the triangle ADE = 8 sqcm. \\(\\frac{1}{2}\\) × (AD) (AE) × sin(A) = 8 \\(\\frac{1}{2}\\) × (2x) (2y) × sin(A) = 8 xy × sin(A) = 4 The area of the triangle ABC = \\(\\frac{1}{2}\\) × (AB) (AC) × sin(A) = \\(\\frac{1}{2}\\) × (3x) (5y) × sin(A) = \\(\\frac{15}{2}\\) × (xy) × sin(A) = \\(\\frac{15}{2}\\) (4) (since xy sin A = 4) = 30 sq cm\n\nThe answer is '30'",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=1454",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-11.shtml",
     "images": [
@@ -2915,15 +2915,15 @@
     "question_number": 13,
     "type": "MCQ",
     "context": "",
-    "question": "For all real values of x, the range of the function f(x) = \\\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}) is",
+    "question": "For all real values of x, the range of the function f(x) = \\(\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}\\) is",
     "options": [
-      "[ \\\\frac{3}{7}) , \\\\frac{8}{9}) )",
-      "[ \\\\frac{4}{9}) , \\\\frac{8}{9}) ]",
-      "[ \\\\frac{3}{7}) , \\\\frac{1}{2}) )",
-      "( \\\\frac{3}{7}) , \\\\frac{1}{2}) )"
+      "\\([\\frac{3}{7}, \\frac{8}{9})\\)",
+      "\\([\\frac{3}{7}, \\frac{8}{9})\\)",
+      "\\([\\frac{3}{7}, \\frac{1}{2})\\)",
+      "\\((\\frac{3}{7}, \\frac{1}{2})\\)"
     ],
-    "correct_answer": "Choice C\n[ \\\\frac{3}{7}) , \\\\frac{1}{2}) )",
-    "explanation": "We have a function f(x) = \\\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}) We can complete the squares in the numerator as  f(x) = \\\\frac{x^{2} + 2x + 1 + 3}{2x^{2} + 4x + 9}) f(x) = \\\\frac{(x + 1)_{2} + 3}{2x^{2} + 4x + 9}) Now we try to get (x + 1)2in the denominator as well f(x) = \\\\frac{(x + 1)_{2} + 3}{2(x + 1)^{2} + 7}) From here we can take out (x+1)2 + 3 from both, the numerator and the denominator and put it as ‘k’ Replacing (x+1)2 + 3 with k we get f(x) = \\\\frac{k}{2k + 1}) The minimum value of k = 3, as the square part is always positive and another positive number is added to the equation. So the fraction will have the minimum value when k = 3 f(x) = \\\\frac{3}{2(3) + 1})= \\\\frac{3}{7}) And, the maximum value when k approaches its maximum value. We can observe that the fraction has a 2k + 1 in the denominator and so it will always be one more than twice the numerator. As the value of k increases the value of the addition of one gets less and less of a value to the overall denominator. The fraction approaches 1/2 , but never 1/2 itself. Hence the range becomes [\\\\frac{3}{7}),\\\\frac{1}{2}))\n\nThe question is \" For all real values of x, the range of the function f(x) = \\\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}) is \"\n\nHence, the answer is '[ \\\\frac{3}{7}) , \\\\frac{1}{2}) )'\n\nChoice C is the correct answer.",
+    "correct_answer": "Choice C\n\\([\\frac{3}{7}, \\frac{1}{2})\\)",
+    "explanation": "We have a function f(x) = \\(\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}\\) We can complete the squares in the numerator as  f(x) = \\(\\frac{x^{2} + 2x + 1 + 3}{2x^{2} + 4x + 9}\\) f(x) = \\(\\frac{(x + 1)_{2} + 3}{2x^{2} + 4x + 9}\\) Now we try to get (x + 1)2in the denominator as well f(x) = \\(\\frac{(x + 1)_{2} + 3}{2(x + 1)^{2} + 7}\\) From here we can take out (x+1)2 + 3 from both, the numerator and the denominator and put it as ‘k’ Replacing (x+1)2 + 3 with k we get f(x) = \\(\\frac{k}{2k + 1}\\) The minimum value of k = 3, as the square part is always positive and another positive number is added to the equation. So the fraction will have the minimum value when k = 3 f(x) = \\(\\frac{3}{2(3) + 1}\\)= \\(\\frac{3}{7}\\) And, the maximum value when k approaches its maximum value. We can observe that the fraction has a 2k + 1 in the denominator and so it will always be one more than twice the numerator. As the value of k increases the value of the addition of one gets less and less of a value to the overall denominator. The fraction approaches 1/2 , but never 1/2 itself. Hence the range becomes [\\(\\frac{3}{7}\\),\\(\\frac{1}{2}\\))\n\nThe question is \" For all real values of x, the range of the function f(x) = \\(\\frac{x^{2} + 2x + 4}{2x^{2} + 4x + 9}\\) is \"\n\nHence, the answer is '[ \\(\\frac{3}{7}\\) , \\(\\frac{1}{2}\\) )'\n\nChoice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=1636",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-13.shtml",
     "images": []
@@ -3036,7 +3036,7 @@
     "question_number": 19,
     "type": "MCQ",
     "context": "",
-    "question": "Suppose one of the roots of the equation a x2 - b x + c = 0 is 2 + √3, where a, b and c are rational numbers and a ≠ 0. If b = c3 then |a| equals",
+    "question": "Suppose one of the roots of the equation \\(ax^2 - bx + c = 0\\) is \\(2 + \\sqrt{3}\\), where a, b and c are rational numbers and a ≠ 0. If \\(b = c^3\\) then \\(|a|\\) equals",
     "options": [
       "2",
       "3",
@@ -3044,7 +3044,7 @@
       "1"
     ],
     "correct_answer": "Choice A\n2",
-    "explanation": "For a quadratic equation, a x2 + b x + c = 0. the roots are given by x = \\\\frac{-b \\pm \\sqrt{b^{2}-4 a c}}{2 a}) Since the roots, a, b, c are all rational and one of the roots, 2 + √ 3 is irrational, the other root of the equation will also be irrational and a conjugate of 2 + √ 3. That is, the other root is, 2 - √ 3. Sum of roots is given by \\\\frac{-b}{a}) = (2 + √ 3) + (2 - √ 3) = 4. And Product of roots is given by \\\\frac{c}{a}) = (2 + √ 3) (2 - √ 3) = 22 - (√ 3)2 = 4 - 3 = 1 But here the quadratic equation is a x2 - b x + c = 0. Therefore, \\\\frac{b}{a}) = 4 and \\\\frac{c}{a}) = 1 b = 4a; c = a. We are also given that b = c3 4a = a3 4 = a2 a = ∓2 |a| = 2\n\nThe question is \" Suppose one of the roots of the equation a x2 - b x + c = 0 is 2 + √3, where a, b and c are rational numbers and a ≠ 0. If b = c3 then |a| equals \"\n\nHence, the answer is '2'\n\nChoice A is the correct answer.",
+    "explanation": "For a quadratic equation, a x2 + b x + c = 0. the roots are given by x = \\frac{-b \\pm \\sqrt{b^{2}-4 a c}}{2 a}) Since the roots, a, b, c are all rational and one of the roots, \\(2 + \\sqrt{3}\\) is irrational, the other root of the equation will also be irrational and a conjugate of \\(2 + \\sqrt{3}\\). That is, the other root is, 2 - \\sqrt{3}. Sum of roots is given by \\(\\frac{-b}{a}\\) = (\\(2 + \\sqrt{3}\\)) + (2 - \\sqrt{3}) = 4. And Product of roots is given by \\(\\frac{c}{a}\\) = (\\(2 + \\sqrt{3}\\)) (2 - \\sqrt{3}) = 22 - (\\sqrt{3})2 = 4 - 3 = 1 But here the quadratic equation is \\(ax^2 - bx + c = 0\\). Therefore, \\(\\frac{b}{a}\\) = 4 and \\(\\frac{c}{a}\\) = 1 b = 4a; c = a. We are also given that \\(b = c^3\\) 4a = a3 4 = a2 a = ∓2 |a| = 2\n\nThe question is \" Suppose one of the roots of the equation \\(ax^2 - bx + c = 0\\) is \\(2 + \\sqrt{3}\\), where a, b and c are rational numbers and a ≠ 0. If \\(b = c^3\\) then \\(|a|\\) equals \"\n\nHence, the answer is '2'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/LEWk56wvOV4?start=2423",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-19.shtml",
     "images": []
@@ -3107,7 +3107,7 @@
       "675"
     ],
     "correct_answer": "Choice B\n688",
-    "explanation": "Tea of three different qualities costing ₹ 800, ₹ 500, and ₹ 300 per kg, respectively, is bought in amounts which are in the proportion 2 : 3 : 5. Let us assume that the amounts in which the Tea is bought is 6 : 9 : 15 (This is because 2 + 3 + 5 = 10, which is not a multiple of 6, further reading into the question, we find that we need to deal with one-sixth of the quantity, so having the total quantity as a multiple of 6 is beneficial to us.) So, Total Cost Price = ₹ 800 * 6 + ₹ 500 * 9 + ₹ 300 * 15 = ₹ 13,800 Profit % = 50% Profit = 50% of Cost Price = 50% of ₹ 13,800 = ₹ 6,900 Therefore, Selling Price = Cost Price + Profit = ₹ 13,800 + ₹ 6,900 = ₹ 20,700 Since one-sixth that \\\\frac{1}{6})(6 + 9 + 15) = \\\\frac{1}{6})(30) = 5kgs is sold at ₹ 700 per kg. The Selling Price of these 5kgs is 5 * 700 = ₹ 3,500 The remaining ₹ 20,700 - ₹ 3,500 = ₹ 17,200 must be generated from selling the remaining 30 - 5 = 25 kgs. So, the selling price of the remaining tea per kg must be \\\\frac{17,200}{25}) = 172 * 4 = ₹ 688 per kg\n\nThe answer is '688'\n\nChoice B is the correct answer.",
+    "explanation": "Tea of three different qualities costing ₹ 800, ₹ 500, and ₹ 300 per kg, respectively, is bought in amounts which are in the proportion 2 : 3 : 5. Let us assume that the amounts in which the Tea is bought is 6 : 9 : 15 (This is because 2 + 3 + 5 = 10, which is not a multiple of 6, further reading into the question, we find that we need to deal with one-sixth of the quantity, so having the total quantity as a multiple of 6 is beneficial to us.) So, Total Cost Price = ₹ 800 * 6 + ₹ 500 * 9 + ₹ 300 * 15 = ₹ 13,800 Profit % = 50% Profit = 50% of Cost Price = 50% of ₹ 13,800 = ₹ 6,900 Therefore, Selling Price = Cost Price + Profit = ₹ 13,800 + ₹ 6,900 = ₹ 20,700 Since one-sixth that \\(\\frac{1}{6}\\)(6 + 9 + 15) = \\(\\frac{1}{6}\\)(30) = 5kgs is sold at ₹ 700 per kg. The Selling Price of these 5kgs is 5 * 700 = ₹ 3,500 The remaining ₹ 20,700 - ₹ 3,500 = ₹ 17,200 must be generated from selling the remaining 30 - 5 = 25 kgs. So, the selling price of the remaining tea per kg must be \\(\\frac{17,200}{25}\\) = 172 * 4 = ₹ 688 per kg\n\nThe answer is '688'\n\nChoice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/5YTmP7JOlXM?start=352",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-2-Quant/quants-question-22.shtml",
     "images": []

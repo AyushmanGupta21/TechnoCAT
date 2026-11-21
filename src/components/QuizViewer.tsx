@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { QuizQuestion } from "@/data/videoPortions";
+import { MathText } from "@/components/pyq/PYQMarkdownViewer";
 
 export interface TechnoEEEQuestion {
   question: string;
@@ -471,7 +472,7 @@ export default function QuizViewer({
               </div>
 
               <h1 style={{ color: "#0f172a", fontSize: "1.6rem", fontWeight: "800", lineHeight: "1.4", marginBottom: "32px" }}>
-                {q.question}
+                <MathText text={q.question} />
               </h1>
 
               {/* Options */}
@@ -546,7 +547,7 @@ export default function QuizViewer({
                       </div>
 
                       <div style={{ color: textColor, fontSize: "1.1rem", lineHeight: "1.5", fontWeight: "500" }}>
-                        {opt.text}
+                        <MathText text={opt.text} />
                       </div>
 
                       {icon}

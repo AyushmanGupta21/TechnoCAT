@@ -408,7 +408,7 @@
       "Biologists have criticised that conventional wisdom that individuals are born with more or less intelligence potential.",
       "Biologists have started questioning psychologists' view of 'intelligence' as a measurable immutable characteristic of an individual."
     ],
-    "correct_answer": "Choice A\nBiologists have questioned the long-standing view that ‘intelligence’ is a single entity and the attempts to estimate it's heritability.",
+    "correct_answer": "Choice A\nBiologists have questioned the long-standing view that ‘intelligence’ is a single entity and the attempts to estimate it's heritability.",
     "explanation": "The last line of the paragraph states the main idea: Biologists ask if speaking of a single entity called “intelligence” is coherent and question the validity of measures used to estimate heritability of a trait in humans. Option A rephrases this.  The second half of option B is incorrect. The paragraph says biologists question the validity of measures used to estimate heritability, not the ways in which intelligence is inherited. Options C is not as comprehensive as A. Option D is incorrect as it says intelligence is 'immutable' while the paragraph only says it is difficult to alter.\n\nThe answer is, \"Biologists have questioned the long-standing view that ‘intelligence’ is a single entity and the attempts to estimate it's heritability.\"",
     "video_url": "https://www.youtube.com/embed/CLeU9mudYQo?start=1581",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-VARC/verbal-question-20.shtml",
@@ -1274,7 +1274,7 @@
     "question": "Veeru invested Rs 10000 at 5% simple annual interest, and exactly after two years, Joy invested Rs 8000 at 10% simple annual interest. How many years after Veeru’s investment, will their balances, i.e., principal plus accumulated interest, be equal?",
     "options": [],
     "correct_answer": "12",
-    "explanation": "Let assume its equal after N years  Veeru’s investment after N years = 10000 + 10000 × \\\\frac{5}{100}) × N  Joy’s investment after N years = 8000 + 8000 × \\\\frac{10}{100}) × (N – 2)  Equating both  10000 + 10000 × \\\\frac{5}{100}) × N = 8000 + 8000 × \\\\frac{10}{100}) ×(N – 2)  10000 + 500N = 8000 + 800N – 1600  3600 = 300N  N = 12\n\nThe answer is, \" 12\"",
+    "explanation": "Let assume its equal after N years  Veeru’s investment after N years = 10000 + 10000 × \\(\\frac{5}{100}\\) × N  Joy’s investment after N years = 8000 + 8000 × \\(\\frac{10}{100}\\) × (N – 2)  Equating both  10000 + 10000 × \\(\\frac{5}{100}\\) × N = 8000 + 8000 × \\(\\frac{10}{100}\\) ×(N – 2)  10000 + 500N = 8000 + 800N – 1600  3600 = 300N  N = 12\n\nThe answer is, \" 12\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=265",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-3.shtml",
     "images": []
@@ -1295,7 +1295,7 @@
       "61"
     ],
     "correct_answer": "Choice B\n67",
-    "explanation": "Let’s take speed of the train to be x and the time taken be t  Since speed is reduced to \\\\frac{1}{3}) rd,  New speed = \\\\frac{x}{3})  Since the speed is one-third, time taken will be tripled. T = 3t  This 3t is after the scheduled time, So extra 2t = 30 mintues  t = 15 minutes  Train travels at x km/hr takes 15 minutes and  Train travels at \\\\frac{x}{3}) km/hr takes 45 minutes   So, the train usually takes 15 minutes to cover the distance.  It travels 5 minutes at the usual speed. That is, it travels \\\\frac{1}{3}) rd of the time at the usual speed. So it covers \\\\frac{1}{3}) rd of the distance in 5 minutes.   To reach it's destination in the on time, the train has to travel the remaining \\\\frac{2}{3}) rds of the distance in 10 minutes. Since the train halts for 4 minutes, it should now cover the \\\\frac{2}{3}) rds of the distance in 6 (10 - 4) minutes.   In other words, the train has to cover the same distance in \\\\frac{6}{10}) th of the usual time.  In order to do so, the speed must be \\\\frac{10}{6}) ths of the usual speed. Or the increased speed will be \\\\frac{4}{6}) ths or \\\\frac{2}{3}) rds of the usual speed. Which is an increase of 66.66% or nearly 67%.\n\nThe answer is, \"67\"",
+    "explanation": "Let’s take speed of the train to be x and the time taken be t  Since speed is reduced to \\(\\frac{1}{3}\\) rd,  New speed = \\(\\frac{x}{3}\\)  Since the speed is one-third, time taken will be tripled. T = 3t  This 3t is after the scheduled time, So extra 2t = 30 mintues  t = 15 minutes  Train travels at x km/hr takes 15 minutes and  Train travels at \\(\\frac{x}{3}\\) km/hr takes 45 minutes   So, the train usually takes 15 minutes to cover the distance.  It travels 5 minutes at the usual speed. That is, it travels \\(\\frac{1}{3}\\) rd of the time at the usual speed. So it covers \\(\\frac{1}{3}\\) rd of the distance in 5 minutes.   To reach it's destination in the on time, the train has to travel the remaining \\(\\frac{2}{3}\\) rds of the distance in 10 minutes. Since the train halts for 4 minutes, it should now cover the \\(\\frac{2}{3}\\) rds of the distance in 6 (10 - 4) minutes.   In other words, the train has to cover the same distance in \\(\\frac{6}{10}\\) th of the usual time.  In order to do so, the speed must be \\(\\frac{10}{6}\\) ths of the usual speed. Or the increased speed will be \\(\\frac{4}{6}\\) ths or \\(\\frac{2}{3}\\) rds of the usual speed. Which is an increase of 66.66% or nearly 67%.\n\nThe answer is, \"67\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=353",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-4.shtml",
     "images": []
@@ -1308,10 +1308,10 @@
     "question_number": 5,
     "type": "TITA",
     "context": "",
-    "question": "If log4 5 = (log4 y) (log6 √5), then y equals",
+    "question": "If \\(\\log_4 5 = (\\log_4 y)(\\log_6 \\sqrt{5})\\), then y equals",
     "options": [],
     "correct_answer": "36",
-    "explanation": "log45 = log4y × log6√5  log45 ÷ log4y = logy5 = log6√5 = k (Let’s assume this as k)  6k = √5 ---> On squaring this {6k}2 = 5  log45 = log4y × log6√5  logy5 = log6√5  logy5 = k  yk = 5  {6k}2 = yk = 5  {62}k = yk  36k = yk  y = 36.\n\nThe question is \"If log4 5 = (log4 y) (log6 √5), then y equals\"\n\nHence, the answer is, \" 36\"",
+    "explanation": "log45 = log4y × log6\\sqrt{5}  log45 ÷ log4y = logy5 = log6\\sqrt{5} = k (Let’s assume this as k)  6k = \\sqrt{5} ---> On squaring this {6k}2 = 5  log45 = log4y × log6\\sqrt{5}  logy5 = log6\\sqrt{5}  logy5 = k  yk = 5  {6k}2 = yk = 5  {62}k = yk  36k = yk  y = 36.\n\nThe question is \"If \\(\\log_4 5 = (\\log_4 y)(\\log_6 \\sqrt{5})\\), then y equals\"\n\nHence, the answer is, \" 36\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=501",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-5.shtml",
     "images": []
@@ -1332,7 +1332,7 @@
       "2"
     ],
     "correct_answer": "Choice B\n0",
-    "explanation": "2x + 2-x is of the form y + \\\\frac{1}{y})  Minimum value the expression can take is ≥ 2  So 2x + 2-x ≥ 2  Now, 2 – (x – 2)2 ----> (x – 2)2 is ≥ 0  So 2 – (x – 2)2 ≤ 2 (From 2 we are subtracting a non-negative number)  Maximum value the expression can have is 2  The only possibility is both sides are = 2  If value = 2  Then x = 0  20 + 20 = 2 – (0 – 2)2  2 ≠ – 2  There is no case where LHS = RHS = 2  Hence 0 real-valued solutions\n\nThe question is \"The number of real-valued solutions of the equation 2x + 2-x = 2 - (x - 2)2 is\"\n\nHence, the answer is, \"0\"",
+    "explanation": "2x + 2-x is of the form y + \\(\\frac{1}{y}\\)  Minimum value the expression can take is ≥ 2  So 2x + 2-x ≥ 2  Now, 2 – (x – 2)2 ----> (x – 2)2 is ≥ 0  So 2 – (x – 2)2 ≤ 2 (From 2 we are subtracting a non-negative number)  Maximum value the expression can have is 2  The only possibility is both sides are = 2  If value = 2  Then x = 0  20 + 20 = 2 – (0 – 2)2  2 ≠ – 2  There is no case where LHS = RHS = 2  Hence 0 real-valued solutions\n\nThe question is \"The number of real-valued solutions of the equation 2x + 2-x = 2 - (x - 2)2 is\"\n\nHence, the answer is, \"0\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=570",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-6.shtml",
     "images": []
@@ -1353,7 +1353,7 @@
       "100"
     ],
     "correct_answer": "Choice A\n90",
-    "explanation": "Let the meeting point be D. Let’s assume C1 takes t minutes to reach the meeting point. Then C2 takes same t minutes to reach the meeting point. \n\n![Graphs showing translations of mod of x](/pyq/2020/images/s1_quant_q7_0_q7_meeting_points.png)\n\n After reaching the destinations...  C1 takes t minutes to cover AD, while C2 takes 20 minutes  C1 takes 45 minutes to cover DB, while C2 takes t minutes   the ratio of speeds of C1 and C2 on the stretch AD will be equal to the ratio of their speed on the stretch DB.  When the distances are the same, the ratio of speeds is the inverse ratio of time taken.  ratio of speeds of C1 and C2 on the stretch AD = \\\\frac{20}{t})  ratio of speeds of C1 and C2 on the stretch DB = \\\\frac{t}{45})  Therefore, \\\\frac{20}{t}) = \\\\frac{t}{45})  t × t = 45 × 20  t 2 = 900  t = 30.   \\\\frac{Speed of C1}{Speed of C2}) = \\\\frac{20}{t})  \\\\frac{60}{Speed of C2}) = \\\\frac{20}{30})  Speed of C2 = 90 kmph\n\nThe answer is, \"90\"",
+    "explanation": "Let the meeting point be D. Let’s assume C1 takes t minutes to reach the meeting point. Then C2 takes same t minutes to reach the meeting point. \n\n![Graphs showing translations of mod of x](/pyq/2020/images/s1_quant_q7_0_q7_meeting_points.png)\n\n After reaching the destinations...  C1 takes t minutes to cover AD, while C2 takes 20 minutes  C1 takes 45 minutes to cover DB, while C2 takes t minutes   the ratio of speeds of C1 and C2 on the stretch AD will be equal to the ratio of their speed on the stretch DB.  When the distances are the same, the ratio of speeds is the inverse ratio of time taken.  ratio of speeds of C1 and C2 on the stretch AD = \\(\\frac{20}{t}\\)  ratio of speeds of C1 and C2 on the stretch DB = \\(\\frac{t}{45}\\)  Therefore, \\(\\frac{20}{t}\\) = \\(\\frac{t}{45}\\)  t × t = 45 × 20  t 2 = 900  t = 30.   \\(\\frac{Speed of C1}{Speed of C2}\\) = \\(\\frac{20}{t}\\)  \\(\\frac{60}{Speed of C2}\\) = \\(\\frac{20}{30}\\)  Speed of C2 = 90 kmph\n\nThe answer is, \"90\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=658",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-7.shtml",
     "images": [
@@ -1376,7 +1376,7 @@
       "5"
     ],
     "correct_answer": "Choice A\n6",
-    "explanation": "a + \\\\frac{b + c}{2}) = 5 ---> 2a + b + c = 10  b + \\\\frac{a + c}{2}) = 7 ---> 2b + a + c = 14  Solving these two, we get b – a = 4  b = a + 4  Substituting this in the first equation  2a + a + 4 + c = 10  3a + c = 6  Given all three as positive integers, maximum value we can get for a = 1  Ex: When substituting a = 2, c = 0 (Not possible)  So a = 1, then b = 5  Sum of a + b = 6\n\nThe question is \"Let A, B and C be three positive integers such that the sum of A and the mean of B and C is 5. In addition, the sum of B and the mean of A and C is 7. Then the sum of A and B is\"\n\nHence, the answer is, \"6\"",
+    "explanation": "a + \\(\\frac{b + c}{2}\\) = 5 ---> 2a + b + c = 10  b + \\(\\frac{a + c}{2}\\) = 7 ---> 2b + a + c = 14  Solving these two, we get b – a = 4  b = a + 4  Substituting this in the first equation  2a + a + 4 + c = 10  3a + c = 6  Given all three as positive integers, maximum value we can get for a = 1  Ex: When substituting a = 2, c = 0 (Not possible)  So a = 1, then b = 5  Sum of a + b = 6\n\nThe question is \"Let A, B and C be three positive integers such that the sum of A and the mean of B and C is 5. In addition, the sum of B and the mean of A and C is 7. Then the sum of A and B is\"\n\nHence, the answer is, \"6\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=811",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-8.shtml",
     "images": []
@@ -1389,15 +1389,15 @@
     "question_number": 9,
     "type": "MCQ",
     "context": "",
-    "question": "If x = (4096)7+4√3, then which of the following equals 64?",
+    "question": "If x = \\(4096^{7 + 4\\sqrt{3}}\\), then which of the following equals 64?",
     "options": [
-      "\\\\frac{x^{7/2}}{x^{4/√3}})",
-      "\\\\frac{x^{7}}{x^{4√3}})",
-      "\\\\frac{x^{7/2}}{x^{2√3}})",
-      "\\\\frac{x^{7}}{x^{2√3}})"
+      "\\(\\frac{x^{7/2}}{x^{4/\\sqrt{3}}}\\)",
+      "\\(\\frac{x^{7}}{x^{4\\sqrt{3}}}\\)",
+      "\\(\\frac{x^{7/2}}{x^{2\\sqrt{3}}}\\)",
+      "\\(\\frac{x^{7}}{x^{2\\sqrt{3}}}\\)"
     ],
-    "correct_answer": "Choice C\n\\\\frac{x^{7/2}}{x^{2√3}})",
-    "explanation": "642 = 4096  x = (4096)7 + 4√3  x = (642)7 + 4√3  √x = (64)7 + 4√3  √x( 1 ÷ (7 + 4√3)) = 64   1 ÷ (7 + 4√3) = \\\\frac{1}{7 + 4√3}) = \\\\frac{1 × (7 - 4√3)}{(7 + 4√3) × (7 - 4√3)}) = \\\\frac{7 - 4√3}{49 - 48}) = 7 - 4√3   √x( 1 ÷ (7 + 4√3)) = 64  √x(7 - 4√3) = 64  x(7/2 - (4√3)/2) = 64  x(7/2 - 2√3) = 64  \\\\frac{x^{7/2}}{x^{2√3}})\n\nThe question is \"If x = (4096)7+4√3, then which of the following equals 64?\"\n\nHence, the answer is, \"\\\\frac{x^{7/2}}{x^{2√3}})\"",
+    "correct_answer": "Choice C\n\\(\\frac{x^{7/2}}{x^{2\\sqrt{3}}}\\)",
+    "explanation": "642 = 4096  x = (4096)7 + 4\\sqrt{3}  x = (642)7 + 4\\sqrt{3}  \\sqrt{x} = (64)7 + 4\\sqrt{3}  \\sqrt{x}( 1 ÷ (7 + 4\\sqrt{3})) = 64   1 ÷ (7 + 4\\sqrt{3}) = \\(\\frac{1}{7 + 4\\sqrt{3}}\\) = \\(\\frac{1 × (7 - 4\\sqrt{3})}{(7 + 4\\sqrt{3}) × (7 - 4\\sqrt{3})}\\) = \\(\\frac{7 - 4\\sqrt{3}}{49 - 48}\\) = 7 - 4\\sqrt{3}   \\sqrt{x}( 1 ÷ (7 + 4\\sqrt{3})) = 64  \\sqrt{x}(7 - 4\\sqrt{3}) = 64  x(7/2 - (4\\sqrt{3})/2) = 64  x(7/2 - 2\\sqrt{3}) = 64  \\frac{x^{7/2}}{x^{2\\sqrt{3}}})\n\nThe question is \"If x = \\(4096^{7 + 4\\sqrt{3}}\\), then which of the following equals 64?\"\n\nHence, the answer is, \"\\frac{x^{7/2}}{x^{2\\sqrt{3}}})\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=937",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-9.shtml",
     "images": []
@@ -1418,7 +1418,7 @@
       "5050"
     ],
     "correct_answer": "Choice A\n5544",
-    "explanation": "Even numbers so b = 0  1100 1122 1144 1166 1188  2200 2222 2244 … …  .  .  .  9900 … … … …  By adding  \\\\frac{5(1100 + ... + 9900) + 9(22 + 44 + 66 + 88)}{45}) {Since the term is common 5 times and 9 times}  \\\\frac{(5 × 100 × 11 × 45) + 9 × 22(1 + 2 + 3 + 4)}{45})  = 5544\n\nThe question is \"The mean of all 4 digit even natural numbers of the form 'aabb', where a>0, is\"\n\nHence, the answer is, \"5544\"",
+    "explanation": "Even numbers so b = 0  1100 1122 1144 1166 1188  2200 2222 2244 … …  .  .  .  9900 … … … …  By adding  \\(\\frac{5(1100 + ... + 9900) + 9(22 + 44 + 66 + 88)}{45}\\) {Since the term is common 5 times and 9 times}  \\(\\frac{(5 × 100 × 11 × 45) + 9 × 22(1 + 2 + 3 + 4)}{45}\\)  = 5544\n\nThe question is \"The mean of all 4 digit even natural numbers of the form 'aabb', where a>0, is\"\n\nHence, the answer is, \"5544\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1116",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-10.shtml",
     "images": []
@@ -1431,10 +1431,10 @@
     "question_number": 11,
     "type": "TITA",
     "context": "",
-    "question": "The number of distinct real roots of the equation (x + \\\\frac{1}{x}))2 - 3(x + \\\\frac{1}{x})) + 2 = 0 equals",
+    "question": "The number of distinct real roots of the equation (x + \\(\\frac{1}{x}\\))2 - 3(x + \\(\\frac{1}{x}\\)) + 2 = 0 equals",
     "options": [],
     "correct_answer": "1",
-    "explanation": "x + \\\\frac{1}{x}) = y  y2 – 3y + 2 = 0  y ≥ 2 & y ≤ - 2  (y – 1) (y – 2) = 0  y = 1(Not possible) or y = 2  Now, x + \\\\frac{1}{x}) = 2  This has only one option x = 1. So, only one real root\n\nThe question is \"The number of distinct real roots of the equation (x + \\\\frac{1}{x}))2 - 3(x + \\\\frac{1}{x})) + 2 = 0 equals\"\n\nHence, the answer is, \" 1\"",
+    "explanation": "x + \\(\\frac{1}{x}\\) = y  y2 – 3y + 2 = 0  y ≥ 2 & y ≤ - 2  (y – 1) (y – 2) = 0  y = 1(Not possible) or y = 2  Now, x + \\(\\frac{1}{x}\\) = 2  This has only one option x = 1. So, only one real root\n\nThe question is \"The number of distinct real roots of the equation (x + \\(\\frac{1}{x}\\)2 - 3(x + \\(\\frac{1}{x}\\) + 2 = 0 equals\"\n\nHence, the answer is, \" 1\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1325",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-11.shtml",
     "images": []
@@ -1471,7 +1471,7 @@
       "9"
     ],
     "correct_answer": "Choice D\n9",
-    "explanation": "x0 = 100 (If all 100 had their birthdays on January)  If x0 = 3 (Not possible, because all x1 ,.....x12 together will be only 36)  So x0 will be lesser when the numbers are as close as possible  \\\\frac{100}{12})=8.5  So if we add 8 (12 times) = 96  So, need to have 8,8,8,8,8,8,8,8,9,9,9,9 (Adding these 12 we will get 100)  x0 = 9\n\nThe answer is, \"9\"",
+    "explanation": "x0 = 100 (If all 100 had their birthdays on January)  If x0 = 3 (Not possible, because all x1 ,.....x12 together will be only 36)  So x0 will be lesser when the numbers are as close as possible  \\(\\frac{100}{12}\\)=8.5  So if we add 8 (12 times) = 96  So, need to have 8,8,8,8,8,8,8,8,9,9,9,9 (Adding these 12 we will get 100)  x0 = 9\n\nThe answer is, \"9\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1442",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-13.shtml",
     "images": []
@@ -1492,7 +1492,7 @@
       "75"
     ],
     "correct_answer": "Choice B\n82",
-    "explanation": "Two person to be A and B  A = 2km/hr and B = 4 km/hr  Speed of the train = t km/hr  Given, Train crosses A in 90 seconds (Length of the train is the distance)  t – 2 in 90 seconds and t – 4 in 100 seconds  Ratio of speed is opposite to time  (t – 2) 90 = (t - 4) 100  Solving t = 22km/hr  For A, Speed = t – 2 = 20 km/hr in 90 seconds  So travelling at 22 km/hr ----> \\\\frac{90 × 20}{22}) ≅ 82\n\nThe answer is, \"82\"",
+    "explanation": "Two person to be A and B  A = 2km/hr and B = 4 km/hr  Speed of the train = t km/hr  Given, Train crosses A in 90 seconds (Length of the train is the distance)  t – 2 in 90 seconds and t – 4 in 100 seconds  Ratio of speed is opposite to time  (t – 2) 90 = (t - 4) 100  Solving t = 22km/hr  For A, Speed = t – 2 = 20 km/hr in 90 seconds  So travelling at 22 km/hr ----> \\(\\frac{90 × 20}{22}\\) ≅ 82\n\nThe answer is, \"82\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1518",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-14.shtml",
     "images": []
@@ -1529,7 +1529,7 @@
     "question": "The area of the region satisfying the inequalities |x| - y ≤ 1, y ≥ 0, and y ≤ 1 is",
     "options": [],
     "correct_answer": "3",
-    "explanation": "|x| – y = 1  y = |x| – 1  \n\n![Co-ordinate Graphs of Moduli Functions](/pyq/2020/images/s1_quant_q16_0_q16_modulus_graphs.png)\n\n  We got a trapezium with h = 1  And parallel sides = 2 and 4  = \\\\frac{1}{2})(2+4)×1  = 3 square units\n\nThe question is \"The area of the region satisfying the inequalities |x| - y ≤ 1, y ≥ 0, and y ≤ 1 is\"\n\nHence, the answer is, \" 3\"",
+    "explanation": "|x| – y = 1  y = |x| – 1  \n\n![Co-ordinate Graphs of Moduli Functions](/pyq/2020/images/s1_quant_q16_0_q16_modulus_graphs.png)\n\n  We got a trapezium with h = 1  And parallel sides = 2 and 4  = \\(\\frac{1}{2}\\)(2+4)×1  = 3 square units\n\nThe question is \"The area of the region satisfying the inequalities |x| - y ≤ 1, y ≥ 0, and y ≤ 1 is\"\n\nHence, the answer is, \" 3\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1831",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-16.shtml",
     "images": [
@@ -1552,7 +1552,7 @@
       "256"
     ],
     "correct_answer": "Choice C\n243",
-    "explanation": "When we consider top part of the triangle  Height is = \\\\frac{1}{3})rd of original height  \n\n![Right Circular Cone](/pyq/2020/images/s1_quant_q17_0_q17_right_circular_cone.png)\n\n  If height becomes \\\\frac{1}{3})rd then radius also becomes \\\\frac{1}{3})rd  If both height and radius become \\\\frac{1}{3})rd, Volume will be \\\\frac{1}{27})th  So, Top part’s volume = V  Remaining part = 26V  Totally = 27V  Given 26 V – V = 225  V = 9  27 V = 243\n\nThe answer is, \"243\"",
+    "explanation": "When we consider top part of the triangle  Height is = \\(\\frac{1}{3}\\)rd of original height  \n\n![Right Circular Cone](/pyq/2020/images/s1_quant_q17_0_q17_right_circular_cone.png)\n\n  If height becomes \\(\\frac{1}{3}\\)rd then radius also becomes \\(\\frac{1}{3}\\)rd  If both height and radius become \\(\\frac{1}{3}\\)rd, Volume will be \\(\\frac{1}{27}\\)th  So, Top part’s volume = V  Remaining part = 26V  Totally = 27V  Given 26 V – V = 225  V = 9  27 V = 243\n\nThe answer is, \"243\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=1942",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-17.shtml",
     "images": [
@@ -1569,13 +1569,13 @@
     "context": "",
     "question": "A circle is inscribed in a rhombus with diagonals 12 cm and 16 cm. The ratio of the area of the circle to the area of the rhombus is",
     "options": [
-      "\\\\frac{2π}{15})",
-      "\\\\frac{6π}{25})",
-      "\\\\frac{3π}{25})",
-      "\\\\frac{5π}{18})"
+      "\\(\\frac{2\\pi}{15}\\)",
+      "\\(\\frac{6\\pi}{25}\\)",
+      "\\(\\frac{3\\pi}{25}\\)",
+      "\\(\\frac{5\\pi}{18}\\)"
     ],
-    "correct_answer": "Choice B\n\\\\frac{6π}{25})",
-    "explanation": "Diagonals of a rhombus are perpendicular bisectors of each other  If diagonals are 12 and 16  Half of diagonals are 6 and 8 third side will become 10 = side of rhombus  Radius of the circle will be perpendicular to the side of the rhombus  Because side of the rhombus is tangent to the circle  The triangle is taken by half a diagonal (6) and (8) from the original figure  \n\n![triangle](/pyq/2020/images/s1_quant_q18_0_q18_triangle.png)\n\n![rhombus](/pyq/2020/images/s1_quant_q18_1_q18_rhombus.png)\n\n  Just equating the areas  \\\\frac{1}{2}) × 8 × 6 = \\\\frac{1}{2}) × 10 × h  h = \\\\frac{24}{5}) = same as radius of the circle (r)  Now, area of circle : area of rhombus  π × \\\\frac{24}{5}) × \\\\frac{24}{5}) : \\\\frac{1}{2}) × 12 × 16  6π : 25\n\nThe question is \"A circle is inscribed in a rhombus with diagonals 12 cm and 16 cm. The ratio of the area of the circle to the area of the rhombus is\"\n\nHence, the answer is, \"\\\\frac{6π}{25})\"",
+    "correct_answer": "Choice B\n\\(\\frac{6\\pi}{25}\\)",
+    "explanation": "Diagonals of a rhombus are perpendicular bisectors of each other  If diagonals are 12 and 16  Half of diagonals are 6 and 8 third side will become 10 = side of rhombus  Radius of the circle will be perpendicular to the side of the rhombus  Because side of the rhombus is tangent to the circle  The triangle is taken by half a diagonal (6) and (8) from the original figure  \n\n![triangle](/pyq/2020/images/s1_quant_q18_0_q18_triangle.png)\n\n![rhombus](/pyq/2020/images/s1_quant_q18_1_q18_rhombus.png)\n\n  Just equating the areas  \\(\\frac{1}{2}\\) × 8 × 6 = \\(\\frac{1}{2}\\) × 10 × h  h = \\(\\frac{24}{5}\\) = same as radius of the circle (r)  Now, area of circle : area of rhombus  \\pi × \\(\\frac{24}{5}\\) × \\(\\frac{24}{5}\\) : \\(\\frac{1}{2}\\) × 12 × 16  6\\pi : 25\n\nThe question is \"A circle is inscribed in a rhombus with diagonals 12 cm and 16 cm. The ratio of the area of the circle to the area of the rhombus is\"\n\nHence, the answer is, \"\\(\\frac{6\\pi}{25}\\)\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=2043",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-18.shtml",
     "images": [
@@ -1599,7 +1599,7 @@
       "14"
     ],
     "correct_answer": "Choice A\n12",
-    "explanation": "Speed are 8 km/hr and 15 km/hr  So it takes 15t times and 8t times  Difference of times = 15t – 8t = 7t  7t = 35 minutes (10:15 min – 9:40 min)  t = 5 minutes  He takes 75 minutes by travelling at 8 km/hr and 40 minutes if travelled at 15 km/hr  He starts at 9 am.  So, 9:10 to 10:00 = 50 minutes  15 km/hr = 40 min  And at what speed he should travel, so as to reach there within 50 minutes  \\\\frac{15 × 40}{50}) = 12 km/hr\n\nThe answer is, \"12\"",
+    "explanation": "Speed are 8 km/hr and 15 km/hr  So it takes 15t times and 8t times  Difference of times = 15t – 8t = 7t  7t = 35 minutes (10:15 min – 9:40 min)  t = 5 minutes  He takes 75 minutes by travelling at 8 km/hr and 40 minutes if travelled at 15 km/hr  He starts at 9 am.  So, 9:10 to 10:00 = 50 minutes  15 km/hr = 40 min  And at what speed he should travel, so as to reach there within 50 minutes  \\(\\frac{15 × 40}{50}\\) = 12 km/hr\n\nThe answer is, \"12\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=2259",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-19.shtml",
     "images": []
@@ -1640,8 +1640,8 @@
       "−log2 (1/3)",
       "−log2 (1/5)"
     ],
-    "correct_answer": "Choice A\nlog2 (1/3)",
-    "explanation": "Taking log on both sides  y2log35 log 2 = log23 log 5  Choosing the base to be 3  y2 log35 log32 = log23 log35  y2 log32 = log23 (Cancelling log35)  y2 = log23/log32  y2 = (log23)2  y = - log23 (Given y is a negative number)  y = log2\\\\frac{1}{3})\n\nThe question is \"If y is a negative number such that 2y2log35 = 5log23, then y equals\"\n\nHence, the answer is, \"log2 (1/3)\"",
+    "correct_answer": "Choice A\nlog2 (1/3)",
+    "explanation": "Taking log on both sides  y2log35 log 2 = log23 log 5  Choosing the base to be 3  y2 log35 log32 = log23 log35  y2 log32 = log23 (Cancelling log35)  y2 = log23/log32  y2 = (log23)2  y = - log23 (Given y is a negative number)  y = log2\\(\\frac{1}{3}\\)\n\nThe question is \"If y is a negative number such that 2y2log35 = 5log23, then y equals\"\n\nHence, the answer is, \"log2 (1/3)\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=2559",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-21.shtml",
     "images": []
@@ -1656,13 +1656,13 @@
     "context": "",
     "question": "On a rectangular metal sheet of area 135 sq in, a circle is painted such that the circle touches opposite two sides. If the area of the sheet left unpainted is two-thirds of the painted area then the perimeter of the rectangle in inches is",
     "options": [
-      "3√π(5 + \\\\frac{12}{π}))",
-      "4√π(3 + \\\\frac{12}{π}))",
-      "5√π(3 + \\\\frac{12}{π}))",
-      "3√π(\\\\frac{5}{2}) + \\\\frac{6}{π}))"
+      "\\(3\\sqrt{\\pi}(5 + \\frac{12}{\\pi})\\)",
+      "\\(4\\sqrt{\\pi}(3 + \\frac{12}{\\pi})\\)",
+      "\\(5\\sqrt{\\pi}(3 + \\frac{12}{\\pi})\\)",
+      "\\(3\\sqrt{\\pi}(\\frac{5}{2} + \\frac{6}{\\pi})\\)"
     ],
-    "correct_answer": "Choice A\n3√π(5 + \\\\frac{12}{π}))",
-    "explanation": "Total area = 5 parts  \n\n![circle area](/pyq/2020/images/s1_quant_q22_0_q22_circle_area.png)\n\n  So, painted area = 135 × \\\\frac{3}{5}) = π r2  Solving r = \\\\frac{9}{√π})  Substituting r in l = \\\\frac{135}{2r})  l = \\\\frac{15√π}{2})  Perimeter of rectangle = 2(l + b)  = 2(\\\\frac{15√π}{2}) + \\\\frac{18}{√π}))  = 3√π (5 + \\\\frac{12}{π}))\n\nThe answer is, \"3√π(5 + \\\\frac{12}{π}))\"",
+    "correct_answer": "Choice A\n\\(3\\sqrt{\\pi}(5 + \\frac{12}{\\pi})\\)",
+    "explanation": "Total area = 5 parts  \n\n![circle area](/pyq/2020/images/s1_quant_q22_0_q22_circle_area.png)\n\n  So, painted area = 135 × \\(\\frac{3}{5}\\) = \\pi r2  Solving r = \\(\\frac{9}{\\sqrt{\\pi}}\\)  Substituting r in l = \\(\\frac{135}{2r}\\)  l = \\(\\frac{15\\sqrt{\\pi}}{2}\\)  Perimeter of rectangle = 2(l + b)  = 2(\\(\\frac{15\\sqrt{\\pi}}{2}\\) + \\(\\frac{18}{\\sqrt{\\pi}}\\))  = 3\\sqrt{\\pi} (5 + \\(\\frac{12}{\\pi}\\)\n\nThe answer is, \"3\\sqrt{\\pi}(5 + \\(\\frac{12}{\\pi}\\)\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=2720",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-22.shtml",
     "images": [
@@ -1685,7 +1685,7 @@
       "55"
     ],
     "correct_answer": "Choice C\n66",
-    "explanation": "In a group 28% are young, 72% are old  In the same group 65% are literates and 35% are illiterates  Young literates = \\\\frac{1}{4}) (65%) = 16.25%, So remaining 11.75% are young illiterates  Out of 35% illiterates = 11.75% is young and remaining 23.25% are old illiterates  So, \\\\frac{23.25}{35}) × 100 ≅ 66\n\nThe answer is, \"66\"",
+    "explanation": "In a group 28% are young, 72% are old  In the same group 65% are literates and 35% are illiterates  Young literates = \\(\\frac{1}{4}\\) (65%) = 16.25%, So remaining 11.75% are young illiterates  Out of 35% illiterates = 11.75% is young and remaining 23.25% are old illiterates  So, \\(\\frac{23.25}{35}\\) × 100 ≅ 66\n\nThe answer is, \"66\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=2917",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-23.shtml",
     "images": []
@@ -1738,7 +1738,7 @@
     "question": "A solution, of volume 40 litres, has dye and water in the proportion 2 : 3. Water is added to the solution to change this proportion to 2 : 5. If one-fourths of this diluted solution is taken out, how many litres of dye must be added to the remaining solution to bring the proportion back to 2 : 3?",
     "options": [],
     "correct_answer": "8",
-    "explanation": "40 litres is split in ratio 2:3  So dye = 16 l and water = 24 l Now proportion is 2:5 Already in the ratios 2:3 2 : 5 Now, 16 l of dye : 40 l of water 16 l of water is added \\\\frac{1}{4})th is removed from the proportion 12 l of dye : 30 l of water Now how many dye has to be added to make 2 : 3 2 : 3 12 l of dye : 30 l of water Multiplication factor is 10 (3 × 10 = 30) 2 × 10 = 20 l of dye in total, So 8 l of dye has to be added\n\nThe answer is, \" 8\"",
+    "explanation": "40 litres is split in ratio 2:3  So dye = 16 l and water = 24 l Now proportion is 2:5 Already in the ratios 2:3 2 : 5 Now, 16 l of dye : 40 l of water 16 l of water is added \\(\\frac{1}{4}\\)th is removed from the proportion 12 l of dye : 30 l of water Now how many dye has to be added to make 2 : 3 2 : 3 12 l of dye : 30 l of water Multiplication factor is 10 (3 × 10 = 30) 2 × 10 = 20 l of dye in total, So 8 l of dye has to be added\n\nThe answer is, \" 8\"",
     "video_url": "https://www.youtube.com/embed/O0-23Yxv5Zo?start=3384",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-1-Quant/quants-question-26.shtml",
     "images": []
@@ -2189,7 +2189,7 @@
       "It is better to make decisions based on information because it is more accurate, and the rationale behind it can be explained.",
       "Decisions based on intuition and information result in differential speed and ability to provide a rationale."
     ],
-    "correct_answer": "Choice D\nDecisions based on intuition and information result in differential speed and ability to provide a rationale.",
+    "correct_answer": "Choice D\nDecisions based on intuition and information result in differential speed and ability to provide a rationale.",
     "explanation": "The given paragraph compares intuitive decisions to decisions made based on information, in terms of the speed of decision-making and the ability of the decision maker to explain the rationale behind the decision. Option D captures the essence of the paragraph. Options A and C are limited to intuitive decisions and decisions based on information respectively. Option B does not cover the idea of the ability of the decision maker to explain the rationale behind the decision.\n\nThe answer is, \"Decisions based on intuition and information result in differential speed and ability to provide a rationale.\"",
     "video_url": "https://www.youtube.com/embed/dXflL2tPPxw?start=3707",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-VARC/verbal-question-22.shtml",
@@ -2210,7 +2210,7 @@
       "Current methodologies used to define urban and rural areas are no longer relevant to our being able to study trends in urbanisation.",
       "With the diversity of urban landscapes, measurable criteria for defining urban areas may need to be supplemented with human judgement."
     ],
-    "correct_answer": "Choice D\nWith the diversity of urban landscapes, measurable criteria for defining urban areas may need to be supplemented with human judgement.",
+    "correct_answer": "Choice D\nWith the diversity of urban landscapes, measurable criteria for defining urban areas may need to be supplemented with human judgement.",
     "explanation": "The main idea of the paragraph is that, given the rural-urban continuum, in order to identify urban areas and measure urbanization rates in a consistent manner we need not only a richer combination of measurable criteria but also some element of human judgement. Option D captures all key ideas.  Options A and B are limited to one idea, A to human judgement and B to the combination of criteria. Option C is too general and does not include key points.\n\nThe answer is, \"With the diversity of urban landscapes, measurable criteria for defining urban areas may need to be supplemented with human judgement.\"",
     "video_url": "https://www.youtube.com/embed/dXflL2tPPxw?start=4122",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-VARC/verbal-question-23.shtml",
@@ -2854,7 +2854,7 @@
       "450"
     ],
     "correct_answer": "Choice D\n450",
-    "explanation": "Let the length of the race track be 'x' km.  By the time A finishes the race, B lags by 45km.  That is, in the same time, while A runs x kms, B runs (x-45) kms  Ratio of Speeds of A and B = \\\\frac{x}{x-45})  By the time B finishes the race, C lags by 50km.  That is, in the same time, while B runs x kms, C runs (x-50) kms  Ratio of Speeds of B and C = \\\\frac{x}{x-50})  By the time A finishes the race, C lags by 90km.  That is, in the same time, while A runs x kms, C runs (x-90) kms  Ratio of Speeds of A and C = \\\\frac{x}{x-90})  (Ratio of Speeds of A and B) × (Ratio of Speeds of B and C) = (Ratio of Speeds of A and C)  \\\\frac{x}{x-45}) × \\\\frac{x}{x-50}) = \\\\frac{x}{x-90})  \\\\frac{x}{x-45}) = \\\\frac{x-50}{x-90})  If \\\\frac{a}{b}) = \\\\frac{c}{d}); then \\\\frac{a}{b}) = \\\\frac{c-a}{d-b})  Threfore, \\\\frac{x}{x-45}) = \\\\frac{x-50 - x}{x-90 - (x-45)})  \\\\frac{x}{x-45}) = \\\\frac{-50}{-45}) = \\\\frac{10}{9}) \\\\frac{x}{x-45}) = \\\\frac{10}{9})  9x = 10x - 450  x = 450.  or  Ratio of Speeds of A and B = \\\\frac{10}{9})  By the A covers x, B covers 0.9x  Since A beats B by 45km, 0.1x = 45  x = 450.\n\nThe question is \"In a car race, car A beats car B by 45 km, car B beats car C by 50 km, and car A beats car C by 90 km. The distance (in km) over which the race has been conducted is\"\n\nHence, the answer is, \"450\"",
+    "explanation": "Let the length of the race track be 'x' km.  By the time A finishes the race, B lags by 45km.  That is, in the same time, while A runs x kms, B runs (x-45) kms  Ratio of Speeds of A and B = \\(\\frac{x}{x-45}\\)  By the time B finishes the race, C lags by 50km.  That is, in the same time, while B runs x kms, C runs (x-50) kms  Ratio of Speeds of B and C = \\(\\frac{x}{x-50}\\)  By the time A finishes the race, C lags by 90km.  That is, in the same time, while A runs x kms, C runs (x-90) kms  Ratio of Speeds of A and C = \\(\\frac{x}{x-90}\\)  (Ratio of Speeds of A and B) × (Ratio of Speeds of B and C) = (Ratio of Speeds of A and C)  \\(\\frac{x}{x-45}\\) × \\(\\frac{x}{x-50}\\) = \\(\\frac{x}{x-90}\\)  \\(\\frac{x}{x-45}\\) = \\(\\frac{x-50}{x-90}\\)  If \\(\\frac{a}{b}\\) = \\(\\frac{c}{d}\\); then \\(\\frac{a}{b}\\) = \\(\\frac{c-a}{d-b}\\)  Threfore, \\(\\frac{x}{x-45}\\) = \\(\\frac{x-50 - x}{x-90 - (x-45)}\\)  \\(\\frac{x}{x-45}\\) = \\(\\frac{-50}{-45}\\) = \\(\\frac{10}{9}\\) \\(\\frac{x}{x-45}\\) = \\(\\frac{10}{9}\\)  9x = 10x - 450  x = 450.  or  Ratio of Speeds of A and B = \\(\\frac{10}{9}\\)  By the A covers x, B covers 0.9x  Since A beats B by 45km, 0.1x = 45  x = 450.\n\nThe question is \"In a car race, car A beats car B by 45 km, car B beats car C by 50 km, and car A beats car C by 90 km. The distance (in km) over which the race has been conducted is\"\n\nHence, the answer is, \"450\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=4",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-1.shtml",
     "images": []
@@ -2869,13 +2869,13 @@
     "context": "",
     "question": "From the interior point of an equilateral triangle, perpendiculars are drawn on all three sides. The sum of the lengths of the perpendiculars is 's'. Then the area of the triangle is",
     "options": [
-      "\\\\frac{s^{2}}{2√3})",
-      "\\\\frac{2s^{2}}{√3})",
-      "\\\\frac{s^{2}}{√3})",
-      "\\\\frac{√3s^{2}}{2})"
+      "\\(\\frac{s^{2}}{2\\sqrt{3}}\\)",
+      "\\(\\frac{2s^{2}}{\\sqrt{3}}\\)",
+      "\\(\\frac{s^{2}}{\\sqrt{3}}\\)",
+      "\\(\\frac{\\sqrt{3}s^{2}}{2}\\)"
     ],
-    "correct_answer": "Choice C\n\\\\frac{s^{2}}{√3})",
-    "explanation": "![Right Triangle](/pyq/2020/images/s2_quant_q2_0_q2_right_triangle.png)\n\n  From any point on a equilateral triangle, if we draw three perpendiculars on other sides  Those three perpendicular will add up to = Altitude of an equilateral triangle  We take the point to be A, and try to draw 3 perpendiculars (Can draw only one)  And is same as altitude of the equilateral triangle  So, s = \\\\frac{√3}{2}) a --> a = \\\\frac{2s}{√3})  By substituting the value in Area of an equilateral triangle \\\\frac{√3}{4})a2  \\\\frac{√3}{4}) × (\\\\frac{2s}{√3}))2= \\\\frac{s^{2}}{√3})\n\nThe question is \"From the interior point of an equilateral triangle, perpendiculars are drawn on all three sides. The sum of the lengths of the perpendiculars is 's'. Then the area of the triangle is\"\n\nHence, the answer is, \"\\\\frac{s^{2}}{√3})\"",
+    "correct_answer": "Choice C\n\\(\\frac{s^{2}}{\\sqrt{3}}\\)",
+    "explanation": "![Right Triangle](/pyq/2020/images/s2_quant_q2_0_q2_right_triangle.png)\n\n  From any point on a equilateral triangle, if we draw three perpendiculars on other sides  Those three perpendicular will add up to = Altitude of an equilateral triangle  We take the point to be A, and try to draw 3 perpendiculars (Can draw only one)  And is same as altitude of the equilateral triangle  So, s = \\(\\frac{\\sqrt{3}}{2}\\) a --> a = \\(\\frac{2s}{\\sqrt{3}}\\)  By substituting the value in Area of an equilateral triangle \\(\\frac{\\sqrt{3}}{4}\\)a2  \\(\\frac{\\sqrt{3}}{4}\\) × (\\(\\frac{2s}{\\sqrt{3}}\\))2= \\(\\frac{s^{2}}{\\sqrt{3}}\\)\n\nThe question is \"From the interior point of an equilateral triangle, perpendiculars are drawn on all three sides. The sum of the lengths of the perpendiculars is 's'. Then the area of the triangle is\"\n\nHence, the answer is, \"\\(\\frac{s^{2}}{\\sqrt{3}}\\)\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=168",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-2.shtml",
     "images": [
@@ -2929,7 +2929,7 @@
     "question_number": 5,
     "type": "MCQ",
     "context": "",
-    "question": "The value of loga\\\\frac{a}{b}) + logb\\\\frac{b}{a}), for 1 < a ≤ b cannot be equal to",
+    "question": "The value of loga\\(\\frac{a}{b}\\) + logb\\(\\frac{b}{a}\\), for 1 < a ≤ b cannot be equal to",
     "options": [
       "-0.5",
       "1",
@@ -2937,7 +2937,7 @@
       "-1"
     ],
     "correct_answer": "Choice B\n1",
-    "explanation": "logaa – logab  logbb – logba  Adding  2 – { logab + 1/ logba} [logab + 1/ logba] = [x + 1/x] and value is ≥ 2 and ≤ -2  From the options,  x + 1/x ≠ 1\n\nThe question is \"The value of loga\\\\frac{a}{b}) + logb\\\\frac{b}{a}), for 1 < a ≤ b cannot be equal to\"\n\nHence, the answer is, \"1\"",
+    "explanation": "logaa – logab  logbb – logba  Adding  2 – { logab + 1/ logba} [logab + 1/ logba] = [x + 1/x] and value is ≥ 2 and ≤ -2  From the options,  x + 1/x ≠ 1\n\nThe question is \"The value of loga\\(\\frac{a}{b}\\) + logb\\(\\frac{b}{a}\\), for 1 < a ≤ b cannot be equal to\"\n\nHence, the answer is, \"1\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=822",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-5.shtml",
     "images": []
@@ -2950,7 +2950,7 @@
     "question_number": 6,
     "type": "MCQ",
     "context": "",
-    "question": "Let the m-th and n-th terms of a Geometric progression be\r\n                        \\\\frac{3}{4}) and 12, respectively, when m < n. If the common ratio of the progression is an\r\n                        integer r, then the smallest possible value of r + n - m is",
+    "question": "Let the m-th and n-th terms of a Geometric progression be\r\n                        \\(\\frac{3}{4}\\) and 12, respectively, when m < n. If the common ratio of the progression is an\r\n                        integer r, then the smallest possible value of r + n - m is",
     "options": [
       "-4",
       "-2",
@@ -2958,7 +2958,7 @@
       "2"
     ],
     "correct_answer": "Choice B\n-2",
-    "explanation": "\\\\frac{3}{4})    12  mth    nth  m > n  Given r is an integer, So\r\n                        rk = \\\\frac{12}{\\frac{3}{4}}) = 16  rk = 24 or\r\n                        42  Since asked for minimum possible value, Taking rk =\r\n                        {(-2)}2 or {(-4)}2  k = n – m (From m how many terms we have to jump\r\n                        to reach n)  We have two cases r = - 2 and n - m = 4 ----> r + n – m = 2  r = - 4 and n\r\n                        – m = 2 ----> r + n – m = - 2  -2 is the smallest possible value\n\nThe answer is, \"-2\"",
+    "explanation": "\\(\\frac{3}{4}\\)    12  mth    nth  m > n  Given r is an integer, So\r\n                        rk = \\(\\frac{12}{\\frac{3}{4}}\\) = 16  rk = 24 or\r\n                        42  Since asked for minimum possible value, Taking rk =\r\n                        {(-2)}2 or {(-4)}2  k = n – m (From m how many terms we have to jump\r\n                        to reach n)  We have two cases r = - 2 and n - m = 4 ----> r + n – m = 2  r = - 4 and n\r\n                        – m = 2 ----> r + n – m = - 2  -2 is the smallest possible value\n\nThe answer is, \"-2\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=958",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-6.shtml",
     "images": []
@@ -2990,7 +2990,7 @@
     "question": "For the same principal amount, the compound interest for two years at 5% per annum exceeds the simple interest for three years at 3% per annum by Rs 1125. Then the principal amount in rupees is",
     "options": [],
     "correct_answer": "90000",
-    "explanation": "P(1.05)2 – P = CI  P × 3 × \\\\frac{3}{100}) = SI  CI = 0.1025 P  SI = 0.09P  CI – SI = 0.0125P = \\\\frac{125}{10000}) P = 1125  P = 90000\n\nThe question is \"For the same principal amount, the compound interest for two years at 5% per annum exceeds the simple interest for three years at 3% per annum by Rs 1125. Then the principal amount in rupees is\"\n\nHence, the answer is, \" 90000\"",
+    "explanation": "P(1.05)2 – P = CI  P × 3 × \\(\\frac{3}{100}\\) = SI  CI = 0.1025 P  SI = 0.09P  CI – SI = 0.0125P = \\(\\frac{125}{10000}\\) P = 1125  P = 90000\n\nThe question is \"For the same principal amount, the compound interest for two years at 5% per annum exceeds the simple interest for three years at 3% per annum by Rs 1125. Then the principal amount in rupees is\"\n\nHence, the answer is, \" 90000\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=1303",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-8.shtml",
     "images": []
@@ -3011,7 +3011,7 @@
       "7.8"
     ],
     "correct_answer": "Choice C\n8.8",
-    "explanation": "![Triangle inscribed in Circle](/pyq/2020/images/s2_quant_q9_0_q9_triangle_in_circle_1.png)\n\n![Right Triangle](/pyq/2020/images/s2_quant_q9_1_q9_triangle_in_circle_2.png)\n\n  O is the center of the circle and radius of circle = 5  In triangle AOB, using pythagorean triplet AB = 5  OR = \\\\frac{3 × 4}{5}) = 2.4  Since OR if from the center it bisects the chord,  PR = RQ  Now in triangle POR,  52 = PR2 + (2.4)2  PR = √{19.24}  PQ = 2 √{19.24}  PQ ≅ 8.8\n\nThe answer is, \"8.8\"",
+    "explanation": "![Triangle inscribed in Circle](/pyq/2020/images/s2_quant_q9_0_q9_triangle_in_circle_1.png)\n\n![Right Triangle](/pyq/2020/images/s2_quant_q9_1_q9_triangle_in_circle_2.png)\n\n  O is the center of the circle and radius of circle = 5  In triangle AOB, using pythagorean triplet AB = 5  OR = \\(\\frac{3 × 4}{5}\\) = 2.4  Since OR if from the center it bisects the chord,  PR = RQ  Now in triangle POR,  52 = PR2 + (2.4)2  PR = \\sqrt{19.24}  PQ = 2 \\sqrt{19.24}  PQ ≅ 8.8\n\nThe answer is, \"8.8\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=1427",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-9.shtml",
     "images": [
@@ -3027,15 +3027,15 @@
     "question_number": 10,
     "type": "MCQ",
     "context": "",
-    "question": "For real x, the maximum possible value of \\\\frac{x}{√(1 + x^{4})}) is",
+    "question": "For real x, the maximum possible value of \\(\\frac{x}{√(1 + x^{4})}\\) is",
     "options": [
       "1",
-      "\\\\frac{1}{2})",
-      "\\\\frac{1}{√2})",
-      "\\\\frac{1}{√3})"
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{\\sqrt{2}}\\)",
+      "\\(\\frac{1}{\\sqrt{3}}\\)"
     ],
-    "correct_answer": "Choice C\n\\\\frac{1}{√2})",
-    "explanation": "Dividing by x on both numerator and denominator  \\\\frac{1}{\\sqrt{\\frac{1+x^{4}}{x^{2}}}})=\\\\frac{1}{\\sqrt{\\frac{1}{x^{2}}+x^{2}}})  \\\\frac{1}{x^{2}}) + x2 ≥ 2  √[\\\\frac{1}{x^{2}})+x2] ≥ √2  \\\\frac{1}{\\sqrt{\\frac{1}{x^{2}}+x^{2}}}) ≤ \\\\frac{1}{\\sqrt{2}})\n\nThe question is \"For real x, the maximum possible value of \\\\frac{x}{√(1 + x^{4})}) is\"\n\nHence, the answer is, \"\\\\frac{1}{√2})\"",
+    "correct_answer": "Choice C\n\\(\\frac{1}{\\sqrt{2}}\\)",
+    "explanation": "Dividing by x on both numerator and denominator  \\frac{1}{\\sqrt{\\(\\frac{1+x^{4}}{x^{2}}\\)}})=\\frac{1}{\\sqrt{\\(\\frac{1}{x^{2}}\\)+x^{2}}})  \\(\\frac{1}{x^{2}}\\) + x2 ≥ 2  √[\\(\\frac{1}{x^{2}}\\)+x2] ≥ \\sqrt{2}  \\frac{1}{\\sqrt{\\(\\frac{1}{x^{2}}\\)+x^{2}}}) ≤ \\(\\frac{1}{\\sqrt{2}}\\)\n\nThe question is \"For real x, the maximum possible value of \\(\\frac{x}{√(1 + x^{4})}\\) is\"\n\nHence, the answer is, \"\\(\\frac{1}{\\sqrt{2}}\\)\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=3836",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-10.shtml",
     "images": []
@@ -3056,7 +3056,7 @@
       "54"
     ],
     "correct_answer": "Choice B\n50",
-    "explanation": "Let’s take Selling Price = P  = (8 × 0.8 P) + 4 × {0.8P - \\\\frac{1}{4}) (0.8)P}  = {(8 × 0.8 P) + 4 × (0.6P)}  Total Selling Price = 8.8 P  CP = \\\\frac{8.8P}{1.1}) = 8P (Since he makes 10% profit)  SP = 12P  So, Profit from 8P to 12P = \\\\frac{4P}{8P}) = 50%\n\nThe answer is, \"50\"",
+    "explanation": "Let’s take Selling Price = P  = (8 × 0.8 P) + 4 × {0.8P - \\(\\frac{1}{4}\\) (0.8)P}  = {(8 × 0.8 P) + 4 × (0.6P)}  Total Selling Price = 8.8 P  CP = \\(\\frac{8.8P}{1.1}\\) = 8P (Since he makes 10% profit)  SP = 12P  So, Profit from 8P to 12P = \\(\\frac{4P}{8P}\\) = 50%\n\nThe answer is, \"50\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=1693",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-11.shtml",
     "images": []
@@ -3139,7 +3139,7 @@
       "5:7"
     ],
     "correct_answer": "Choice D\n5:7",
-    "explanation": "![Two Trains](/pyq/2020/images/s2_quant_q15_0_q15_two_trains.png)\n\n  Trains be T1 and T2  and speed is s and 2s  Ratio of time taken for train 1 to train 2  \\\\frac{d}{s}) + \\\\frac{3d}{2s}) : \\\\frac{d}{2s}) + \\\\frac{3d}{s})  \\\\frac{5d}{2s}) : \\\\frac{7d}{2s})  5 : 7\n\nThe answer is, \"5:7\"",
+    "explanation": "![Two Trains](/pyq/2020/images/s2_quant_q15_0_q15_two_trains.png)\n\n  Trains be T1 and T2  and speed is s and 2s  Ratio of time taken for train 1 to train 2  \\(\\frac{d}{s}\\) + \\(\\frac{3d}{2s}\\) : \\(\\frac{d}{2s}\\) + \\(\\frac{3d}{s}\\)  \\(\\frac{5d}{2s}\\) : \\(\\frac{7d}{2s}\\)  5 : 7\n\nThe answer is, \"5:7\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=2119",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-15.shtml",
     "images": [
@@ -3162,7 +3162,7 @@
       "24"
     ],
     "correct_answer": "Choice A\n27",
-    "explanation": "Sides of the rectangle are in the ratio 1 : 3  Take as x and 3x  Area of Rectangle = 3x2 = R  Take an equilateral triangle with side a  Area = \\\\frac{√3}{4}) × a2 = T  Given R = T2  3x2= \\\\frac{√3}{4}) × a2  Solving we get a2 = 4x  Now from the options longer side 3x = 27  x = 9. Sides of the rectangle are 9 and 27.  If x = 9, Then a = 6  Checking if a2 = 4x  62 = 4(9)  It works, hence longer side of rectangle is 27\n\nThe answer is, \"27\"",
+    "explanation": "Sides of the rectangle are in the ratio 1 : 3  Take as x and 3x  Area of Rectangle = 3x2 = R  Take an equilateral triangle with side a  Area = \\(\\frac{\\sqrt{3}}{4}\\) × a2 = T  Given R = T2  3x2= \\(\\frac{\\sqrt{3}}{4}\\) × a2  Solving we get a2 = 4x  Now from the options longer side 3x = 27  x = 9. Sides of the rectangle are 9 and 27.  If x = 9, Then a = 6  Checking if a2 = 4x  62 = 4(9)  It works, hence longer side of rectangle is 27\n\nThe answer is, \"27\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=2228",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-16.shtml",
     "images": []
@@ -3225,7 +3225,7 @@
       "2"
     ],
     "correct_answer": "Choice B\n3",
-    "explanation": "R1 = 100m and R2 = 20m  Speed of Ram = 15km/hr and Rahim’s speed = 5km/hr  Time taken by Ram = \\\\frac{2π(100)}{15})  Time taken by Rahim = \\\\frac{2π(20)}{5})  Ratio of the time taken by Ram : Rahim = 5 : 3  After 15 units of time Ram and Rahim will be at starting point and meeting  That time ram would have done 3 rounds\n\nThe answer is, \"3\"",
+    "explanation": "R1 = 100m and R2 = 20m  Speed of Ram = 15km/hr and Rahim’s speed = 5km/hr  Time taken by Ram = \\(\\frac{2\\pi(100)}{15}\\)  Time taken by Rahim = \\(\\frac{2\\pi(20)}{5}\\)  Ratio of the time taken by Ram : Rahim = 5 : 3  After 15 units of time Ram and Rahim will be at starting point and meeting  That time ram would have done 3 rounds\n\nThe answer is, \"3\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=2642",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-19.shtml",
     "images": []
@@ -3241,12 +3241,12 @@
     "question": "A and B are two points on a straight line. Ram runs from A to B while Rahim runs from B to A. After crossing each other, Ram and Rahim reach their destinations in one minutes and four minutes, respectively. If they start at the same time, then the ratio of Ram's speed to Rahim's speed is",
     "options": [
       "2",
-      "2√2",
-      "√2",
-      "\\\\frac{1}{2})"
+      "\\(2\\sqrt{2}\\)",
+      "\\(\\sqrt{2}\\)",
+      "\\(\\frac{1}{2}\\)"
     ],
     "correct_answer": "Choice A\n2",
-    "explanation": "![Two points on a Line](/pyq/2020/images/s2_quant_q20_0_q20_points_on_a_line.png)\n\n  Distance is constant, So ratio of their time taken is same  \\\\frac{t}{4}) = \\\\frac{1}{t})  t2 = 4  t = 2  Ram takes 3 minutes and Rahim takes 6 minutes  So Ratio of Ram’s speed : Rahim’s speed= 2 : 1 = 2\n\nThe answer is, \"2\"",
+    "explanation": "![Two points on a Line](/pyq/2020/images/s2_quant_q20_0_q20_points_on_a_line.png)\n\n  Distance is constant, So ratio of their time taken is same  \\(\\frac{t}{4}\\) = \\(\\frac{1}{t}\\)  t2 = 4  t = 2  Ram takes 3 minutes and Rahim takes 6 minutes  So Ratio of Ram’s speed : Rahim’s speed= 2 : 1 = 2\n\nThe answer is, \"2\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=2840",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-20.shtml",
     "images": [
@@ -3791,7 +3791,7 @@
       "Disinterestedness, as distinct from indifference, is the basis of political representation.",
       "Aesthetic political representation advocates autonomy for the representatives manifested through disinterestedness which itself is different from indifference."
     ],
-    "correct_answer": "Choice B\nAesthetic political representation advocates autonomy for the representatives drawing from disinterestedness, which itself is different from indifference.",
+    "correct_answer": "Choice B\nAesthetic political representation advocates autonomy for the representatives drawing from disinterestedness, which itself is different from indifference.",
     "explanation": "The main idea of the paragraph is that aesthetic political representation requires that the actor has autonomy with regard to the portrayal and that this involves the cultivation of disinterestedness (which is different from indifference) on part of the actors. Option B captures the essence of the paragraph.  Option A talks of a \"non-subjective evaluation of things\", something that is not mentioned in the paragraph. Option C does not include the key word 'aesthetic'. Option D states that autonomy is \"manifested through\" (shown clearly by) disinterestedness. The paragraph only urges the cultivation of disinterestedness in order to liberate oneself from all ulterior references.\n\nThe answer is, \"Aesthetic political representation advocates autonomy for the representatives drawing from disinterestedness, which itself is different from indifference.\"",
     "video_url": "https://www.youtube.com/embed/dXflL2tPPxw?start=6414",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-VARC/verbal-question-21.shtml",
@@ -4464,7 +4464,7 @@
       "-5151"
     ],
     "correct_answer": "Choice A\n-5050",
-    "explanation": "xm = xm + 1 + (m + 1)  Let's say k = m + 1  The equation now becomes: xk - 1 = xk + k  xk = xk - 1 - k  xk = - k + xk - 1 Now the vizualization of this equation becomes far simpler...  x1 = -1  x2 = -2 -1  x3 = -3 -2 -1  x4 = -4 -3 -2 -1  x100 = -100 -99 -98 ... -3 -2 -1  x100 = -(100 +99 +98 ... +3 +2 +1)  x100 = -(\\\\frac{100(100+1)}{2})) = -5050\n\nThe question is \"If x1 = -1 and xm = xm + 1 + (m + 1) for every positive integer m, then x100 equals\"\n\nHence, the answer is, \"-5050\"",
+    "explanation": "xm = xm + 1 + (m + 1)  Let's say k = m + 1  The equation now becomes: xk - 1 = xk + k  xk = xk - 1 - k  xk = - k + xk - 1 Now the vizualization of this equation becomes far simpler...  x1 = -1  x2 = -2 -1  x3 = -3 -2 -1  x4 = -4 -3 -2 -1  x100 = -100 -99 -98 ... -3 -2 -1  x100 = -(100 +99 +98 ... +3 +2 +1)  x100 = -(\\(\\frac{100(100+1)}{2}\\)) = -5050\n\nThe question is \"If x1 = -1 and xm = xm + 1 + (m + 1) for every positive integer m, then x100 equals\"\n\nHence, the answer is, \"-5050\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2596",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-1.shtml",
     "images": []
@@ -4493,15 +4493,15 @@
     "question_number": 3,
     "type": "MCQ",
     "context": "",
-    "question": "Let loga30 = A, loga\\\\frac{5}{3}) = -B and log2a = \\\\frac{1}{3}), then log3a equals",
+    "question": "Let loga30 = A, loga\\(\\frac{5}{3}\\) = -B and log2a = \\(\\frac{1}{3}\\), then \\(\\log_3 a\\) equals",
     "options": [
-      "\\\\frac{2}{A+B-3})",
-      "\\\\frac{A+B-3}{2})",
-      "\\\\frac{A+B}{2}) - 3",
-      "\\\\frac{2}{A+B}) - 3"
+      "\\(\\frac{2}{A+B-3}\\)",
+      "\\(\\frac{A+B-3}{2}\\)",
+      "\\(\\frac{A+B}{2} - 3\\)",
+      "\\(\\frac{2}{A+B} - 3\\)"
     ],
-    "correct_answer": "Choice A\n\\\\frac{2}{A+B-3})",
-    "explanation": "Let loga30 = A be equation 1.  and loga\\\\frac{5}{3}) = -B be equation 2.  We are told that log2a = \\\\frac{1}{3})  log2a = \\\\frac{1}{3}) implies loga2 = 3  Dividing eqn(1) and eq(2) by loga2 = 3  We get; log230 = \\\\frac{A}{3}) and  log2\\\\frac{5}{3}) = -\\\\frac{B}{3})  log230 = log2(5 × 3 × 2)  \\\\frac{A}{3}) = log25 + log23 + log22  \\\\frac{A}{3}) = log25 + log23 + 1, let's call this equation 3  log2\\\\frac{5}{3}) = log25 - log23  -\\\\frac{B}{3}) = log25 - log23, let's call this equation 4  Solving equations 3 and 4 we get, log23 = \\\\frac{A+B-3}{6})  Dividing this by log2a = \\\\frac{1}{3}) we get,  log2a = \\\\frac{A+B-3}{2})  log2a = \\\\frac{A+B-3}{2}) implies loga2 = \\\\frac{2}{A+B-3})\n\nThe question is \"Let loga30 = A, loga\\\\frac{5}{3}) = -B and log2a = \\\\frac{1}{3}), then log3a equals\"\n\nHence, the answer is, \"\\\\frac{2}{A+B-3})\"",
+    "correct_answer": "Choice A\n\\(\\frac{2}{A+B-3}\\)",
+    "explanation": "Let loga30 = A be equation 1.  and loga\\(\\frac{5}{3}\\) = -B be equation 2.  We are told that log2a = \\(\\frac{1}{3}\\)  log2a = \\(\\frac{1}{3}\\) implies loga2 = 3  Dividing eqn(1) and eq(2) by loga2 = 3  We get; log230 = \\(\\frac{A}{3}\\) and  log2\\(\\frac{5}{3}\\) = -\\(\\frac{B}{3}\\)  log230 = log2(5 × 3 × 2)  \\(\\frac{A}{3}\\) = log25 + log23 + log22  \\(\\frac{A}{3}\\) = log25 + log23 + 1, let's call this equation 3  log2\\(\\frac{5}{3}\\) = log25 - log23  -\\(\\frac{B}{3}\\) = log25 - log23, let's call this equation 4  Solving equations 3 and 4 we get, log23 = \\(\\frac{A+B-3}{6}\\)  Dividing this by log2a = \\(\\frac{1}{3}\\) we get,  log2a = \\(\\frac{A+B-3}{2}\\)  log2a = \\(\\frac{A+B-3}{2}\\) implies loga2 = \\(\\frac{2}{A+B-3}\\)\n\nThe question is \"Let loga30 = A, loga\\(\\frac{5}{3}\\) = -B and log2a = \\(\\frac{1}{3}\\), then \\(\\log_3 a\\) equals\"\n\nHence, the answer is, \"\\(\\frac{2}{A+B-3}\\)\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=438",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-3.shtml",
     "images": []
@@ -4517,7 +4517,7 @@
     "question": "A contractor agreed to construct a 6 km road in 200 days. He employed 140 persons for the work. After 60 days, he realized that only 1.5 km road has been completed. How many additional people would he need to employ in order to finish the work exactly on time?",
     "options": [],
     "correct_answer": "40",
-    "explanation": "The contractor finishes 1.5 km in 60 days with 140 people.  That means, he finishes, 0.5 km in 20 days with 140 people.  He has 200 - 60 = 140 days left to finish the job.  Let's say 20 days is 1 unit of time.  So the contractor finishes 0.5 km in 1 unit of time with 140 people, He has 4.5 kms to finish in 7 units of time(7 × 20 days) with n people.  The working capacity of the peopl should still be the same...  Therefore, \\\\frac{0.5}{140}) * 1 = \\\\frac{4.5}{n}) * \\\\frac{1}{7})  n = 180.  Therefore, the contractor needs, 180 - 140 = 40 people more.\n\nThe answer is, \"40\"",
+    "explanation": "The contractor finishes 1.5 km in 60 days with 140 people.  That means, he finishes, 0.5 km in 20 days with 140 people.  He has 200 - 60 = 140 days left to finish the job.  Let's say 20 days is 1 unit of time.  So the contractor finishes 0.5 km in 1 unit of time with 140 people, He has 4.5 kms to finish in 7 units of time(7 × 20 days) with n people.  The working capacity of the peopl should still be the same...  Therefore, \\(\\frac{0.5}{140}\\) * 1 = \\(\\frac{4.5}{n}\\) * \\(\\frac{1}{7}\\)  n = 180.  Therefore, the contractor needs, 180 - 140 = 40 people more.\n\nThe answer is, \"40\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1804",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-4.shtml",
     "images": []
@@ -4538,7 +4538,7 @@
       "10"
     ],
     "correct_answer": "Choice D\n10",
-    "explanation": "y = |x| is a symmetric function, symmetric on the y axis...  y = |x - 2| + 4 is nothing but a translated graph of y = |x| from (0 , 0) to (2 , 4)  Refer to the image below...  \n\n![Graphs showing translations of mod of x](/pyq/2020/images/s3_quant_q5_0_q5_Graph_1.png)\n\n  We are asked to find the area, in sq. units, enclosed by the lines x = 2, y = |x - 2| + 4, the X-axis and the Y-axis.  The corresponding image to these graphs look like...  \n\n![Graphing of the given equations](/pyq/2020/images/s3_quant_q5_1_q5_Graph_2.png)\n\n  Now the enclosed area is the sum of areas of the rectangle and the triangle.  Enclosed Area = 2 × 4 + \\\\frac{1}{2}) × 2 × 2 = 8 + 2 = 10\n\nThe question is \"The area, in sq. units, enclosed by the lines x = 2, y = |x - 2| + 4, the X-axis and the Y-axis is equal to\"\n\nHence, the answer is, \"10\"",
+    "explanation": "y = |x| is a symmetric function, symmetric on the y axis...  y = |x - 2| + 4 is nothing but a translated graph of y = |x| from (0 , 0) to (2 , 4)  Refer to the image below...  \n\n![Graphs showing translations of mod of x](/pyq/2020/images/s3_quant_q5_0_q5_Graph_1.png)\n\n  We are asked to find the area, in sq. units, enclosed by the lines x = 2, y = |x - 2| + 4, the X-axis and the Y-axis.  The corresponding image to these graphs look like...  \n\n![Graphing of the given equations](/pyq/2020/images/s3_quant_q5_1_q5_Graph_2.png)\n\n  Now the enclosed area is the sum of areas of the rectangle and the triangle.  Enclosed Area = 2 × 4 + \\(\\frac{1}{2}\\) × 2 × 2 = 8 + 2 = 10\n\nThe question is \"The area, in sq. units, enclosed by the lines x = 2, y = |x - 2| + 4, the X-axis and the Y-axis is equal to\"\n\nHence, the answer is, \"10\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2065",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-5.shtml",
     "images": [
@@ -4557,7 +4557,7 @@
     "question": "Dick is thrice as old as Tom and Harry is twice as old as Dick. If Dick's age is 1 year less than the average age of all three, then Harry's age, in years, is",
     "options": [],
     "correct_answer": "18",
-    "explanation": "Let's consider Tom's age to be 'x' years.  Dick is thrice as old as Tom,  Dick's age = 3 × x = 3x  Harry is twice as old as Dick,  Harry's age = 2 × 3x = 6x  Dick's age is 1 year less than the average age of all three,  3x = Average(x, 3x, 6x) - 1  3x = \\\\frac{x+3x+6x}{3}) - 1  3x = \\\\frac{10x}{3}) - 1  1 = \\\\frac{10x}{3}) - 3x  1 = \\\\frac{10x - 9x}{3})  1 = \\\\frac{x}{3})  3 = x  x = 3 Harry's age = 6x = 6 × 3 = 18 years.\n\nThe question is \"Dick is thrice as old as Tom and Harry is twice as old as Dick. If Dick's age is 1 year less than the average age of all three, then Harry's age, in years, is\"\n\nHence, the answer is, \"18\"",
+    "explanation": "Let's consider Tom's age to be 'x' years.  Dick is thrice as old as Tom,  Dick's age = 3 × x = 3x  Harry is twice as old as Dick,  Harry's age = 2 × 3x = 6x  Dick's age is 1 year less than the average age of all three,  3x = Average(x, 3x, 6x) - 1  3x = \\(\\frac{x+3x+6x}{3}\\) - 1  3x = \\(\\frac{10x}{3}\\) - 1  1 = \\(\\frac{10x}{3}\\) - 3x  1 = \\(\\frac{10x - 9x}{3}\\)  1 = \\(\\frac{x}{3}\\)  3 = x  x = 3 Harry's age = 6x = 6 × 3 = 18 years.\n\nThe question is \"Dick is thrice as old as Tom and Harry is twice as old as Dick. If Dick's age is 1 year less than the average age of all three, then Harry's age, in years, is\"\n\nHence, the answer is, \"18\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=133",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-6.shtml",
     "images": []
@@ -4622,7 +4622,7 @@
       "15.9375"
     ],
     "correct_answer": "Choice D\n15.9375",
-    "explanation": "We are told that f(x+y) = f(x) × f(y)  f(x) = f(x + 0) = f(x) × f(0)  f(x) = f(x) × f(0)  Assuming that f(x) is non-zero;  This implies: f(0) = 1  f(5) = 4 (Given)  f(10) = f(5+5) = f(5) × f(5) = 4 × 4 = 16  f(10) = 16  we know that f(0) = 1  f(0) = f(10 - 10) = f(10 + (-10)) = f(10) × f(-10) = 1  16 × f(-10) = 1  f(-10) = \\\\frac{1}{16}) = 0.0625  f(10) - f(-10) = 16 - 0.0625 = 15.9375.  Note: You need not know or calculate the exact value of \\\\frac{1}{16})  Whatever \\\\frac{1}{16}) is, we know that it is less than \\\\frac{1}{2})  So, the valuve 16 - \\\\frac{1}{16}), will be greater than 16 - \\\\frac{1}{2}) or 15.5\n\nThe question is \"If f(x+y) = f(x)f(y) and f(5) = 4, then f(10) - f(-10) is equal to\"\n\nHence, the answer is, \"15.9375\"",
+    "explanation": "We are told that f(x+y) = f(x) × f(y)  f(x) = f(x + 0) = f(x) × f(0)  f(x) = f(x) × f(0)  Assuming that f(x) is non-zero;  This implies: f(0) = 1  f(5) = 4 (Given)  f(10) = f(5+5) = f(5) × f(5) = 4 × 4 = 16  f(10) = 16  we know that f(0) = 1  f(0) = f(10 - 10) = f(10 + (-10)) = f(10) × f(-10) = 1  16 × f(-10) = 1  f(-10) = \\(\\frac{1}{16}\\) = 0.0625  f(10) - f(-10) = 16 - 0.0625 = 15.9375.  Note: You need not know or calculate the exact value of \\(\\frac{1}{16}\\)  Whatever \\(\\frac{1}{16}\\) is, we know that it is less than \\(\\frac{1}{2}\\)  So, the valuve 16 - \\(\\frac{1}{16}\\), will be greater than 16 - \\(\\frac{1}{2}\\) or 15.5\n\nThe question is \"If f(x+y) = f(x)f(y) and f(5) = 4, then f(10) - f(-10) is equal to\"\n\nHence, the answer is, \"15.9375\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=202",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-9.shtml",
     "images": []
@@ -4635,10 +4635,10 @@
     "question_number": 10,
     "type": "TITA",
     "context": "",
-    "question": "\\\\frac{2×4×8×16}{(log_{2}4)^{2}(log_{4}8)^{3}(log_{8}16)^{4}}) equals",
+    "question": "\\(\\frac{2 \\times 4 \\times 8 \\times 16}{(\\log_{2}4)^{2}(\\log_{4}8)^{3}(\\log_{8}16)^{4}}\\) equals",
     "options": [],
     "correct_answer": "24",
-    "explanation": "To start with, we have, \\\\frac{2×4×8×16}{(log_{2}4)^{2}(log_{4}8)^{3}(log_{8}16)^{4}})  Let's work on the denominator alone,  log24 = 2  log48 = \\\\frac{log8}{log4}) = \\\\frac{log_{2}8}{log_{2}4}) = \\\\frac{3}{2})  log816 = \\\\frac{log16}{log8}) = \\\\frac{log_{2}16}{log_{2}8}) = \\\\frac{4}{3})   So, the denominator becomes, 2 × 2 × \\\\frac{3}{2}) × \\\\frac{3}{2}) × \\\\frac{3}{2}) × \\\\frac{4}{3}) × \\\\frac{4}{3}) × \\\\frac{4}{3}) × \\\\frac{4}{3})  = 2 × 4 × 4 × \\\\frac{4}{3})  And hence the fraction becomes, \\\\frac{2×4×8×16}{2 × 4 × 4 × 4/3})  = \\\\frac{2 × 4 × 8 × 16 × 3}{2 × 4 × 4 × 4})  = 2 × 4 × 3 = 24\n\nThe question is \"\\\\frac{2×4×8×16}{(log_{2}4)^{2}(log_{4}8)^{3}(log_{8}16)^{4}}) equals\"\n\nHence, the answer is, \"\"",
+    "explanation": "To start with, we have, \\(\\frac{2 \\times 4 \\times 8 \\times 16}{(\\log_{2}4)^{2}(\\log_{4}8)^{3}(\\log_{8}16)^{4}}\\)  Let's work on the denominator alone,  log24 = 2  log48 = \\(\\frac{log8}{log4}\\) = \\(\\frac{log_{2}8}{log_{2}4}\\) = \\(\\frac{3}{2}\\)  log816 = \\(\\frac{log16}{log8}\\) = \\(\\frac{log_{2}16}{log_{2}8}\\) = \\(\\frac{4}{3}\\)   So, the denominator becomes, 2 × 2 × \\(\\frac{3}{2}\\) × \\(\\frac{3}{2}\\) × \\(\\frac{3}{2}\\) × \\(\\frac{4}{3}\\) × \\(\\frac{4}{3}\\) × \\(\\frac{4}{3}\\) × \\(\\frac{4}{3}\\)  = 2 × 4 × 4 × \\(\\frac{4}{3}\\)  And hence the fraction becomes, \\(\\frac{2×4×8×16}{2 × 4 × 4 × 4/3}\\)  = \\(\\frac{2 × 4 × 8 × 16 × 3}{2 × 4 × 4 × 4}\\)  = 2 × 4 × 3 = 24\n\nThe question is \"\\(\\frac{2 \\times 4 \\times 8 \\times 16}{(\\log_{2}4)^{2}(\\log_{4}8)^{3}(\\log_{8}16)^{4}}\\) equals\"\n\nHence, the answer is, \"\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1430",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-10.shtml",
     "images": []
@@ -4651,10 +4651,10 @@
     "question_number": 11,
     "type": "TITA",
     "context": "",
-    "question": "If a,b,c are non-zero and 14a = 36b = 84c, then 6b(\\\\frac{1}{c}) - \\\\frac{1}{a})) is equal to",
+    "question": "If a,b,c are non-zero and \\(14^a = 36^b = 84^c\\), then 6b(\\(\\frac{1}{c}\\) - \\(\\frac{1}{a}\\))) is equal to",
     "options": [],
     "correct_answer": "3",
-    "explanation": "Let 14a = 36b = 84c = x  14a = x  log14x = a  logx14 = \\\\frac{1}{a})  36b = x  log36x = b  84c = x  log84x = c  logx84 = \\\\frac{1}{c})  \\\\frac{1}{c}) - \\\\frac{1}{a}) = logx84 - logx14 = logx(\\\\frac{84}{14}) = logx6  6 × b × (\\\\frac{1}{c}) - \\\\frac{1}{a}))  6 × log36x × logx6  6 × \\\\frac{log x}{log 36}) × \\\\frac{log 6}{log x}) 6 × \\\\frac{log 6}{log 36}) 6 × log366  6 × \\\\frac{1}{2})  3.\n\nThe question is \"If a,b,c are non-zero and 14a = 36b = 84c, then 6b(\\\\frac{1}{c}) - \\\\frac{1}{a})) is equal to\"\n\nHence, the answer is, \"3\"",
+    "explanation": "Let \\(14^a = 36^b = 84^c\\) = x  14a = x  log14x = a  logx14 = \\(\\frac{1}{a}\\)  36b = x  log36x = b  84c = x  log84x = c  logx84 = \\(\\frac{1}{c}\\)  \\(\\frac{1}{c}\\) - \\(\\frac{1}{a}\\) = logx84 - logx14 = logx(\\(\\frac{84}{14}\\) = logx6  6 × b × (\\(\\frac{1}{c}\\) - \\(\\frac{1}{a}\\))  6 × log36x × logx6  6 × \\(\\frac{log x}{log 36}\\) × \\(\\frac{log 6}{log x}\\) 6 × \\(\\frac{log 6}{log 36}\\) 6 × log366  6 × \\(\\frac{1}{2}\\)  3.\n\nThe question is \"If a,b,c are non-zero and \\(14^a = 36^b = 84^c\\), then 6b(\\(\\frac{1}{c}\\) - \\(\\frac{1}{a}\\)) is equal to\"\n\nHence, the answer is, \"3\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2811",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-11.shtml",
     "images": []
@@ -4667,7 +4667,7 @@
     "question_number": 12,
     "type": "MCQ",
     "context": "",
-    "question": "Let m and n be natural numbers such that n is even and 0.2 < \\\\frac{m}{20}), \\\\frac{n}{m}), \\\\frac{n}{11}) < 0.5. Then m - 2n equals",
+    "question": "Let m and n be natural numbers such that n is even and 0.2 < \\(\\frac{m}{20}\\), \\(\\frac{n}{m}\\), \\(\\frac{n}{11}\\) < 0.5. Then m - 2n equals",
     "options": [
       "4",
       "2",
@@ -4675,7 +4675,7 @@
       "3"
     ],
     "correct_answer": "Choice C\n1",
-    "explanation": "0.2 < \\\\frac{m}{20}), \\\\frac{n}{m}), \\\\frac{n}{11}) < 0.5  \\\\frac{1}{5}) < \\\\frac{m}{20}), \\\\frac{n}{m}), \\\\frac{n}{11}) < \\\\frac{1}{2})  \\\\frac{1}{5}) < \\\\frac{m}{20}) < \\\\frac{1}{2})  Observe that if m = 4; \\\\frac{m}{20}) = \\\\frac{4}{20}) = \\\\frac{1}{5})  In order for \\\\frac{m}{20})to be greater than \\\\frac{1}{5}), m > 4  Similarly, observe that if m = 10; \\\\frac{m}{20}) = \\\\frac{10}{20}) = \\\\frac{1}{2})  In order for \\\\frac{m}{20})to be lesser than \\\\frac{1}{2}), m < 10  So, the possible values that m can take = {5, 6, 7, 8, 9}  \\\\frac{1}{5}) < \\\\frac{n}{11}) < \\\\frac{1}{2})  Observe that if n = 2.2; \\\\frac{n}{11}) = \\\\frac{2.2}{11}) = \\\\frac{1}{5})  In order for \\\\frac{n}{11})to be greater than \\\\frac{1}{5}), n > 2.2  Similarly, observe that if n = 5.5; \\\\frac{n}{11}) = \\\\frac{5.5}{11}) = \\\\frac{1}{2})  In order for \\\\frac{n}{11})to be lesser than \\\\frac{1}{2}), n < 5.5  So, the possible values that n can take = {3, 4, 5}  We are told that n is even; n = 4. If n = 4; \\\\frac{n}{m}) will be greater than \\\\frac{1}{5}) if m is less than 20.  Similarly at n = 4; \\\\frac{n}{m}) will be lesser than \\\\frac{1}{2}) if m is greater than 8.  So, for n = 4; 8 ≤ m ≤ 20.  m can only take one of the values in {5, 6, 7, 8, 9}  Hence m = 9.  m - 2n = 9 - 2(4) = 9 - 8 = 1.\n\nThe question is \"Let m and n be natural numbers such that n is even and 0.2 < \\\\frac{m}{20}), \\\\frac{n}{m}), \\\\frac{n}{11}) < 0.5. Then m - 2n equals\"\n\nHence, the answer is, \"1\"",
+    "explanation": "0.2 < \\(\\frac{m}{20}\\), \\(\\frac{n}{m}\\), \\(\\frac{n}{11}\\) < 0.5  \\(\\frac{1}{5}\\) < \\(\\frac{m}{20}\\), \\(\\frac{n}{m}\\), \\(\\frac{n}{11}\\) < \\(\\frac{1}{2}\\)  \\(\\frac{1}{5}\\) < \\(\\frac{m}{20}\\) < \\(\\frac{1}{2}\\)  Observe that if m = 4; \\(\\frac{m}{20}\\) = \\(\\frac{4}{20}\\) = \\(\\frac{1}{5}\\)  In order for \\(\\frac{m}{20}\\)to be greater than \\(\\frac{1}{5}\\), m > 4  Similarly, observe that if m = 10; \\(\\frac{m}{20}\\) = \\(\\frac{10}{20}\\) = \\(\\frac{1}{2}\\)  In order for \\(\\frac{m}{20}\\)to be lesser than \\(\\frac{1}{2}\\), m < 10  So, the possible values that m can take = {5, 6, 7, 8, 9}  \\(\\frac{1}{5}\\) < \\(\\frac{n}{11}\\) < \\(\\frac{1}{2}\\)  Observe that if n = 2.2; \\(\\frac{n}{11}\\) = \\(\\frac{2.2}{11}\\) = \\(\\frac{1}{5}\\)  In order for \\(\\frac{n}{11}\\)to be greater than \\(\\frac{1}{5}\\), n > 2.2  Similarly, observe that if n = 5.5; \\(\\frac{n}{11}\\) = \\(\\frac{5.5}{11}\\) = \\(\\frac{1}{2}\\)  In order for \\(\\frac{n}{11}\\)to be lesser than \\(\\frac{1}{2}\\), n < 5.5  So, the possible values that n can take = {3, 4, 5}  We are told that n is even; n = 4. If n = 4; \\(\\frac{n}{m}\\) will be greater than \\(\\frac{1}{5}\\) if m is less than 20.  Similarly at n = 4; \\(\\frac{n}{m}\\) will be lesser than \\(\\frac{1}{2}\\) if m is greater than 8.  So, for n = 4; 8 ≤ m ≤ 20.  m can only take one of the values in {5, 6, 7, 8, 9}  Hence m = 9.  m - 2n = 9 - 2(4) = 9 - 8 = 1.\n\nThe question is \"Let m and n be natural numbers such that n is even and 0.2 < \\(\\frac{m}{20}\\), \\(\\frac{n}{m}\\), \\(\\frac{n}{11}\\) < 0.5. Then m - 2n equals\"\n\nHence, the answer is, \"1\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2392",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-12.shtml",
     "images": []
@@ -4696,7 +4696,7 @@
       "5.2"
     ],
     "correct_answer": "Choice C\n4.8",
-    "explanation": "We are given the individual speeds of Anil, Sunil and Ravi, which are 15 kmph, 10 kmph and 8 kmph respectively.  We are also told that the length of the track is 3 KM.  Let us calculate the time taken by Anil and Sunil to complete one round(which is 3KM in length):  Time taken by Anil to complete one round in minutes = \\\\frac{Length of the track in km}{Anil's speed in kmph}) × 60 minutes = \\\\frac{3}{15}) × 60 = 12 minutes.  Time taken by Sunil to complete one round in minutes = \\\\frac{Length of the track in km}{Sunil's speed in kmph}) × 60 minutes = \\\\frac{3}{10}) × 60 = 18 minutes.  Anil completing each round in 12 minutes, reaches the starting point at 12, 24, 36, 48, 60 .... minutes  Sunil completing each round in 18 minutes, reaches the starting point at 18, 36, 54, 72, 90 .... minutes  Clearly, both of them reach the starting point at 36 minutes, for the first time together.  Observe that 36 is teh LCM of 12 and 18 The distance covered by Ravi, whose speed is 8 kmph in 36 minutes(or \\\\frac{36}{60}) = 0.6 hours) = 8 × 0.6 = 4.8 km\n\nThe answer is, \"4.8\"",
+    "explanation": "We are given the individual speeds of Anil, Sunil and Ravi, which are 15 kmph, 10 kmph and 8 kmph respectively.  We are also told that the length of the track is 3 KM.  Let us calculate the time taken by Anil and Sunil to complete one round(which is 3KM in length):  Time taken by Anil to complete one round in minutes = \\(\\frac{Length of the track in km}{Anil's speed in kmph}\\) × 60 minutes = \\(\\frac{3}{15}\\) × 60 = 12 minutes.  Time taken by Sunil to complete one round in minutes = \\(\\frac{Length of the track in km}{Sunil's speed in kmph}\\) × 60 minutes = \\(\\frac{3}{10}\\) × 60 = 18 minutes.  Anil completing each round in 12 minutes, reaches the starting point at 12, 24, 36, 48, 60 .... minutes  Sunil completing each round in 18 minutes, reaches the starting point at 18, 36, 54, 72, 90 .... minutes  Clearly, both of them reach the starting point at 36 minutes, for the first time together.  Observe that 36 is teh LCM of 12 and 18 The distance covered by Ravi, whose speed is 8 kmph in 36 minutes(or \\(\\frac{36}{60}\\) = 0.6 hours) = 8 × 0.6 = 4.8 km\n\nThe answer is, \"4.8\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=4",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-13.shtml",
     "images": []
@@ -4717,7 +4717,7 @@
       "25"
     ],
     "correct_answer": "Choice D\n25",
-    "explanation": "Let the price of Sugar per kilogram be 'x' rupees.  The man marks it up by 20% and sells 5 kilograms.  Marked Price = 1.2 × x = 1.2x  Therefore, the sale price of these 5 kgs totally would be = 5 × 1.2 × x = 6x  He then gives a discount of 10% on the markup and sells 15 kgs at that price. So, the price per kg now would be 0.9 × 1.2 × x = 1.08x  Therefore, the sale price of these 15 kgs totally would be = 15 × 1.08x = 16.2x  He then looses 3 kgs of Sugar  Therefore, the sale price of these 3 kgs = 0.  There is 35 - 5 - 15 - 3 = 12 kgs of sugar remaining.  Let's say it is sold at px price.  So, the sale price of these 12 kgs will be = 12 × px  The overall profit for the Man is 15%, So the Sale Price of the entire 35 kgs is 35 × 1.15 × x = 40.25x  Summing up and equating all the sale prices...  40.25x = 6x + 16.2x + 0x + 12 × px  40.25x = 22.2x + 12 × px  18.05x = 12 × px  Let's approximate this to  18x = 12 × px p = \\\\frac{3}{2}) = 1.5  Very importantly, px is attained after marking up the marked price.  Therefore, px = y × Marked Price  1.5x = y × 1.2x  y = \\\\frac{5}{4}) = 1.25  In other words we can say that the marked price was increased by 25%.\n\nThe answer is, \"25\"",
+    "explanation": "Let the price of Sugar per kilogram be 'x' rupees.  The man marks it up by 20% and sells 5 kilograms.  Marked Price = 1.2 × x = 1.2x  Therefore, the sale price of these 5 kgs totally would be = 5 × 1.2 × x = 6x  He then gives a discount of 10% on the markup and sells 15 kgs at that price. So, the price per kg now would be 0.9 × 1.2 × x = 1.08x  Therefore, the sale price of these 15 kgs totally would be = 15 × 1.08x = 16.2x  He then looses 3 kgs of Sugar  Therefore, the sale price of these 3 kgs = 0.  There is 35 - 5 - 15 - 3 = 12 kgs of sugar remaining.  Let's say it is sold at px price.  So, the sale price of these 12 kgs will be = 12 × px  The overall profit for the Man is 15%, So the Sale Price of the entire 35 kgs is 35 × 1.15 × x = 40.25x  Summing up and equating all the sale prices...  40.25x = 6x + 16.2x + 0x + 12 × px  40.25x = 22.2x + 12 × px  18.05x = 12 × px  Let's approximate this to  18x = 12 × px p = \\(\\frac{3}{2}\\) = 1.5  Very importantly, px is attained after marking up the marked price.  Therefore, px = y × Marked Price  1.5x = y × 1.2x  y = \\(\\frac{5}{4}\\) = 1.25  In other words we can say that the marked price was increased by 25%.\n\nThe answer is, \"25\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1514",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-14.shtml",
     "images": []
@@ -4733,12 +4733,12 @@
     "question": "Let k be a constant. The equations kx + y = 3 and 4x + ky = 4 have a unique solution if and only if",
     "options": [
       "|k| = 2",
-      "k ≠ 2",
-      "|k| ≠ 2",
+      "\\(k ≠ 2\\)",
+      "\\(|k| ≠ 2\\)",
       "k = 2"
     ],
-    "correct_answer": "Choice C\n|k| ≠ 2",
-    "explanation": "Two generic equations, a1x + b1y + c1 = 0 and a2x + b2y + c2 = 0, will have a unique solution if and only if, \\\\frac{a_{1}}{a_{2}}) ≠ \\\\frac{b_{1}}{b_{2}}).  We have the equations kx + y = 3 and 4x + ky = 4,  For them to have unique solutions, they must satisfy the condition  \\\\frac{k}{4}) ≠ \\\\frac{1}{k})  k2 ≠ 4  k ≠ ±2  |k| ≠ 2\n\nThe question is \"Let k be a constant. The equations kx + y = 3 and 4x + ky = 4 have a unique solution if and only if\"\n\nHence, the answer is, \"|k| ≠ 2\"",
+    "correct_answer": "Choice C\n\\(|k| ≠ 2\\)",
+    "explanation": "Two generic equations, a1x + b1y + c1 = 0 and a2x + b2y + c2 = 0, will have a unique solution if and only if, \\(\\frac{a_{1}}{a_{2}}\\) ≠ \\(\\frac{b_{1}}{b_{2}}\\).  We have the equations kx + y = 3 and 4x + ky = 4,  For them to have unique solutions, they must satisfy the condition  \\(\\frac{k}{4}\\) ≠ \\(\\frac{1}{k}\\)  k2 ≠ 4  k ≠ ±2  |k| ≠ 2\n\nThe question is \"Let k be a constant. The equations kx + y = 3 and 4x + ky = 4 have a unique solution if and only if\"\n\nHence, the answer is, \"|k| ≠ 2\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2026",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-15.shtml",
     "images": []
@@ -4775,7 +4775,7 @@
       "4"
     ],
     "correct_answer": "Choice C\n2",
-    "explanation": "The average score of the last 2 innings = \\\\frac{38 + 15}{2}) = 26.5  The average of the first n innings = 30  The average of all the n+2 innings = 29  29(n + 2) = n(30) + 2(26.5)  n = 5 (You may choos eto use the allegation method too)  The average of the first 5 innings = 30 and in none of the innings did the batsman score 38 or above.  Let's assume the scores of the 5 innings of the batsman in ascending order to be 30, 30, 30, 30, 30. (This complies with the avberage being 30)  The maximum score that he can score is 37 runs, Let's distribute the score of the first innings among the rest 4, as 7 per innings so that the score of the first innings is minimized.  Now the scores will be 2, 37, 37, 37, 37  Now we can't distribute the score of the first innings anymore, because, that makes the score of atleast one of the remainin 4 overs 38 or greater.  Hence the least score of any inning is 2.\n\nThe answer is, \"2\"",
+    "explanation": "The average score of the last 2 innings = \\(\\frac{38 + 15}{2}\\) = 26.5  The average of the first n innings = 30  The average of all the n+2 innings = 29  29(n + 2) = n(30) + 2(26.5)  n = 5 (You may choos eto use the allegation method too)  The average of the first 5 innings = 30 and in none of the innings did the batsman score 38 or above.  Let's assume the scores of the 5 innings of the batsman in ascending order to be 30, 30, 30, 30, 30. (This complies with the avberage being 30)  The maximum score that he can score is 37 runs, Let's distribute the score of the first innings among the rest 4, as 7 per innings so that the score of the first innings is minimized.  Now the scores will be 2, 37, 37, 37, 37  Now we can't distribute the score of the first innings anymore, because, that makes the score of atleast one of the remainin 4 overs 38 or greater.  Hence the least score of any inning is 2.\n\nThe answer is, \"2\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2676",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-17.shtml",
     "images": []
@@ -4796,7 +4796,7 @@
       "89%"
     ],
     "correct_answer": "Choice B\n92%",
-    "explanation": "We are told that the A and B are mixed in the ratio 1:3  That means, one unit of A is mixed with 3 units of B  Observe that the total Volume is 1 + 3 = 4 units.  The volume is doubled by adding A, this implies that a quantity of 4 units of A is added to the existing 4units of the mixture.  The total volume will now be 4 + 4 = 8 units.  Of which three units are B and the rest 5 units are A. Hence the ratio of A to B in the final mixture is 5 : 3  We are told that A has a concentration of 60% alcohol and the final mixture has a concentration of 72% alcohol  Therefore, \\\\frac{5 × Concentration of A + 3 × Concentration of B }{5 + 3}) = 72  \\\\frac{5 × 60 + 3 × Concentration of B }{5 + 3}) = 72  \\\\frac{300 + 3 × Concentration of B }{8}) = 72  300 + 3 × Concentration of B = 576  3 × Concentration of B = 576 - 300 = 276  3 × Concentration of B = 276 = 270 + 6  3 × Concentration of B = 270 + 6  Concentration of B = \\\\frac{270}{3}) + \\\\frac{6}{3})  Concentration of B = 90 + 2 = 92.\n\nThe answer is, \"92%\"",
+    "explanation": "We are told that the A and B are mixed in the ratio 1:3  That means, one unit of A is mixed with 3 units of B  Observe that the total Volume is 1 + 3 = 4 units.  The volume is doubled by adding A, this implies that a quantity of 4 units of A is added to the existing 4units of the mixture.  The total volume will now be 4 + 4 = 8 units.  Of which three units are B and the rest 5 units are A. Hence the ratio of A to B in the final mixture is 5 : 3  We are told that A has a concentration of 60% alcohol and the final mixture has a concentration of 72% alcohol  Therefore, \\(\\frac{5 × Concentration of A + 3 × Concentration of B }{5 + 3}\\) = 72  \\(\\frac{5 × 60 + 3 × Concentration of B }{5 + 3}\\) = 72  \\(\\frac{300 + 3 × Concentration of B }{8}\\) = 72  300 + 3 × Concentration of B = 576  3 × Concentration of B = 576 - 300 = 276  3 × Concentration of B = 276 = 270 + 6  3 × Concentration of B = 270 + 6  Concentration of B = \\(\\frac{270}{3}\\) + \\(\\frac{6}{3}\\)  Concentration of B = 90 + 2 = 92.\n\nThe answer is, \"92%\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1745",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-18.shtml",
     "images": []
@@ -4811,13 +4811,13 @@
     "context": "",
     "question": "The vertices of a triangle are (0,0), (4,0) and (3,9). The area of the circle passing through these three points is",
     "options": [
-      "\\\\frac{14π}{3})",
-      "\\\\frac{123π}{7})",
-      "\\\\frac{205π}{9})",
-      "\\\\frac{12π}{5})"
+      "\\(\\frac{14\\pi}{3}\\)",
+      "\\(\\frac{123\\pi}{7}\\)",
+      "\\(\\frac{205\\pi}{9}\\)",
+      "\\(\\frac{12\\pi}{5}\\)"
     ],
-    "correct_answer": "Choice C\n\\\\frac{205π}{9})",
-    "explanation": "A circle is circumscribed on the points (0,0) (4,0) and (3,9)  We are asked to find the area of this circle  We know that the area of a triangle with sides a, b and c, inscribed ina circle of radius R is given by  Area = \\\\frac{abc}{4R})  \n\n![Triangle inscribed in a Circle](/pyq/2020/images/s3_quant_q19_0_q19_Circumscribed_Circle.png)\n\n  With the help of teh co-ordinates of the triangle it is easy to find the height of the triangle, which is QS = 9 units.  Hence the area of the triangle = A = \\\\frac{1}{2}) × base × height = \\\\frac{1}{2}) × PR × QS = \\\\frac{1}{2}) × 4 × 9 = 18 sq. units  a = PR = 4 units  b = QR = √(QS2 + SR2) = √(92 + 12) = √82  c = PQ = √(PS2 + PQ2) = √(32 + 92) = √90  W.K.T Area = \\\\frac{abc}{4R})  18 = \\\\frac{4 × √82 × √90}{4R})  R = \\\\frac{√205}{3})  Now that we know the radius of the circle the area of the circle = π × R2 = π × \\\\frac{√205}{3}) × \\\\frac{√205}{3}) = π × \\\\frac{205}{9}) = \\\\frac{205π}{9})\n\nThe question is \"The vertices of a triangle are (0,0), (4,0) and (3,9). The area of the circle passing through these three points is\"\n\nHence, the answer is, \"\\\\frac{205π}{9})\"",
+    "correct_answer": "Choice C\n\\(\\frac{205\\pi}{9}\\)",
+    "explanation": "A circle is circumscribed on the points (0,0) (4,0) and (3,9)  We are asked to find the area of this circle  We know that the area of a triangle with sides a, b and c, inscribed ina circle of radius R is given by  Area = \\(\\frac{abc}{4R}\\)  \n\n![Triangle inscribed in a Circle](/pyq/2020/images/s3_quant_q19_0_q19_Circumscribed_Circle.png)\n\n  With the help of teh co-ordinates of the triangle it is easy to find the height of the triangle, which is QS = 9 units.  Hence the area of the triangle = A = \\(\\frac{1}{2}\\) × base × height = \\(\\frac{1}{2}\\) × PR × QS = \\(\\frac{1}{2}\\) × 4 × 9 = 18 sq. units  a = PR = 4 units  b = QR = √(QS2 + SR2) = √(92 + 12) = \\sqrt{82}  c = PQ = √(PS2 + PQ2) = √(32 + 92) = \\sqrt{90}  W.K.T Area = \\(\\frac{abc}{4R}\\)  18 = \\(\\frac{4 × \\sqrt{82} × \\sqrt{90}}{4R}\\)  R = \\(\\frac{\\sqrt{205}}{3}\\)  Now that we know the radius of the circle the area of the circle = \\pi × R2 = \\pi × \\(\\frac{\\sqrt{205}}{3}\\) × \\(\\frac{\\sqrt{205}}{3}\\) = \\pi × \\(\\frac{205}{9}\\) = \\(\\frac{205\\pi}{9}\\)\n\nThe question is \"The vertices of a triangle are (0,0), (4,0) and (3,9). The area of the circle passing through these three points is\"\n\nHence, the answer is, \"\\(\\frac{205\\pi}{9}\\)\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1234",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-19.shtml",
     "images": [
@@ -4835,7 +4835,7 @@
     "question": "A person invested a certain amount of money at 10% annual interest, compounded half-yearly. After one and a half years, the interest and principal together became Rs 18522. The amount, in rupees, that the person had invested is",
     "options": [],
     "correct_answer": "16000",
-    "explanation": "A 10% annual interest is a 5% bi-annual interest.  Hence interst for half an year is 5%.  The Principal, P is invested for 1.5 years or 3 terms of half years.  Therefore, P (1 + 5%)3 = 18522  P(1.05)3 = 18522  P × \\\\frac{21}{20}) × \\\\frac{21}{20}) × \\\\frac{21}{20}) = 18522  P × \\\\frac{7}{20}) × \\\\frac{7}{20}) × \\\\frac{7}{20}) = 686  P × \\\\frac{1}{20}) × \\\\frac{1}{20}) × \\\\frac{1}{20}) = 2  P = 2 × 20 × 20 × 20 = 16000.\n\nThe answer is, \"16000\"",
+    "explanation": "A 10% annual interest is a 5% bi-annual interest.  Hence interst for half an year is 5%.  The Principal, P is invested for 1.5 years or 3 terms of half years.  Therefore, P (1 + 5%)3 = 18522  P(1.05)3 = 18522  P × \\(\\frac{21}{20}\\) × \\(\\frac{21}{20}\\) × \\(\\frac{21}{20}\\) = 18522  P × \\(\\frac{7}{20}\\) × \\(\\frac{7}{20}\\) × \\(\\frac{7}{20}\\) = 686  P × \\(\\frac{1}{20}\\) × \\(\\frac{1}{20}\\) × \\(\\frac{1}{20}\\) = 2  P = 2 × 20 × 20 × 20 = 16000.\n\nThe answer is, \"16000\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=1069",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-20.shtml",
     "images": []
@@ -4880,7 +4880,7 @@
       "26"
     ],
     "correct_answer": "Choice B\n28",
-    "explanation": "Vimala's speed has decreased from 40kmph to 35 kmph. That means her current speed is \\\\frac{35}{40}) of the original Speed. That means, her current speed is \\\\frac{7}{8}) th of the original speed. Therefore, the time taken will be \\\\frac{8}{7}) th of the original time taken.  Since she is 6 minutes late when travelling at 35kmph, \\\\frac{1}{7})th of the original time taken is 6 minutes.  Therefore the total time taken originally is 7 × 6 = 42 minutes.  \\\\frac{1}{3}) rd of the original time taken = \\\\frac{42}{3}) = 14 minutes.  \\\\frac{1}{3}) rd of the total distance is generally covered in 14 minutes.  Currently the same distance is to be covered in (42 - 14 - 8 = 20) minutes.  So, to reach the Destination on time, Vimala, must cover the same \\\\frac{1}{3}) rd of the Distance in 20 minutes instead of 14 minutes.  That means she has to \\\\frac{20}{14}) of the initial time.  Which is \\\\frac{10}{7}) of the original time  This implies that, in order to reach at the same point of time. The speed had to \\\\frac{7}{10}) or 70% of the original speed.  So, she has to travel at 70% of 40kmph = 28kmph.\n\nThe answer is, \"28\"",
+    "explanation": "Vimala's speed has decreased from 40kmph to 35 kmph. That means her current speed is \\(\\frac{35}{40}\\) of the original Speed. That means, her current speed is \\(\\frac{7}{8}\\) th of the original speed. Therefore, the time taken will be \\(\\frac{8}{7}\\) th of the original time taken.  Since she is 6 minutes late when travelling at 35kmph, \\(\\frac{1}{7}\\)th of the original time taken is 6 minutes.  Therefore the total time taken originally is 7 × 6 = 42 minutes.  \\(\\frac{1}{3}\\) rd of the original time taken = \\(\\frac{42}{3}\\) = 14 minutes.  \\(\\frac{1}{3}\\) rd of the total distance is generally covered in 14 minutes.  Currently the same distance is to be covered in (42 - 14 - 8 = 20) minutes.  So, to reach the Destination on time, Vimala, must cover the same \\(\\frac{1}{3}\\) rd of the Distance in 20 minutes instead of 14 minutes.  That means she has to \\(\\frac{20}{14}\\) of the initial time.  Which is \\(\\frac{10}{7}\\) of the original time  This implies that, in order to reach at the same point of time. The speed had to \\(\\frac{7}{10}\\) or 70% of the original speed.  So, she has to travel at 70% of 40kmph = 28kmph.\n\nThe answer is, \"28\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=595",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-22.shtml",
     "images": []
@@ -4901,7 +4901,7 @@
       "7"
     ],
     "correct_answer": "Choice B\n6",
-    "explanation": "The roots of a Quadratic Equation of the form, ax2 + bx + c = 0  are given by x = \\\\frac{-b ± √[b^{2} - 4ac]}{2a})  In order for these roots to be real, the portion under the square root should not be negative.  In other words 'b2 - 4ac', determines wether the roots are real or imaginary.  Hence, rightly, it is called the Determinat(D).  If the Determinant, D is greater than or equal to 0, then the equation has real roots.  For D to be greater than or equal to 0, b2 ≥ 4ac.  We are told that x2 + mx + 2n = 0 and x2 + 2nx + m = 0 have real roots,  That means, m2 ≥ 4(2n) and (2n)2 ≥ 4m.  Instead of trying to solve through equations, the two inequalities m2 ≥ 8n and n2 ≥ m.  Let's try to solve inputting specific numbers.  If n = 1; m2 ≥ 8; m ≥ 3  If m ≥ 3 at n = 1, n2 ≥ m stands invalid.  If n = 2; m2 ≥ 16; m ≥ 4  If m ≥ 4 at n = 2, n2 ≥ m stands valid, if m = 4 and n = 2  Hence 4,2 is the smallest(and the only) pair that m,n can take.  So, the minimum sum of m and n is 4+2 = 6.\n\nThe question is \"Let m and n be positive integers, If x2 + mx + 2n = 0 and x2 + 2nx + m = 0 have real roots, then the smallest possible value of m + n is\"\n\nHence, the answer is, \"6\"",
+    "explanation": "The roots of a Quadratic Equation of the form, ax2 + bx + c = 0  are given by x = \\(\\frac{-b ± √[b^{2} - 4ac]}{2a}\\)  In order for these roots to be real, the portion under the square root should not be negative.  In other words 'b2 - 4ac', determines wether the roots are real or imaginary.  Hence, rightly, it is called the Determinat(D).  If the Determinant, D is greater than or equal to 0, then the equation has real roots.  For D to be greater than or equal to 0, b2 ≥ 4ac.  We are told that x2 + mx + 2n = 0 and x2 + 2nx + m = 0 have real roots,  That means, m2 ≥ 4(2n) and (2n)2 ≥ 4m.  Instead of trying to solve through equations, the two inequalities m2 ≥ 8n and n2 ≥ m.  Let's try to solve inputting specific numbers.  If n = 1; m2 ≥ 8; m ≥ 3  If m ≥ 3 at n = 1, n2 ≥ m stands invalid.  If n = 2; m2 ≥ 16; m ≥ 4  If m ≥ 4 at n = 2, n2 ≥ m stands valid, if m = 4 and n = 2  Hence 4,2 is the smallest(and the only) pair that m,n can take.  So, the minimum sum of m and n is 4+2 = 6.\n\nThe question is \"Let m and n be positive integers, If x2 + mx + 2n = 0 and x2 + 2nx + m = 0 have real roots, then the smallest possible value of m + n is\"\n\nHence, the answer is, \"6\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=288",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-23.shtml",
     "images": []
@@ -4917,7 +4917,7 @@
     "question": "In a trepezium ABCD, AB is parallel to DC, BC is perpendicular to DC and ∠BAD = 45°. If DC = 5 cm, BC = 4 cm, the area of the trepezium in sq. cm is",
     "options": [],
     "correct_answer": "28",
-    "explanation": "Let's draw the Trapezium.  \n\n![Tepezium ABCD](/pyq/2020/images/s3_quant_q24_0_q24_Trepezium_1.png)\n\n  Now drop a perpendicular from D on to AB touching AB at E.  \n\n![Tepezium ABCD after droping perpendicular DE](/pyq/2020/images/s3_quant_q24_1_q24_Trepezium_2.png)\n\n  In ΔAED, ∠AED = 90°, ∠DAE = 45°, therefore ∠EDA = 45°.  Clearly ΔAED is an iscoceles right triangle and Quadrilateral BCDE is a rectangle.  Therefore, BC = DE = 4cm.  Since ΔAED is an iscoceles triangle, AE = ED = 4cm.  Area of the Trepezium = Area of ΔAED + Area of Rectangle BCDE  Area of the Trepezium = \\\\frac{1}{2}) × AE × ED + DC × BC  Area of the Trepezium = \\\\frac{1}{2}) × 4 × 4 + 5 × 4  Area of the Trepezium = 8 + 20  Area of the Trepezium = 28 cm2\n\nThe question is \"In a trepezium ABCD, AB is parallel to DC, BC is perpendicular to DC and ∠BAD = 45°. If DC = 5 cm, BC = 4 cm, the area of the trepezium in sq. cm is\"\n\nHence, the answer is, \"28\"",
+    "explanation": "Let's draw the Trapezium.  \n\n![Tepezium ABCD](/pyq/2020/images/s3_quant_q24_0_q24_Trepezium_1.png)\n\n  Now drop a perpendicular from D on to AB touching AB at E.  \n\n![Tepezium ABCD after droping perpendicular DE](/pyq/2020/images/s3_quant_q24_1_q24_Trepezium_2.png)\n\n  In ΔAED, ∠AED = 90°, ∠DAE = 45°, therefore ∠EDA = 45°.  Clearly ΔAED is an iscoceles right triangle and Quadrilateral BCDE is a rectangle.  Therefore, BC = DE = 4cm.  Since ΔAED is an iscoceles triangle, AE = ED = 4cm.  Area of the Trepezium = Area of ΔAED + Area of Rectangle BCDE  Area of the Trepezium = \\(\\frac{1}{2}\\) × AE × ED + DC × BC  Area of the Trepezium = \\(\\frac{1}{2}\\) × 4 × 4 + 5 × 4  Area of the Trepezium = 8 + 20  Area of the Trepezium = 28 cm2\n\nThe question is \"In a trepezium ABCD, AB is parallel to DC, BC is perpendicular to DC and ∠BAD = 45°. If DC = 5 cm, BC = 4 cm, the area of the trepezium in sq. cm is\"\n\nHence, the answer is, \"28\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=808",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-24.shtml",
     "images": [
@@ -4941,7 +4941,7 @@
       "12"
     ],
     "correct_answer": "Choice C\n14",
-    "explanation": "The line x + 9y + c = 0, forms one of the diagonal of the parallelogram.  The other diagonal connects the points (2, 1) and (-3, -4).  The diagonals of a parellogram bisect each other, hence the line x + 9y + c = 0 should pass hrough the midpoint of the line joining (2, 1) and (-3, -4).  The midpoint of the line joining (2, 1) and (-3, -4) = ( \\\\frac{2-3}{2}) , \\\\frac{1-4}{2}) ) = ( \\\\frac{-1}{2}) , \\\\frac{-3}{2}) ) = (-0.5 , -1.5)  Therefore, the line x + 9y + c = 0 passes through (-0.5 , -1.5),  Hence, (-0.5) + 9(-1.5) + c = 0  (-0.5) + 27(-0.5) + c = 0  28 (-0.5) + c = 0  -14 + c = 0  c = 14.\n\nThe question is \"The points (2 , 1) and (-3 , -4) are opposite vertices of a parellelogram. If the other two vertices lie on the line x + 9y + c = 0, then c is\"\n\nHence, the answer is, \"14\"",
+    "explanation": "The line x + 9y + c = 0, forms one of the diagonal of the parallelogram.  The other diagonal connects the points (2, 1) and (-3, -4).  The diagonals of a parellogram bisect each other, hence the line x + 9y + c = 0 should pass hrough the midpoint of the line joining (2, 1) and (-3, -4).  The midpoint of the line joining (2, 1) and (-3, -4) = ( \\(\\frac{2-3}{2}\\) , \\(\\frac{1-4}{2}\\)) ) = ( \\(\\frac{-1}{2}\\) , \\(\\frac{-3}{2}\\) ) = (-0.5 , -1.5)  Therefore, the line x + 9y + c = 0 passes through (-0.5 , -1.5),  Hence, (-0.5) + 9(-1.5) + c = 0  (-0.5) + 27(-0.5) + c = 0  28 (-0.5) + c = 0  -14 + c = 0  c = 14.\n\nThe question is \"The points (2 , 1) and (-3 , -4) are opposite vertices of a parellelogram. If the other two vertices lie on the line x + 9y + c = 0, then c is\"\n\nHence, the answer is, \"14\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=952",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-25.shtml",
     "images": []
@@ -4962,7 +4962,7 @@
       "2017"
     ],
     "correct_answer": "Choice B\n2018",
-    "explanation": "42017 = 22×2017  Number of factors of 22×2017 = 2×2017 + 1= 4035  Number of pairs of a,b such that a×b = 22×2017 is equal to half the Number of factors of 22×2017  Number of pairs of a,b such that a×b = 22×2017  = \\\\frac{4035}{2})  You observe that \\\\frac{4035}{2}) is not an integer, because 22×2017 is a perfect square and one of the pairs of (a,b) is (2017 , 2017).  So, the number of such pairs is the highest integer roundoff of \\\\frac{4035}{2}) = 2018. Among all these 2018 pairs, one of the integer is less than or equal to the other. (Equal in the case of (2017,2017))  We assume that a is the least one of the two...  Hence there are 2018 pairs that satify this condition.  Alternate Method:  a × b = 42017  a × b = 22×2017  a and b are of the form 2x and 2y respectfully...  Since a ≤ b;  2x ≤ 2y  x ≤ y  Also, a × b = 22×2017  2x + 2y = 22×2017  x + y = 2×2017  We have 2 conditions to deal with...  x ≤ y and x + y = 2×2017  Let's start with x = y:  Here, x = y = 2017  From here on, we decrement x and increment y to maintain the conditions x ≤ y and x + y = 2×2017  We can keep doing this until x = 0, because if x is negative, a which is 2x will not remain an integer.\n\nHence x can range from 2017 to 0; and thereby x can take 2018 values.  Therefore, there can be 2018 pairs of (a,b) that sitisfy a ≤ b and ab = 42017\n\nThe question is \"How many pairs (a,b) of positive integers are there such that a ≤ b and ab = 42017?\"\n\nHence, the answer is, \"2018\"",
+    "explanation": "42017 = 22×2017  Number of factors of 22×2017 = 2×2017 + 1= 4035  Number of pairs of a,b such that a×b = 22×2017 is equal to half the Number of factors of 22×2017  Number of pairs of a,b such that a×b = 22×2017  = \\(\\frac{4035}{2}\\)  You observe that \\(\\frac{4035}{2}\\) is not an integer, because 22×2017 is a perfect square and one of the pairs of (a,b) is (2017 , 2017).  So, the number of such pairs is the highest integer roundoff of \\(\\frac{4035}{2}\\) = 2018. Among all these 2018 pairs, one of the integer is less than or equal to the other. (Equal in the case of (2017,2017))  We assume that a is the least one of the two...  Hence there are 2018 pairs that satify this condition.  Alternate Method:  a × b = 42017  a × b = 22×2017  a and b are of the form 2x and 2y respectfully...  Since a ≤ b;  2x ≤ 2y  x ≤ y  Also, a × b = 22×2017  2x + 2y = 22×2017  x + y = 2×2017  We have 2 conditions to deal with...  x ≤ y and x + y = 2×2017  Let's start with x = y:  Here, x = y = 2017  From here on, we decrement x and increment y to maintain the conditions x ≤ y and x + y = 2×2017  We can keep doing this until x = 0, because if x is negative, a which is 2x will not remain an integer.\n\nHence x can range from 2017 to 0; and thereby x can take 2018 values.  Therefore, there can be 2018 pairs of (a,b) that sitisfy a ≤ b and ab = 42017\n\nThe question is \"How many pairs (a,b) of positive integers are there such that a ≤ b and ab = 42017?\"\n\nHence, the answer is, \"2018\"",
     "video_url": "https://www.youtube.com/embed/bTEF24DZOCc?start=2213",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-3-Quant/quants-question-26.shtml",
     "images": []

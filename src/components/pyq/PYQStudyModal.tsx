@@ -11,7 +11,7 @@ import {
   findRecommendedLessonForPYQ,
   SECTION_METADATA,
 } from "@/data/pyqData";
-import PYQMarkdownViewer from "./PYQMarkdownViewer";
+import PYQMarkdownViewer, { MathText } from "./PYQMarkdownViewer";
 import styles from "./PYQStudyModal.module.css";
 
 const OPTION_LETTERS = ["A", "B", "C", "D", "E"];
@@ -345,7 +345,7 @@ export default function PYQStudyModal({
                     >
                       <div className={styles.optionLeft}>
                         <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                        <div className={styles.optionText}>{opt}</div>
+                        <div className={styles.optionText}><MathText text={opt} /></div>
                       </div>
                       {isCorrect && (
                         <span className={styles.correctTag}>
@@ -364,7 +364,7 @@ export default function PYQStudyModal({
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>Official Correct Answer:</span>
                   </span>
-                  <span className={styles.titaAnswerVal}>{titaCleanAnswer || "Key-in Answer"}</span>
+                  <span className={styles.titaAnswerVal}><MathText text={titaCleanAnswer || "Key-in Answer"} /></span>
                 </div>
                 <span style={{ fontSize: "12px", color: "#15803d", fontWeight: 600 }}>
                   (No Negative Marks in CAT for TITA)

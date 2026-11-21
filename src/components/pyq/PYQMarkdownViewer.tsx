@@ -6,10 +6,55 @@ import "katex/dist/katex.min.css";
 import styles from "./PYQMarkdownViewer.module.css";
 
 // ── Math (LaTeX) support ───────────────────────────────────────────────────────────
-// Question banks (e.g. CAT PYQs) write maths as \( … \), \[ … \] or $$ … $$. Segments are
-// rendered with KaTeX; invalid notation falls back to the original text instead of throwing.
-const MATH_RE = /\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)/g;
+// Question banks (e.g. CAT PYQs) write maths as \( … \), \[ … \], $$ … $$ or $ … $.
+// Invalid notation falls back to original text instead of throwing.
+const MATH_RE = /\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)|(?<=(?:^|[^\w\$]))\$([^\$\n]+?)\$(?=(?:[^\w\$]|$))/g;
 const TOKEN_RE = /\u0000M(\d+)\u0000/g;
+
+/** Preprocesses markdown and math content, normalizing mojibake, unescaping double backslashes, and repairing roots/fractions. */
+export function preprocessMathAndText(raw: string): string {
+  if (!raw) return "";
+  let s = raw;
+
+  // 1. Repair Mojibake artifacts dynamically
+  s = s
+    .replace(/â\x80\x93/g, "–")
+    .replace(/â\x80\x94/g, "—")
+    .replace(/â\x80\x98/g, "‘")
+    .replace(/â\x80\x99/g, "’")
+    .replace(/â\x80\x9c/g, "“")
+    .replace(/â\x80\x9d/g, "”")
+    .replace(/â\x80\xa6/g, "…")
+    .replace(/â\x80\xa2/g, "•")
+    .replace(/â\x86\x92/g, "→")
+    .replace(/â\x86\x93/g, "↓")
+    .replace(/â\x86\x90/g, "←")
+    .replace(/â\x86\x94/g, "↔")
+    .replace(/â\s*\x93/g, "⅓")
+    .replace(/â\s*\x94/g, "⅔")
+    .replace(/Â\xa0/g, " ")
+    .replace(/Â/g, "")
+    .replace(/Ã—/g, "×")
+    .replace(/Ã·/g, "÷");
+
+  // 2. Unescape double backslashes before common LaTeX keywords
+  s = s.replace(/\\\\([a-zA-Z]+)/g, "\\$1");
+
+  // 3. Fix unicode square roots e.g. \√3 -> \sqrt{3}, √3 -> \sqrt{3}, √π -> \sqrt{\pi}
+  s = s.replace(/\\?√\s*π/g, "\\sqrt{\\pi}");
+  s = s.replace(/\\?√\s*\{([^}]+)\}/g, "\\sqrt{$1}");
+  s = s.replace(/\\?√\s*\((\d+)\)/g, "\\sqrt{$1}");
+  s = s.replace(/\\?√\s*(\d+)/g, "\\sqrt{$1}");
+  s = s.replace(/\\?√\s*([a-zA-Z])(?![a-zA-Z])/g, "\\sqrt{$1}");
+
+  // 4. Strip stray closing parenthesis artifact after fractions
+  s = s.replace(/(\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})\)/g, "$1");
+
+  // 5. Wrap raw standalone \frac expressions not already inside math delimiters
+  s = s.replace(/(?<!\\\(|\$|\\\[)\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}(?!\\\))/g, (m) => `\\(${m}\\)`);
+
+  return s;
+}
 
 function renderMath(tex: string, displayMode: boolean): string {
   try {
@@ -22,9 +67,11 @@ function renderMath(tex: string, displayMode: boolean): string {
 /** Replaces every math segment with a placeholder token and returns the rendered HTML list. */
 function extractMath(content: string): { text: string; html: string[] } {
   const html: string[] = [];
-  const text = content.replace(MATH_RE, (_m, display?: string, dollars?: string, inline?: string) => {
+  const preprocessed = preprocessMathAndText(content);
+  const text = preprocessed.replace(MATH_RE, (_m, display?: string, dollars?: string, inline?: string, singleDollar?: string) => {
     const isDisplay = display !== undefined || dollars !== undefined;
-    html.push(renderMath((display ?? dollars ?? inline ?? "").trim(), isDisplay));
+    const tex = display ?? dollars ?? inline ?? singleDollar ?? "";
+    html.push(renderMath(tex.trim(), isDisplay));
     return `\u0000M${html.length - 1}\u0000`;
   });
   return { text, html };
@@ -48,7 +95,17 @@ function withMath(text: string, html: string[], keyPrefix: string): React.ReactN
 /** Single-line text that may contain maths, e.g. answer options. */
 export function MathText({ text }: { text: string }) {
   if (!text) return null;
-  const { text: t, html } = extractMath(text);
+  let cleanText = preprocessMathAndText(text);
+
+  // If the option has LaTeX tokens or symbols and isn't enclosed in \( ... \) or $$ or \[,
+  // wrap the whole option so KaTeX renders it cleanly.
+  const hasLatex = /\\(frac|sqrt|pi|log|le|ge|times|pm|left|right|sin|cos|tan|theta|neq|leq|geq)|[≤≥≠]/.test(cleanText);
+  const alreadyDelimited = /\\\(|\\\[|\$\$|\$/.test(cleanText);
+  if (hasLatex && !alreadyDelimited) {
+    cleanText = `\\(${cleanText}\\)`;
+  }
+
+  const { text: t, html } = extractMath(cleanText);
   return <>{withMath(t, html, "mt")}</>;
 }
 
