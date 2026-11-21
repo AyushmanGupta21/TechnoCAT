@@ -58,6 +58,31 @@ function SettingsContent() {
 
   // Danger zone modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // Leaderboard visibility (profiles.leaderboard_opt_out), loaded from the server.
+  const [leaderboardVisible, setLeaderboardVisible] = useState(true);
+  useEffect(() => {
+    if (!user || isDemo) return;
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setLeaderboardVisible(!data.user.leaderboardOptOut);
+      })
+      .catch(() => {});
+  }, [user, isDemo]);
+  const updateLeaderboardVisibility = async (visible: boolean) => {
+    setLeaderboardVisible(visible);
+    const res = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leaderboardOptOut: !visible }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setLeaderboardVisible(!visible); // revert on failure
+    } else {
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
+    }
+  };
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -372,6 +397,27 @@ function SettingsContent() {
                   </div>
 
                   <div className={styles.optionList}>
+                    {/* Leaderboard privacy */}
+                    {!isDemo && (
+                      <div className={styles.optionItem}>
+                        <div className={styles.optionText}>
+                          <h3 className={styles.optionTitle}>Show me on the leaderboard</h3>
+                          <p className={styles.optionSub}>
+                            Other students see your first name and last initial with your XP. Turn off to stay hidden.
+                          </p>
+                        </div>
+                        <label className={styles.switchLabel}>
+                          <input
+                            type="checkbox"
+                            checked={leaderboardVisible}
+                            onChange={(e) => updateLeaderboardVisibility(e.target.checked)}
+                            className={styles.switchInput}
+                          />
+                          <span className={styles.slider} />
+                        </label>
+                      </div>
+                    )}
+
                     {/* Streak & Study Reminders */}
                     <div className={styles.optionItem}>
                       <div className={styles.optionText}>

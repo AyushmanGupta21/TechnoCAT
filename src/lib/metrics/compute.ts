@@ -72,8 +72,9 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
         [userId]
       ),
       query(
-        `SELECT a.id AS attempt_id, r.question_id, a.kind, COALESCE(r.section, a.section) AS section, r.concept,
-                r.recommended_lesson_id, r.question_type, r.marks::float AS marks, r.time_spent_seconds, a.submitted_at
+        `SELECT a.id AS attempt_id, r.question_id, a.kind, a.topic_id, COALESCE(r.section, a.section) AS section, r.concept,
+                r.recommended_lesson_id, r.question_type, r.selected_option, r.tita_answer,
+                r.marks::float AS marks, r.time_spent_seconds, a.submitted_at
          FROM public.quiz_responses r JOIN public.quiz_attempts a ON a.id = r.attempt_id
          WHERE a.user_id = $1 AND r.is_attempted AND NOT r.is_correct
          ORDER BY a.submitted_at DESC, r.position LIMIT 150`,
@@ -263,10 +264,12 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
     attemptId: m.attempt_id,
     questionId: m.question_id,
     kind: m.kind,
-    section: (m.section as SectionKey | null) ?? null,
+    section: (m.section as SectionKey | null) ?? sectionOf(m.topic_id),
     concept: m.concept,
     lessonId: m.recommended_lesson_id,
     questionType: m.question_type,
+    selectedOption: m.selected_option,
+    titaAnswer: m.tita_answer,
     marksLost: m.marks < 0 ? -m.marks : 0,
     timeSpentSeconds: m.time_spent_seconds,
     submittedAt: new Date(m.submitted_at).toISOString(),
@@ -316,6 +319,7 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
       inProgress: topics.filter((t) => t.progressPercent < 100).length,
       completed: topics.filter((t) => t.progressPercent >= 100).length,
       lessonsCompleted: topics.reduce((s, t) => s + t.lessonsCompleted, 0),
+      syllabusLessonsCompleted: syllabusCompleted,
       syllabusLessons,
       topics,
     },
@@ -339,7 +343,7 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
       moduleAttempts: tests.filter((t) => t.kind === "module_quiz").length,
       grandQuizzesPassed: new Set(tests.filter((t) => t.kind === "grand_quiz" && t.passed).map((t) => t.topicId)).size,
     },
-    concepts: { weak, strong },
+    concepts: { weak, strong, all: [...conceptStats].sort((a, b) => a.accuracy - b.accuracy).slice(0, 40) },
     mistakes,
     tasks: {
       todayTotal: tasksToday.length,

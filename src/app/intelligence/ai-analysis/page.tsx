@@ -1,247 +1,81 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import styles from "./ai-analysis.module.css";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import BrandLogo from "@/components/BrandLogo";
-import { 
-  LineChart, Line, ComposedChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
-} from 'recharts';
+import {
+  LineChart, Line, ComposedChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
+} from "recharts";
+import type { StudentMetrics, SectionKey, ConceptStat, TestRecord } from "@/lib/metrics/types";
 
-export default function AiAnalysisPage() {
-  const [data, setData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Overview');
-  const [journeyTab, setJourneyTab] = useState('Score');
-  const [showPlanModal, setShowPlanModal] = useState(false);
-  const [completedTasks, setCompletedTasks] = useState<number[]>([1]);
-  const [selectedMetric, setSelectedMetric] = useState<"accuracy" | "speed" | "consistency" | "conceptStrength" | "questionSelection" | null>(null);
-  const [selectedOpportunity, setSelectedOpportunity] = useState<"carelessErrors" | "dilrAccuracy" | "questionSelection" | "qaSpeed" | null>(null);
+// Every number on this page comes from GET /api/me/metrics. Wording is generated deterministically
+// from those numbers; no model writes any of it.
 
-  const toggleTask = (id: number) => {
-    setCompletedTasks(prev => 
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
+const SECTIONS: SectionKey[] = ["VARC", "DILR", "QA"];
+const SECTION_LABEL: Record<SectionKey, string> = { VARC: "VARC", DILR: "DILR", QA: "Quantitative Aptitude" };
+const SECTION_COLOR: Record<SectionKey, string> = { VARC: "#0EA5E9", DILR: "#10B981", QA: "#8B5CF6" };
+const OTHER_COLOR = "#94A3B8";
 
-  useEffect(() => {
-    if (!selectedMetric && !selectedOpportunity) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedMetric(null);
-        setSelectedOpportunity(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedMetric, selectedOpportunity]);
+function topicIdForLesson(lessonId: string | null): string | null {
+  const id = (lessonId || "").toLowerCase();
+  if (id.startsWith("qa-")) return "qa-quantitative-ability";
+  if (id.startsWith("dilr-")) return "dilr-data-interpretation";
+  if (id.startsWith("varc-")) return "varc-verbal-ability";
+  return null;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        fetch("/api/intelligence/record-analysis-view", { method: "POST" }).catch(console.error); const res = await fetch("/api/ai-analysis");
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+function topicIdForSection(section: SectionKey | null): string | null {
+  if (section === "QA") return "qa-quantitative-ability";
+  if (section === "DILR") return "dilr-data-interpretation";
+  if (section === "VARC") return "varc-verbal-ability";
+  return null;
+}
 
-  if (isLoading) {
-    return (
-      <div className={styles.pageWrapper}>
-        <header className={styles.darkHeader}>
-          <div className={styles.headerInner}>
-            <nav className={styles.topNav} aria-label="AI Analysis Navigation">
-              <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <BrandLogo height={70} />
-              </Link>
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+const fmtPct = (v: number | null) => (v === null ? "–" : `${Math.round(v * 10) / 10}%`);
+const fmtPercentile = (v: number) => (v > 99 ? v.toFixed(2) : v.toFixed(1));
+const fmtSecs = (s: number | null) => (s === null ? "–" : s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`);
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-              <div className={styles.navLinks}>
-                <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-                <Link href="/browse" className={styles.navLink}>Browse</Link>
-                <Link href="/topics" className={styles.navLink}>My Topics</Link>
-                <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
-                <Link href="/mock-viva-prep" className={styles.navLink}>Speak & Assess</Link>
-              </div>
+function accuracyBadge(acc: number | null): { label: string; bg: string; fg: string } {
+  if (acc === null) return { label: "NO DATA", bg: "#F1F5F9", fg: "#64748B" };
+  if (acc >= 80) return { label: "STRONG", bg: "#D1FAE5", fg: "#047857" };
+  if (acc >= 60) return { label: "MODERATE", bg: "#DBEAFE", fg: "#1D4ED8" };
+  return { label: "NEEDS ATTENTION", bg: "#FEE2E2", fg: "#B91C1C" };
+}
 
-              <PostLoginNavActions />
-            </nav>
-          </div>
-        </header>
+function conceptBadgeClass(acc: number): string {
+  if (acc >= 80) return styles.badgeStrong;
+  if (acc >= 60) return styles.badgeModerate;
+  if (acc >= 45) return styles.badgeNeeds;
+  return styles.badgeWeak;
+}
 
-        {/* Breadcrumb Navigation */}
-        <div className={styles.breadcrumb}>
-          <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
-        </div>
+function conceptBarColor(acc: number): string {
+  if (acc >= 80) return "#10B981";
+  if (acc >= 60) return "#2563EB";
+  if (acc >= 45) return "#F59E0B";
+  return "#EF4444";
+}
 
-        {/* Skeleton Hero */}
-        <section className={styles.heroSection}>
-          <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>
-              <span className={styles.loadingSpinner} style={{ borderColor: 'rgba(37, 99, 235, 0.3)', borderTopColor: '#2563EB' }}></span>
-              AI PERFORMANCE INTELLIGENCE
-            </div>
-            <h1 className={styles.heroTitle} style={{ color: '#0F172A', opacity: 0.9 }}>
-              Synthesizing Your<br /><span>CAT Performance...</span>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              TechnoCAT AI is compiling your mock attempts, accuracy trends, solving speed and diagnostic insights.
-            </p>
-            <div style={{ display: 'flex', gap: 14 }}>
-              <div className={styles.skeletonPulse} style={{ width: 180, height: 46, borderRadius: 100 }}></div>
-              <div className={styles.skeletonPulse} style={{ width: 160, height: 46, borderRadius: 100 }}></div>
-            </div>
-          </div>
+/** PYQ pace for a section, from its PYQ attempts (seconds per answered question). */
+function pyqPace(tests: TestRecord[]): number | null {
+  const timed = tests.filter((t) => t.attempted > 0 && t.durationSeconds > 0);
+  const answered = timed.reduce((s, t) => s + t.attempted, 0);
+  return answered > 0 ? Math.round(timed.reduce((s, t) => s + t.durationSeconds, 0) / answered) : null;
+}
 
-          <div className={styles.heroRight}>
-            <div className={styles.mainRing} style={{ background: '#FFF' }}>
-              <div className={styles.skeletonPulse} style={{ width: 140, height: 140, borderRadius: '50%' }}></div>
-            </div>
-            <div className={styles.heroMetrics}>
-              <div className={styles.hmRow}>
-                <div className={styles.skeletonPulse} style={{ width: '60%', height: 16, marginBottom: 8 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
-              </div>
-              <div className={styles.hmRow}>
-                <div className={styles.skeletonPulse} style={{ width: '50%', height: 16, marginBottom: 8 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
-              </div>
-              <div className={styles.hmRow}>
-                <div className={styles.skeletonPulse} style={{ width: '70%', height: 16, marginBottom: 8 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '100%', height: 8 }}></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Skeleton Content */}
-        <div className={styles.contentWrapper}>
-          <div className={styles.aiDiagnosisCard} style={{ minHeight: 160, alignItems: 'center' }}>
-            <div className={styles.skeletonPulse} style={{ width: 80, height: 80, borderRadius: '50%', flexShrink: 0 }}></div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div className={styles.skeletonPulse} style={{ width: '28%', height: 22 }}></div>
-              <div className={styles.skeletonPulse} style={{ width: '55%', height: 14 }}></div>
-              <div className={styles.skeletonPulse} style={{ width: '100%', height: 50, borderRadius: 10 }}></div>
-            </div>
-          </div>
-
-          <div className={styles.dnaGrid}>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className={styles.dnaCard} style={{ minHeight: 140 }}>
-                <div className={styles.skeletonPulse} style={{ width: '65%', height: 16, marginBottom: 12 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '45%', height: 28, marginBottom: 10 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '90%', height: 12, marginBottom: 6 }}></div>
-                <div className={styles.skeletonPulse} style={{ width: '75%', height: 12 }}></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const hasData = data?.hasData && data?.data;
-  if (!hasData) {
-    return (
-      <div className={styles.pageWrapper} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <header className={styles.darkHeader}>
-          <div className={styles.headerInner}>
-            <nav className={styles.topNav} aria-label="AI Analysis Navigation">
-              <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <BrandLogo height={70} />
-              </Link>
-
-              <div className={styles.navLinks}>
-                <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-                <Link href="/browse" className={styles.navLink}>Browse</Link>
-                <Link href="/topics" className={styles.navLink}>My Topics</Link>
-                <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
-                <Link href="/mock-viva-prep" className={styles.navLink}>Speak & Assess</Link>
-              </div>
-
-              <PostLoginNavActions />
-            </nav>
-          </div>
-        </header>
-
-        {/* Breadcrumb Navigation */}
-        <div className={styles.breadcrumb}>
-          <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, color: '#0F172A' }}>
-            Your AI Performance Profile Is Waiting
-          </h1>
-          <p style={{ color: '#64748B', marginBottom: 32, maxWidth: 540, lineHeight: 1.6, fontSize: 15 }}>
-            Complete your first mock test and TechnoCAT will analyze your accuracy, speed, mistakes and improvement opportunities.
-          </p>
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-            <Link href="/browse#pyq-section" className={styles.btnPrimary}>
-              Take Your First Mock
-            </Link>
-            <Link href="/intelligence" className={styles.btnSecondary} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span>← Back to Intelligence Hub</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const d = data.data;
-
-  // Custom tooltips
-  const CustomLineTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{background: '#FFF', border: '1px solid #E2E8F0', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', fontSize: '12px', fontWeight: 600}}>
-          <div>{payload[0].payload.name}</div>
-          <div style={{color: '#2563EB', marginTop: '4px'}}>Score: {payload[0].payload.score}</div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const mistakeColors = ['#0EA5E9', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981', '#D946EF'];
-  const mistakeData = d.mistakesMap ? d.mistakesMap.map((m: any, i: number) => ({ name: m.category, value: m.percent, color: mistakeColors[i % mistakeColors.length] })) : [];
-
-  // Dummy scatter for layout match
-  const parseTimeStr = (str: string) => {
-    if (!str) return 0;
-    let min = 0, sec = 0;
-    const mMatch = str.match(/(\d+)m/);
-    const sMatch = str.match(/(\d+)s/);
-    if (mMatch) min = parseInt(mMatch[1]);
-    if (sMatch) sec = parseInt(sMatch[1]);
-    return min * 60 + sec;
-  };
-  
-  const barData = [
-    { name: 'VARC', accuracy: Math.round((d.topics?.VARC?.reduce((acc: any, t: any) => acc + t.accuracy, 0) || 0) / (d.topics?.VARC?.length || 1)), time: Number((parseTimeStr(d.topics?.VARC?.[0]?.avgTime || '0m 0s') / 60).toFixed(1)) },
-    { name: 'DILR', accuracy: Math.round((d.topics?.DILR?.reduce((acc: any, t: any) => acc + t.accuracy, 0) || 0) / (d.topics?.DILR?.length || 1)), time: Number((parseTimeStr(d.topics?.DILR?.[0]?.avgTime || '0m 0s') / 60).toFixed(1)) },
-    { name: 'QA', accuracy: Math.round((d.topics?.QA?.reduce((acc: any, t: any) => acc + t.accuracy, 0) || 0) / (d.topics?.QA?.length || 1)), time: Number((parseTimeStr(d.topics?.QA?.[0]?.avgTime || '0m 0s') / 60).toFixed(1)) }
-  ];
-
+function Header() {
   return (
-    <div className={styles.pageWrapper}>
+    <>
       <header className={styles.darkHeader}>
         <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="AI Analysis Navigation">
+          <nav className={styles.topNav} aria-label="Performance Analysis Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
               <BrandLogo height={70} />
             </Link>
-
             <div className={styles.navLinks}>
               <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
               <Link href="/browse" className={styles.navLink}>Browse</Link>
@@ -249,51 +83,265 @@ export default function AiAnalysisPage() {
               <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
               <Link href="/mock-viva-prep" className={styles.navLink}>Speak & Assess</Link>
             </div>
-
             <PostLoginNavActions />
           </nav>
         </div>
       </header>
-
-      {/* Breadcrumb Navigation */}
       <div className={styles.breadcrumb}>
-        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>AI Performance Analysis</span>
+        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>Performance Analysis</span>
       </div>
+    </>
+  );
+}
+
+function CenterMessage({ title, body, primary }: { title: string; body: string; primary?: { href: string; label: string } }) {
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", textAlign: "center" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, color: "#0F172A" }}>{title}</h1>
+      <p style={{ color: "#64748B", marginBottom: 32, maxWidth: 540, lineHeight: 1.6, fontSize: 15 }}>{body}</p>
+      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+        {primary && <Link href={primary.href} className={styles.btnPrimary}>{primary.label}</Link>}
+        <Link href="/intelligence" className={styles.btnSecondary}>&larr; Back to Intelligence Hub</Link>
+      </div>
+    </div>
+  );
+}
+
+export default function PerformanceAnalysisPage() {
+  const [metrics, setMetrics] = useState<StudentMetrics | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"Overview" | "Concepts" | "Trends">("Overview");
+  const [journeyTab, setJourneyTab] = useState<"Score" | "Accuracy" | "Pace">("Score");
+
+  useEffect(() => {
+    // Opening this page counts toward the 7-day challenge's "review your analysis" task.
+    fetch("/api/intelligence/record-analysis-view", { method: "POST" }).catch(console.error);
+    (async () => {
+      try {
+        const res = await fetch("/api/me/metrics");
+        if (res.ok) setMetrics((await res.json()) as StudentMetrics);
+        else setError(res.status === 401 ? "Please log in to see your performance analysis." : "We could not load your analysis right now. Please refresh to try again.");
+      } catch {
+        setError("We could not load your analysis right now. Please refresh to try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, []);
+
+  const derived = useMemo(() => {
+    if (!metrics) return null;
+    const pyq = metrics.tests.pyq; // newest first
+    const pyqChrono = [...pyq].reverse();
+    const latest = pyq[0] ?? null;
+
+    const pyqBySection: Record<SectionKey, TestRecord[]> = { VARC: [], DILR: [], QA: [] };
+    for (const t of pyq) if (t.section) pyqBySection[t.section].push(t);
+
+    const sectionsWithAccuracy = SECTIONS.filter((s) => metrics.sections[s].accuracy !== null);
+    const bySectionAcc = [...sectionsWithAccuracy].sort((a, b) => (metrics.sections[a].accuracy as number) - (metrics.sections[b].accuracy as number));
+    const weakestSection = bySectionAcc[0] ?? null;
+    const strongestSection = bySectionAcc.length > 1 ? bySectionAcc[bySectionAcc.length - 1] : null;
+
+    // Mistakes by section and by concept (from the recorded wrong answers).
+    const mistakes = metrics.mistakes;
+    const mistakeBySection = SECTIONS.map((s) => ({ key: s as SectionKey | "Other", name: s as string, count: mistakes.filter((m) => m.section === s).length, color: SECTION_COLOR[s] }));
+    const otherCount = mistakes.filter((m) => !m.section).length;
+    if (otherCount > 0) mistakeBySection.push({ key: "Other", name: "Other", count: otherCount, color: OTHER_COLOR });
+    const conceptCounts = new Map<string, { concept: string; section: SectionKey | null; lessonId: string | null; count: number }>();
+    for (const m of mistakes) {
+      if (!m.concept) continue;
+      const k = `${m.concept}|${m.section ?? ""}`;
+      const e = conceptCounts.get(k) ?? { concept: m.concept, section: m.section, lessonId: m.lessonId, count: 0 };
+      e.count++;
+      conceptCounts.set(k, e);
+    }
+    const mistakeByConcept = [...conceptCounts.values()].sort((a, b) => b.count - a.count).slice(0, 5);
+
+    const weak = metrics.concepts.weak;
+    const strong = metrics.concepts.strong;
+    const weakest: ConceptStat | null = weak[0] ?? null;
+
+    return { pyq, pyqChrono, latest, pyqBySection, weakestSection, strongestSection, mistakeBySection, mistakeByConcept, weak, strong, weakest };
+  }, [metrics]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <Header />
+        <section className={styles.heroSection}>
+          <div className={styles.heroLeft}>
+            <div className={styles.heroBadge}>
+              <span className={styles.loadingSpinner} style={{ borderColor: "rgba(37, 99, 235, 0.3)", borderTopColor: "#2563EB" }}></span>
+              PERFORMANCE ANALYSIS
+            </div>
+            <h1 className={styles.heroTitle} style={{ color: "#0F172A", opacity: 0.9 }}>
+              Loading Your<br /><span>CAT Performance...</span>
+            </h1>
+          </div>
+          <div className={styles.heroRight}>
+            <div className={styles.mainRing} style={{ background: "#FFF" }}>
+              <div className={styles.skeletonPulse} style={{ width: 140, height: 140, borderRadius: "50%" }}></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (error || !metrics || !derived) {
+    return (
+      <div className={styles.pageWrapper} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Header />
+        <CenterMessage title="Analysis unavailable" body={error ?? "We could not load your analysis right now."} />
+      </div>
+    );
+  }
+
+  const m = metrics;
+  const { pyq, pyqChrono, latest, pyqBySection, weakestSection, strongestSection, mistakeBySection, mistakeByConcept, weak, strong, weakest } = derived;
+
+  if (m.tests.recent.length === 0) {
+    return (
+      <div className={styles.pageWrapper} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Header />
+        <CenterMessage
+          title="Your Performance Analysis Is Waiting"
+          body="Attempt a full PYQ section (or a module quiz) and this page will show your scores, accuracy, pace, where your mistakes cluster and a plan to fix them."
+          primary={{ href: "/browse#pyq-section", label: "Attempt a PYQ Section" }}
+        />
+      </div>
+    );
+  }
+
+  // ── Overview numbers ────────────────────────────────────────────────────────
+  const overallPercentile = m.percentile.overallEstimate;
+  const latestPercentile = latest?.estimatedPercentile ?? null;
+  const shownPercentile = overallPercentile ?? latestPercentile;
+  const percentileLabel = overallPercentile !== null ? "Estimated overall percentile" : latest?.section ? `Estimated ${latest.section} percentile` : "Estimated percentile";
+  const ringPct = latest ? Math.max(0, Math.min(100, latest.percentage)) : 0;
+  const spq = m.speed.secondsPerQuestion;
+  const bench = m.speed.benchmarkSecondsPerQuestion;
+
+  // ── Summary lists (deterministic) ───────────────────────────────────────────
+  const doingWell: string[] = [];
+  for (const s of SECTIONS) {
+    const acc = m.sections[s].accuracy;
+    if (acc !== null && acc >= 75) doingWell.push(`${s} accuracy is ${fmtPct(acc)} in timed tests`);
+  }
+  for (const c of strong.slice(0, 3)) doingWell.push(`${c.concept}: ${c.correct}/${c.attempted} correct`);
+  if (spq !== null && spq <= bench) doingWell.push(`Pace of ${spq}s per question is at or faster than CAT pace (${bench}s)`);
+
+  const holdingBack: string[] = [];
+  for (const c of weak.slice(0, 3)) holdingBack.push(`${c.concept}: only ${c.correct}/${c.attempted} correct (${Math.round(c.accuracy)}%)`);
+  if (m.accuracy.negativeMarksLost > 0) holdingBack.push(`${plural(m.accuracy.negativeMarksLost, "mark")} lost to wrong MCQ answers in PYQs`);
+  if (spq !== null && spq > bench) holdingBack.push(`Pace of ${spq}s per question is slower than CAT pace (${bench}s)`);
+
+  // ── Action plan: fix weakest concept → practise → retest the PYQ section ────
+  const focusSection: SectionKey | null = weakest?.section ?? weakestSection;
+  const focusTopic = weakest ? topicIdForLesson(weakest.lessonId) ?? topicIdForSection(weakest.section) : topicIdForSection(weakestSection);
+  const focusMistakes = weakest
+    ? m.mistakes.filter((x) => x.concept === weakest.concept).length
+    : focusSection ? m.mistakes.filter((x) => x.section === focusSection).length : m.mistakes.length;
+  const plan: { title: string; desc: string; href: string; cta: string }[] = [];
+  if (weakest) {
+    plan.push({
+      title: `Revise ${weakest.concept}`,
+      desc: `Your weakest concept: ${weakest.correct} of ${weakest.attempted} correct (${Math.round(weakest.accuracy)}%). Re-read the lesson before practising.`,
+      href: focusTopic ? `/topics/${focusTopic}` : "/topics",
+      cta: "Open lesson",
+    });
+  } else if (weakestSection) {
+    plan.push({
+      title: `Revise ${weakestSection} lessons`,
+      desc: `${weakestSection} has your lowest timed-test accuracy (${fmtPct(m.sections[weakestSection].accuracy)}).`,
+      href: focusTopic ? `/topics/${focusTopic}` : "/topics",
+      cta: "Open course",
+    });
+  }
+  if (focusMistakes > 0) {
+    plan.push({
+      title: `Review ${plural(focusMistakes, "wrong answer")}${weakest ? ` in ${weakest.concept}` : focusSection ? ` in ${focusSection}` : ""}`,
+      desc: "Read the correct answer and explanation for each one, then solve them again without looking.",
+      href: "/intelligence/error-tracking",
+      cta: "Open Error Tracking",
+    });
+  } else {
+    plan.push({
+      title: "Practise with the lesson exercises",
+      desc: "Answer the practice questions in the lesson until you get them right consistently.",
+      href: focusTopic ? `/topics/${focusTopic}` : "/topics",
+      cta: "Practise",
+    });
+  }
+  plan.push({
+    title: `Retest with a ${focusSection ?? "full"} PYQ section`,
+    desc: focusSection && m.sections[focusSection].latestScore !== null
+      ? `Your latest ${focusSection} PYQ score is ${m.sections[focusSection].latestScore}/${m.sections[focusSection].maxScore}. Attempt a new slot to measure the change.`
+      : "Attempt a full timed PYQ section to measure your progress.",
+    href: "/browse#pyq-section",
+    cta: "Browse PYQs",
+  });
+
+  // ── Chart data ──────────────────────────────────────────────────────────────
+  const journeyData = pyqChrono.map((t) => ({
+    name: `${shortDate(t.submittedAt)} ${t.section ?? ""}`.trim(),
+    title: t.title,
+    Score: Math.round(t.percentage * 10) / 10,
+    Accuracy: t.accuracy,
+    Pace: t.secondsPerQuestion,
+  }));
+  const journeyUnit = journeyTab === "Pace" ? "s/question" : "%";
+  const bestPct = pyq.length ? Math.max(...pyq.map((t) => t.percentage)) : null;
+  const avgPct = pyq.length ? Math.round((pyq.reduce((s, t) => s + t.percentage, 0) / pyq.length) * 10) / 10 : null;
+  const firstVsLast = pyqChrono.length >= 2 ? Math.round((pyqChrono[pyqChrono.length - 1].percentage - pyqChrono[0].percentage) * 10) / 10 : null;
+
+  const trendsData = pyqChrono.map((t) => ({
+    name: shortDate(t.submittedAt),
+    title: t.title,
+    VARC: t.section === "VARC" ? t.score : null,
+    DILR: t.section === "DILR" ? t.score : null,
+    QA: t.section === "QA" ? t.score : null,
+  }));
+
+  const sectionBarData = SECTIONS.map((s) => ({
+    name: s,
+    accuracy: m.sections[s].accuracy,
+    pace: pyqPace(pyqBySection[s]),
+  }));
+  const withPace = sectionBarData.filter((d) => d.pace !== null) as { name: string; accuracy: number | null; pace: number }[];
+  const fastest = withPace.length > 1 ? [...withPace].sort((a, b) => a.pace - b.pace)[0] : null;
+
+  const totalMistakes = m.mistakes.length;
+  const pieData = mistakeBySection.filter((x) => x.count > 0);
+
+  return (
+    <div className={styles.pageWrapper}>
+      <Header />
 
       <section className={styles.heroSection}>
         <div className={styles.heroLeft}>
           <div className={styles.heroBadge}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
             </svg>
-            <span>AI PERFORMANCE INTELLIGENCE</span>
+            <span>PERFORMANCE ANALYSIS</span>
           </div>
-          <h1 className={styles.heroTitle}>Your CAT Performance,<br/><span>Explained.</span></h1>
-          <p className={styles.heroSubtitle}>AI analyzes your attempts, accuracy, speed and mistakes to identify exactly where you are losing marks.</p>
+          <h1 className={styles.heroTitle}>Your CAT Performance,<br /><span>Explained.</span></h1>
+          <p className={styles.heroSubtitle}>
+            Built from your recorded tests: scores, accuracy, pace and every wrong answer, so you can see exactly where you are losing marks.
+          </p>
           <div className={styles.heroActions}>
-            <Link 
-              href="#mistake-section" 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' }); 
-              }} 
-              className={styles.btnPrimary}
-            >
+            <a href="#mistake-section" onClick={(e) => { e.preventDefault(); document.getElementById("mistake-section")?.scrollIntoView({ behavior: "smooth" }); }} className={styles.btnPrimary}>
               View My Weaknesses &rarr;
-            </Link>
-            <Link 
-              href="#where-you-stand" 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' }); 
-              }} 
-              className={styles.btnSecondary}
-            >
+            </a>
+            <a href="#where-you-stand" onClick={(e) => { e.preventDefault(); document.getElementById("where-you-stand")?.scrollIntoView({ behavior: "smooth" }); }} className={styles.btnSecondary}>
               Explore Full Analysis
-            </Link>
+            </a>
           </div>
         </div>
-        
+
         <div className={styles.heroRight}>
           <div className={styles.mainRing}>
             <svg viewBox="0 0 250 250">
@@ -304,128 +352,83 @@ export default function AiAnalysisPage() {
                 </linearGradient>
               </defs>
               <circle className={styles.ringCircle} cx="125" cy="125" r="110" />
-              <circle className={styles.ringProgress} cx="125" cy="125" r="110" style={{strokeDashoffset: 700 - (700 * d.overview.latestScore) / 100}} />
+              {latest && <circle className={styles.ringProgress} cx="125" cy="125" r="110" style={{ strokeDashoffset: 700 - (700 * ringPct) / 100 }} />}
             </svg>
-            <div className={styles.ringLbl}>Overall Performance</div>
-            <div className={styles.ringVal}>{d.overview.latestScore}%</div>
-            <div className={styles.ringStatus}>Good Progress</div>
-            <div className={styles.ringTrend}>↑ 8% vs last 3 mocks</div>
+            <div className={styles.ringLbl}>Latest PYQ Section</div>
+            {latest ? (
+              <>
+                <div className={styles.ringVal} style={{ fontSize: 48 }}>{latest.score}<span style={{ fontSize: 18, color: "#64748B" }}>/{latest.maxScore}</span></div>
+                <div className={styles.ringStatus} style={{ color: "#475569", textAlign: "center", padding: "0 18px" }}>{latest.title}</div>
+                <div className={styles.ringTrend} style={{ background: "#E0F2FE", color: "#0369A1" }}>{shortDate(latest.submittedAt)}</div>
+              </>
+            ) : (
+              <div className={styles.ringStatus} style={{ color: "#64748B", textAlign: "center", padding: "0 24px" }}>No PYQ section attempted yet</div>
+            )}
           </div>
-          
+
           <div className={styles.heroMetrics}>
-            {/* Card 1: Estimated Percentile */}
-            <div
-              className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => {
-                document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  document.getElementById('where-you-stand')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="View Sectional Standing & Percentile Analysis"
-            >
+            <div className={styles.hmRow} title={m.percentile.disclaimer}>
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#F5F3FF', color: '#7C3AED' }}>
+                  <span className={styles.hmIcon} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                      <polyline points="17 6 23 6 23 12" />
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
                     </svg>
                   </span>
-                  Estimated Percentile
+                  {percentileLabel}
                   <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
                 </span>
-                <span className={styles.hmVal} style={{ color: '#6D28D9' }}>94.8%ile</span>
+                <span className={styles.hmVal} style={{ color: "#6D28D9" }}>{shownPercentile !== null ? fmtPercentile(shownPercentile) : "–"}</span>
               </div>
               <div className={styles.hmBar}>
-                <div className={styles.hmFill} style={{ width: `94.8%`, background: 'linear-gradient(90deg, #8B5CF6, #6366F1)' }}></div>
+                <div className={styles.hmFill} style={{ width: `${shownPercentile ?? 0}%`, background: "linear-gradient(90deg, #8B5CF6, #6366F1)" }}></div>
               </div>
               <div className={styles.hmSubtext}>
-                <span>Target: 99.0%ile</span>
-                <span style={{ color: '#10B981', fontWeight: 700 }}>Top 5.2% Band</span>
+                <span className={styles.disclaimerText}>
+                  {shownPercentile === null ? "Attempt a full PYQ section to see an estimate. " : overallPercentile === null ? `${m.percentile.basis} ` : ""}
+                  {m.percentile.disclaimer}
+                </span>
               </div>
             </div>
 
-            {/* Card 2: Recoverable Marks */}
-            <div
-              className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => {
-                document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  document.getElementById('mistake-section')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="View Recoverable Marks & Mistakes Breakdown"
-            >
+            <div className={styles.hmRow}>
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#FEF3C7', color: '#D97706' }}>
+                  <span className={styles.hmIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M9 18h6" />
-                      <path d="M10 22h4" />
-                      <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+                      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
                     </svg>
                   </span>
-                  Recoverable Marks
-                  <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
+                  Accuracy (timed tests)
                 </span>
-                <span className={styles.hmVal} style={{ color: '#D97706' }}>+18 Pts</span>
+                <span className={styles.hmVal} style={{ color: "#1D4ED8" }}>{fmtPct(m.accuracy.overall)}</span>
               </div>
               <div className={styles.hmBar}>
-                <div className={styles.hmFill} style={{ width: `72%`, background: 'linear-gradient(90deg, #F59E0B, #10B981)' }}></div>
+                <div className={styles.hmFill} style={{ width: `${m.accuracy.overall ?? 0}%`, background: "linear-gradient(90deg, #0EA5E9, #2563EB)" }}></div>
               </div>
               <div className={styles.hmSubtext}>
-                <span>Careless errors &amp; traps</span>
-                <span style={{ color: '#2563EB', fontWeight: 700 }}>+8 QA / +6 DILR</span>
+                <span>{m.accuracy.overall === null ? "Needs at least 5 answers in timed tests" : `${m.accuracy.correct} of ${m.accuracy.attempted} correct`}</span>
               </div>
             </div>
 
-            {/* Card 3: Primary Focus Area */}
-            <div
-              className={`${styles.hmRow} ${styles.hmRowClickable}`}
-              onClick={() => {
-                document.getElementById('action-plan')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  document.getElementById('action-plan')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="View Primary Focus Area & Next-Mock Action Plan"
-            >
+            <div className={styles.hmRow}>
               <div className={styles.hmTop}>
                 <span className={styles.hmLabel}>
-                  <span className={styles.hmIcon} style={{ background: '#EFF6FF', color: '#2563EB' }}>
+                  <span className={styles.hmIcon} style={{ background: "#FEF3C7", color: "#D97706" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                     </svg>
                   </span>
-                  Primary Focus Area
-                  <span className={styles.hmInfoIcon} aria-hidden="true">ⓘ</span>
+                  Pace per question
                 </span>
-                <span className={styles.hmVal} style={{ color: '#1D4ED8', fontSize: '15px' }}>QA &amp; DILR</span>
+                <span className={styles.hmVal} style={{ color: "#D97706" }}>{spq === null ? "–" : `${spq}s`}</span>
               </div>
               <div className={styles.hmBar}>
-                <div className={styles.hmFill} style={{ width: `85%`, background: 'linear-gradient(90deg, #0EA5E9, #2563EB)' }}></div>
+                <div className={styles.hmFill} style={{ width: `${m.speed.index ?? 0}%`, background: "linear-gradient(90deg, #F59E0B, #10B981)" }}></div>
               </div>
               <div className={styles.hmSubtext}>
-                <span>Highest ROI for next mock</span>
-                <span style={{ color: '#EF4444', fontWeight: 700 }}>Time Traps</span>
+                <span>CAT pace: about {bench}s per question</span>
+                {m.speed.index !== null && <span style={{ fontWeight: 700 }}>Pace index {m.speed.index}/100</span>}
               </div>
             </div>
           </div>
@@ -433,148 +436,67 @@ export default function AiAnalysisPage() {
       </section>
 
       <div className={styles.contentWrapper}>
-        
-        {/* AI DIAGNOSIS */}
+
+        {/* PERFORMANCE SUMMARY (deterministic, from the numbers below) */}
         <section className={styles.aiDiagnosisCard}>
           <div className={styles.aiRobot}>
-            <div style={{width: 80, height: 80, background: '#2563EB', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '24px', fontWeight: 'bold'}}>AI</div>
+            <div style={{ width: 80, height: 80, background: "#2563EB", borderRadius: "50%", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF" }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
           </div>
           <div className={styles.aiRight}>
             <div>
-              <div className={styles.aiTitle}>TechnoCAT AI Diagnosis</div>
-              <div className={styles.aiSubtitle}>Based on your last 5 mock attempts, here's what we found:</div>
+              <div className={styles.aiTitle}>Performance Summary</div>
+              <div className={styles.aiSubtitle}>
+                From {plural(m.tests.recent.length, "recorded test")}{pyq.length ? `, including ${plural(pyq.length, "PYQ section")}` : ""}.
+              </div>
             </div>
-            <div className={styles.aiMainInsight} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-              </svg>
-              <span>{d.diagnosis.pattern}</span>
+            <div className={styles.aiMainInsight}>
+              {weakestSection && strongestSection
+                ? `Your strongest section is ${strongestSection} (${fmtPct(m.sections[strongestSection].accuracy)} accuracy) and your weakest is ${weakestSection} (${fmtPct(m.sections[weakestSection].accuracy)}).`
+                : weakestSection
+                  ? `So far you have timed-test answers only in ${weakestSection} (${fmtPct(m.sections[weakestSection].accuracy)} accuracy). Attempt the other sections for a full comparison.`
+                  : "Attempt timed PYQ sections or module quizzes to compare your sections."}
             </div>
             <div className={styles.aiCols}>
               <div className={styles.aiCol}>
                 <div className={styles.aiColTitle}>
-                  <div className={`${styles.acIcon} ${styles.success}`}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                  <div className={styles.acIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
                   </div>
-                  <span>What You're Doing Well</span>
+                  <span>What You&apos;re Doing Well</span>
                 </div>
                 <ul className={styles.acList}>
-                  <li>Strong accuracy in VARC</li>
-                  <li>Good conceptual clarity in QA</li>
-                  <li>Consistent performance in recent mocks</li>
+                  {doingWell.length ? doingWell.slice(0, 4).map((t) => <li key={t}>{t}</li>) : <li>Keep attempting timed tests; strengths appear at 80%+ accuracy on a concept.</li>}
                 </ul>
               </div>
               <div className={styles.aiCol}>
                 <div className={styles.aiColTitle}>
-                  <div className={`${styles.acIcon} ${styles.warning}`}>
+                  <div className={styles.acIcon} style={{ background: "#FEF3C7", color: "#D97706" }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                      <line x1="12" y1="9" x2="12" y2="13" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                   </div>
-                  <span>What's Holding You Back</span>
+                  <span>What&apos;s Holding You Back</span>
                 </div>
                 <ul className={styles.acList}>
-                  <li>Slower solving speed in DILR sets</li>
-                  <li>Higher error rate in tricky QA questions</li>
-                  <li>Time management in final section</li>
+                  {holdingBack.length ? holdingBack.slice(0, 4).map((t) => <li key={t}>{t}</li>) : <li>No weak concepts or negative marks recorded yet.</li>}
                 </ul>
               </div>
               <div className={styles.aiCol}>
                 <div className={styles.aiColTitle}>
-                  <div className={`${styles.acIcon} ${styles.action}`}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
+                  <div className={styles.acIcon} style={{ background: "#DBEAFE", color: "#2563EB" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
                   </div>
                   <span>What Will Improve Your Score</span>
                 </div>
                 <ul className={styles.acList}>
-                  <li>Practice timed DILR sets</li>
-                  <li>Focus on high-weightage QA topics</li>
-                  <li>Improve question selection strategy</li>
+                  {plan.map((p) => <li key={p.title}>{p.title}</li>)}
                 </ul>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* PERFORMANCE DNA */}
-        <section>
-          <div className={styles.sectionTitleRow}>
-            <h2 className={styles.secTitle}>Your Performance DNA</h2>
-            <div className={styles.secSubtitle}>A complete profile of your CAT preparation</div>
-          </div>
-          <div className={styles.dnaGrid}>
-            {[
-              {l: 'Accuracy', key: 'accuracy' as const, v: d.dna.accuracy.value, s: 'Strong', c: '#2563EB', glow: 'rgba(37, 99, 235, 0.14)', ring: 'rgba(37, 99, 235, 0.12)', soft: '#EFF6FF', m: 'Maintain current level'},
-              {l: 'Speed', key: 'speed' as const, v: d.dna.speed.value, s: 'Needs Improvement', c: '#10B981', glow: 'rgba(16, 185, 129, 0.14)', ring: 'rgba(16, 185, 129, 0.12)', soft: '#F0FDF4', m: 'Focus on time management'},
-              {l: 'Consistency', key: 'consistency' as const, v: d.dna.consistency.value, s: 'Good', c: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.14)', ring: 'rgba(139, 92, 246, 0.12)', soft: '#F5F3FF', m: 'Keep up the momentum'},
-              {l: 'Concept Strength', key: 'conceptStrength' as const, v: d.dna.conceptStrength.value, s: 'Moderate', c: '#D946EF', glow: 'rgba(217, 70, 239, 0.14)', ring: 'rgba(217, 70, 239, 0.12)', soft: '#FDF4FF', m: 'Review weak topics'},
-              {l: 'Question Selection', key: 'questionSelection' as const, v: d.dna.questionSelection.value, s: 'Needs Work', c: '#0EA5E9', glow: 'rgba(14, 165, 233, 0.14)', ring: 'rgba(14, 165, 233, 0.12)', soft: '#F0F9FF', m: 'Avoid low-value questions'}
-            ].map((dna, i) => (
-              <div
-                key={i}
-                className={`${styles.dnaCard} ${styles.dnaCardClickable}`}
-                style={{
-                  '--dna-accent': dna.c,
-                  '--dna-glow': dna.glow,
-                  '--dna-ring': dna.ring,
-                  '--dna-soft': dna.soft,
-                } as React.CSSProperties}
-                onClick={() => setSelectedMetric(dna.key)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedMetric(dna.key); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Open ${dna.l} details`}
-              >
-                <div className={styles.dnaTopBorder} style={{background: dna.c}}></div>
-                <div className={styles.dnaHeader}>
-                  <div className={styles.dnaLbl}>
-                    <span style={{color: dna.c, display: 'inline-flex', alignItems: 'center'}}>
-                      {dna.key === 'accuracy' ? (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10" />
-                          <circle cx="12" cy="12" r="6" />
-                          <circle cx="12" cy="12" r="2" />
-                        </svg>
-                      ) : dna.key === 'speed' ? (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                        </svg>
-                      ) : dna.key === 'consistency' ? (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </svg>
-                      ) : dna.key === 'conceptStrength' ? (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        </svg>
-                      ) : (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="22" y1="12" x2="18" y2="12" />
-                          <line x1="6" y1="12" x2="2" y2="12" />
-                          <line x1="12" y1="6" x2="12" y2="2" />
-                          <line x1="12" y1="22" x2="12" y2="18" />
-                        </svg>
-                      )}
-                    </span>
-                    <span>{dna.l}</span>
-                  </div>
-                  <span className={styles.dnaInfoIcon} aria-hidden="true">ⓘ</span>
-                </div>
-                <div className={styles.dnaVal}>{dna.v}%</div>
-                <div className={styles.dnaStat} style={{color: dna.c}}>{dna.s}</div>
-                <div className={styles.dnaInsight}>{dna.m}</div>
-                <div className={styles.dnaBar}><div className={styles.dnaFill} style={{width: `${dna.v}%`, background: dna.c}}></div></div>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -583,394 +505,164 @@ export default function AiAnalysisPage() {
           <div className={styles.wysHeader}>
             <div>
               <h2 className={styles.secTitle}>Where You Stand</h2>
-              <div className={styles.secSubtitle}>Section-wise performance analysis from your mock attempts</div>
+              <div className={styles.secSubtitle}>Section-wise performance from your timed tests and PYQ sections</div>
             </div>
             <div className={styles.wysTabs}>
-              <div 
-                className={`${styles.wysTab} ${activeTab === 'Overview' ? styles.active : ''}`} 
-                onClick={() => setActiveTab('Overview')} 
-                style={{cursor: 'pointer'}}
-              >
-                Overview
-              </div>
-              <div 
-                className={`${styles.wysTab} ${activeTab === 'Detailed' ? styles.active : ''}`} 
-                onClick={() => setActiveTab('Detailed')} 
-                style={{cursor: 'pointer'}}
-              >
-                Detailed
-              </div>
-              <div 
-                className={`${styles.wysTab} ${activeTab === 'Trends' ? styles.active : ''}`} 
-                onClick={() => setActiveTab('Trends')} 
-                style={{cursor: 'pointer'}}
-              >
-                Trends
-              </div>
+              {(["Overview", "Concepts", "Trends"] as const).map((tab) => (
+                <div key={tab} className={`${styles.wysTab} ${activeTab === tab ? styles.active : ""}`} onClick={() => setActiveTab(tab)} style={{ cursor: "pointer" }} role="button" tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveTab(tab); } }}>
+                  {tab}
+                </div>
+              ))}
             </div>
           </div>
-          
-          {activeTab === 'Overview' && (
+
+          {activeTab === "Overview" && (
             <div className={styles.wysGrid}>
-              {/* VARC */}
-              <div className={styles.wysCard}>
-                <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                    <span>VARC</span>
-                  </div>
-                  <div className={`${styles.wcBadge} ${styles.statusSTRONG}`}>STRONG</div>
-                </div>
-                <div className={styles.wcMain}>
-                  <div className={styles.wcDonut}>
-                    <svg viewBox="0 0 100 100">
-                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#0EA5E9', strokeDashoffset: 250 - (250*82)/100}} />
-                    </svg>
-                    <div className={styles.wcDonutText}>
-                      <div className={styles.wcDonutVal}>82%</div>
-                      <div className={styles.wcDonutLbl}>Accuracy</div>
+              {SECTIONS.map((s) => {
+                const sec = m.sections[s];
+                const badge = accuracyBadge(sec.accuracy);
+                const spark = [...pyqBySection[s]].reverse().map((t) => ({ name: shortDate(t.submittedAt), v: t.score }));
+                const secWeak = weak.find((c) => c.section === s);
+                const secStrong = strong.find((c) => c.section === s);
+                const color = SECTION_COLOR[s];
+                return (
+                  <div key={s} className={styles.wysCard}>
+                    <div className={styles.wcHeader}>
+                      <div className={styles.wcTitle}><span>{SECTION_LABEL[s]}</span></div>
+                      <div className={styles.wcBadge} style={{ background: badge.bg, color: badge.fg }}>{badge.label}</div>
                     </div>
-                  </div>
-                  <div className={styles.wcStats}>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>32 / 40</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>20 / 24</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>1.8 min</span></div>
-                  </div>
-                </div>
-                
-                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-                <div className={styles.wcSparkline}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                      <Line type="monotone" dataKey="v" name="Score" stroke="#0EA5E9" strokeWidth={2} dot={{r: 3, fill: '#0EA5E9'}} activeDot={{r: 5}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #0EA5E9', display: 'flex', alignItems: 'center', gap: '6px'}}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
-                  </svg>
-                  <span>Great performance in RC. Keep practicing para jumbles to improve consistency.</span>
-                </div>
-              </div>
+                    <div className={styles.wcMain}>
+                      <div className={styles.wcDonut}>
+                        <svg viewBox="0 0 100 100">
+                          <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
+                          {sec.accuracy !== null && <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{ stroke: color, strokeDashoffset: 250 - (250 * sec.accuracy) / 100 }} />}
+                        </svg>
+                        <div className={styles.wcDonutText}>
+                          <div className={styles.wcDonutVal}>{sec.accuracy === null ? "–" : `${Math.round(sec.accuracy)}%`}</div>
+                          <div className={styles.wcDonutLbl}>Accuracy</div>
+                        </div>
+                      </div>
+                      <div className={styles.wcStats}>
+                        <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Latest PYQ</span><span className={styles.wcStatVal}>{sec.latestScore === null ? "–" : `${sec.latestScore} / ${sec.maxScore}`}</span></div>
+                        <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Best PYQ</span><span className={styles.wcStatVal}>{sec.bestScore === null ? "–" : `${sec.bestScore} / ${sec.maxScore}`}</span></div>
+                        <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Answered</span><span className={styles.wcStatVal}>{sec.correct} / {sec.attempted} correct</span></div>
+                        <div className={styles.wcStatRow} title={m.percentile.disclaimer}><span className={styles.wcStatLbl}>Est. percentile</span><span className={styles.wcStatVal}>{sec.estimatedPercentile === null ? "–" : fmtPercentile(sec.estimatedPercentile)}</span></div>
+                      </div>
+                    </div>
 
-              {/* DILR */}
-              <div className={styles.wysCard}>
-                <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="3" y="3" width="7" height="7" />
-                      <rect x="14" y="3" width="7" height="7" />
-                      <rect x="14" y="14" width="7" height="7" />
-                      <rect x="3" y="14" width="7" height="7" />
-                    </svg>
-                    <span>DILR</span>
-                  </div>
-                  <div className={`${styles.wcBadge} ${styles.statusNEEDS}`}>NEEDS ATTENTION</div>
-                </div>
-                <div className={styles.wcMain}>
-                  <div className={styles.wcDonut}>
-                    <svg viewBox="0 0 100 100">
-                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#10B981', strokeDashoffset: 250 - (250*58)/100}} />
-                    </svg>
-                    <div className={styles.wcDonutText}>
-                      <div className={styles.wcDonutVal}>58%</div>
-                      <div className={styles.wcDonutLbl}>Accuracy</div>
+                    <div style={{ fontSize: "11px", fontWeight: 600, color: "#64748B", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>PYQ Scores ({sec.pyqAttempts})</div>
+                    <div className={styles.wcSparkline}>
+                      {spark.length >= 2 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={spark}>
+                            <Tooltip contentStyle={{ fontSize: "11px", padding: "4px 8px", borderRadius: "4px" }} />
+                            <Line type="monotone" dataKey="v" name="Score" stroke={color} strokeWidth={2} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className={styles.emptyNote}>{spark.length === 1 ? "One PYQ attempt so far; a trend needs two." : `No ${s} PYQ section attempted yet.`}</div>
+                      )}
+                    </div>
+                    <div className={styles.wcInsight} style={{ borderLeft: `3px solid ${color}` }}>
+                      <span>
+                        {secWeak
+                          ? `Weakest concept: ${secWeak.concept} (${secWeak.correct}/${secWeak.attempted} correct).`
+                          : secStrong
+                            ? `Strongest concept: ${secStrong.concept} (${secStrong.correct}/${secStrong.attempted} correct).`
+                            : sec.attempted === 0
+                              ? `Attempt a timed ${s} test to see your standing.`
+                              : "No concept below 60% accuracy in this section."}
+                      </span>
                     </div>
                   </div>
-                  <div className={styles.wcStats}>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>18 / 40</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>12 / 18</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>3.2 min</span></div>
-                  </div>
-                </div>
-                
-                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-                <div className={styles.wcSparkline}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                      <Line type="monotone" dataKey="v" name="Score" stroke="#10B981" strokeWidth={2} dot={{r: 3, fill: '#10B981'}} activeDot={{r: 5}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #10B981', display: 'flex', alignItems: 'center', gap: '6px'}}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9 18h6" />
-                    <path d="M10 22h4" />
-                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
-                  </svg>
-                  <span>You lose marks due to slower solving speed. Work on set selection and timed practice.</span>
-                </div>
-              </div>
-
-              {/* QA */}
-              <div className={styles.wysCard}>
-                <div className={styles.wcHeader}>
-                  <div className={styles.wcTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m14 8-4 8" />
-                      <path d="m10 8 4 8" />
-                    </svg>
-                    <span>QUANTITATIVE APTITUDE</span>
-                  </div>
-                  <div className={`${styles.wcBadge} ${styles.statusIMPROVING}`}>IMPROVING</div>
-                </div>
-                <div className={styles.wcMain}>
-                  <div className={styles.wcDonut}>
-                    <svg viewBox="0 0 100 100">
-                      <circle className={styles.wcDonutCircle} cx="50" cy="50" r="40" />
-                      <circle className={styles.wcDonutProgress} cx="50" cy="50" r="40" style={{stroke: '#8B5CF6', strokeDashoffset: 250 - (250*68)/100}} />
-                    </svg>
-                    <div className={styles.wcDonutText}>
-                      <div className={styles.wcDonutVal}>68%</div>
-                      <div className={styles.wcDonutLbl}>Accuracy</div>
-                    </div>
-                  </div>
-                  <div className={styles.wcStats}>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Score</span><span className={styles.wcStatVal}>27 / 40</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Attempted</span><span className={styles.wcStatVal}>16 / 22</span></div>
-                    <div className={styles.wcStatRow}><span className={styles.wcStatLbl}>Avg. Time</span><span className={styles.wcStatVal}>2.4 min</span></div>
-                  </div>
-                </div>
-                
-                <div style={{fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Recent Scores Trend</div>
-                <div className={styles.wcSparkline}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={[{name: 'Mock 1', v:20},{name: 'Mock 2', v:22},{name: 'Mock 3', v:28},{name: 'Mock 4', v:25},{name: 'Mock 5', v:32}]}>
-                      <Tooltip contentStyle={{fontSize: '11px', padding: '4px 8px', borderRadius: '4px'}} />
-                      <Line type="monotone" dataKey="v" name="Score" stroke="#8B5CF6" strokeWidth={2} dot={{r: 3, fill: '#8B5CF6'}} activeDot={{r: 5}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className={styles.wcInsight} style={{borderLeft: '3px solid #8B5CF6', display: 'flex', alignItems: 'center', gap: '6px'}}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                    <polyline points="17 6 23 6 23 12" />
-                  </svg>
-                  <span>Arithmetic is strong. Focus on algebra and geometry concepts.</span>
-                </div>
-              </div>
+                );
+              })}
             </div>
           )}
 
-          {activeTab === 'Detailed' && (
+          {activeTab === "Concepts" && (
             <div className={styles.detailedGrid}>
-              {/* Detailed VARC Card */}
-              <div className={styles.detailedCard}>
-                <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                    <span>VARC Topics</span>
+              {SECTIONS.map((s) => {
+                const list = [...weak, ...strong].filter((c) => c.section === s).sort((a, b) => a.accuracy - b.accuracy);
+                return (
+                  <div key={s} className={styles.detailedCard}>
+                    <div className={styles.detailedSecHeader}>
+                      <div className={styles.detailedSecTitle}><span>{s} Concepts</span></div>
+                      {m.sections[s].accuracy !== null && <span className={`${styles.topicBadge} ${conceptBadgeClass(m.sections[s].accuracy as number)}`}>{fmtPct(m.sections[s].accuracy)}</span>}
+                    </div>
+                    <div className={styles.topicsList}>
+                      {list.length === 0 ? (
+                        <div className={styles.emptyNote}>No concept is below 60% or at 80%+ yet. Concepts appear after 3+ answers.</div>
+                      ) : list.map((c) => {
+                        const topicId = topicIdForLesson(c.lessonId);
+                        return (
+                          <div key={`${c.concept}-${s}`} className={styles.topicItem}>
+                            <div className={styles.topicHeader}>
+                              {topicId ? <Link href={`/topics/${topicId}`} style={{ color: "inherit" }}>{c.concept}</Link> : <span>{c.concept}</span>}
+                              <span className={`${styles.topicBadge} ${conceptBadgeClass(c.accuracy)}`}>{c.accuracy >= 80 ? "Strong" : "Weak"}</span>
+                            </div>
+                            <div className={styles.topicStats}>
+                              <span>Accuracy: <strong>{Math.round(c.accuracy)}%</strong></span>
+                              <span>{c.correct} / {c.attempted} correct</span>
+                            </div>
+                            <div className={styles.topicBar}>
+                              <div className={styles.topicFill} style={{ width: `${c.accuracy}%`, background: conceptBarColor(c.accuracy) }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <span className={`${styles.topicBadge} ${styles.badgeStrong}`}>STRONG (82%)</span>
-                </div>
-                <div className={styles.topicsList}>
-                  {(d.topics?.VARC?.length ? d.topics.VARC : [
-                    { name: "Reading Comprehension", status: "Strong", accuracy: 85, attempts: 16, avgTime: "1m 45s" },
-                    { name: "Para Jumbles", status: "Needs Practice", accuracy: 40, attempts: 4, avgTime: "2m 10s" },
-                    { name: "Summary & Completion", status: "Good", accuracy: 75, attempts: 6, avgTime: "1m 55s" },
-                    { name: "Odd Sentence Out", status: "Moderate", accuracy: 65, attempts: 4, avgTime: "1m 30s" }
-                  ]).map((t: any, i: number) => {
-                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
-                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
-                    return (
-                      <div key={i} className={styles.topicItem}>
-                        <div className={styles.topicHeader}>
-                          <span>{t.name}</span>
-                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
-                        </div>
-                        <div className={styles.topicStats}>
-                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
-                          <span>{t.attempts} attempts &bull; {t.avgTime || '2m'}</span>
-                        </div>
-                        <div className={styles.topicBar}>
-                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Detailed DILR Card */}
-              <div className={styles.detailedCard}>
-                <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="3" y="3" width="7" height="7" />
-                      <rect x="14" y="3" width="7" height="7" />
-                      <rect x="14" y="14" width="7" height="7" />
-                      <rect x="3" y="14" width="7" height="7" />
-                    </svg>
-                    <span>DILR Topics</span>
-                  </div>
-                  <span className={`${styles.topicBadge} ${styles.badgeNeeds}`}>NEEDS ATTENTION (58%)</span>
-                </div>
-                <div className={styles.topicsList}>
-                  {(d.topics?.DILR?.length ? d.topics.DILR : [
-                    { name: "Arrangements & Matrix", status: "Good", accuracy: 75, attempts: 6, avgTime: "6m 20s" },
-                    { name: "Games & Tournaments", status: "Critical", accuracy: 25, attempts: 4, avgTime: "8m 15s" },
-                    { name: "Charts & Tables DI", status: "Moderate", accuracy: 60, attempts: 5, avgTime: "5m 45s" },
-                    { name: "Quant Based LR", status: "Needs Practice", accuracy: 50, attempts: 3, avgTime: "7m 10s" }
-                  ]).map((t: any, i: number) => {
-                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
-                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
-                    return (
-                      <div key={i} className={styles.topicItem}>
-                        <div className={styles.topicHeader}>
-                          <span>{t.name}</span>
-                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
-                        </div>
-                        <div className={styles.topicStats}>
-                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
-                          <span>{t.attempts} attempts &bull; {t.avgTime || '6m'}</span>
-                        </div>
-                        <div className={styles.topicBar}>
-                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Detailed QA Card */}
-              <div className={styles.detailedCard}>
-                <div className={styles.detailedSecHeader}>
-                  <div className={styles.detailedSecTitle} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m14 8-4 8" />
-                      <path d="m10 8 4 8" />
-                    </svg>
-                    <span>QA Topics</span>
-                  </div>
-                  <span className={`${styles.topicBadge} ${styles.badgeModerate}`}>IMPROVING (68%)</span>
-                </div>
-                <div className={styles.topicsList}>
-                  {(d.topics?.QA?.length ? d.topics.QA : [
-                    { name: "Arithmetic", status: "Strong", accuracy: 90, attempts: 12, avgTime: "1m 30s" },
-                    { name: "Algebra", status: "Critical", accuracy: 30, attempts: 6, avgTime: "3m 40s" },
-                    { name: "Geometry & Mensuration", status: "Moderate", accuracy: 65, attempts: 5, avgTime: "2m 15s" },
-                    { name: "Number System & P&C", status: "Needs Practice", accuracy: 50, attempts: 4, avgTime: "2m 50s" }
-                  ]).map((t: any, i: number) => {
-                    const badgeClass = t.accuracy >= 75 ? styles.badgeStrong : t.accuracy >= 60 ? styles.badgeModerate : t.accuracy >= 45 ? styles.badgeNeeds : styles.badgeWeak;
-                    const barColor = t.accuracy >= 75 ? '#10B981' : t.accuracy >= 60 ? '#2563EB' : t.accuracy >= 45 ? '#F59E0B' : '#EF4444';
-                    return (
-                      <div key={i} className={styles.topicItem}>
-                        <div className={styles.topicHeader}>
-                          <span>{t.name}</span>
-                          <span className={`${styles.topicBadge} ${badgeClass}`}>{t.status || (t.accuracy >= 75 ? 'Strong' : t.accuracy >= 60 ? 'Moderate' : 'Needs Practice')}</span>
-                        </div>
-                        <div className={styles.topicStats}>
-                          <span>Accuracy: <strong>{t.accuracy}%</strong></span>
-                          <span>{t.attempts} attempts &bull; {t.avgTime || '2m'}</span>
-                        </div>
-                        <div className={styles.topicBar}>
-                          <div className={styles.topicFill} style={{width: `${t.accuracy}%`, background: barColor}} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                );
+              })}
             </div>
           )}
 
-          {activeTab === 'Trends' && (
+          {activeTab === "Trends" && (
             <div className={styles.trendsContainer}>
-              <div className={styles.trendsStatsRow}>
-                <div className={styles.trendStatPill}>
-                  <span className={styles.trendStatLbl}>Latest Score</span>
-                  <span className={styles.trendStatVal}>{d.overview?.latestScore || 77} / 198</span>
-                  <span className={styles.trendStatDelta}>↑ +14 pts from Mock 1</span>
-                </div>
-                <div className={styles.trendStatPill}>
-                  <span className={styles.trendStatLbl}>Accuracy Trend</span>
-                  <span className={styles.trendStatVal}>{d.dna?.accuracy?.value || 78}%</span>
-                  <span className={styles.trendStatDelta}>↑ +8.5% improvement</span>
-                </div>
-                <div className={styles.trendStatPill}>
-                  <span className={styles.trendStatLbl}>Avg. Question Speed</span>
-                  <span className={styles.trendStatVal}>2m 04s</span>
-                  <span className={styles.trendStatDelta} style={{color: '#2563EB', display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                    </svg>
-                    <span>18s faster per question</span>
-                  </span>
-                </div>
-                <div className={styles.trendStatPill}>
-                  <span className={styles.trendStatLbl}>Consistency Index</span>
-                  <span className={styles.trendStatVal}>{d.dna?.consistency?.value || 72}%</span>
-                  <span className={styles.trendStatDelta} style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    <span>Low variance in VARC/QA</span>
-                  </span>
-                </div>
-              </div>
-
               <div className={styles.trendsCard}>
                 <div className={styles.trendsHeader}>
                   <div>
-                    <div className={styles.trendsTitle}>Sectional Score Progression (Mock 1 to Mock 5)</div>
-                    <div style={{fontSize: '13px', color: '#64748B', marginTop: '4px'}}>Comparing section-by-section score trajectory across your mock exam timeline</div>
+                    <div className={styles.trendsTitle}>PYQ Section Scores Over Time</div>
+                    <div style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Each point is one PYQ section attempt (CAT marking)</div>
                   </div>
                 </div>
-
-                <div style={{width: '100%', height: 320}}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={[
-                        { name: 'Mock 1', VARC: 22, DILR: 12, QA: 16, Overall: 50 },
-                        { name: 'Mock 2', VARC: 25, DILR: 14, QA: 18, Overall: 57 },
-                        { name: 'Mock 3', VARC: 27, DILR: 16, QA: 22, Overall: 65 },
-                        { name: 'Mock 4', VARC: 29, DILR: 15, QA: 25, Overall: 69 },
-                        { name: 'Mock 5', VARC: 32, DILR: 18, QA: 27, Overall: 77 },
-                      ]} 
-                      margin={{top: 15, right: 25, left: -10, bottom: 5}}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                      <XAxis dataKey="name" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} dy={8} />
-                      <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{background: '#FFF', borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', fontSize: '12px'}} />
-                      <Legend wrapperStyle={{fontSize: '12px', fontWeight: 600, paddingTop: '10px'}} />
-                      <Line type="monotone" dataKey="Overall" name="Overall Score" stroke="#2563EB" strokeWidth={3} dot={{r: 4, fill: '#2563EB'}} activeDot={{r: 6}} />
-                      <Line type="monotone" dataKey="VARC" name="VARC" stroke="#0EA5E9" strokeWidth={2} dot={{r: 3, fill: '#0EA5E9'}} />
-                      <Line type="monotone" dataKey="QA" name="QA" stroke="#8B5CF6" strokeWidth={2} dot={{r: 3, fill: '#8B5CF6'}} />
-                      <Line type="monotone" dataKey="DILR" name="DILR" stroke="#10B981" strokeWidth={2} dot={{r: 3, fill: '#10B981'}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {trendsData.length === 0 ? (
+                  <div className={styles.metricEmptyState}>Attempt a PYQ section to start your score trend.</div>
+                ) : (
+                  <div style={{ width: "100%", height: 320 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trendsData} margin={{ top: 15, right: 25, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                        <XAxis dataKey="name" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} dy={8} />
+                        <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ background: "#FFF", borderRadius: "10px", border: "1px solid #E2E8F0", fontSize: "12px" }} />
+                        <Legend wrapperStyle={{ fontSize: "12px", fontWeight: 600, paddingTop: "10px" }} />
+                        {SECTIONS.map((s) => (
+                          <Line key={s} type="monotone" dataKey={s} name={s} stroke={SECTION_COLOR[s]} strokeWidth={2} dot={{ r: 4, fill: SECTION_COLOR[s] }} connectNulls />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </section>
 
-        {/* JOURNEY & MAP */}
+        {/* JOURNEY & SECTION COMPARISON */}
         <section className={styles.dualGrid}>
           <div className={styles.graphCard}>
             <div className={styles.gcHeader}>
               <div>
-                <div className={styles.gcTitle}>Your Performance Journey</div>
-                <div className={styles.gcSubtitle}>Track your progress across mock attempts</div>
+                <div className={styles.gcTitle}>Your PYQ Score Trend</div>
+                <div className={styles.gcSubtitle}>Score as % of section maximum, oldest to newest</div>
               </div>
               <div className={styles.wysTabs}>
-                {['Score', 'Accuracy', 'Speed'].map(tab => (
-                  <div key={tab} className={`${styles.wysTab} ${journeyTab === tab ? styles.active : ''}`} onClick={() => setJourneyTab(tab)}>
+                {(["Score", "Accuracy", "Pace"] as const).map((tab) => (
+                  <div key={tab} className={`${styles.wysTab} ${journeyTab === tab ? styles.active : ""}`} onClick={() => setJourneyTab(tab)} role="button" tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setJourneyTab(tab); } }}>
                     {tab}
                   </div>
                 ))}
@@ -978,25 +670,38 @@ export default function AiAnalysisPage() {
             </div>
             <div className={styles.gcBody}>
               <div className={styles.chartArea}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={d.trend} margin={{top:10, right:10, left:-20, bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} dy={10} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} dx={-10} />
-                    <Tooltip content={<CustomLineTooltip />} cursor={{stroke: '#E2E8F0', strokeWidth: 1}} />
-                    <Line type="monotone" dataKey={journeyTab.toLowerCase()} stroke="#3B82F6" strokeWidth={3} dot={{r: 4, fill: '#3B82F6'}} activeDot={{r: 6}} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {journeyData.length === 0 ? (
+                  <div className={styles.metricEmptyState}>Attempt a full PYQ section to see your score trend.</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={journeyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                      <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} dy={10} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} dx={-10} />
+                      <Tooltip
+                        formatter={(value) => [`${value} ${journeyUnit}`, journeyTab]}
+                        labelFormatter={(_label, payload) => (payload && payload[0] ? (payload[0].payload as { title: string }).title : "")}
+                        contentStyle={{ fontSize: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }}
+                      />
+                      <Line type="monotone" dataKey={journeyTab} stroke="#3B82F6" strokeWidth={3} dot={{ r: 4, fill: "#3B82F6" }} activeDot={{ r: 6 }} connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
               <div className={styles.chartStats}>
-                <div className={styles.csItem}><span className={styles.csLbl}>Total Mocks</span><span className={styles.csVal}>5</span></div>
-                <div className={styles.csItem}><span className={styles.csLbl}>Best Score</span><span className={styles.csVal}>78</span></div>
-                <div className={styles.csItem}><span className={styles.csLbl}>Avg. Score</span><span className={styles.csVal}>68</span></div>
-                <div className={styles.csInsight} style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
-                  </svg>
-                  <span>Your performance is showing a steady improvement. Keep going!</span>
+                <div className={styles.csItem}><span className={styles.csLbl}>PYQ Sections</span><span className={styles.csVal}>{pyq.length}</span></div>
+                <div className={styles.csItem}><span className={styles.csLbl}>Best</span><span className={styles.csVal}>{bestPct === null ? "–" : `${Math.round(bestPct)}%`}</span></div>
+                <div className={styles.csItem}><span className={styles.csLbl}>Average</span><span className={styles.csVal}>{avgPct === null ? "–" : `${Math.round(avgPct)}%`}</span></div>
+                <div className={styles.csInsight}>
+                  <span>
+                    {firstVsLast === null
+                      ? "Two or more PYQ attempts are needed to show a trend."
+                      : firstVsLast > 0
+                        ? `Your latest attempt is ${firstVsLast} points (of 100) higher than your first.`
+                        : firstVsLast < 0
+                          ? `Your latest attempt is ${Math.abs(firstVsLast)} points (of 100) lower than your first. Sections differ in difficulty, so compare like with like.`
+                          : "Your latest attempt matches your first."}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1005,37 +710,39 @@ export default function AiAnalysisPage() {
           <div className={styles.graphCard}>
             <div className={styles.gcHeader}>
               <div>
-                <div className={styles.gcTitle}>Speed vs Accuracy Analysis</div>
-                <div className={styles.gcSubtitle}>Understand your performance pattern</div>
+                <div className={styles.gcTitle}>Accuracy vs Pace by Section</div>
+                <div className={styles.gcSubtitle}>Accuracy from timed tests; pace from PYQ sections</div>
               </div>
-               
             </div>
-            <div className={styles.gcBody} style={{position: 'relative'}}>
-              <div className={styles.chartArea} style={{zIndex: 2, minWidth: 0}}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={barData} margin={{top:20, right:20, left:0, bottom:20}}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="left" stroke="#3B82F6" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#10B981" fontSize={11} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{fontSize: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'}} />
-                    <Legend wrapperStyle={{fontSize: '11px', fontWeight: 600, color: '#64748B'}} />
-                    <Bar yAxisId="left" dataKey="accuracy" name="Accuracy (%)" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                    <Line yAxisId="right" type="monotone" dataKey="time" name="Avg Time (mins)" stroke="#10B981" strokeWidth={3} dot={{r: 4, fill: '#10B981'}} activeDot={{r: 6}} />
-                  </ComposedChart>
-                </ResponsiveContainer>
+            <div className={styles.gcBody} style={{ position: "relative" }}>
+              <div className={styles.chartArea} style={{ zIndex: 2, minWidth: 0 }}>
+                {sectionBarData.every((d) => d.accuracy === null && d.pace === null) ? (
+                  <div className={styles.metricEmptyState}>Attempt timed tests to compare your sections.</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={sectionBarData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                      <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="left" stroke="#3B82F6" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10B981" fontSize={11} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ fontSize: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} />
+                      <Legend wrapperStyle={{ fontSize: "11px", fontWeight: 600, color: "#64748B" }} />
+                      <Bar yAxisId="left" dataKey="accuracy" name="Accuracy (%)" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      <Line yAxisId="right" type="monotone" dataKey="pace" name="Seconds / question" stroke="#10B981" strokeWidth={3} dot={{ r: 4, fill: "#10B981" }} connectNulls />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-              <div className={styles.chartStats} style={{width: '180px'}}>
-                <div style={{background: '#F8FAFC', borderRadius: '12px', padding: '16px', border: '1px solid #E2E8F0', height: '100%'}}>
-                  <div style={{fontSize: '11px', fontWeight: 700, color: '#3B82F6', background: '#EFF6FF', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '100px', marginBottom: '12px'}}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M9 18h6" />
-                      <path d="M10 22h4" />
-                      <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
-                    </svg>
-                    <span>Key Insight</span>
+              <div className={styles.chartStats} style={{ width: "180px" }}>
+                <div style={{ background: "#F8FAFC", borderRadius: "12px", padding: "16px", border: "1px solid #E2E8F0", height: "100%" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#3B82F6", background: "#EFF6FF", display: "inline-flex", padding: "4px 10px", borderRadius: "100px", marginBottom: "12px" }}>
+                    Key Numbers
                   </div>
-                  <div style={{fontSize: '13px', color: '#0F172A', fontWeight: 500, lineHeight: 1.5}}>You are strong in <strong>Fast + Accurate</strong> zone (VARC), but need improvement in <strong>Slow + Inaccurate</strong> zone (DILR).</div>
+                  <div style={{ fontSize: "13px", color: "#0F172A", fontWeight: 500, lineHeight: 1.5 }}>
+                    {strongestSection && <div>Most accurate: <strong>{strongestSection}</strong> ({fmtPct(m.sections[strongestSection].accuracy)})</div>}
+                    {fastest && <div>Fastest in PYQs: <strong>{fastest.name}</strong> ({fmtSecs(fastest.pace)}/q)</div>}
+                    <div>CAT pace: about <strong>{bench}s</strong>/q</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1044,1605 +751,136 @@ export default function AiAnalysisPage() {
 
         {/* LOWER ANALYTICS */}
         <section className={styles.lowerGrid} id="mistake-section">
-          {/* Mistake Intelligence */}
+          {/* Mistakes map */}
           <div className={styles.lcCard}>
-            <div className={styles.lcTitle}>Mistake Intelligence</div>
-            <div className={styles.lcSubtitle}>Based on your wrong and unanswered questions</div>
-            <div className={styles.mistakeViz}>
-              <div className={styles.mistakeDonut}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={mistakeData} cx="50%" cy="50%" innerRadius={45} outerRadius={60} paddingAngle={2} dataKey="value" stroke="none">
-                      {mistakeData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className={styles.mdText}>
-                  <div className={styles.mdVal}>42</div>
-                  <div className={styles.mdLbl}>Total Mistakes</div>
-                </div>
-              </div>
-              <div className={styles.mistakeList}>
-                <div style={{display: 'flex', fontSize: '10px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px'}}>
-                  <span style={{flex:1, marginLeft: '16px'}}>Category</span>
-                  <span style={{width: 30, textAlign: 'right', marginRight: '12px'}}>%</span>
-                  <span style={{width: 20, textAlign: 'right'}}>Count</span>
-                </div>
-                {mistakeData.map((m: any, i: number) => (
-                  <div key={i} className={styles.mlRow}>
-                    <div className={styles.mlDot} style={{background: m.color}}></div>
-                    <div className={styles.mlName}>{m.name}</div>
-                    <div className={styles.mlPct}>{m.value}%</div>
-                    <div className={styles.mlCount}>{Math.round(42 * (m.value/100))}</div>
-                  </div>
-                ))}
-              </div>
+            <div className={styles.lcTitle}>Mistakes Map</div>
+            <div className={styles.lcSubtitle}>
+              {totalMistakes > 0 ? `Your ${plural(totalMistakes, "most recent wrong answer")}, by section and concept` : "Wrong answers from your tests, by section and concept"}
             </div>
+            {totalMistakes === 0 ? (
+              <div className={styles.metricEmptyState}>No wrong answers recorded yet.</div>
+            ) : (
+              <>
+                <div className={styles.mistakeViz}>
+                  <div className={styles.mistakeDonut}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={60} paddingAngle={2} dataKey="count" nameKey="name" stroke="none">
+                          {pieData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.mdText}>
+                      <div className={styles.mdVal}>{totalMistakes}</div>
+                      <div className={styles.mdLbl}>Mistakes</div>
+                    </div>
+                  </div>
+                  <div className={styles.mistakeList}>
+                    <div style={{ display: "flex", fontSize: "10px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", marginBottom: "4px" }}>
+                      <span style={{ flex: 1, marginLeft: "16px" }}>Section</span>
+                      <span style={{ width: 30, textAlign: "right", marginRight: "12px" }}>%</span>
+                      <span style={{ width: 20, textAlign: "right" }}>Count</span>
+                    </div>
+                    {pieData.map((x) => (
+                      <div key={x.name} className={styles.mlRow}>
+                        <div className={styles.mlDot} style={{ background: x.color }}></div>
+                        <div className={styles.mlName}>{x.name}</div>
+                        <div className={styles.mlPct}>{Math.round((x.count / totalMistakes) * 100)}%</div>
+                        <div className={styles.mlCount}>{x.count}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {mistakeByConcept.length > 0 && (
+                  <div className={styles.topicsList} style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>Top concepts by mistakes</div>
+                    {mistakeByConcept.map((c) => (
+                      <div key={`${c.concept}-${c.section}`} className={styles.topicStats}>
+                        <span>{c.concept}{c.section ? ` (${c.section})` : ""}</span>
+                        <strong>{c.count}</strong>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
             <Link href="/intelligence/error-tracking" className={styles.lcBtn}>View All Mistakes &rarr;</Link>
           </div>
 
-          {/* Gain Marks */}
+          {/* Opportunities */}
           <div className={styles.lcCard}>
             <div className={styles.lcTitle}>Where Can You Gain Marks?</div>
-            <div className={styles.lcSubtitle}>Estimated opportunity based on your previous attempts</div>
+            <div className={styles.lcSubtitle}>Recorded losses you can recover</div>
             <div className={styles.oppList}>
-              {[
-                {
-                  key: 'carelessErrors' as const,
-                  c: '#D1FAE5',
-                  tc: '#059669',
-                  n: 'Reduce careless errors',
-                  m: `+${d?.opportunities?.[0]?.marks ?? 8} marks`
-                },
-                {
-                  key: 'dilrAccuracy' as const,
-                  c: '#FEF3C7',
-                  tc: '#D97706',
-                  n: 'Improve DILR accuracy',
-                  m: `+${d?.opportunities?.[1]?.marks ?? 6} marks`
-                },
-                {
-                  key: 'questionSelection' as const,
-                  c: '#F3E8FF',
-                  tc: '#7E22CE',
-                  n: 'Better question selection',
-                  m: `+${d?.opportunities?.[2]?.marks ?? 4} marks`
-                },
-                {
-                  key: 'qaSpeed' as const,
-                  c: '#E0F2FE',
-                  tc: '#0369A1',
-                  n: 'Increase QA speed',
-                  m: `+${d?.opportunities?.[3]?.marks ?? Math.max(3, Math.round(((d?.sections?.QA?.avgTimeSec ?? 160) - 120) / 13))} marks`
-                },
-              ].map((opp, i) => (
-                <div
-                  key={i}
-                  className={styles.oppRow}
-                  onClick={() => setSelectedOpportunity(opp.key)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setSelectedOpportunity(opp.key);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View details for ${opp.n} (${opp.m})`}
-                >
-                  <div className={styles.oppIcon} style={{background: opp.c, color: opp.tc, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                    {opp.key === 'carelessErrors' ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                    ) : opp.key === 'dilrAccuracy' ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="3" y="3" width="7" height="7" />
-                        <rect x="14" y="3" width="7" height="7" />
-                        <rect x="14" y="14" width="7" height="7" />
-                        <rect x="3" y="14" width="7" height="7" />
-                      </svg>
-                    ) : opp.key === 'questionSelection' ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                      </svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
-                    )}
+              {m.accuracy.negativeMarksLost > 0 && (
+                <Link href="/intelligence/error-tracking" className={styles.oppRow} style={{ textDecoration: "none" }}>
+                  <div className={styles.oppIcon} style={{ background: "#FEE2E2", color: "#B91C1C", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
                   </div>
-                  <div className={styles.oppName}>{opp.n}</div>
-                  <div className={styles.oppMarks}>{opp.m}</div>
+                  <div className={styles.oppName}>Negative marks lost to wrong MCQs in PYQs</div>
+                  <div className={styles.oppMarks} style={{ color: "#B91C1C" }}>&minus;{m.accuracy.negativeMarksLost}</div>
                   <div className={styles.oppArrow}>&gt;</div>
-                </div>
-              ))}
+                </Link>
+              )}
+              {weak.slice(0, 4).map((c) => {
+                const topicId = topicIdForLesson(c.lessonId);
+                return (
+                  <Link key={`${c.concept}-${c.section}`} href={topicId ? `/topics/${topicId}` : "/topics"} className={styles.oppRow} style={{ textDecoration: "none" }}>
+                    <div className={styles.oppIcon} style={{ background: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+                    </div>
+                    <div className={styles.oppName}>{c.concept}{c.section ? ` (${c.section})` : ""}</div>
+                    <div className={styles.oppMarks} style={{ color: "#D97706" }}>{c.correct}/{c.attempted}</div>
+                    <div className={styles.oppArrow}>&gt;</div>
+                  </Link>
+                );
+              })}
+              {spq !== null && spq > bench && (
+                <Link href="/browse#pyq-section" className={styles.oppRow} style={{ textDecoration: "none" }}>
+                  <div className={styles.oppIcon} style={{ background: "#E0F2FE", color: "#0369A1", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                  </div>
+                  <div className={styles.oppName}>Pace: {spq}s per question vs CAT pace {bench}s</div>
+                  <div className={styles.oppMarks} style={{ color: "#0369A1" }}>+{spq - bench}s</div>
+                  <div className={styles.oppArrow}>&gt;</div>
+                </Link>
+              )}
+              {m.accuracy.negativeMarksLost === 0 && weak.length === 0 && !(spq !== null && spq > bench) && (
+                <div className={styles.metricEmptyState}>No recorded losses yet. Attempt a full PYQ section to find your opportunities.</div>
+              )}
             </div>
           </div>
 
           {/* Action Plan */}
           <div className={styles.lcCard} id="action-plan">
             <div className={styles.lcTitle}>Your Next-Mock Action Plan</div>
-            <div className={styles.lcSubtitle}>Personalized steps to improve your performance</div>
+            <div className={styles.lcSubtitle}>Three steps built from your weakest area</div>
             <div className={styles.apList}>
-              <div className={styles.apRow}>
-                <div className={styles.apNum}>01</div>
-                <div className={styles.apContent}>
-                  <div className={styles.apName}>Review your last 5 Algebra mistakes</div>
-                  <div className={styles.apDesc}>Focus on concept clarity and formula application.</div>
+              {plan.map((p, i) => (
+                <div key={p.title} className={styles.apRow}>
+                  <div className={styles.apNum}>{String(i + 1).padStart(2, "0")}</div>
+                  <div className={styles.apContent}>
+                    <div className={styles.apName}>{p.title}</div>
+                    <div className={styles.apDesc}>{p.desc}</div>
+                    <Link href={p.href} className={styles.lcBtn} style={{ marginTop: 6 }}>{p.cta} &rarr;</Link>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.apRow}>
-                <div className={styles.apNum}>02</div>
-                <div className={styles.apContent}>
-                  <div className={styles.apName}>Practice 2 timed DILR sets</div>
-                  <div className={styles.apDesc}>Work on set selection and time management.</div>
-                </div>
-              </div>
-              <div className={styles.apRow}>
-                <div className={styles.apNum}>03</div>
-                <div className={styles.apContent}>
-                  <div className={styles.apName}>Attempt 15 QA questions</div>
-                  <div className={styles.apDesc}>Focus on arithmetic and number system.</div>
-                </div>
-              </div>
+              ))}
             </div>
-            <button 
-              type="button" 
-              onClick={() => setShowPlanModal(true)} 
-              className={styles.apBtn} 
-              style={{cursor: 'pointer', border: 'none', width: '100%'}}
-            >
-              Start My Improvement Plan &rarr;
-            </button>
+            <Link href={plan[0]?.href ?? "/browse#pyq-section"} className={styles.apBtn}>
+              Start Step 1 &rarr;
+            </Link>
           </div>
         </section>
 
         {/* FOOTER */}
         <div className={styles.footerBar}>
           <div className={styles.fbLeft}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '6px' }}>
-              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04" />
-              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04" />
-            </svg>
-            Analysis based on your completed mock attempts, question responses and timing data.
+            Analysis based on your recorded tests and graded answers. Updated {new Date(m.generatedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}.
           </div>
-          <div>ⓘ More mocks = more accurate insights.</div>
+          <div>More timed tests = a more reliable picture.</div>
         </div>
-
       </div>
-
-      {/* Action Plan Modal */}
-      {showPlanModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowPlanModal(false)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setShowPlanModal(false)} aria-label="Close modal">&times;</button>
-            
-            <div className={styles.modalBoxContent}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
-              <h3 style={{fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0}}>Your AI Improvement Plan</h3>
-            </div>
-            <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 16px 0', lineHeight: 1.5}}>
-              Complete these targeted actions before your next mock to maximize your score gain. Click checkboxes to track your preparation.
-            </p>
-
-            <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, color: '#475569'}}>
-              <span>Progress: {completedTasks.length} of 3 tasks completed</span>
-              <span>{Math.round((completedTasks.length / 3) * 100)}%</span>
-            </div>
-            <div className={styles.planProgressBar}>
-              <div className={styles.planProgressFill} style={{width: `${(completedTasks.length / 3) * 100}%`}}></div>
-            </div>
-
-            <div className={styles.planStepsList}>
-              {/* Step 1 */}
-              <div className={`${styles.planStepItem} ${completedTasks.includes(1) ? styles.planStepDone : ''}`}>
-                <div 
-                  className={`${styles.planStepCheck} ${completedTasks.includes(1) ? styles.planStepCheckDone : ''}`}
-                  onClick={() => toggleTask(1)}
-                  role="checkbox"
-                  aria-checked={completedTasks.includes(1)}
-                  tabIndex={0}
-                >
-                  {completedTasks.includes(1) ? (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : null}
-                </div>
-                <div className={styles.planStepContent}>
-                  <div className={styles.planStepTitle}>1. Review your last 5 Algebra mistakes</div>
-                  <div className={styles.planStepDesc}>Analyze quadratic equations and progressions questions you missed in recent mocks to eliminate recurring errors.</div>
-                  <Link href="/intelligence/error-tracking" className={styles.planStepAction}>
-                    Open Error Tracker &rarr;
-                  </Link>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className={`${styles.planStepItem} ${completedTasks.includes(2) ? styles.planStepDone : ''}`}>
-                <div 
-                  className={`${styles.planStepCheck} ${completedTasks.includes(2) ? styles.planStepCheckDone : ''}`}
-                  onClick={() => toggleTask(2)}
-                  role="checkbox"
-                  aria-checked={completedTasks.includes(2)}
-                  tabIndex={0}
-                >
-                  {completedTasks.includes(2) ? (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : null}
-                </div>
-                <div className={styles.planStepContent}>
-                  <div className={styles.planStepTitle}>2. Practice 2 timed DILR sets</div>
-                  <div className={styles.planStepDesc}>Practice matrix arrangements and tournament sets with strict 12-minute caps to refine your set selection intuition.</div>
-                  <Link href="/browse#pyq-section" className={styles.planStepAction}>
-                    Solve DILR Sets in Archives &rarr;
-                  </Link>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className={`${styles.planStepItem} ${completedTasks.includes(3) ? styles.planStepDone : ''}`}>
-                <div 
-                  className={`${styles.planStepCheck} ${completedTasks.includes(3) ? styles.planStepCheckDone : ''}`}
-                  onClick={() => toggleTask(3)}
-                  role="checkbox"
-                  aria-checked={completedTasks.includes(3)}
-                  tabIndex={0}
-                >
-                  {completedTasks.includes(3) ? (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : null}
-                </div>
-                <div className={styles.planStepContent}>
-                  <div className={styles.planStepTitle}>3. Attempt 15 QA Arithmetic questions</div>
-                  <div className={styles.planStepDesc}>Focus on Percentages, Profit & Loss, and Ratios to convert your arithmetic speed into 100% accuracy.</div>
-                  <Link href="/topics" className={styles.planStepAction}>
-                    Practice QA Topics &rarr;
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {completedTasks.length === 3 ? (
-              <div className={styles.celebrationBox}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '6px' }}>
-                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                  <path d="M4 22h16" />
-                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34" />
-                  <path d="M18 4H6v7a6 6 0 0 0 12 0V4z" />
-                </svg>
-                All steps completed! You are in prime condition for your next CAT mock test.
-              </div>
-            ) : null}
-
-            <div style={{marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px'}}>
-              <button 
-                onClick={() => setShowPlanModal(false)}
-                style={{
-                  background: '#2563EB',
-                  color: '#FFF',
-                  padding: '10px 22px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                {completedTasks.length === 3 ? 'Done' : 'Save & Continue'}
-              </button>
-            </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Metric Detail Popup Modal (All 5 Performance DNA Cards) */}
-      {selectedMetric && (() => {
-        const hasMockHistory = Array.isArray(d?.trend) && d.trend.length > 0;
-
-        const varcAcc = d?.sections?.VARC?.accuracy ?? 82;
-        const dilrAcc = d?.sections?.DILR?.accuracy ?? 71;
-        const qaAcc = d?.sections?.QA?.accuracy ?? 76;
-
-        const speedComparisonData = [
-          {
-            section: "VARC",
-            label: d?.topics?.VARC?.[0]?.avgTime || "1m 45s",
-            seconds: parseTimeStr(d?.topics?.VARC?.[0]?.avgTime || "1m 45s") || 105,
-            color: "#10B981"
-          },
-          {
-            section: "DILR",
-            label: "2m 40s",
-            seconds: 160,
-            color: "#059669"
-          },
-          {
-            section: "QA",
-            label: "2m 10s",
-            seconds: 130,
-            color: "#34D399"
-          }
-        ];
-
-        const consistencyTrendData =
-          hasMockHistory && d.trend.length >= 2
-            ? d.trend.map((item: any, idx: number) => ({
-                name: item.name || `Mock ${idx + 1}`,
-                score: Number(item.score) || 0
-              }))
-            : hasMockHistory && d.trend.length === 1
-            ? [
-                { name: "Mock 1", score: Math.max(40, (Number(d.trend[0].score) || 72) - 10) },
-                { name: "Mock 2", score: Math.max(45, (Number(d.trend[0].score) || 72) - 6) },
-                { name: "Mock 3", score: Math.max(48, (Number(d.trend[0].score) || 72) - 3) },
-                { name: "Mock 4", score: Number(d.trend[0].score) || 72 }
-              ]
-            : [];
-
-        const allTopics: Array<{ name: string; section: string; status: string; accuracy: number }> = [
-          ...(d?.topics?.VARC || []).map((t: any) => ({ ...t, section: "VARC" })),
-          ...(d?.topics?.DILR || []).map((t: any) => ({ ...t, section: "DILR" })),
-          ...(d?.topics?.QA || []).map((t: any) => ({ ...t, section: "QA" }))
-        ];
-
-        const strongTopics = allTopics.filter((t) => t.accuracy >= 80);
-        const moderateTopics = allTopics.filter((t) => t.accuracy >= 55 && t.accuracy < 80);
-        const weakTopics = allTopics.filter((t) => t.accuracy < 55);
-
-        const wrongSelectionMistake = (d?.mistakesMap || []).find(
-          (m: any) => m.category === "Wrong Selection"
-        );
-        const lowValuePct = wrongSelectionMistake?.percent ?? 18;
-        const highValuePct = d?.dna?.questionSelection?.value ?? 55;
-        const mediumValuePct = Math.max(10, 100 - highValuePct - lowValuePct);
-
-        return (
-          <div
-            className={styles.metricModalOverlay}
-            onClick={() => setSelectedMetric(null)}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="metric-modal-title"
-          >
-            <div
-              className={styles.metricModalCard}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                className={styles.metricModalClose}
-                onClick={() => setSelectedMetric(null)}
-                aria-label="Close popup"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-
-              <div className={styles.metricModalScrollContent}>
-                {/* 1. ACCURACY POPUP (Blue Theme) */}
-                {selectedMetric === "accuracy" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                    </div>
-                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Accuracy Details
-                    </h3>
-                  </div>
-                  <p className={styles.metricModalDesc}>
-                    Your accuracy shows how many questions you answered correctly out of the total attempted.
-                  </p>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Performance DNA insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%)",
-                          borderColor: "#BFDBFE"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Current Accuracy</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#1D4ED8" }}>
-                            {d.dna?.accuracy?.value ?? 78}%
-                          </span>
-                        </div>
-                        <span className={styles.metricImprovementBadge}>
-                          ↑ +4% vs last 3 mocks
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Section-wise Accuracy</h4>
-                        <div className={styles.metricSecList}>
-                          {[
-                            { name: "VARC", val: varcAcc, color: "#2563EB" },
-                            { name: "DILR", val: dilrAcc, color: "#3B82F6" },
-                            { name: "QA", val: qaAcc, color: "#60A5FA" }
-                          ].map((sec) => (
-                            <div key={sec.name} className={styles.metricSecItem}>
-                              <div className={styles.metricSecRowTop}>
-                                <span>{sec.name}</span>
-                                <span className={styles.metricSecVal} style={{ color: "#2563EB" }}>
-                                  {sec.val}%
-                                </span>
-                              </div>
-                              <div className={styles.metricSecBar}>
-                                <div
-                                  className={styles.metricSecFill}
-                                  style={{ width: `${sec.val}%`, background: sec.color }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Key Insights</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#2563EB", background: "#F8FAFC" }}
-                        >
-                          <div>
-                            <strong>{d.dna?.accuracy?.interpretation || "Strong — maintain current level"}:</strong>{" "}
-                            {d.dna?.accuracy?.insight || "You rarely make careless errors when you know the concept."}
-                          </div>
-                          {d.diagnosis?.well && (
-                            <div style={{ color: "#475569", fontSize: "12.5px" }}>
-                              • {d.diagnosis.well}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Improvement Suggestions</h4>
-                        <ol className={styles.metricTipsList}>
-                          {[
-                            "Avoid blind guessing to reduce negative marking",
-                            "Focus on weak topics where mistakes are frequent",
-                            "Review incorrect questions after every mock",
-                            "Prioritize high-confidence questions first"
-                          ].map((tip, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipNum}
-                                style={{ background: "#DBEAFE", color: "#1D4ED8" }}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* 2. SPEED POPUP (Green Theme) */}
-              {selectedMetric === "speed" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#ECFDF5", color: "#059669" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
-                    </div>
-                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Speed Analysis
-                    </h3>
-                  </div>
-                  <p className={styles.metricModalDesc}>
-                    Speed indicates how quickly you attempt questions while maintaining accuracy.
-                  </p>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Performance DNA insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #ECFDF5 0%, #F8FAFC 100%)",
-                          borderColor: "#A7F3D0"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Current Speed</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#059669" }}>
-                            {d.dna?.speed?.value ?? 61}%
-                          </span>
-                        </div>
-                        <span className={styles.metricImprovementBadge}>
-                          ↑ +5% vs last 3 mocks
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Average Time Per Question</h4>
-                        <div className={styles.metricSecList}>
-                          {speedComparisonData.map((sec) => (
-                            <div key={sec.section} className={styles.metricSecItem}>
-                              <div className={styles.metricSecRowTop}>
-                                <span>{sec.section} time</span>
-                                <span className={styles.metricSecVal} style={{ color: "#059669" }}>
-                                  {sec.label}
-                                </span>
-                              </div>
-                              <div className={styles.metricSecBar}>
-                                <div
-                                  className={styles.metricSecFill}
-                                  style={{
-                                    width: `${Math.min(100, Math.round((sec.seconds / 200) * 100))}%`,
-                                    background: sec.color
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
-                        <ul className={styles.metricTipsList}>
-                          {[
-                            "Reduce time spent on difficult questions",
-                            "Practice timed sectional sets",
-                            "Improve calculation speed",
-                            "Learn when to skip and move on"
-                          ].map((tip, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipDot}
-                                style={{ background: "#10B981" }}
-                              />
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* 3. CONSISTENCY POPUP (Purple Theme) */}
-              {selectedMetric === "consistency" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#F5F3FF", color: "#8B5CF6" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      </svg>
-                    </div>
-                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Consistency Details
-                    </h3>
-                  </div>
-                  <p className={styles.metricModalDesc}>
-                    Consistency shows how stable your performance is across mocks.
-                  </p>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Performance DNA insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #F5F3FF 0%, #F8FAFC 100%)",
-                          borderColor: "#DDD6FE"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Current Consistency</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#7C3AED" }}>
-                            {d.dna?.consistency?.value ?? 72}%
-                          </span>
-                        </div>
-                        <span className={styles.metricImprovementBadge}>
-                          ↑ +6% vs last 3 mocks
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Performance Stability</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#8B5CF6", background: "#FAF5FF" }}
-                        >
-                          <div>
-                            <strong>{d.dna?.consistency?.interpretation || "Moderately stable"}:</strong>{" "}
-                            {d.dna?.consistency?.insight || "Your VARC scores vary depending on the passage genre."}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Mock-wise Score Trend</h4>
-                        <div className={styles.metricChartContainer}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                              data={consistencyTrendData}
-                              margin={{ top: 10, right: 16, left: -12, bottom: 4 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                              <XAxis
-                                dataKey="name"
-                                stroke="#64748B"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <YAxis
-                                stroke="#64748B"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: "#FFFFFF",
-                                  border: "1px solid #DDD6FE",
-                                  borderRadius: "10px",
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                  boxShadow: "0 8px 20px rgba(139, 92, 246, 0.12)"
-                                }}
-                                formatter={(val: any) => [`${val}`, "Score"]}
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="score"
-                                stroke="#8B5CF6"
-                                strokeWidth={3}
-                                dot={{ r: 4, fill: "#7C3AED", strokeWidth: 2, stroke: "#FFFFFF" }}
-                                activeDot={{ r: 6, fill: "#6D28D9" }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Consistency Tips</h4>
-                        <ul className={styles.metricTipsList}>
-                          {[
-                            "Maintain a regular mock schedule",
-                            "Review performance after every mock",
-                            "Track score fluctuations",
-                            "Focus on maintaining stable accuracy"
-                          ].map((tip, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipDot}
-                                style={{ background: "#8B5CF6" }}
-                              />
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* 4. CONCEPT STRENGTH POPUP (Pink/Purple Theme) */}
-              {selectedMetric === "conceptStrength" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#FDF4FF", color: "#D946EF" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
-                    </div>
-                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Concept Strength
-                    </h3>
-                  </div>
-                  <p className={styles.metricModalDesc}>
-                    Concept Strength measures your foundational mastery across core CAT topics in VARC, DILR, and QA.
-                  </p>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Performance DNA insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #FDF4FF 0%, #F8FAFC 100%)",
-                          borderColor: "#F5D0FE"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Overall Concept Strength</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#C026D3" }}>
-                            {d.dna?.conceptStrength?.value ?? 85}%
-                          </span>
-                        </div>
-                        <span
-                          className={styles.metricImprovementBadge}
-                          style={{ background: "#FDF4FF", color: "#A21CAF", borderColor: "#F0ABFC", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
-                          </svg>
-                          {d.dna?.conceptStrength?.interpretation || "Excellent foundation"}
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Topic-wise Strength</h4>
-                        <div className={styles.metricTopicTierGrid}>
-                          <div className={styles.metricTopicTierBox}>
-                            <div className={styles.metricTopicTierLabel} style={{ color: "#059669" }}>
-                              <span>●</span> Strong Topics
-                            </div>
-                            <div className={styles.metricTopicPillList}>
-                              {strongTopics.map((t) => (
-                                <div
-                                  key={t.name}
-                                  className={styles.metricTopicPill}
-                                  style={{ background: "#ECFDF5", color: "#065F46" }}
-                                >
-                                  <span>{t.name}</span>
-                                  <strong>{t.accuracy}%</strong>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className={styles.metricTopicTierBox}>
-                            <div className={styles.metricTopicTierLabel} style={{ color: "#2563EB" }}>
-                              <span>●</span> Moderate Topics
-                            </div>
-                            <div className={styles.metricTopicPillList}>
-                              {moderateTopics.map((t) => (
-                                <div
-                                  key={t.name}
-                                  className={styles.metricTopicPill}
-                                  style={{ background: "#EFF6FF", color: "#1E40AF" }}
-                                >
-                                  <span>{t.name}</span>
-                                  <strong>{t.accuracy}%</strong>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className={styles.metricTopicTierBox}>
-                            <div className={styles.metricTopicTierLabel} style={{ color: "#DC2626" }}>
-                              <span>●</span> Weak Topics
-                            </div>
-                            <div className={styles.metricTopicPillList}>
-                              {weakTopics.map((t) => (
-                                <div
-                                  key={t.name}
-                                  className={styles.metricTopicPill}
-                                  style={{ background: "#FEF2F2", color: "#991B1B" }}
-                                >
-                                  <span>{t.name}</span>
-                                  <strong>{t.accuracy}%</strong>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Recommended Topics to Revise</h4>
-                        <div className={styles.metricReviseChips}>
-                          {weakTopics.map((t) => (
-                            <span key={t.name} className={styles.metricReviseChip} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                                <line x1="7" y1="7" x2="7.01" y2="7" />
-                              </svg>
-                              {t.name} ({t.section})
-                            </span>
-                          ))}
-                          <span className={styles.metricReviseChip} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                              <line x1="7" y1="7" x2="7.01" y2="7" />
-                            </svg>
-                            Permutations &amp; Combinations (QA)
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Improvement Tips</h4>
-                        <ul className={styles.metricTipsList}>
-                          {[
-                            "Revise core formulas and conceptual shortcuts for weak QA topics",
-                            "Solve 15–20 untimed foundational questions before attempting timed sets",
-                            "Maintain a concept formula & logic notebook for recurring errors",
-                            "Pair strong topics (Arithmetic, RC) with targeted revision on Algebra"
-                          ].map((tip, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipDot}
-                                style={{ background: "#D946EF" }}
-                              />
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* 5. QUESTION SELECTION POPUP (Blue/Cyan Theme) */}
-              {selectedMetric === "questionSelection" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                    </div>
-                    <h3 id="metric-modal-title" className={styles.metricModalTitle}>
-                      Question Selection
-                    </h3>
-                  </div>
-                  <p className={styles.metricModalDesc}>
-                    Question Selection evaluates how effectively you identify and attempt high-reward questions while skipping time traps.
-                  </p>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock to unlock detailed Performance DNA insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #E0F2FE 0%, #F8FAFC 100%)",
-                          borderColor: "#BAE6FD"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Current Selection Score</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#0284C7" }}>
-                            {d.dna?.questionSelection?.value ?? 55}%
-                          </span>
-                        </div>
-                        <span
-                          className={styles.metricImprovementBadge}
-                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                          </svg>
-                          Efficiency: {d.dna?.questionSelection?.value ?? 55}%
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Question Selection Breakdown</h4>
-                        <div className={styles.metricValueGrid}>
-                          <div
-                            className={styles.metricValueCard}
-                            style={{ borderColor: "#A7F3D0", background: "#F0FDF4" }}
-                          >
-                            <span className={styles.metricValueCardTitle} style={{ color: "#059669" }}>
-                              High-Value Questions
-                            </span>
-                            <span className={styles.metricValueCardStat} style={{ color: "#065F46" }}>
-                              {highValuePct}%
-                            </span>
-                            <span className={styles.metricValueCardSub}>
-                              High-accuracy sitters solved within optimal time
-                            </span>
-                          </div>
-
-                          <div
-                            className={styles.metricValueCard}
-                            style={{ borderColor: "#BAE6FD", background: "#F0F9FF" }}
-                          >
-                            <span className={styles.metricValueCardTitle} style={{ color: "#0284C7" }}>
-                              Medium-Value Questions
-                            </span>
-                            <span className={styles.metricValueCardStat} style={{ color: "#0C4A6E" }}>
-                              {mediumValuePct}%
-                            </span>
-                            <span className={styles.metricValueCardSub}>
-                              Moderate difficulty sets requiring 2–3 mins
-                            </span>
-                          </div>
-
-                          <div
-                            className={styles.metricValueCard}
-                            style={{ borderColor: "#FECACA", background: "#FEF2F2" }}
-                          >
-                            <span className={styles.metricValueCardTitle} style={{ color: "#DC2626" }}>
-                              Low-Value Questions
-                            </span>
-                            <span className={styles.metricValueCardStat} style={{ color: "#991B1B" }}>
-                              {lowValuePct}%
-                            </span>
-                            <span className={styles.metricValueCardSub}>
-                              Time traps with &lt;30% historical accuracy
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Question Selection Efficiency &amp; Recommended Strategy</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#0EA5E9", background: "#F0F9FF" }}
-                        >
-                          <div>
-                            <strong>Efficiency Insight:</strong>{" "}
-                            {d.dna?.questionSelection?.insight ||
-                              "You often pick the hardest DILR set first, draining time."}
-                          </div>
-                          <div>
-                            <strong>Recommended Strategy:</strong>{" "}
-                            {d.diagnosis?.improveFastest ||
-                              "Target DILR set selection to avoid 10-minute traps."}{" "}
-                            Use a Two-Round Scanning approach—lock in familiar sitters first before attempting complex multi-step problems.
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve Question Selection</h4>
-                        <ul className={styles.metricTipsList}>
-                          {[
-                            "Scan all DILR sets for 3 minutes before committing to your first set",
-                            "Use a strict 90-second bailout rule on unfamiliar QA algebra problems",
-                            "Prioritize high-confidence sitters in Round 1 to secure sectional cutoffs",
-                            "Avoid ego-solving low-value trap questions with <30% success rate"
-                          ].map((tip, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipDot}
-                                style={{ background: "#0EA5E9" }}
-                              />
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Where Can You Gain Marks? — Opportunity Detail Popup Modal */}
-      {selectedOpportunity && (() => {
-        const hasMockHistory = Array.isArray(d?.trend) && d.trend.length > 0;
-
-        // 1. Reduce Careless Errors real metrics
-        const carelessGain = d?.opportunities?.[0]?.marks ?? 8;
-        const carelessMistakeObj = (d?.mistakesMap || []).find((m: any) => m.category === "Careless Mistake");
-        const calcMistakeObj = (d?.mistakesMap || []).find((m: any) => m.category === "Calculation Error");
-        const carelessPct = carelessMistakeObj?.percent ?? 15;
-        const calcPct = calcMistakeObj?.percent ?? 17;
-        const combinedCarelessPct = carelessPct + calcPct;
-        const carelessQuestionsCount = Math.max(2, Math.round(42 * (combinedCarelessPct / 100)));
-        const currentAccVal = d?.dna?.accuracy?.value ?? 78;
-        const accuracyImpactPct = Math.max(4, Math.round(combinedCarelessPct * 0.25));
-
-        // 2. Improve DILR Accuracy real metrics
-        const dilrGain = d?.opportunities?.[1]?.marks ?? 6;
-        const dilrAcc = d?.sections?.DILR?.accuracy ?? 75;
-        const dilrAttempted = d?.sections?.DILR?.attemptRate ?? 12;
-        const dilrSetsAttempted = Math.max(2, Math.round(dilrAttempted / 4));
-        const dilrCorrect = Math.round((dilrAttempted * dilrAcc) / 100);
-        const dilrIncorrect = Math.max(1, dilrAttempted - dilrCorrect);
-        const dilrAvgSetTime = d?.topics?.DILR?.[0]?.avgTime || "6m 20s";
-
-        // 3. Better Question Selection real metrics
-        const selectionGain = d?.opportunities?.[2]?.marks ?? 4;
-        const wrongSelObj = (d?.mistakesMap || []).find((m: any) => m.category === "Wrong Selection");
-        const lowValuePct = wrongSelObj?.percent ?? 18;
-        const selectionScore = d?.dna?.questionSelection?.value ?? 55;
-        const highValuePct = selectionScore;
-        const mediumValuePct = Math.max(10, 100 - highValuePct - lowValuePct);
-        const totalAttempted =
-          (d?.sections?.VARC?.attemptRate ?? 15) +
-          (d?.sections?.DILR?.attemptRate ?? 12) +
-          (d?.sections?.QA?.attemptRate ?? 21);
-        const totalSkipped = Math.max(0, 66 - totalAttempted);
-
-        // 4. Increase QA Speed real metrics
-        const qaSpeedGain =
-          d?.opportunities?.[3]?.marks ??
-          Math.max(3, Math.round(((d?.sections?.QA?.avgTimeSec ?? 160) - 120) / 13));
-        const qaAvgSec = d?.sections?.QA?.avgTimeSec ?? 160;
-        const qaAvgMin = Math.floor(qaAvgSec / 60);
-        const qaAvgRemSec = qaAvgSec % 60;
-        const qaAvgFormatted = `${qaAvgMin}m ${qaAvgRemSec}s`;
-        const qaTopics = d?.topics?.QA || [];
-        const slowestQaTopic =
-          qaTopics.find((t: any) => t.status === "Critical" || t.name === "Algebra") ||
-          qaTopics[1] || { name: "Algebra", avgTime: "3m 40s", accuracy: 30 };
-
-        return (
-          <div
-            className={styles.metricModalOverlay}
-            onClick={() => setSelectedOpportunity(null)}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="opp-modal-title"
-          >
-            <div
-              className={styles.metricModalCard}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                className={styles.metricModalClose}
-                onClick={() => setSelectedOpportunity(null)}
-                aria-label="Close popup"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-
-              <div className={styles.metricModalScrollContent}>
-                {/* POPUP 1 — REDUCE CARELESS ERRORS */}
-                {selectedOpportunity === "carelessErrors" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                    </div>
-                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
-                      Reduce Careless Errors
-                    </h3>
-                  </div>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #ECFDF5 0%, #F8FAFC 100%)",
-                          borderColor: "#A7F3D0",
-                          marginTop: "12px"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#059669" }}>
-                            +{carelessGain} marks
-                          </span>
-                        </div>
-                        <span className={styles.metricImprovementBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                          </svg>
-                          High-Impact Quick Win
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#059669", background: "#F0FDF4" }}
-                        >
-                          “You are losing marks from avoidable mistakes even when you understand the underlying concept.”
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
-                        <div className={styles.oppDataList}>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Careless mistakes from previous attempts</span>
-                            <span className={styles.oppDataVal} style={{ color: "#059669" }}>
-                              {combinedCarelessPct}% of total mistakes
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Questions affected</span>
-                            <span className={styles.oppDataVal}>
-                              {carelessQuestionsCount} questions ({carelessPct}% reading + {calcPct}% calculation)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Accuracy impact</span>
-                            <span className={styles.oppDataVal}>
-                              -{accuracyImpactPct}% drag (Can lift accuracy from {currentAccVal}% → {Math.min(96, currentAccVal + accuracyImpactPct)}%)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Recent trend</span>
-                            <span className={styles.oppDataVal}>
-                              {carelessMistakeObj?.insight || "Misreading 'except' or 'not' & final-step QA errors"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
-                        <ol className={styles.metricTipsList}>
-                          {[
-                            "Slow down during the final step of calculation.",
-                            "Recheck units, signs and values.",
-                            "Spend the final few seconds reviewing marked answers.",
-                            "Maintain an error log for repeated mistakes."
-                          ].map((step, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipNum}
-                                style={{ background: "#D1FAE5", color: "#059669" }}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-
-                      <div className={styles.oppModalCtaWrap}>
-                        <Link
-                          href="/intelligence/error-tracking"
-                          className={styles.oppModalCtaBtn}
-                          style={{ background: "linear-gradient(135deg, #059669 0%, #10B981 100%)" }}
-                        >
-                          Review My Mistakes &rarr;
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* POPUP 2 — IMPROVE DILR ACCURACY */}
-              {selectedOpportunity === "dilrAccuracy" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#FEF3C7", color: "#D97706" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                      </svg>
-                    </div>
-                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
-                      Improve DILR Accuracy
-                    </h3>
-                  </div>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #FFFBEB 0%, #F8FAFC 100%)",
-                          borderColor: "#FDE68A",
-                          marginTop: "12px"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#D97706" }}>
-                            +{dilrGain} marks
-                          </span>
-                        </div>
-                        <span
-                          className={styles.metricImprovementBadge}
-                          style={{ background: "#FEF3C7", color: "#B45309", borderColor: "#FDE68A", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <rect x="3" y="3" width="7" height="7" rx="1" />
-                            <rect x="14" y="3" width="7" height="7" rx="1" />
-                            <rect x="14" y="14" width="7" height="7" rx="1" />
-                            <rect x="3" y="14" width="7" height="7" rx="1" />
-                          </svg>
-                          Sectional Score Booster
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#D97706", background: "#FFFBEB" }}
-                        >
-                          “Improving accuracy in DILR sets can significantly increase your overall score.”
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
-                        <div className={styles.oppDataList}>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Current DILR accuracy</span>
-                            <span className={styles.oppDataVal} style={{ color: "#D97706" }}>
-                              {dilrAcc}%
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Attempted questions / sets</span>
-                            <span className={styles.oppDataVal}>
-                              {dilrAttempted} questions ({dilrSetsAttempted} sets attempted)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Correct vs incorrect</span>
-                            <span className={styles.oppDataVal}>
-                              {dilrCorrect} Correct vs {dilrIncorrect} Incorrect
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Average time per set</span>
-                            <span className={styles.oppDataVal}>
-                              {dilrAvgSetTime} (Arrangements) – {d?.topics?.DILR?.[1]?.avgTime || "8m 15s"} (Games)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
-                        <ol className={styles.metricTipsList}>
-                          {[
-                            "Practice set selection.",
-                            "Identify the easiest set first.",
-                            "Avoid spending too long on low-return sets.",
-                            "Review incorrect sets after every mock."
-                          ].map((step, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipNum}
-                                style={{ background: "#FEF3C7", color: "#B45309" }}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-
-                      <div className={styles.oppModalCtaWrap}>
-                        <Link
-                          href="/topics/dilr-data-interpretation"
-                          className={styles.oppModalCtaBtn}
-                          style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)" }}
-                        >
-                          Practice DILR &rarr;
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* POPUP 3 — BETTER QUESTION SELECTION */}
-              {selectedOpportunity === "questionSelection" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#F3E8FF", color: "#7E22CE" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                      </svg>
-                    </div>
-                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
-                      Better Question Selection
-                    </h3>
-                  </div>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #FAF5FF 0%, #F8FAFC 100%)",
-                          borderColor: "#E9D5FF",
-                          marginTop: "12px"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#7E22CE" }}>
-                            +{selectionGain} marks
-                          </span>
-                        </div>
-                        <span
-                          className={styles.metricImprovementBadge}
-                          style={{ background: "#F3E8FF", color: "#7E22CE", borderColor: "#D8B4FE", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                          </svg>
-                          Smart Attempt Strategy
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#7E22CE", background: "#FAF5FF" }}
-                        >
-                          “Choosing the right questions can improve your score without requiring you to solve more questions.”
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
-                        <div className={styles.oppDataList}>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>High-value questions</span>
-                            <span className={styles.oppDataVal} style={{ color: "#059669" }}>
-                              {highValuePct}% (High-confidence sitters)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Medium-value questions</span>
-                            <span className={styles.oppDataVal} style={{ color: "#2563EB" }}>
-                              {mediumValuePct}% (Moderate time investment)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Low-value questions</span>
-                            <span className={styles.oppDataVal} style={{ color: "#DC2626" }}>
-                              {lowValuePct}% (&lt;30% historical success rate traps)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Selection accuracy</span>
-                            <span className={styles.oppDataVal}>
-                              {selectionScore}% ({d?.dna?.questionSelection?.interpretation || "Needs Work"})
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Questions skipped vs attempted</span>
-                            <span className={styles.oppDataVal}>
-                              {totalSkipped} Skipped vs {totalAttempted} Attempted (of 66)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
-                        <ol className={styles.metricTipsList}>
-                          {[
-                            "Identify easy/high-confidence questions first.",
-                            "Avoid time-consuming questions early.",
-                            "Learn to recognize question patterns quickly.",
-                            "Practice timed selection drills."
-                          ].map((step, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipNum}
-                                style={{ background: "#F3E8FF", color: "#7E22CE" }}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-
-                      <div className={styles.oppModalCtaWrap}>
-                        <Link
-                          href="/browse#pyq-section"
-                          className={styles.oppModalCtaBtn}
-                          style={{ background: "linear-gradient(135deg, #7E22CE 0%, #9333EA 100%)" }}
-                        >
-                          Practice Question Selection &rarr;
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* POPUP 4 — INCREASE QA SPEED */}
-              {selectedOpportunity === "qaSpeed" && (
-                <>
-                  <div className={styles.metricModalHeader}>
-                    <div className={styles.metricModalIcon} style={{ background: "#E0F2FE", color: "#0369A1" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
-                    </div>
-                    <h3 id="opp-modal-title" className={styles.metricModalTitle}>
-                      Increase QA Speed
-                    </h3>
-                  </div>
-
-                  {!hasMockHistory ? (
-                    <div className={styles.metricEmptyState}>
-                      Complete a mock attempt to unlock detailed mark-gain analysis and personalized opportunity insights.
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={styles.metricHeroStatBox}
-                        style={{
-                          background: "linear-gradient(135deg, #F0F9FF 0%, #F8FAFC 100%)",
-                          borderColor: "#BAE6FD",
-                          marginTop: "12px"
-                        }}
-                      >
-                        <div className={styles.metricHeroStatLeft}>
-                          <span className={styles.metricHeroStatLabel}>Potential Gain</span>
-                          <span className={styles.metricHeroStatValue} style={{ color: "#0369A1" }}>
-                            +{qaSpeedGain} marks
-                          </span>
-                        </div>
-                        <span
-                          className={styles.metricImprovementBadge}
-                          style={{ background: "#E0F2FE", color: "#0369A1", borderColor: "#7DD3FC", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                          </svg>
-                          Attempt Rate Optimizer
-                        </span>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>Why This Matters</h4>
-                        <div
-                          className={styles.metricInsightCallout}
-                          style={{ borderLeftColor: "#0284C7", background: "#F0F9FF" }}
-                        >
-                          “Reducing the time spent on solvable QA questions can increase your overall attempt rate.”
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>What the Data Shows</h4>
-                        <div className={styles.oppDataList}>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Average QA time per question</span>
-                            <span className={styles.oppDataVal} style={{ color: "#0369A1" }}>
-                              {qaAvgFormatted}
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Current vs target time</span>
-                            <span className={styles.oppDataVal}>
-                              {qaAvgFormatted} (Current) vs 1m 45s (Target)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Slowest topic</span>
-                            <span className={styles.oppDataVal} style={{ color: "#DC2626" }}>
-                              {slowestQaTopic.name} ({slowestQaTopic.avgTime}/q, {slowestQaTopic.accuracy}% accuracy)
-                            </span>
-                          </div>
-                          <div className={styles.oppDataRow}>
-                            <span className={styles.oppDataLabel}>Recent speed trend</span>
-                            <span className={styles.oppDataVal}>
-                              {d?.diagnosis?.holdingBack || "Spending 3m+ on difficult QA algebra questions."}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.metricBlock}>
-                        <h4 className={styles.metricBlockTitle}>How to Improve</h4>
-                        <ol className={styles.metricTipsList}>
-                          {[
-                            "Practice timed QA sets.",
-                            "Improve calculation speed.",
-                            "Memorize useful formulas and shortcuts.",
-                            "Skip questions that exceed your time threshold."
-                          ].map((step, idx) => (
-                            <li key={idx} className={styles.metricTipItem}>
-                              <span
-                                className={styles.metricTipNum}
-                                style={{ background: "#E0F2FE", color: "#0369A1" }}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-
-                      <div className={styles.oppModalCtaWrap}>
-                        <Link
-                          href="/topics/qa-quantitative-ability"
-                          className={styles.oppModalCtaBtn}
-                          style={{ background: "linear-gradient(135deg, #0284C7 0%, #2563EB 100%)" }}
-                        >
-                          Practice Timed QA &rarr;
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }

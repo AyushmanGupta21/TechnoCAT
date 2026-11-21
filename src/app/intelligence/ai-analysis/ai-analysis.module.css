@@ -948,3 +948,7 @@
 
 
 
+
+/* Phase 3: honest small print and empty notes */
+.disclaimerText { font-size: 10.5px; line-height: 1.4; color: #94A3B8; font-weight: 500; }
+.emptyNote { font-size: 12px; color: #64748B; line-height: 1.5; padding: 10px 12px; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 10px; }

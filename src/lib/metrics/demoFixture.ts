@@ -145,7 +145,7 @@ export function buildDemoMetrics(): StudentMetrics {
     consistency: { activeDaysLast14: 12, score: consistency },
     streak: { current: 9, best: 21, activeToday: true },
     studyTime: { todaySeconds: daily[29].learningSeconds + daily[29].practiceSeconds, last7DaysSeconds: sum(daily.slice(-7)), totalSeconds: sum(daily) * 3, daily },
-    courses: { enrolled: 3, inProgress: 3, completed: 0, lessonsCompleted, syllabusLessons, topics },
+    courses: { enrolled: 3, inProgress: 3, completed: 0, lessonsCompleted, syllabusLessonsCompleted: lessonsCompleted, syllabusLessons, topics },
     points: {
       total: 1860,
       recent: [
@@ -177,11 +177,21 @@ export function buildDemoMetrics(): StudentMetrics {
         { concept: "Reading Comprehension", lessonId: "varc-2-1", section: "VARC", attempted: 41, correct: 35, accuracy: 85.4 },
         { concept: "Linear Arrangements", lessonId: "dilr-2-1", section: "DILR", attempted: 17, correct: 14, accuracy: 82.4 },
       ],
+      all: [
+        { concept: "Games & Tournaments", lessonId: "dilr-4-2", section: "DILR", attempted: 13, correct: 5, accuracy: 38.5 },
+        { concept: "Para Jumbles", lessonId: "varc-4-1", section: "VARC", attempted: 11, correct: 5, accuracy: 45.5 },
+        { concept: "Permutations & Combinations", lessonId: "qa-8-1", section: "QA", attempted: 9, correct: 5, accuracy: 55.6 },
+        { concept: "Time, Speed & Distance", lessonId: "qa-5-2", section: "QA", attempted: 14, correct: 9, accuracy: 64.3 },
+        { concept: "Venn Diagrams", lessonId: "dilr-3-1", section: "DILR", attempted: 8, correct: 6, accuracy: 75 },
+        { concept: "Linear Arrangements", lessonId: "dilr-2-1", section: "DILR", attempted: 17, correct: 14, accuracy: 82.4 },
+        { concept: "Reading Comprehension", lessonId: "varc-2-1", section: "VARC", attempted: 41, correct: 35, accuracy: 85.4 },
+        { concept: "Percentages", lessonId: "qa-1-1", section: "QA", attempted: 24, correct: 22, accuracy: 91.7 },
+      ],
     },
     mistakes: [
-      { attemptId: "demo-pyq-DILR-3", questionId: "CAT-2024-Slot2-DILR-Q14", kind: "pyq", section: "DILR", concept: "Games & Tournaments", lessonId: "dilr-4-2", questionType: "MCQ", marksLost: 1, timeSpentSeconds: 312, submittedAt: isoDaysAgo(3) },
-      { attemptId: "demo-pyq-VARC-4", questionId: "CAT-2024-Slot2-VARC-Q22", kind: "pyq", section: "VARC", concept: "Para Jumbles", lessonId: "varc-4-1", questionType: "TITA", marksLost: 0, timeSpentSeconds: 145, submittedAt: isoDaysAgo(4) },
-      { attemptId: "demo-pyq-QA-2", questionId: "CAT-2024-Slot2-QUANT-Q9", kind: "pyq", section: "QA", concept: "Permutations & Combinations", lessonId: "qa-8-1", questionType: "MCQ", marksLost: 1, timeSpentSeconds: 228, submittedAt: isoDaysAgo(2) },
+      { attemptId: "demo-pyq-DILR-3", questionId: "CAT-2024-Slot2-DILR-Q14", kind: "pyq", section: "DILR", concept: "Games & Tournaments", lessonId: "dilr-4-2", questionType: "MCQ", selectedOption: 2, titaAnswer: null, marksLost: 1, timeSpentSeconds: 312, submittedAt: isoDaysAgo(3) },
+      { attemptId: "demo-pyq-VARC-4", questionId: "CAT-2024-Slot2-VARC-Q22", kind: "pyq", section: "VARC", concept: "Para Jumbles", lessonId: "varc-4-1", questionType: "TITA", selectedOption: null, titaAnswer: "3142", marksLost: 0, timeSpentSeconds: 145, submittedAt: isoDaysAgo(4) },
+      { attemptId: "demo-pyq-QA-2", questionId: "CAT-2024-Slot2-QUANT-Q9", kind: "pyq", section: "QA", concept: "Permutations & Combinations", lessonId: "qa-8-1", questionType: "MCQ", selectedOption: 2, titaAnswer: null, marksLost: 1, timeSpentSeconds: 228, submittedAt: isoDaysAgo(2) },
     ],
     tasks: { todayTotal: 3, todayDone: 1, overdue: 2, upcomingWeek: 11 },
   };

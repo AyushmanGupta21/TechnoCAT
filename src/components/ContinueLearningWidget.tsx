@@ -1,111 +1,125 @@
 "use client";
-import React from "react";
-import styles from "./ContinueLearningWidget.module.css";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { StudentMetrics, TopicProgressMetrics } from "@/lib/metrics/types";
+import { getTopicById, type Lesson, type Topic } from "@/data/topicsData";
+import styles from "./ContinueLearningWidget.module.css";
+
+// Continue Learning: real enrolled topics (metrics.courses.topics) + real lesson titles from
+// topicsData. "Up next" = first lesson of the topic that is not in the student's completed
+// lessons (GET /api/topics/progress → progress[].completed_lessons).
 
 interface ContinueLearningProps {
-  isDemo?: boolean;
-  topicProgress?: Array<{
-    topic_id: string;
-    progress_percent: number;
-    completed_lessons?: string[];
-    watching_time_minutes?: number;
-    points_earned?: number;
-  }>;
+  metrics: StudentMetrics | null;
+  isLoading?: boolean;
 }
 
-const TOPIC_METADATA: Record<string, { category: string; title: string; meta: string; upNext: string; url: string; img: string }> = {
-  "qa-quantitative-ability": {
-    category: "Quantitative Ability • QA-CAT-01",
-    title: "Module 1.1: Percentages, Profit & Loss",
-    meta: "Foundations & PYQs • Faculty Masterclass",
-    upNext: "Ratio & Proportions Drill",
-    url: "/topics/qa-quantitative-ability",
-    img: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=300&auto=format&fit=crop&q=80",
-  },
-  "dilr-data-interpretation": {
-    category: "Data Interpretation • DILR-CAT-01",
-    title: "Module 2.1: Tables, Caselets & Matrix Grids",
-    meta: "Analytical Reasoning • Master Strategist",
-    upNext: "Linear Arrangement Speed-Run",
-    url: "/topics/dilr-data-interpretation",
-    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&auto=format&fit=crop&q=80",
-  },
-  "varc-verbal-ability": {
-    category: "Verbal Ability • VARC-CAT-01",
-    title: "Module 3.1: Reading Comprehension Mastery",
-    meta: "Editorial Inference & Vocab • Lead Mentor",
-    upNext: "Social Science RC Passage",
-    url: "/topics/varc-verbal-ability",
-    img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&auto=format&fit=crop&q=80",
-  },
-};
+interface ProgressRow {
+  topic_id: string;
+  completed_lessons?: string[] | null;
+}
 
-export default function ContinueLearningWidget({ isDemo = true, topicProgress = [] }: ContinueLearningProps) {
+/** All lessons of a topic in course order (modules first, then any loose lessons). */
+function orderedLessons(topic: Topic): Lesson[] {
+  const seen = new Set<string>();
+  const out: Lesson[] = [];
+  for (const m of topic.modules || []) {
+    for (const l of m.lessons || []) {
+      if (!seen.has(l.id)) {
+        seen.add(l.id);
+        out.push(l.moduleTitle ? l : { ...l, moduleTitle: m.title });
+      }
+    }
+  }
+  for (const l of topic.lessons || []) {
+    if (!seen.has(l.id)) {
+      seen.add(l.id);
+      out.push(l);
+    }
+  }
+  return out;
+}
+
+function formatStudy(seconds: number): string {
+  const mins = Math.round(seconds / 60);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+/** The topic to resume: unfinished topic with the most recorded study time, else the first unfinished. */
+function pickActiveTopic(topics: TopicProgressMetrics[]): TopicProgressMetrics | null {
+  const unfinished = topics.filter((t) => t.progressPercent < 100);
+  const pool = unfinished.length > 0 ? unfinished : topics;
+  if (pool.length === 0) return null;
+  return [...pool].sort((a, b) => b.studySeconds - a.studySeconds || b.progressPercent - a.progressPercent)[0];
+}
+
+const ArrowIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </svg>
+);
+
+export default function ContinueLearningWidget({ metrics, isLoading = false }: ContinueLearningProps) {
   const router = useRouter();
+  const [progressRows, setProgressRows] = useState<ProgressRow[] | null>(null);
 
-  // If demo account: show standard rich mock session
-  if (isDemo) {
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/topics/progress")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setProgressRows(Array.isArray(data?.progress) ? data.progress : []);
+      })
+      .catch(() => {
+        if (!cancelled) setProgressRows([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const topics = metrics?.courses.topics ?? [];
+  const active = pickActiveTopic(topics);
+  const topic = active ? getTopicById(active.topicId) : undefined;
+  const otherTopics = topics.filter((t) => t.topicId !== active?.topicId);
+
+  const upNext = useMemo(() => {
+    if (!active || !topic) return null;
+    const lessons = orderedLessons(topic);
+    const row = progressRows?.find((r) => r.topic_id === active.topicId);
+    const done = new Set((row?.completed_lessons || []).filter((id) => lessons.some((l) => l.id === id)));
+    // Use the recorded completed-lesson list when it agrees with the metrics count; otherwise
+    // fall back to course order (lesson N+1 after N completed lessons).
+    if (row && done.size === active.lessonsCompleted) {
+      return lessons.find((l) => !done.has(l.id)) ?? null;
+    }
+    return lessons[active.lessonsCompleted] ?? null;
+  }, [active, topic, progressRows]);
+
+  if (isLoading || (!metrics && progressRows === null)) {
     return (
       <div className={styles.widgetBox}>
         <div className={styles.widgetHeader}>
           <div className={styles.titleArea}>
-            <div className={styles.titleIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            </div>
-            <h2 className={styles.title}>Continue Where You Left Off</h2>
-          </div>
-          <span className={styles.activeBadge}>Active Session</span>
-        </div>
-
-        <div className={styles.courseCard}>
-          <div className={styles.leftSection}>
-            <img
-              src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=300&auto=format&fit=crop&q=80"
-              alt="Quantitative Ability"
-              className={styles.courseThumbnail}
-            />
-            <div className={styles.courseInfo}>
-              <p className={styles.courseCategory}>Quantitative Ability • QA-CAT-01</p>
-              <h3 className={styles.courseTitle}>Module 1.1: Percentages, Profit & Loss</h3>
-              <p className={styles.courseMeta}>Video Lesson 3 of 8 • Faculty Masterclass</p>
-              <div className={styles.progressContainer}>
-                <div className={styles.progressTrack}>
-                  <div className={styles.progressFill} style={{ width: "74%" }} />
-                </div>
-                <span className={styles.progressText}>74%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.rightSection}>
-            <div className={styles.nextUpBox}>
-              <span className={styles.nextUpLabel}>Up Next</span>
-              <span className={styles.nextUpTitle}>Ratio & Proportions Drill (15m)</span>
-            </div>
-            <button
-              className={styles.resumeBtn}
-              onClick={() => router.push("/topics/qa-quantitative-ability")}
-            >
-              <span>Resume Session</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </button>
+            <h2 className={styles.title}>Continue Learning</h2>
           </div>
         </div>
+        <p className={styles.courseMeta}>Loading your courses…</p>
       </div>
     );
   }
 
-  // Real user with active progress in at least 1 topic OR enrolled in a topic
-  const activeTopic = topicProgress.find((t) => t.progress_percent > 0) || topicProgress[0];
-  if (activeTopic) {
-    const meta = TOPIC_METADATA[activeTopic.topic_id] || TOPIC_METADATA["qa-quantitative-ability"];
-    const percent = Math.min(100, Math.max(0, activeTopic.progress_percent));
+  if (active) {
+    const percent = Math.min(100, Math.max(0, Math.round(active.progressPercent)));
+    const started = active.lessonsCompleted > 0 || active.studySeconds > 0;
+    const finished = percent >= 100 || (active.totalLessons > 0 && active.lessonsCompleted >= active.totalLessons);
+    const url = `/topics/${active.topicId}`;
+    const metaParts = [`${active.lessonsCompleted} of ${active.totalLessons} lessons completed`];
+    if (active.studySeconds > 0) metaParts.push(`${formatStudy(active.studySeconds)} studied`);
 
     return (
       <div className={styles.widgetBox}>
@@ -117,48 +131,64 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
               </svg>
             </div>
             <h2 className={styles.title}>
-              {percent > 0 ? "Continue Where You Left Off" : "Start Your Enrolled Course"}
+              {started ? "Continue Where You Left Off" : "Start Your Enrolled Course"}
             </h2>
           </div>
           <span className={styles.activeBadge}>
-            {percent > 0 ? "Active Session" : "Enrolled"}
+            {finished ? "Completed" : started ? "In Progress" : "Enrolled"}
           </span>
         </div>
 
         <div className={styles.courseCard}>
           <div className={styles.leftSection}>
-            <img
-              src={meta.img}
-              alt={meta.category}
-              className={styles.courseThumbnail}
-            />
+            {topic?.bannerImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={topic.bannerImage} alt={topic.shortTitle} className={styles.courseThumbnail} />
+            )}
             <div className={styles.courseInfo}>
-              <p className={styles.courseCategory}>{meta.category}</p>
-              <h3 className={styles.courseTitle}>{meta.title}</h3>
-              <p className={styles.courseMeta}>{meta.meta}</p>
+              <p className={styles.courseCategory}>
+                {topic ? `${topic.category} • ${topic.codePrefix}` : active.section ?? "Course"}
+              </p>
+              <h3 className={styles.courseTitle}>{topic?.shortTitle ?? active.title}</h3>
+              <p className={styles.courseMeta}>{metaParts.join(" • ")}</p>
               <div className={styles.progressContainer}>
                 <div className={styles.progressTrack}>
                   <div className={styles.progressFill} style={{ width: `${percent}%` }} />
                 </div>
                 <span className={styles.progressText}>{percent}%</span>
               </div>
+              {otherTopics.length > 0 && (
+                <p className={styles.otherTopics}>
+                  Also enrolled:{" "}
+                  {otherTopics.map((t, i) => (
+                    <React.Fragment key={t.topicId}>
+                      {i > 0 && ", "}
+                      <button type="button" className={styles.otherTopicLink} onClick={() => router.push(`/topics/${t.topicId}`)}>
+                        {getTopicById(t.topicId)?.shortTitle ?? t.title} ({Math.round(t.progressPercent)}%)
+                      </button>
+                    </React.Fragment>
+                  ))}
+                </p>
+              )}
             </div>
           </div>
 
           <div className={styles.rightSection}>
             <div className={styles.nextUpBox}>
-              <span className={styles.nextUpLabel}>Up Next</span>
-              <span className={styles.nextUpTitle}>{meta.upNext}</span>
+              <span className={styles.nextUpLabel}>{finished ? "All lessons done" : "Up Next"}</span>
+              <span className={styles.nextUpTitle}>
+                {finished
+                  ? "Take the Grand Quiz for this topic"
+                  : upNext
+                    ? `${upNext.code ? `${upNext.code} ` : ""}${upNext.title}${upNext.duration ? ` (${upNext.duration})` : ""}`
+                    : progressRows === null
+                      ? "Loading…"
+                      : "Open the course to pick your next lesson"}
+              </span>
             </div>
-            <button
-              className={styles.resumeBtn}
-              onClick={() => router.push(meta.url)}
-            >
-              <span>{percent > 0 ? "Resume Session" : "Start Course"}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+            <button className={styles.resumeBtn} onClick={() => router.push(url)}>
+              <span>{finished ? "Open Course" : started ? "Resume Course" : "Start Course"}</span>
+              <ArrowIcon />
             </button>
           </div>
         </div>
@@ -166,7 +196,7 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
     );
   }
 
-  // Real user with NO active or enrolled topics yet (clean onboarding state)
+  // No enrolled topics yet (or metrics unavailable): onboarding state
   return (
     <div className={styles.widgetBox}>
       <div className={styles.widgetHeader}>
@@ -177,47 +207,34 @@ export default function ContinueLearningWidget({ isDemo = true, topicProgress = 
               <polygon points="12 8 8 12 12 16 16 12 12 8" />
             </svg>
           </div>
-          <h2 className={styles.title}>Start Your CAT 2026 Preparation</h2>
+          <h2 className={styles.title}>{metrics ? "Start Your CAT Preparation" : "Continue Learning"}</h2>
         </div>
-        <span className={styles.starterBadge}>Ready to Begin</span>
+        {metrics && <span className={styles.starterBadge}>Ready to Begin</span>}
       </div>
 
       <div className={styles.courseCard}>
         <div className={styles.leftSection}>
-          <img
-            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&auto=format&fit=crop&q=80"
-            alt="CAT Preparation"
-            className={styles.courseThumbnail}
-          />
           <div className={styles.courseInfo}>
-            <p className={styles.courseCategory}>CAT 2026 Syllabus &amp; Masterclasses</p>
-            <h3 className={styles.courseTitle}>You haven&apos;t enrolled in any CAT topic yet</h3>
+            <p className={styles.courseCategory}>CAT Syllabus: QA, DILR &amp; VARC</p>
+            <h3 className={styles.courseTitle}>
+              {metrics ? "You haven't enrolled in any CAT topic yet" : "Your courses could not be loaded right now"}
+            </h3>
             <p className={styles.courseMeta}>
-              Explore video modules across Quantitative Ability, DILR &amp; VARC to begin logging your progress.
+              {metrics
+                ? "Enroll in Quantitative Ability, DILR or VARC to start tracking lessons and progress here."
+                : "Refresh the page to try again, or open My Topics."}
             </p>
-            <div className={styles.progressContainer}>
-              <div className={styles.progressTrack}>
-                <div className={styles.progressFill} style={{ width: "0%" }} />
-              </div>
-              <span className={styles.starterProgressText}>0% Started</span>
-            </div>
           </div>
         </div>
 
         <div className={styles.rightSection}>
           <div className={styles.nextUpBox}>
-            <span className={styles.nextUpLabel}>Step 1: Enrollment</span>
-            <span className={styles.nextUpTitle}>Explore Courses &amp; Modules</span>
+            <span className={styles.nextUpLabel}>Step 1</span>
+            <span className={styles.nextUpTitle}>{metrics ? "Explore Courses & Modules" : "Open My Topics"}</span>
           </div>
-          <button
-            className={styles.resumeBtn}
-            onClick={() => router.push("/browse")}
-          >
-            <span>Browse Courses</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
+          <button className={styles.resumeBtn} onClick={() => router.push(metrics ? "/browse" : "/topics")}>
+            <span>{metrics ? "Browse Courses" : "My Topics"}</span>
+            <ArrowIcon />
           </button>
         </div>
       </div>

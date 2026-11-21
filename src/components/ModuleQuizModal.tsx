@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
 import { notifyQuizCompleted } from "@/services/notificationService";
-import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
+import PYQMarkdownViewer, { MathText } from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
@@ -999,7 +999,7 @@ export default function ModuleQuizModal({
                         className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
                       >
                         <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                        <div className={styles.optionText}>{optText}</div>
+                        <div className={styles.optionText}><MathText text={optText} /></div>
                       </div>
                     );
                   })}
@@ -1487,7 +1487,7 @@ export default function ModuleQuizModal({
                                   <span style={{ fontWeight: 700, color: "#64748b" }}>
                                     {OPTION_LETTERS[optIdx]}.
                                   </span>
-                                  <span>{opt}</span>
+                                  <span><MathText text={opt} /></span>
                                 </div>
                                 {tag}
                               </div>

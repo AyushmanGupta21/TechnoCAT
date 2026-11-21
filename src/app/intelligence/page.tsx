@@ -8,6 +8,7 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { useAuth } from "@/context/AuthContext";
 import AIMentorDrawer from "@/components/AIMentorDrawer";
 import BrandLogo from "@/components/BrandLogo";
+import type { StudentMetrics } from "@/lib/metrics/types";
 
 interface ChallengeData {
   startDate: string;
@@ -25,27 +26,63 @@ interface ChallengeData {
   }[];
 }
 
-interface DashboardData {
-  metrics: {
-    inProgressCourses: number;
-    completedCourses: number;
-    watchingTime: string;
-    pointsEarned: number;
-  };
-  summary: {
-    totalHoursWeek: number;
-    avgHoursDay: number;
-    courseHoursWeek: number;
-    challengeHoursWeek: number;
-  };
-  readiness?: {
-    readiness: number;
-    concepts: number;
-    accuracy: number;
-    speed: number;
-    consistency: number;
-    hasActivity: boolean;
-  };
+type ComponentKey = "concepts" | "accuracy" | "speed" | "consistency";
+
+interface ComponentConfig {
+  key: ComponentKey;
+  label: string;
+  color: string;
+  definition: string;
+  improve: { text: string; href: string; cta: string };
+}
+
+// Plain-language definitions mirror src/lib/metrics/compute.ts (the single source of truth).
+const READINESS_COMPONENTS: ComponentConfig[] = [
+  {
+    key: "concepts",
+    label: "Concepts",
+    color: "#0EA5E9",
+    definition: "Share of the CAT syllabus lessons (QA, DILR and VARC courses) you have completed.",
+    improve: { text: "Complete the next lessons in your QA, DILR and VARC courses.", href: "/topics", cta: "Open My Topics" },
+  },
+  {
+    key: "accuracy",
+    label: "Accuracy",
+    color: "#2DD4BF",
+    definition: "Percent of answered questions you got right in timed tests (PYQ sections, module and grand quizzes). Needs at least 5 answers.",
+    improve: { text: "Review your wrong answers and revisit the linked lessons before your next timed test.", href: "/intelligence/error-tracking", cta: "Review Mistakes" },
+  },
+  {
+    key: "speed",
+    label: "Speed",
+    color: "#F59E0B",
+    definition: "Pace index from your average time per answered question in timed tests: 100 at 90 s/question or faster, 0 at 240 s or slower.",
+    improve: { text: "Practise timed PYQ sections and aim for the CAT pace per question.", href: "/browse#pyq-section", cta: "Practise PYQs" },
+  },
+  {
+    key: "consistency",
+    label: "Consistency",
+    color: "#8B5CF6",
+    definition: "Percent of the last 14 days on which you studied for at least 2 minutes.",
+    improve: { text: "Study a little every day: even a short lesson keeps the day active.", href: "/dashboard", cta: "Go to Dashboard" },
+  },
+];
+
+const SYLLABUS_TOPIC_IDS = ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
+
+/** Course (topic) id for a lesson id such as "qa-8-1" → "qa-quantitative-ability". */
+function topicIdForLesson(lessonId: string | null): string | null {
+  const id = (lessonId || "").toLowerCase();
+  if (id.startsWith("qa-")) return "qa-quantitative-ability";
+  if (id.startsWith("dilr-")) return "dilr-data-interpretation";
+  if (id.startsWith("varc-")) return "varc-verbal-ability";
+  return null;
+}
+
+function formatUpdated(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `Updated ${d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}`;
 }
 
 interface FlowStepConfig {
@@ -98,8 +135,8 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
     id: 3,
     label: "IDENTIFY MISTAKES",
     shortDesc: "Pinpoint & classify every error",
-    title: "Classify & Track Your Errors",
-    description: "Every incorrect question is a golden opportunity. Classify your errors into Conceptual Gaps, Calculation Slips, Misread Questions, or Panic Guesses. TechnoCAT's Error Tracker maps mistakes directly to your preparation log.",
+    title: "Review & Track Your Errors",
+    description: "Every incorrect question is a golden opportunity. TechnoCAT's Error Tracker lists every wrong answer from your tests with the correct answer and explanation, grouped by section and concept, and links each concept to the lesson that teaches it.",
     tips: [
       "A negative mark costs 4 marks (+3 unearned + 1 deduction) — eliminate wild guesses.",
       "Log unforced errors in your Error Diary so you never repeat the same blunder twice.",
@@ -112,16 +149,16 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
   },
   {
     id: 4,
-    label: "GET AI INSIGHTS",
-    shortDesc: "AI diagnostic recommendations",
-    title: "AI Diagnostic Analysis & Recommendations",
-    description: "TechnoCAT AI analyzes your entire mock attempt trajectory to reveal subconscious patterns: section-3 fatigue, overconfidence in geometry, or getting trapped in lengthy DILR sets. Get actionable recommendations tailored specifically to your test profile.",
+    label: "GET INSIGHTS",
+    shortDesc: "Data-driven recommendations",
+    title: "Performance Analysis & Recommendations",
+    description: "The Performance Analysis page turns your recorded tests into a clear picture: section scores, your score trend, where your mistakes cluster by section and concept, and a step-by-step plan built from your weakest concepts.",
     tips: [
-      "Review your AI-generated Weakness Radar to focus on high-yield topic improvements.",
-      "Follow recommended question selection rules based on your proven sectional strengths.",
-      "Monitor your predicted percentile bracket with the CAT Readiness Meter."
+      "Start with the weakest concept on your list: it is where marks are easiest to recover.",
+      "Compare accuracy and pace across VARC, DILR and QA to decide where to practise.",
+      "Track your CAT Readiness Meter week over week to confirm progress."
     ],
-    ctaText: "Explore AI Insights",
+    ctaText: "Open Performance Analysis",
     ctaHref: "/intelligence/ai-analysis",
     themeColor: "#0284C7",
     badgeBg: "#F0F9FF"
@@ -131,7 +168,7 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
     label: "TARGET WEAK TOPICS",
     shortDesc: "Focused drills on low-accuracy topics",
     title: "Targeted Drills & Concept Mastery",
-    description: "Zero in on the specific topic clusters where your accuracy dropped below 65%. Practice focused topic quizzes, review foundational theories, and solve previous year CAT questions to turn weak spots into dependable strengths.",
+    description: "Zero in on the specific topic clusters where your accuracy dropped below 60%. Practice focused topic quizzes, review foundational theories, and solve previous year CAT questions to turn weak spots into dependable strengths.",
     tips: [
       "Dedicate 70% of non-mock study hours to high-weightage identified weak areas.",
       "Practice topic quizzes under 1.5 to 2 minutes-per-question time caps.",
@@ -147,7 +184,7 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
     label: "IMPROVE YOUR SCORE",
     shortDesc: "Retest, measure & close the loop",
     title: "Re-Attempt & Measure Readiness",
-    description: "Armed with identified mistakes, AI insights, and reinforced concepts, step back into your next mock test. Watch your accuracy improve, negative marks shrink, and overall CAT percentile climb. Repeat this continuous improvement loop to reach your target 99+ percentile.",
+    description: "Armed with identified mistakes, data-driven insights, and reinforced concepts, step back into your next mock test. Watch your accuracy improve, negative marks shrink, and overall CAT percentile climb. Repeat this continuous improvement loop to reach your target 99+ percentile.",
     tips: [
       "Implement 1 or 2 specific strategy tweaks per new mock test (e.g., skip Set 1 in DILR if hard).",
       "Monitor your CAT Readiness Meter trend week over week to verify upward progress.",
@@ -162,8 +199,9 @@ const FLOW_STEPS_CONFIG: FlowStepConfig[] = [
 
 export default function IntelligenceHubPage() {
   const { user, loading: authLoading } = useAuth();
-  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [selectedInsight, setSelectedInsight] = useState<ComponentKey | null>(null);
+  const [metrics, setMetrics] = useState<StudentMetrics | null>(null);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
   const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
   const [selectedChallengeDay, setSelectedChallengeDay] = useState<number | null>(null);
   const [activeFlowStep, setActiveFlowStep] = useState<number | null>(null);
@@ -195,18 +233,22 @@ export default function IntelligenceHubPage() {
     const fetchDashboard = async () => {
       try {
         // Auth is carried by the httpOnly session cookie.
-        const [dashRes, chalRes] = await Promise.all([
-          fetch("/api/dashboard"),
+        const [metricsRes, chalRes] = await Promise.all([
+          fetch("/api/me/metrics"),
           fetch("/api/intelligence/challenge")
         ]);
 
-        if (dashRes.ok) {
-          const text = await dashRes.text();
-          if (text && text.trim().length > 0) {
-            setDashboardData(JSON.parse(text));
-          }
+        if (metricsRes.ok) {
+          setMetrics((await metricsRes.json()) as StudentMetrics);
+          setMetricsError(null);
+        } else {
+          setMetricsError(
+            metricsRes.status === 401
+              ? "Please log in to see your readiness."
+              : "We could not load your readiness right now. Please refresh to try again."
+          );
         }
-        
+
         if (chalRes.ok) {
           const text = await chalRes.text();
           if (text && text.trim().length > 0) {
@@ -216,6 +258,7 @@ export default function IntelligenceHubPage() {
         }
       } catch (err) {
         console.warn("Failed to fetch data:", err);
+        setMetricsError("We could not load your readiness right now. Please refresh to try again.");
       } finally {
         setIsLoading(false);
       }
@@ -223,18 +266,46 @@ export default function IntelligenceHubPage() {
     fetchDashboard();
   }, [user?.id, authLoading]);
 
-  // Real CAT Readiness metrics from backend source of truth
-  const readinessData = dashboardData?.readiness;
-  const concepts = isLoading ? 0 : (readinessData?.concepts ?? 0);
-  const accuracy = isLoading ? 0 : (readinessData?.accuracy ?? 0);
-  const speed = isLoading ? 0 : (readinessData?.speed ?? 0);
-  const consistency = isLoading ? 0 : (readinessData?.consistency ?? 0);
-  const readiness = isLoading ? 0 : (readinessData?.readiness ?? 0);
-  const hasActivity = !isLoading && Boolean(
-    readinessData?.hasActivity && (readiness > 0 || concepts > 0 || accuracy > 0 || speed > 0 || consistency > 0)
-  );
-  
-  const strokeOffset = 264 - (264 * readiness) / 100;
+  // CAT Readiness: the single breakdown, straight from /api/me/metrics.
+  const readinessScore = metrics?.readiness.score ?? null;
+  const components = metrics?.readiness.components;
+  const weights = metrics?.readiness.weights;
+  const strokeOffset = 264 - (264 * (readinessScore ?? 0)) / 100;
+
+  // Weight actually used in the score (speed is left out until there is timing data; the rest is rescaled).
+  const activeWeightSum = components && weights
+    ? READINESS_COMPONENTS.reduce((s, c) => (components[c.key] === null ? s : s + weights[c.key]), 0)
+    : 0;
+  /** Readiness points this component is currently holding back (0 when at 100). */
+  const pointsHeldBack = (key: ComponentKey): number | null => {
+    if (!components || !weights || activeWeightSum === 0) return null;
+    const v = components[key];
+    if (v === null) return null;
+    return Math.round(((100 - v) * weights[key]) / activeWeightSum);
+  };
+
+  // What is affecting readiness: the two lowest available components (only if below 100)…
+  const lowestComponents = components
+    ? READINESS_COMPONENTS
+        .filter((c) => components[c.key] !== null && (components[c.key] as number) < 100)
+        .sort((a, b) => (components[a.key] as number) - (components[b.key] as number))
+        .slice(0, 2)
+    : [];
+  // …and the weakest concepts from graded answers.
+  const weakConcepts = (metrics?.concepts.weak ?? []).slice(0, 4);
+  const hasAffecting = lowestComponents.length > 0 || weakConcepts.length > 0;
+
+  // Legacy shape still accepted by the mentor drawer.
+  const mentorReadiness = metrics && components && readinessScore !== null
+    ? {
+        readiness: readinessScore,
+        concepts: components.concepts,
+        accuracy: components.accuracy ?? 0,
+        speed: components.speed ?? 0,
+        consistency: components.consistency,
+        hasActivity: metrics.hasActivity,
+      }
+    : undefined;
 
   return (
     <div className={styles.dashboardWrapper}>
@@ -327,7 +398,7 @@ export default function IntelligenceHubPage() {
           </div>
 
           <div className={styles.featuresGrid}>
-            {/* Card 1: AI Performance Analysis */}
+            {/* Card 1: Performance Analysis */}
             <Link href="/intelligence/ai-analysis" className={styles.featureCard}>
               <div className={styles.featureHeaderRow}>
                 <div className={`${styles.featureIcon} ${styles.bgBlue}`}>
@@ -336,8 +407,8 @@ export default function IntelligenceHubPage() {
                   </svg>
                 </div>
                 <div className={styles.featureHeadText}>
-                  <h3 className={styles.featureTitle}>AI Performance Analysis</h3>
-                  <p className={styles.featureDesc}>Get personalized insights from your mock-test performance and discover exactly where you need to improve.</p>
+                  <h3 className={styles.featureTitle}>Performance Analysis</h3>
+                  <p className={styles.featureDesc}>See section scores, your score trend and where your mistakes cluster, built from your recorded tests.</p>
                 </div>
               </div>
 
@@ -418,7 +489,7 @@ export default function IntelligenceHubPage() {
                       </svg>
                     </div>
                     <div className={styles.aiBotTextCol}>
-                      <span className={styles.aiBotHeading}>AI Insights</span>
+                      <span className={styles.aiBotHeading}>Insights</span>
                       <span className={styles.aiSkelBarBlue}></span>
                       <span className={styles.aiSkelBarGray}></span>
                     </div>
@@ -427,7 +498,7 @@ export default function IntelligenceHubPage() {
               </div>
 
               <div className={styles.featureCta}>
-                <span>View AI Analysis</span>
+                <span>View Analysis</span>
                 <span className={styles.featureCtaCircle}>&rarr;</span>
               </div>
             </Link>
@@ -444,7 +515,7 @@ export default function IntelligenceHubPage() {
                 </div>
                 <div className={styles.featureHeadText}>
                   <h3 className={styles.featureTitle}>Error Tracking</h3>
-                  <p className={styles.featureDesc}>Track repeated mistakes, identify error patterns and understand the concepts behind your wrong answers.</p>
+                  <p className={styles.featureDesc}>Review every wrong answer with the correct answer and explanation, grouped by section and concept.</p>
                 </div>
               </div>
 
@@ -457,7 +528,7 @@ export default function IntelligenceHubPage() {
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                       </svg>
                     </span>
-                    <span>Concept Error</span>
+                    <span>By Concept</span>
                   </div>
                   <div className={`${styles.featureChip} ${styles.chipAmber}`}>
                     <span className={styles.chipIcon}>
@@ -466,7 +537,7 @@ export default function IntelligenceHubPage() {
                         <polyline points="12 7 12 12 15 14"></polyline>
                       </svg>
                     </span>
-                    <span>Speed Error</span>
+                    <span>By Section</span>
                   </div>
                   <div className={`${styles.featureChip} ${styles.chipBlue}`}>
                     <span className={styles.chipIcon}>
@@ -479,7 +550,7 @@ export default function IntelligenceHubPage() {
                         <line x1="14" y1="16" x2="16" y2="16"></line>
                       </svg>
                     </span>
-                    <span>Calculation Error</span>
+                    <span>Correct Answers</span>
                   </div>
                   <div className={`${styles.featureChip} ${styles.chipPurple}`}>
                     <span className={styles.chipIcon}>
@@ -489,7 +560,7 @@ export default function IntelligenceHubPage() {
                         <circle cx="12" cy="16.5" r="0.8" fill="currentColor"></circle>
                       </svg>
                     </span>
-                    <span>Question Selection</span>
+                    <span>Explanations</span>
                   </div>
                 </div>
 
@@ -1256,291 +1327,212 @@ export default function IntelligenceHubPage() {
           <section id="readiness-meter" className={styles.readinessSection} style={{position: 'relative'}}>
             <div className={styles.readinessHeader}>
               <h2 className={styles.sectionTitleSmall}>CAT Readiness Meter</h2>
-              <span className={styles.readinessBadge}>Updated Today</span>
+              {metrics && <span className={styles.readinessBadge}>{formatUpdated(metrics.generatedAt)}</span>}
             </div>
 
-            <div className={styles.readinessMain}>
-              {/* Circular Score */}
-              <div className={styles.readinessScoreBox}>
-                <div className={styles.circularProgress}>
-                  <svg viewBox="0 0 100 100" className={styles.progressSvg}>
-                    <circle cx="50" cy="50" r="42" className={styles.progressBg}></circle>
-                    <circle cx="50" cy="50" r="42" className={styles.progressValue} style={{ strokeDashoffset: strokeOffset }}></circle>
-                  </svg>
-                  <div className={styles.scoreText}>
-                    <span className={styles.scoreNumber}>{readiness}<span className={styles.scorePercent}>%</span></span>
-                    <span className={styles.scoreLabel}>Readiness</span>
-                  </div>
+            {isLoading ? (
+              <div className={styles.readinessMain}>
+                <p className={styles.metricDef}>Loading your readiness...</p>
+              </div>
+            ) : metricsError || !metrics || !components || !weights ? (
+              <div className={styles.emptyAffectingState} style={{ marginBottom: 32 }}>
+                <div className={styles.emptyAffectingText}>
+                  <p className={styles.emptyAffectingTitle}>{metricsError ?? "Readiness is not available yet."}</p>
                 </div>
               </div>
-
-              {/* 4 Metrics */}
-              <div className={styles.readinessMetrics}>
-                <div className={styles.metricItem}>
-                  <div className={styles.metricTop}>
-                    <span className={styles.metricLabel}>Concepts</span>
-                    <span className={styles.metricVal}>{concepts}%</span>
-                  </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${concepts}%`, background: '#0EA5E9'}}></div></div>
-                </div>
-                <div className={styles.metricItem}>
-                  <div className={styles.metricTop}>
-                    <span className={styles.metricLabel}>Accuracy</span>
-                    <span className={styles.metricVal}>{accuracy}%</span>
-                  </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${accuracy}%`, background: '#2DD4BF'}}></div></div>
-                </div>
-                <div className={styles.metricItem}>
-                  <div className={styles.metricTop}>
-                    <span className={styles.metricLabel}>Speed</span>
-                    <span className={styles.metricVal}>{speed}%</span>
-                  </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${speed}%`, background: '#F59E0B'}}></div></div>
-                </div>
-                <div className={styles.metricItem}>
-                  <div className={styles.metricTop}>
-                    <span className={styles.metricLabel}>Consistency</span>
-                    <span className={styles.metricVal}>{consistency}%</span>
-                  </div>
-                  <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${consistency}%`, background: '#8B5CF6'}}></div></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Affecting Readiness */}
-            <div className={styles.affectingSection}>
-              <h3 className={styles.affectingTitle}>What is affecting your readiness?</h3>
-              {hasActivity ? (
-                <div className={styles.insightCards}>
-                  <div className={`${styles.insightCard} ${selectedInsight === 'speed' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('speed')}>
-                    <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    </div>
-                    <div className={styles.insightContent}>
-                      <span className={styles.insightName}>Speed Under Pressure</span>
-                      <span className={styles.insightDesc}>Taking too long on tricky QA questions.</span>
-                    </div>
-                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
-                  </div>
-                  <div className={`${styles.insightCard} ${selectedInsight === 'dilr' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('dilr')}>
-                    <div className={`${styles.insightIconBox} ${styles.iconGood}`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    </div>
-                    <div className={styles.insightContent}>
-                      <span className={styles.insightName}>DILR Set Selection</span>
-                      <span className={styles.insightDesc}>Excellent accuracy in choosing the right sets.</span>
-                    </div>
-                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
-                  </div>
-                  <div className={`${styles.insightCard} ${selectedInsight === 'mock' ? styles.insightActive : ''}`} onClick={() => setSelectedInsight('mock')}>
-                    <div className={`${styles.insightIconBox} ${styles.iconNeutral}`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                    </div>
-                    <div className={styles.insightContent}>
-                      <span className={styles.insightName}>Mock Consistency</span>
-                      <span className={styles.insightDesc}>Consistent scores, but lacking breakthroughs.</span>
-                    </div>
-                    <div className={styles.insightTap}>Tap to understand &rarr;</div>
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.emptyAffectingState}>
-                  <div className={styles.emptyAffectingIcon}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
-                  </div>
-                  <div className={styles.emptyAffectingText}>
-                    <p className={styles.emptyAffectingTitle}>
-                      Start your CAT preparation to unlock personalized readiness insights.
-                    </p>
-                    <p className={styles.emptyAffectingSubtitle}>
-                      Complete your first lesson or attempt a mock to start building your readiness profile.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {selectedInsight && (
+            ) : (
               <>
-                <div className={styles.panelOverlay} style={{display: "block", position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.4)", zIndex: 50}} onClick={() => setSelectedInsight(null)}></div>
-                <div className={styles.detailPanel}>
-                  <button className={styles.panelClose} onClick={() => setSelectedInsight(null)}>&times;</button>
-                  
-                  {selectedInsight === 'speed' && (
-                    <div className={styles.panelContent}>
-                      <div className={styles.panelHeader}>
-                        <div className={`${styles.panelIcon} ${styles.iconWarn}`}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        </div>
-                        <div className={styles.panelTitleArea}>
-                          <div className={styles.panelTitleRow}>
-                            <h4 className={styles.panelTitle}>Speed Under Pressure</h4>
-                            <span className={`${styles.impactBadge} ${styles.impactHigh}`}>IMPACT: HIGH</span>
-                          </div>
-                          <p className={styles.panelDesc}>You are taking more time than expected on QA questions, especially in the last part of the section.</p>
-                        </div>
+                <div className={styles.readinessMain}>
+                  {/* Circular Score */}
+                  <div className={styles.readinessScoreBox}>
+                    <div className={styles.circularProgress}>
+                      <svg viewBox="0 0 100 100" className={styles.progressSvg}>
+                        <circle cx="50" cy="50" r="42" className={styles.progressBg}></circle>
+                        {readinessScore !== null && (
+                          <circle cx="50" cy="50" r="42" className={styles.progressValue} style={{ strokeDashoffset: strokeOffset }}></circle>
+                        )}
+                      </svg>
+                      <div className={styles.scoreText}>
+                        {readinessScore !== null ? (
+                          <span className={styles.scoreNumber}>{readinessScore}<span className={styles.scorePercent}>/100</span></span>
+                        ) : (
+                          <span className={styles.scoreNumber} aria-label="Not available yet">&ndash;</span>
+                        )}
+                        <span className={styles.scoreLabel}>Readiness</span>
                       </div>
-                      
-                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
-                      <ul className={styles.panelList}>
-                        <li>You spend more time on complex calculation-based questions.</li>
-                        <li>This reduces the time left for easier questions.</li>
-                        <li>Leads to lower attempt rate and higher pressure.</li>
-                      </ul>
-                      
-                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
-                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
-                        <li>Practice timed QA sets (15-20 min).</li>
-                        <li>Focus on quick calculation techniques and shortcuts.</li>
-                        <li>Avoid spending too much time on a single question.</li>
-                      </ul>
-                      
-                      <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M9 18h6" />
-                            <path d="M10 22h4" />
-                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                          </svg>
-                        </div>
-                        <div className={styles.tipText}><strong>Tip:</strong> Try solving 1 timed QA set daily to improve your speed and confidence.</div>
-                      </div>
-                      
-                      <div className={styles.panelVisual}>
-                        <div className={styles.pvItem}>
-                          <span className={styles.pvLabel}>Current</span>
-                          <span className={styles.pvValWarn}>3.2 min/q</span>
-                        </div>
-                        <div className={styles.pvArrow}>&rarr;</div>
-                        <div className={styles.pvItem}>
-                          <span className={styles.pvLabel}>Target</span>
-                          <span className={styles.pvValGood}>2.0 min/q</span>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
 
-                      
+                  {/* The four components, with weights and definitions */}
+                  <div className={styles.readinessMetrics}>
+                    {READINESS_COMPONENTS.map((c) => {
+                      const v = components[c.key];
+                      return (
+                        <div key={c.key} className={styles.metricItem}>
+                          <div className={styles.metricTop}>
+                            <span className={styles.metricLabel}>
+                              {c.label} <span className={styles.metricWeight}>&middot; {Math.round(weights[c.key] * 100)}% weight</span>
+                            </span>
+                            <span className={styles.metricVal}>{v === null ? "No data yet" : `${Math.round(v)}/100`}</span>
+                          </div>
+                          <div className={styles.metricBar}><div className={styles.metricFill} style={{width: `${v ?? 0}%`, background: c.color}}></div></div>
+                          <p className={styles.metricDef}>{c.definition}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <p className={styles.metricDef} style={{ marginTop: -24, marginBottom: 32 }}>
+                  {readinessScore === null
+                    ? "Your readiness score appears after your first timed test (a PYQ section, module quiz or grand quiz) with at least 5 answers. Until then, concepts and consistency are shown on their own."
+                    : components.speed === null
+                      ? "Readiness = weighted average of the components above. Speed has no timing data yet, so it is left out and the other weights are rescaled."
+                      : "Readiness = weighted average of the four components above."}
+                </p>
+
+                {/* Affecting Readiness */}
+                <div className={styles.affectingSection}>
+                  <h3 className={styles.affectingTitle}>What is affecting your readiness?</h3>
+                  {hasAffecting ? (
+                    <div className={styles.insightCards}>
+                      {lowestComponents.map((c) => {
+                        const v = components[c.key] as number;
+                        const held = pointsHeldBack(c.key);
+                        return (
+                          <div
+                            key={c.key}
+                            className={`${styles.insightCard} ${selectedInsight === c.key ? styles.insightActive : ''}`}
+                            onClick={() => setSelectedInsight(c.key)}
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedInsight(c.key); } }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className={`${styles.insightIconBox} ${v < 50 ? styles.iconWarn : styles.iconNeutral}`}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            </div>
+                            <div className={styles.insightContent}>
+                              <span className={styles.insightName}>{c.label} is {Math.round(v)}/100</span>
+                              <span className={styles.insightDesc}>
+                                {held !== null && held > 0
+                                  ? `One of your lowest components; it holds back about ${held} readiness point${held === 1 ? "" : "s"}.`
+                                  : "One of your lowest components."}
+                              </span>
+                            </div>
+                            <div className={styles.insightTap}>Tap to understand &rarr;</div>
+                          </div>
+                        );
+                      })}
+                      {weakConcepts.map((wc) => {
+                        const topicId = topicIdForLesson(wc.lessonId);
+                        const body = (
+                          <>
+                            <div className={`${styles.insightIconBox} ${styles.iconWarn}`}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                            </div>
+                            <div className={styles.insightContent}>
+                              <span className={styles.insightName}>Weak concept: {wc.concept}{wc.section ? ` (${wc.section})` : ""}</span>
+                              <span className={styles.insightDesc}>
+                                {wc.correct} of {wc.attempted} correct ({Math.round(wc.accuracy)}% accuracy).
+                              </span>
+                            </div>
+                            {topicId && <div className={styles.insightTap}>Open lesson &rarr;</div>}
+                          </>
+                        );
+                        return topicId ? (
+                          <Link key={`${wc.concept}-${wc.section}`} href={`/topics/${topicId}`} className={styles.insightCard} style={{ textDecoration: "none" }}>
+                            {body}
+                          </Link>
+                        ) : (
+                          <div key={`${wc.concept}-${wc.section}`} className={styles.insightCard}>{body}</div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyAffectingState}>
+                      <div className={styles.emptyAffectingIcon}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="16" x2="12" y2="12" />
+                          <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                      </div>
+                      <div className={styles.emptyAffectingText}>
+                        <p className={styles.emptyAffectingTitle}>
+                          {metrics.hasActivity
+                            ? "Nothing is holding your readiness back right now."
+                            : "Start your CAT preparation to see what affects your readiness."}
+                        </p>
+                        <p className={styles.emptyAffectingSubtitle}>
+                          Complete lessons and attempt a timed PYQ section; weak concepts appear once you have answered at least 3 questions on a concept.
+                        </p>
+                      </div>
                     </div>
                   )}
-
-                  {selectedInsight === 'dilr' && (
-                    <div className={styles.panelContent}>
-                      <div className={styles.panelHeader}>
-                        <div className={`${styles.panelIcon} ${styles.iconGood}`}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        </div>
-                        <div className={styles.panelTitleArea}>
-                          <div className={styles.panelTitleRow}>
-                            <h4 className={styles.panelTitle}>DILR Set Selection</h4>
-                            <span className={`${styles.impactBadge} ${styles.impactMedium}`}>IMPACT: MEDIUM</span>
-                          </div>
-                          <p className={styles.panelDesc}>Your accuracy is good, but you are not selecting the most suitable sets, which is affecting your overall score.</p>
-                        </div>
-                      </div>
-                      
-                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
-                      <ul className={styles.panelList}>
-                        <li>Difficulty in identifying high-scoring sets.</li>
-                        <li>Spending time on low-value sets.</li>
-                        <li>Inconsistent approach to set analysis.</li>
-                      </ul>
-                      
-                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
-                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
-                        <li>Practice set-selection strategies.</li>
-                        <li>Focus on question types and patterns.</li>
-                        <li>Attempt more sectional DILR sets.</li>
-                      </ul>
-                      
-                      <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M9 18h6" />
-                            <path d="M10 22h4" />
-                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                          </svg>
-                        </div>
-                        <div className={styles.tipText}><strong>Tip:</strong> Spend 1-2 minutes analyzing each set before attempting.</div>
-                      </div>
-                      
-                      <div className={styles.panelVisual}>
-                        <div className={styles.pvItem}>
-                          <span className={styles.pvLabel}>Current</span>
-                          <span className={styles.pvValNeutral}>Poor Selection</span>
-                        </div>
-                        <div className={styles.pvArrow}>&rarr;</div>
-                        <div className={styles.pvItem}>
-                          <span className={styles.pvLabel}>Target</span>
-                          <span className={styles.pvValGood}>Higher Attempts</span>
-                        </div>
-                      </div>
-
-                      
-                    </div>
-                  )}
-
-                  {selectedInsight === 'mock' && (
-                    <div className={styles.panelContent}>
-                      <div className={styles.panelHeader}>
-                        <div className={`${styles.panelIcon} ${styles.iconNeutral}`}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                        </div>
-                        <div className={styles.panelTitleArea}>
-                          <div className={styles.panelTitleRow}>
-                            <h4 className={styles.panelTitle}>Mock Consistency</h4>
-                            <span className={`${styles.impactBadge} ${styles.impactMedium2}`}>IMPACT: MEDIUM</span>
-                          </div>
-                          <p className={styles.panelDesc}>Your scores are consistent, but you are not seeing significant improvement over time.</p>
-                        </div>
-                      </div>
-                      
-                      <h5 className={styles.panelSubtitle}>Why it's affecting your readiness?</h5>
-                      <ul className={styles.panelList}>
-                        <li>Limited number of full mock attempts.</li>
-                        <li>Inconsistent performance in some sections.</li>
-                        <li>Lack of post-mock analysis and revision.</li>
-                      </ul>
-                      
-                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
-                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
-                        <li>Take more full-length mocks (at least 2 per week).</li>
-                        <li>Analyze mistakes after each mock.</li>
-                        <li>Focus on weak topics and track progress.</li>
-                      </ul>
-                      
-                      <div className={styles.panelTip}>
-                        <div className={styles.tipIcon}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M9 18h6" />
-                            <path d="M10 22h4" />
-                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                          </svg>
-                        </div>
-                        <div className={styles.tipText}><strong>Tip:</strong> Consistency with analysis = real improvement.</div>
-                      </div>
-                      
-                      <div className={styles.panelVisualPath}>
-                        <span>TAKE MOCK</span>
-                        <span className={styles.pvArrowDown}>&darr;</span>
-                        <span>ANALYZE</span>
-                        <span className={styles.pvArrowDown}>&darr;</span>
-                        <span>FIX WEAKNESS</span>
-                        <span className={styles.pvArrowDown}>&darr;</span>
-                        <span className={styles.pvValGood}>IMPROVE</span>
-                      </div>
-
-                      
-                    </div>
-                  )}
-
                 </div>
               </>
             )}
 
+            {selectedInsight && metrics && components && weights && (() => {
+              const c = READINESS_COMPONENTS.find((x) => x.key === selectedInsight);
+              const v = components[selectedInsight];
+              if (!c || v === null) return null;
+              const held = pointsHeldBack(selectedInsight);
+              const syllabusDone = metrics.courses.topics
+                .filter((t) => SYLLABUS_TOPIC_IDS.includes(t.topicId))
+                .reduce((s, t) => s + t.lessonsCompleted, 0);
+              return (
+                <>
+                  <div className={styles.panelOverlay} style={{display: "block", position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.4)", zIndex: 50}} onClick={() => setSelectedInsight(null)}></div>
+                  <div className={styles.detailPanel}>
+                    <button className={styles.panelClose} onClick={() => setSelectedInsight(null)} aria-label="Close">&times;</button>
+                    <div className={styles.panelContent}>
+                      <div className={styles.panelHeader}>
+                        <div className={`${styles.panelIcon} ${v < 50 ? styles.iconWarn : styles.iconNeutral}`}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <div className={styles.panelTitleArea}>
+                          <div className={styles.panelTitleRow}>
+                            <h4 className={styles.panelTitle}>{c.label}</h4>
+                            <span className={`${styles.impactBadge} ${styles.impactMedium}`}>WEIGHT: {Math.round(weights[c.key] * 100)}%</span>
+                          </div>
+                          <p className={styles.panelDesc}>{c.definition}</p>
+                        </div>
+                      </div>
 
+                      <h5 className={styles.panelSubtitle}>Where you are</h5>
+                      <ul className={styles.panelList}>
+                        <li>Your {c.label.toLowerCase()} score is {Math.round(v)}/100.</li>
+                        {c.key === "concepts" && (
+                          <li>{syllabusDone} of {metrics.courses.syllabusLessons} syllabus lessons completed.</li>
+                        )}
+                        {c.key === "accuracy" && (
+                          <li>{metrics.accuracy.correct} correct out of {metrics.accuracy.attempted} answered in timed tests.</li>
+                        )}
+                        {c.key === "speed" && metrics.speed.secondsPerQuestion !== null && (
+                          <li>You average {metrics.speed.secondsPerQuestion} s per answered question; CAT pace is about {metrics.speed.benchmarkSecondsPerQuestion} s.</li>
+                        )}
+                        {c.key === "consistency" && (
+                          <li>You studied on {metrics.consistency.activeDaysLast14} of the last 14 days.</li>
+                        )}
+                        {held !== null && held > 0 && (
+                          <li>Raising it to 100 would add about {held} point{held === 1 ? "" : "s"} to your readiness.</li>
+                        )}
+                      </ul>
+
+                      <h5 className={styles.panelSubtitle} style={{marginTop: '20px', color: '#059669'}}>How to improve?</h5>
+                      <ul className={`${styles.panelList} ${styles.listCheck}`}>
+                        <li>{c.improve.text}</li>
+                      </ul>
+
+                      <Link href={c.improve.href} className={styles.actionBtn} style={{ display: "inline-flex", marginTop: 16 }} onClick={() => setSelectedInsight(null)}>
+                        {c.improve.cta} &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
             {/* 7-Day Challenge */}
             <div className={styles.challengeSection} style={{position: 'relative'}}>
               {challengeData ? (
@@ -1848,7 +1840,7 @@ export default function IntelligenceHubPage() {
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ~ 10-15 mins
                                       </span>
                                       <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> AI Insights
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Analysis
                                       </span>
                                     </div>
                                   </div>
@@ -1935,7 +1927,7 @@ export default function IntelligenceHubPage() {
           onClose={() => setIsMentorDrawerOpen(false)}
           userName={user?.fullName}
           userId={user?.id}
-          readinessData={readinessData}
+          readinessData={mentorReadiness}
         />
 
         </main>

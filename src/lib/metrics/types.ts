@@ -54,6 +54,8 @@ export interface MistakeRecord {
   concept: string | null;
   lessonId: string | null;
   questionType: "MCQ" | "TITA";
+  selectedOption: number | null; // what the student picked (MCQ, 0-based)
+  titaAnswer: string | null; // what the student typed (TITA)
   marksLost: number; // 1 for a wrong MCQ in CAT marking (negative mark), else 0
   timeSpentSeconds: number | null;
   submittedAt: string;
@@ -120,7 +122,8 @@ export interface StudentMetrics {
     enrolled: number;
     inProgress: number;
     completed: number;
-    lessonsCompleted: number;
+    lessonsCompleted: number; // all enrolled courses
+    syllabusLessonsCompleted: number; // VARC + DILR + QA courses only
     syllabusLessons: number;
     topics: TopicProgressMetrics[];
   };
@@ -144,7 +147,7 @@ export interface StudentMetrics {
     grandQuizzesPassed: number;
   };
 
-  concepts: { weak: ConceptStat[]; strong: ConceptStat[] };
+  concepts: { weak: ConceptStat[]; strong: ConceptStat[]; all: ConceptStat[] }; // all: ≥3 answers, by accuracy asc
   mistakes: MistakeRecord[]; // newest first, capped
 
   tasks: { todayTotal: number; todayDone: number; overdue: number; upcomingWeek: number };

@@ -42,14 +42,65 @@
   margin: 0;
 }
 
-.countdownPill {
+.statusPill {
   font-size: 11px;
   font-weight: 700;
-  color: #DC2626;
-  background: #FEE2E2;
   padding: 4px 10px;
   border-radius: 999px;
   letter-spacing: 0.3px;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.scoreValue {
+  font-size: 40px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.scoreMax {
+  font-size: 15px;
+  font-weight: 700;
+  color: #94A3B8;
+}
+
+.statusText {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0 0 16px 0;
+  line-height: 1.45;
+}
+
+.emptyCard {
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.emptyTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 4px 0;
+}
+
+.emptyText {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0 0 12px 0;
+  line-height: 1.45;
+}
+
+.emptyCard .emptyText {
+  margin: 0;
 }
 
 .percentileBanner {
@@ -60,7 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 6px;
 }
 
 .percentileLabel {
@@ -75,96 +126,31 @@
   color: #2563EB;
 }
 
-.sectionalList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.sectionalItem {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sectionalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12.5px;
-}
-
-.sectionName {
-  font-weight: 600;
-  color: #334155;
-}
-
-.sectionPercent {
-  font-weight: 700;
-  color: #0F172A;
-}
-
-.barTrack {
-  width: 100%;
-  height: 6px;
-  background: #F1F5F9;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.barFillQA {
-  height: 100%;
-  background: #2563EB;
-  border-radius: 999px;
-}
-
-.barFillDILR {
-  height: 100%;
-  background: #8B5CF6;
-  border-radius: 999px;
-}
-
-.barFillVARC {
-  height: 100%;
-  background: #EC4899;
-  border-radius: 999px;
-}
-
-.weakAreaCard {
-  background: #FFF7ED;
-  border: 1px solid #FFEDD5;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 16px;
-}
-
-.weakAreaHeader {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-}
-
-.weakAreaTag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #C2410C;
-  letter-spacing: 0.5px;
-}
-
-.weakAreaTopic {
+.percentileEmpty {
   font-size: 13px;
   font-weight: 700;
-  color: #7C2D12;
-  margin: 0 0 4px 0;
+  color: #94A3B8;
 }
 
-.weakAreaStat {
-  font-size: 11.5px;
-  color: #9A3412;
-  margin: 0;
+.disclaimer {
+  font-size: 10.5px;
+  color: #94A3B8;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.secondaryLink {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  text-decoration: none;
+}
+
+.secondaryLink:hover {
+  text-decoration: underline;
 }
 
 .drillBtn {

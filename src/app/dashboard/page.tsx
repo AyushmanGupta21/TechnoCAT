@@ -16,14 +16,8 @@ import { resolveStudentName } from "@/lib/nameUtils";
 import { notifyTaskCompleted, pushNotification } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
 import BrandLogo from "@/components/BrandLogo";
-
-interface WeeklyStat {
-  day: string;
-  learning: number;
-  challenge: number;
-  rawLearning?: number;
-  rawChallenge?: number;
-}
+import type { StudentMetrics, SectionKey } from "@/lib/metrics/types";
+import type { Announcements, LiveClass, Notice } from "@/lib/announcements";
 
 interface StudyTask {
   id: string;
@@ -37,28 +31,79 @@ interface StudyTask {
   subtitle?: string;
 }
 
+// GET /api/dashboard is used only for the task list and enrolled topic ids.
+// Every number on this page comes from GET /api/me/metrics.
 interface DashboardData {
   enrolledTopics?: string[];
-  metrics: {
-    inProgressCourses: number;
-    completedCourses: number;
-    watchingTime: string;
-    pointsEarned: number;
-  };
-  weeklyStats: WeeklyStat[];
-  summary: {
-    totalHoursWeek: number;
-    avgHoursDay: number;
-    courseHoursWeek: number;
-    challengeHoursWeek: number;
-  };
   tasks: StudyTask[];
   detailed?: {
-    inProgressTopics: any[];
-    completedTopics: any[];
-    watchingHistory: any[];
-    pointsHistory: any[];
+    inProgressTopics?: { topic_id: string }[];
   };
+}
+
+const SECTION_ORDER: SectionKey[] = ["QA", "DILR", "VARC"];
+const SECTION_NAMES: Record<SectionKey, string> = { QA: "Quant", DILR: "DILR", VARC: "VARC" };
+
+/** "3h 25m" / "45 min" / "0 min" from seconds. */
+function formatDuration(seconds: number): string {
+  const mins = Math.round(seconds / 60);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+/** Deterministic weekly summary: last 7 days vs the 7 days before (metrics.studyTime.daily). */
+function weeklySummary(m: StudentMetrics): string {
+  const daily = m.studyTime.daily;
+  const total = (days: typeof daily) => days.reduce((s, d) => s + d.learningSeconds + d.practiceSeconds, 0);
+  const thisWeek = total(daily.slice(-7));
+  const prevWeek = total(daily.slice(-14, -7));
+  if (thisWeek === 0) {
+    return prevWeek > 0
+      ? `No study time recorded in the last 7 days (previous 7 days: ${formatDuration(prevWeek)}). Open a lesson or a practice set to get back on track.`
+      : "No study time recorded in the last 7 days. Open a lesson or attempt a practice set; time is logged automatically.";
+  }
+  const practice = daily.slice(-7).reduce((s, d) => s + d.practiceSeconds, 0);
+  const practiceShare = Math.round((practice / thisWeek) * 100);
+  let trend: string;
+  if (prevWeek === 0) trend = "with no study time recorded in the 7 days before";
+  else {
+    const change = Math.round(((thisWeek - prevWeek) / prevWeek) * 100);
+    trend =
+      change === 0
+        ? "the same as the previous 7 days"
+        : `${change > 0 ? "up" : "down"} ${Math.abs(change)}% from the previous 7 days (${formatDuration(prevWeek)})`;
+  }
+  return `You studied ${formatDuration(thisWeek)} in the last 7 days, ${trend}. ${practiceShare}% of it was practice (quizzes and PYQs).`;
+}
+
+/** Deterministic next step from weak concepts, section accuracy, readiness and enrolment. */
+function recommendedNextStep(m: StudentMetrics): string {
+  const weak = m.concepts.weak[0];
+  if (weak) {
+    return `Revise ${weak.concept}${weak.section ? ` (${weak.section})` : ""}: ${weak.accuracy}% accuracy over ${weak.attempted} questions, your weakest concept so far.`;
+  }
+  const sectionsWithData = SECTION_ORDER.filter((k) => m.sections[k].accuracy !== null && m.sections[k].attempted >= 5);
+  if (sectionsWithData.length > 0) {
+    const weakest = [...sectionsWithData].sort((a, b) => (m.sections[a].accuracy ?? 0) - (m.sections[b].accuracy ?? 0))[0];
+    return `Your lowest section accuracy is ${weakest} at ${m.sections[weakest].accuracy}%. Attempt a ${weakest} practice set or PYQ section next.`;
+  }
+  if (m.courses.enrolled === 0) {
+    return "Enroll in a CAT topic (QA, DILR or VARC) from Browse to start your study plan.";
+  }
+  if (m.readiness.score === null) {
+    return "Attempt a module quiz or a full PYQ section to unlock your readiness score and section accuracy.";
+  }
+  return "Keep your streak going and attempt a PYQ section this week to track your estimated percentile.";
+}
+
+/** Status badge for a section's timed-test accuracy. */
+function sectionBadge(accuracy: number | null, attempted: number): { text: string; color: string; bg: string } {
+  if (accuracy === null || attempted === 0) return { text: "No timed tests yet", color: "#64748B", bg: "#F1F5F9" };
+  if (accuracy >= 75) return { text: `${accuracy}% accuracy`, color: "#0D9488", bg: "#F0FDFA" };
+  if (accuracy >= 60) return { text: `${accuracy}% accuracy`, color: "#B45309", bg: "#FFFBEB" };
+  return { text: `${accuracy}% accuracy`, color: "#EF4444", bg: "#FEE2E2" };
 }
 
 
@@ -68,17 +113,14 @@ interface AgendaSession {
   title: string;
   topic: string;
   faculty: string;
-  facultyBio: string;
-  timeRange: string;
   dateFormatted: string;
   isLiveNow: boolean;
   duration: string;
   activity: string;
-  color: string;
   iconBg: string;
   topicUrl: string;
+  joinUrl: string | null; // real class link published by staff
   syllabus: string[];
-  enrolledCount: number;
 }
 
 interface PrepNotice {
@@ -89,9 +131,62 @@ interface PrepNotice {
   badgeColor: string;
   desc: string;
   dateNotice: string;
-  thumbUrl: string;
-  actionUrl: string;
-  actionLabel: string;
+  actionUrl: string | null;
+}
+
+// Live classes and notices are published by staff (scripts/announcements.mjs → GET /api/announcements).
+const SECTION_INFO: Record<string, { label: string; color: string; topicUrl: string }> = {
+  QA: { label: "Quantitative Aptitude", color: "#ED1C24", topicUrl: "/topics/qa-quantitative-ability" },
+  DILR: { label: "Data Interpretation & Logical Reasoning", color: "#0D9488", topicUrl: "/topics/dilr-data-interpretation" },
+  VARC: { label: "Verbal Ability & Reading Comprehension", color: "#7C3AED", topicUrl: "/topics/varc-verbal-ability" },
+  GENERAL: { label: "General", color: "#2563EB", topicUrl: "/topics" },
+};
+
+const istTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" });
+
+function istDayLabel(iso: string): string {
+  const day = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  const target = day(new Date(iso));
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  if (target === day(today)) return "Today";
+  if (target === day(tomorrow)) return "Tomorrow";
+  return new Date(iso).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short" });
+}
+
+function toAgendaSession(c: LiveClass): AgendaSession {
+  const info = SECTION_INFO[c.section ?? "GENERAL"] ?? SECTION_INFO.GENERAL;
+  const end = c.endsAt ?? new Date(new Date(c.startsAt).getTime() + 3600000).toISOString();
+  const minutes = Math.max(1, Math.round((new Date(end).getTime() - new Date(c.startsAt).getTime()) / 60000));
+  return {
+    id: c.id,
+    title: c.title,
+    topic: info.label,
+    faculty: c.host || "TechnoCAT Faculty",
+    dateFormatted: `${istDayLabel(c.startsAt)} • ${istTime(c.startsAt)} – ${istTime(end)}`,
+    isLiveNow: c.isLive,
+    duration: `${minutes} min`,
+    activity: "Live Class",
+    iconBg: info.color,
+    topicUrl: info.topicUrl,
+    joinUrl: c.linkUrl,
+    syllabus: (c.body || "").split("\n").map((l) => l.trim()).filter(Boolean),
+  };
+}
+
+function toPrepNotice(n: Notice): PrepNotice {
+  const info = SECTION_INFO[n.section ?? "GENERAL"] ?? SECTION_INFO.GENERAL;
+  return {
+    id: n.id,
+    title: n.title,
+    badge: n.section && n.section !== "GENERAL" ? n.section : "Notice",
+    badgeBg: "#EFF6FF",
+    badgeColor: info.color,
+    desc: n.body || "",
+    dateNotice: `Posted ${new Date(n.publishedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}`,
+    actionUrl: n.linkUrl,
+  };
 }
 
 export default function DashboardPage() {
@@ -100,23 +195,26 @@ export default function DashboardPage() {
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
   const [activeNav, setActiveNav] = useState("Dashboard");
 
-  // Live Supabase Dashboard Data State
+  // Task list + enrolled topic ids (GET /api/dashboard)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Dynamic enrolled topics list
+  // Every number on the page (GET /api/me/metrics)
+  const [metrics, setMetrics] = useState<StudentMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
+
+  // Enrolled topics: ids from /api/dashboard plus the enrolled courses reported by the metrics endpoint
   const enrolledTopicsList = useMemo(() => {
-    if (isDemo) {
-      return ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
-    }
-    return (
+    const ids = new Set<string>(
       dashboardData?.enrolledTopics ||
-      dashboardData?.detailed?.inProgressTopics?.map((t: any) => t.topic_id) ||
-      []
+        dashboardData?.detailed?.inProgressTopics?.map((t) => t.topic_id) ||
+        []
     );
-  }, [isDemo, dashboardData]);
+    for (const t of metrics?.courses.topics ?? []) ids.add(t.topicId);
+    return Array.from(ids);
+  }, [dashboardData, metrics]);
 
-  const enrolledCount = isDemo ? 3 : enrolledTopicsList.length;
+  const enrolledCount = enrolledTopicsList.length;
 
   // Selected Agenda Modal State
   const [selectedAgenda, setSelectedAgenda] = useState<AgendaSession | null>(null);
@@ -136,103 +234,16 @@ export default function DashboardPage() {
     setSelectedDay(now.getDate());
   }, []);
 
-  // Dynamic Agenda sessions derived from current date
-  const upcomingAgenda: AgendaSession[] = useMemo(() => {
-    const allSessions: AgendaSession[] = [
-      {
-        id: "agenda-qa-geo",
-        title: "CAT QA: Geometry & Mensuration Masterclass",
-        topic: "Quantitative Aptitude",
-        faculty: "Prof. Rajesh Verma",
-        facultyBio: "IIM Bangalore Alum • 99.98%iler QA Lead",
-        timeRange: "7:00 PM – 8:30 PM",
-        dateFormatted: "Today • 7:00 PM – 8:30 PM",
-        isLiveNow: true,
-        duration: "90 min",
-        activity: "Live Class",
-        color: "#ED1C24",
-        iconBg: "#ED1C24",
-        topicUrl: "/topics/qa-quantitative-ability",
-        syllabus: [
-          "Tangents, Secants & Cyclic Quadrilaterals high-yield theorems",
-          "3D Mensuration: Cones, Frustums, Prisms & Volume ratios",
-          "Past 5 Years CAT Geometry PYQ shortcuts & elimination tips",
-          "Live Q&A + Rapid 60-second CAT drill with faculty"
-        ],
-        enrolledCount: 384
-      },
-      {
-        id: "agenda-dilr-matrix",
-        title: "CAT DILR: Arrangements & Matrix Sets Workshop",
-        topic: "Data Interpretation & Logical Reasoning",
-        faculty: "Arun Sharma Mentor Team",
-        facultyBio: "DILR Master Strategist • 99.9%ile CAT Mentor",
-        timeRange: "10:00 AM – 12:00 PM",
-        dateFormatted: "Tomorrow • 10:00 AM – 12:00 PM",
-        isLiveNow: false,
-        duration: "120 min",
-        activity: "Workshop",
-        color: "#0D9488",
-        iconBg: "#0D9488",
-        topicUrl: "/topics/dilr-data-interpretation",
-        syllabus: [
-          "Complex Linear & Circular Arrangements with conditional clues",
-          "Multi-Variable Matrix Grid Deduction & Binary Logic",
-          "Constraint Elimination Strategy to solve 4 sets in 40 mins",
-          "Interactive Caselet Speed-Run & Doubt Clearing"
-        ],
-        enrolledCount: 420
-      }
-    ];
-
-    if (isDemo) {
-      return allSessions;
-    }
-
-    if (enrolledCount === 0) {
-      return [];
-    }
-
-    return allSessions.filter((session) => {
-      if (session.id === "agenda-qa-geo") {
-        return enrolledTopicsList.includes("qa-quantitative-ability");
-      }
-      if (session.id === "agenda-dilr-matrix") {
-        return enrolledTopicsList.includes("dilr-data-interpretation");
-      }
-      return false;
-    });
-  }, [isDemo, enrolledCount, enrolledTopicsList]);
-
-  // Dynamic CAT Prep Notices
-  const prepNotices: PrepNotice[] = useMemo(() => {
-    return [
-      {
-        id: "notice-mock-07",
-        title: "All-India National CAT Mock 07 Registration Open",
-        badge: "National Mock",
-        badgeBg: "#EFF6FF",
-        badgeColor: "#2563EB",
-        desc: "Live All-India percentile benchmark with 25,000+ serious aspirants. Timed 66-question simulation.",
-        dateNotice: "Registration active • Closes in 3 days",
-        thumbUrl: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=160&auto=format&fit=crop&q=80",
-        actionUrl: "/browse?section=mocks#mock-section",
-        actionLabel: "Attempt Mock"
-      },
-      {
-        id: "notice-gdpi-prep",
-        title: "IIM Interview & GD-PI Preparation Schedules Released",
-        badge: "Interview Prep",
-        badgeBg: "#ECFDF5",
-        badgeColor: "#059669",
-        desc: "WAT reviews, SOP vetting & 1-on-1 mock interviews by IIM Ahmedabad, Bangalore & Calcutta alumni.",
-        dateNotice: "Slot bookings open for CAT 2024/25 qualifiers",
-        thumbUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=160&auto=format&fit=crop&q=80",
-        actionUrl: "/intelligence/b-school-predictor",
-        actionLabel: "Check Call Odds"
-      }
-    ];
-  }, []);
+  const [announcements, setAnnouncements] = useState<Announcements | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/announcements")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: Announcements | null) => setAnnouncements(data))
+      .catch(() => setAnnouncements(null));
+  }, [user]);
+  const upcomingAgenda: AgendaSession[] = useMemo(() => (announcements?.liveClasses ?? []).map(toAgendaSession), [announcements]);
+  const prepNotices: PrepNotice[] = useMemo(() => (announcements?.notices ?? []).map(toPrepNotice), [announcements]);
 
   // Calendar indicator dots — derived 100% from real DB tasks
   const taskCategoryMap = useMemo(() => {
@@ -288,15 +299,15 @@ export default function DashboardPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ taskId: id, isCompleted: willBeCompleted }),
-    }).catch((err) => {
+    }).then(() => fetchMetrics()).catch((err) => {
       console.error("[Dashboard Task Sync Error]", err);
     });
   };
 
   const handleAutoAssignDay = async (day: number) => {
-    const isEnrolledQA = isDemo || enrolledTopicsList.includes("qa-quantitative-ability") || enrolledCount === 0;
-    const isEnrolledDILR = isDemo || enrolledTopicsList.includes("dilr-data-interpretation") || enrolledCount === 0;
-    const isEnrolledVARC = isDemo || enrolledTopicsList.includes("varc-verbal-ability");
+    const isEnrolledQA = enrolledTopicsList.includes("qa-quantitative-ability") || enrolledCount === 0;
+    const isEnrolledDILR = enrolledTopicsList.includes("dilr-data-interpretation") || enrolledCount === 0;
+    const isEnrolledVARC = enrolledTopicsList.includes("varc-verbal-ability");
 
     const newItems: ScheduleItem[] = [];
     const taskDate = `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -367,6 +378,7 @@ export default function DashboardPage() {
         }).catch(() => {});
       }
       await fetchDashboard();
+      fetchMetrics();
     }
   };
 
@@ -382,13 +394,9 @@ export default function DashboardPage() {
   });
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
-  // Detailed Metric Modal State
-  const [activeModal, setActiveModal] = useState<"inProgress" | "completed" | "watching" | "points" | null>(null);
-
-  // Fetch live dashboard analytics from Supabase
+  // Fetch the task list / enrolled topics. Auth is carried by the httpOnly session cookie.
   const fetchDashboard = async () => {
     try {
-      // Auth is carried by the httpOnly session cookie.
       const res = await fetch("/api/dashboard");
       if (res.ok) {
         const text = await res.text();
@@ -399,16 +407,36 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.warn("Failed to fetch dashboard data:", err);
+    }
+  };
+
+  // Fetch the single metrics contract (all numbers on this page).
+  const fetchMetrics = async () => {
+    try {
+      const res = await fetch("/api/me/metrics");
+      if (res.status === 401) {
+        setMetricsError("Your session has expired. Please sign in again to see your progress.");
+        setMetrics(null);
+      } else if (!res.ok) {
+        setMetricsError("Your progress numbers could not be loaded right now. Please refresh to try again.");
+      } else {
+        setMetrics((await res.json()) as StudentMetrics);
+        setMetricsError(null);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch metrics:", err);
+      setMetricsError("Your progress numbers could not be loaded right now. Please refresh to try again.");
     } finally {
-      setIsLoading(false);
+      setMetricsLoading(false);
     }
   };
 
   useEffect(() => {
     if (user) {
       fetchDashboard();
+      fetchMetrics();
     } else {
-      setIsLoading(false);
+      setMetricsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -462,6 +490,7 @@ export default function DashboardPage() {
         setTaskTitle("");
         setIsTaskModalOpen(false);
         await fetchDashboard();
+        fetchMetrics();
       } else {
         setTaskTitle("");
         setIsTaskModalOpen(false);
@@ -521,28 +550,12 @@ export default function DashboardPage() {
   const displayName = resolveStudentName(user?.fullName, user?.email);
   const firstName = displayName.split(" ")[0] || displayName;
 
-  // Always use real DB data — no fake fallback values
-  const metrics = dashboardData?.metrics || {
-    inProgressCourses: 0,
-    completedCourses: 0,
-    watchingTime: "0h 0 min",
-    pointsEarned: 0,
-  };
-
-  const ZERO_WEEK = [
-    { day: "Sun", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Mon", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Tue", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Wed", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Thu", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Fri", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-    { day: "Sat", learning: 0, challenge: 0, rawLearning: 0, rawChallenge: 0 },
-  ];
-  const currentWeeklyStats = dashboardData?.weeklyStats && dashboardData.weeklyStats.length === 7
-    ? dashboardData.weeklyStats
-    : ZERO_WEEK;
-
-  const streak = currentWeeklyStats.filter(s => (s.rawLearning || 0) > 0 || (s.rawChallenge || 0) > 0).length;
+  // KPI values (all from /api/me/metrics)
+  const kpiPending = metricsLoading || !metrics;
+  const syllabusLessonsDone = metrics
+    ? metrics.courses.topics.filter((t) => t.section !== null).reduce((sum, t) => sum + t.lessonsCompleted, 0)
+    : 0;
+  const last7Days = metrics ? metrics.studyTime.daily.slice(-7) : [];
 
   return (
     <div className={styles.dashboardWrapper}>
@@ -613,72 +626,72 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* AI Motivation Widget */}
-          <AiMotivationWidget firstName={firstName} streak={streak} points={metrics.pointsEarned} />
+          {/* Today's Focus (deterministic, from metrics.tasks / metrics.streak / metrics.studyTime) */}
+          <AiMotivationWidget firstName={firstName} metrics={metrics} isLoading={metricsLoading} />
 
-          {/* 4 Metric Cards Row */}
+          {metricsError && !metricsLoading && (
+            <p className={styles.metricsErrorNote} role="status">{metricsError}</p>
+          )}
+
+          {/* 4 KPI Cards Row — headline numbers that link to the detailed pages */}
           <div className={styles.metricCardsRow}>
-            {/* Card 1: In Progress */}
-            <div
-              className={styles.metricCard}
+            {/* Card 1: Readiness score -> Intelligence Hub breakdown */}
+            <Link
+              href="/intelligence"
+              className={`${styles.metricCard} ${styles.metricCardLink}`}
               style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }}
-              onClick={() => setActiveModal("inProgress")}
+              title="See the readiness breakdown in the Intelligence Hub"
             >
               <div className={`${styles.metricIconBox} ${styles.iconPurple}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                {kpiPending ? (
+                  <span className={styles.metricValue}>—</span>
+                ) : metrics.readiness.score !== null ? (
+                  <span className={styles.metricValue}>{metrics.readiness.score} / 100</span>
+                ) : (
+                  <span className={styles.metricValueEmpty}>Not yet</span>
+                )}
+                <span className={styles.metricLabel}>
+                  {!kpiPending && metrics.readiness.score === null ? "Readiness · take a timed test" : "CAT Readiness"}
+                </span>
+              </div>
+            </Link>
+
+            {/* Card 2: Study time this week -> My Analytics */}
+            <Link
+              href="/analytics"
+              className={`${styles.metricCard} ${styles.metricCardLink}`}
+              style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', borderLeft: '4px solid #0D9488' }}
+              title="See your study time in My Analytics"
+            >
+              <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </div>
               <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>{isLoading ? "—" : metrics.inProgressCourses} Topics</span>
-                <span className={styles.metricLabel}>In Progress</span>
+                <span className={styles.metricValue}>
+                  {kpiPending ? "—" : formatDuration(metrics.studyTime.last7DaysSeconds)}
+                </span>
+                <span className={styles.metricLabel}>Study Time · last 7 days</span>
               </div>
-            </div>
+            </Link>
 
-            {/* Card 2: Completed */}
-            <div
-              className={styles.metricCard}
-              style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', borderLeft: '4px solid #0D9488' }}
-              onClick={() => setActiveModal("completed")}
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>{isLoading ? "—" : metrics.completedCourses} Topics</span>
-                <span className={styles.metricLabel}>Completed</span>
-              </div>
-            </div>
-
-            {/* Card 3: Watching Time */}
-            <div
-              className={styles.metricCard}
+            {/* Card 3: Points -> My Analytics */}
+            <Link
+              href="/analytics"
+              className={`${styles.metricCard} ${styles.metricCardLink}`}
               style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }}
-              onClick={() => setActiveModal("watching")}
+              title="See how you earned your points in My Analytics"
             >
               <div className={`${styles.metricIconBox} ${styles.iconOrange}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m22 8-6 4 6 4V8Z" />
-                  <rect width="14" height="12" x="2" y="6" rx="2" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>{isLoading ? "—" : metrics.watchingTime}</span>
-                <span className={styles.metricLabel}>Watching Time</span>
-              </div>
-            </div>
-
-            {/* Card 4: Total Points */}
-            <div
-              className={styles.metricCard}
-              style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderLeft: '4px solid #6366F1' }}
-              onClick={() => setActiveModal("points")}
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
                   <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
@@ -689,10 +702,37 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>{isLoading ? "—" : metrics.pointsEarned} Points</span>
+                <span className={styles.metricValue}>
+                  {kpiPending ? "—" : `${metrics.points.total.toLocaleString("en-IN")} Points`}
+                </span>
                 <span className={styles.metricLabel}>Total Points</span>
               </div>
-            </div>
+            </Link>
+
+            {/* Card 4: Syllabus lessons completed -> My Topics */}
+            <Link
+              href="/topics"
+              className={`${styles.metricCard} ${styles.metricCardLink}`}
+              style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderLeft: '4px solid #6366F1' }}
+              title="Open My Topics"
+            >
+              <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+              <div className={styles.metricInfo}>
+                <span className={styles.metricValue}>
+                  {kpiPending ? "—" : `${syllabusLessonsDone} / ${metrics.courses.syllabusLessons}`}
+                </span>
+                <span className={styles.metricLabel}>
+                  {kpiPending
+                    ? "CAT Syllabus Lessons"
+                    : `Syllabus lessons · ${metrics.courses.inProgress} in progress, ${metrics.courses.completed} done`}
+                </span>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -701,7 +741,7 @@ export default function DashboardPage() {
       <main className={styles.mainContent}>
         {/* Full Width Spotlight: Continue Learning Widget */}
         <div style={{ marginBottom: "28px" }}>
-          <ContinueLearningWidget isDemo={isDemo} topicProgress={dashboardData?.detailed?.inProgressTopics || []} />
+          <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
         </div>
 
         {/* 2-Column Responsive Dashboard Grid (65% / 35%) */}
@@ -721,7 +761,7 @@ export default function DashboardPage() {
               isDemo={isDemo}
             />
 
-            {/* 2. Study Performance Chart with Side-by-Side AI Performance Analysis */}
+            {/* 2. Study Performance: last 7 days (metrics.studyTime.daily) + deterministic weekly summary */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>Study Performance</h2>
@@ -732,60 +772,68 @@ export default function DashboardPage() {
                   </div>
                   <div className={styles.legendItem}>
                     <span className={styles.dotChallenge} />
-                    <span>Challenge</span>
+                    <span>Practice</span>
                   </div>
                 </div>
               </div>
 
               <div className={styles.studyStatBody}>
                 <div style={{ flex: 1.25, minWidth: 0, width: "100%" }}>
-                  <StudyPerformanceChart data={currentWeeklyStats} />
+                  {metrics ? (
+                    <StudyPerformanceChart daily={last7Days} />
+                  ) : (
+                    <div className={styles.chartPlaceholder}>
+                      {metricsLoading ? "Loading your study time…" : "Study time could not be loaded right now."}
+                    </div>
+                  )}
                 </div>
 
-                {/* AI Performance Analysis inside Study Performance card */}
+                {/* Weekly summary derived from metrics */}
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", borderLeft: "1px solid #F1F5F9", paddingLeft: "20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <div style={{ padding: "6px", background: "#EFF6FF", borderRadius: "8px", color: "#2563EB" }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
                       </svg>
                     </div>
-                    <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#1E293B", margin: 0 }}>AI Performance Analysis</h3>
+                    <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#1E293B", margin: 0 }}>This Week at a Glance</h3>
                   </div>
 
                   <p style={{ fontSize: "12.5px", color: "#475569", margin: 0, lineHeight: "1.5" }}>
-                    {isDemo ? (
-                      <>Your learning hours are <strong>up 16%</strong> this week. You are spending disproportionately more time on Quantitative Ability compared to VARC.</>
-                    ) : (dashboardData?.summary?.totalHoursWeek || 0) > 0 ? (
-                      <>You have logged <strong>{dashboardData?.summary?.totalHoursWeek} hours</strong> this week. Maintain steady consistency across all 3 CAT sections.</>
-                    ) : (
-                      <>Your study activity is currently at <strong>0 hours</strong> this week. Attend your first video lecture and solve practice drills to start logging your learning pace.</>
-                    )}
+                    {metrics ? weeklySummary(metrics) : metricsLoading ? "Loading…" : "Your weekly summary is unavailable right now."}
                   </p>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>Quant Progress</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: isDemo ? "#0D9488" : "#64748B", background: isDemo ? "#F0FDFA" : "#F1F5F9", padding: "2px 8px", borderRadius: "6px" }}>
-                        {isDemo ? "Good Pace" : (dashboardData?.detailed?.inProgressTopics?.some(t => t.topic_id === 'qa-quantitative-ability') ? "In Progress" : "Ready to Begin")}
-                      </span>
+                  {metrics && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                      {SECTION_ORDER.map((key) => {
+                        const sec = metrics.sections[key];
+                        const badge = sectionBadge(sec.accuracy, sec.attempted);
+                        return (
+                          <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>{SECTION_NAMES[key]} (timed tests)</span>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: badge.color, background: badge.bg, padding: "2px 8px", borderRadius: "6px" }}>
+                              {badge.text}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>VARC Progress</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: isDemo ? "#EF4444" : "#64748B", background: isDemo ? "#FEE2E2" : "#F1F5F9", padding: "2px 8px", borderRadius: "6px" }}>
-                        {isDemo ? "Needs Attention" : (dashboardData?.detailed?.inProgressTopics?.some(t => t.topic_id === 'varc-verbal-ability') ? "In Progress" : "Ready to Begin")}
-                      </span>
-                    </div>
-                  </div>
+                  )}
 
-                  <div style={{ background: "#EFF6FF", padding: "10px 12px", borderRadius: "12px", border: "1px solid #BFDBFE" }}>
-                    <h4 style={{ fontSize: "11px", fontWeight: "700", color: "#1E3A8A", margin: "0 0 4px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>Recommended Next Step</h4>
-                    <p style={{ fontSize: "12px", color: "#1E40AF", margin: 0, fontWeight: "500", lineHeight: "1.4" }}>
-                      {isDemo
-                        ? "Take a Reading Comprehension sectional mock today to identify weak spots."
-                        : "Start with QA Module 1.1 Percentage Foundations or explore the CAT syllabus."}
-                    </p>
-                  </div>
+                  {metrics && (
+                    <div style={{ background: "#EFF6FF", padding: "10px 12px", borderRadius: "12px", border: "1px solid #BFDBFE" }}>
+                      <h4 style={{ fontSize: "11px", fontWeight: "700", color: "#1E3A8A", margin: "0 0 4px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>Recommended Next Step</h4>
+                      <p style={{ fontSize: "12px", color: "#1E40AF", margin: 0, fontWeight: "500", lineHeight: "1.4" }}>
+                        {recommendedNextStep(metrics)}
+                      </p>
+                    </div>
+                  )}
+
+                  <Link href="/analytics" style={{ fontSize: "12px", fontWeight: 600, color: "#2563EB", textDecoration: "none" }}>
+                    Full study analytics →
+                  </Link>
                 </div>
               </div>
             </div>
@@ -798,6 +846,11 @@ export default function DashboardPage() {
                   <span style={{ fontSize: "11px", fontWeight: "700", background: "#EFF6FF", color: "#2563EB", padding: "2px 8px", borderRadius: "6px" }}>
                     Live & Upcoming
                   </span>
+                  {announcements?.isSample && (
+                    <span style={{ fontSize: "11px", fontWeight: "700", background: "#F1F5F9", color: "#475569", padding: "2px 8px", borderRadius: "6px" }}>
+                      Sample data
+                    </span>
+                  )}
                 </div>
               </div>
               <div className={styles.agendaList}>
@@ -809,10 +862,10 @@ export default function DashboardPage() {
                       </svg>
                     </div>
                     <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#1E293B", margin: "0 0 4px 0" }}>
-                      No Upcoming Live Classes Scheduled
+                      No live classes scheduled right now
                     </h4>
                     <p style={{ fontSize: "13px", color: "#64748B", margin: "0 0 16px 0", maxWidth: "420px", marginLeft: "auto", marginRight: "auto" }}>
-                      You haven&apos;t enrolled in any modules yet. Live masterclasses, faculty Q&amp;A sessions, and workshops will appear here once you enroll in Quantitative Aptitude, DILR, or VARC.
+                      Live masterclasses and faculty Q&amp;A sessions appear here as soon as they are announced. Meanwhile, keep going with your study plan.
                     </p>
                     <Link
                       href="/browse"
@@ -872,7 +925,7 @@ export default function DashboardPage() {
                           {item.isLiveNow && (
                             <span className={styles.agendaLiveTag}>
                               <span className={styles.agendaLivePulse} />
-                              Live Today
+                              Live now
                             </span>
                           )}
                           <h3 className={styles.agendaTitle}>{item.title}</h3>
@@ -913,28 +966,43 @@ export default function DashboardPage() {
                   <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#D97706", padding: "2px 8px", borderRadius: "6px" }}>
                     Official Updates
                   </span>
+                  {announcements?.isSample && (
+                    <span style={{ fontSize: "11px", fontWeight: "700", background: "#F1F5F9", color: "#475569", padding: "2px 8px", borderRadius: "6px" }}>
+                      Sample data
+                    </span>
+                  )}
                 </div>
               </div>
               <div className={styles.noticeList}>
+                {prepNotices.length === 0 && (
+                  <p style={{ fontSize: "13px", color: "#64748B", padding: "12px 4px", margin: 0 }}>
+                    No notices right now. Official TechnoCAT updates will show up here.
+                  </p>
+                )}
                 {prepNotices.map((notice) => (
                   <div
                     key={notice.id}
                     className={styles.noticeItem}
-                    onClick={() => router.push(notice.actionUrl)}
-                    role="button"
-                    tabIndex={0}
+                    onClick={() => notice.actionUrl && router.push(notice.actionUrl)}
+                    role={notice.actionUrl ? "button" : undefined}
+                    tabIndex={notice.actionUrl ? 0 : undefined}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
+                      if (notice.actionUrl && (e.key === "Enter" || e.key === " ")) {
                         router.push(notice.actionUrl);
                       }
                     }}
+                    title={notice.desc || undefined}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={notice.thumbUrl}
-                      alt={notice.title}
+                    <div
                       className={styles.noticeThumb}
-                    />
+                      aria-hidden="true"
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", background: notice.badgeBg, color: notice.badgeColor }}
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 11l18-5v12L3 14v-3z" />
+                        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+                      </svg>
+                    </div>
                     <div className={styles.noticeContent}>
                       <span
                         className={styles.noticeBadge}
@@ -951,12 +1019,14 @@ export default function DashboardPage() {
                         {notice.dateNotice}
                       </span>
                     </div>
-                    <div className={styles.noticeCtaBtn}>
-                      <span>{notice.actionLabel}</span>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    {notice.actionUrl && (
+                      <div className={styles.noticeCtaBtn}>
+                        <span>Open</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -976,142 +1046,14 @@ export default function DashboardPage() {
               isDemo={isDemo}
             />
 
-            {/* 2. CAT 2026 Readiness & Weak Area Diagnostic */}
-            <CatReadinessWidget isDemo={isDemo} topicProgress={dashboardData?.detailed?.inProgressTopics || []} />
+            {/* 2. CAT Readiness: single score + estimated percentile; breakdown lives in /intelligence */}
+            <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
 
             {/* 3. Weekly Leaderboard */}
             <LeaderboardWidget />
           </div>
         </div>
       </main>
-
-      {/* ===== DETAILED METRIC MODAL ===== */}
-      {activeModal && (
-        <div className={styles.modalBackdrop} onClick={() => setActiveModal(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px', width: '90%' }}>
-            <div className={styles.modalHeader} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #E5E7EB' }}>
-              <div>
-                <h3 className={styles.modalTitle} style={{ fontSize: '20px', fontWeight: '700' }}>
-                  {activeModal === "inProgress" && "Topics In Progress"}
-                  {activeModal === "completed" && "Completed Topics"}
-                  {activeModal === "watching" && "Watching Time"}
-                  {activeModal === "points" && "Total Points"}
-                </h3>
-                <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>
-                  {activeModal === "inProgress" && `You have ${metrics.inProgressCourses} topics currently in progress.`}
-                  {activeModal === "completed" && `You have completed ${metrics.completedCourses} topics so far.`}
-                  {activeModal === "watching" && `You have spent ${metrics.watchingTime} watching video lessons.`}
-                  {activeModal === "points" && `You have earned ${metrics.pointsEarned} points across all activities.`}
-                </p>
-              </div>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setActiveModal(null)}
-                aria-label="Close"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-
-            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {/* In Progress */}
-              {activeModal === "inProgress" && (!dashboardData?.detailed?.inProgressTopics || dashboardData.detailed.inProgressTopics.length === 0) && (
-                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
-                  No topics currently in progress. Browse topics and start learning.
-                </div>
-              )}
-              {activeModal === "inProgress" && dashboardData?.detailed?.inProgressTopics?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ padding: '16px', borderRadius: '12px', border: '1px solid #E5E7EB', background: '#F9FAFB' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
-                      {topic.topic_id.replace(/-/g, ' ')}
-                    </h4>
-                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#8b5cf6' }}>{topic.progress_percent}%</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#6B7280' }}>
-                      Lessons: {topic.completed_lessons?.length || 0} completed<br/>
-                      Last accessed: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
-                    </div>
-                    <Link href="/browse" onClick={() => setActiveModal(null)} style={{ background: '#2563EB', color: '#fff', fontSize: '12px', fontWeight: '600', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none' }}>
-                      Continue Learning
-                    </Link>
-                  </div>
-                </div>
-              ))}
-
-              {/* Completed Topics */}
-              {activeModal === "completed" && (!dashboardData?.detailed?.completedTopics || dashboardData.detailed.completedTopics.length === 0) && (
-                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
-                  You haven&apos;t completed any topics yet.
-                </div>
-              )}
-              {activeModal === "completed" && dashboardData?.detailed?.completedTopics?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #F0FDFA', background: '#f0fdfa' }}>
-                  <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
-                      {topic.topic_id.replace(/-/g, ' ')}
-                    </h4>
-                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
-                      Completed on: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#0D9488' }}>+{topic.points_earned || 0} pts</span>
-                  </div>
-                </div>
-              ))}
-
-              {/* Watching Time */}
-              {activeModal === "watching" && (!dashboardData?.detailed?.watchingHistory || dashboardData.detailed.watchingHistory.length === 0) && (
-                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
-                  No watching activity yet.
-                </div>
-              )}
-              {activeModal === "watching" && dashboardData?.detailed?.watchingHistory?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #DBEAFE', background: '#EFF6FF' }}>
-                  <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
-                      {topic.topic_id.replace(/-/g, ' ')}
-                    </h4>
-                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
-                      Last watched: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#2563EB' }}>
-                      {Math.floor(topic.watching_time_minutes / 60) > 0 && `${Math.floor(topic.watching_time_minutes / 60)}h `}
-                      {topic.watching_time_minutes % 60}m
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              {/* Total Points */}
-              {activeModal === "points" && (!dashboardData?.detailed?.pointsHistory || dashboardData.detailed.pointsHistory.length === 0) && (
-                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280', fontSize: '14px' }}>
-                  Start learning and completing activities to earn points.
-                </div>
-              )}
-              {activeModal === "points" && dashboardData?.detailed?.pointsHistory?.map((topic: any) => (
-                <div key={topic.topic_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderRadius: '12px', border: '1px solid #eef2ff', background: '#f8fafc' }}>
-                  <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>
-                      {topic.topic_id.replace(/-/g, ' ')}
-                    </h4>
-                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
-                      Earned on: {new Date(topic.updated_at || new Date()).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '15px', fontWeight: '700', color: '#6366F1' }}>+{topic.points_earned || 0} pts</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ===== ADD STUDY TASK MODAL ===== */}
       {isTaskModalOpen && (
@@ -1197,10 +1139,6 @@ export default function DashboardPage() {
                   >
                     {selectedAgenda.activity}
                   </span>
-                  <span style={{ fontSize: "12px", color: "#6B7280", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    <span>{selectedAgenda.enrolledCount} Aspirants Enrolled</span>
-                  </span>
                 </div>
                 <h3 className={styles.modalTitle} style={{ fontSize: "19px", lineHeight: "1.3" }}>
                   {selectedAgenda.title}
@@ -1225,9 +1163,6 @@ export default function DashboardPage() {
                 <div style={{ fontSize: "13.5px", fontWeight: "700", color: "#1E3A8A" }}>
                   {selectedAgenda.faculty}
                 </div>
-                <div style={{ fontSize: "11.5px", color: "#3B82F6", fontWeight: "500" }}>
-                  {selectedAgenda.facultyBio}
-                </div>
               </div>
             </div>
 
@@ -1247,7 +1182,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Syllabus */}
+            {/* Syllabus (only when the announcement lists one) */}
+            {selectedAgenda.syllabus.length > 0 && (
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: "700", color: "#111827", margin: "14px 0 8px" }}>
                 Session Key Takeaways & Syllabus:
@@ -1263,6 +1199,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
+            )}
 
             {liveStreamAlert && (
               <div style={{ background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "10px 14px", borderRadius: "10px", color: "#065F46", fontSize: "12.5px", fontWeight: "600", marginBottom: "14px" }}>
@@ -1272,23 +1209,23 @@ export default function DashboardPage() {
 
             {/* Actions */}
             <div className={styles.agendaModalActions}>
-              <button
-                type="button"
-                className={styles.agendaPrimaryAction}
-                onClick={() => {
-                  setLiveStreamAlert("Connecting to Live Classroom stream... Redirecting to Topic Masterclass!");
-                  setTimeout(() => {
-                    const url = selectedAgenda.topicUrl;
-                    setSelectedAgenda(null);
-                    router.push(url);
-                  }, 800);
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                <span>Enter Classroom</span>
-              </button>
+              {selectedAgenda.joinUrl ? (
+                <a
+                  href={selectedAgenda.joinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.agendaPrimaryAction}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>{selectedAgenda.isLiveNow ? "Join Class" : "Open Class Link"}</span>
+                </a>
+              ) : (
+                <span className={styles.agendaSecondaryAction} style={{ cursor: "default" }}>
+                  Joining link will be shared before the class
+                </span>
+              )}
 
               <button
                 type="button"

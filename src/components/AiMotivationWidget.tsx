@@ -1,97 +1,97 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import type { StudentMetrics } from "@/lib/metrics/types";
 import styles from "./AiMotivationWidget.module.css";
 
-interface AiMotivationWidgetProps {
+// "Today's Focus" line. Deterministic and derived only from metrics (today's tasks, overdue
+// tasks, streak, study time today) — no random messages and no simulated AI typing.
+
+interface TodayFocusWidgetProps {
   firstName: string;
-  streak: number;
-  points: number;
+  metrics: StudentMetrics | null;
+  isLoading?: boolean;
 }
 
-const MESSAGES = [
-  "Wow, {streak} days in a row! Keep up the incredible momentum, {name}.",
-  "You've earned {points} points so far. You're on track for that 99+ percentile!",
-  "Great to see you again, {name}. A quick 20-minute session today can make all the difference.",
-  "Hard work beats talent when talent doesn't work hard. Let's crush today's topics!",
-  "Consistency is your superpower. Your {streak}-day streak is proof of your dedication."
-];
+function formatMinutes(seconds: number): string {
+  const mins = Math.round(seconds / 60);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
 
-const STARTER_MESSAGES = [
-  "Welcome to TechnoCAT, {name}! Dive into your first video masterclass to begin your streak!",
-  "Consistency is your superpower, {name}. Start today's session to build your study habit.",
-  "Ready to conquer CAT 2026, {name}? Complete your first practice drill to earn your first points!",
-  "Great journey starts with a single step, {name}. Choose a topic from the CAT syllabus to begin!"
-];
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-export default function AiMotivationWidget({ firstName, streak, points }: AiMotivationWidgetProps) {
-  const [isThinking, setIsThinking] = useState(true);
-  const [message, setMessage] = useState("");
-  const [displayedText, setDisplayedText] = useState("");
+/** Builds the focus line from today's tasks, overdue tasks, streak and study time. */
+export function buildFocusLine(firstName: string, m: StudentMetrics): string {
+  const { todayTotal, todayDone, overdue } = m.tasks;
+  const remaining = Math.max(0, todayTotal - todayDone);
+  const parts: string[] = [];
 
-  useEffect(() => {
-    // 1. Pick a message
-    const msgPool = streak > 0 ? MESSAGES : STARTER_MESSAGES;
-    const rawMsg = msgPool[Math.floor(Math.random() * msgPool.length)];
-    const personalizedMsg = rawMsg
-      .replace("{name}", firstName)
-      .replace("{streak}", streak.toString())
-      .replace("{points}", points.toString());
-    
-    setMessage(personalizedMsg);
+  if (todayTotal > 0 && remaining > 0) {
+    parts.push(
+      `${firstName}, ${remaining} of today's ${plural(todayTotal, "study task")} ${remaining === 1 ? "is" : "are"} still open` +
+        (overdue > 0 ? ` and ${overdue} ${overdue === 1 ? "is" : "are"} overdue — finish today's first, then catch up.` : ".")
+    );
+  } else if (todayTotal > 0) {
+    parts.push(
+      `All ${plural(todayTotal, "task")} for today are done, ${firstName}` +
+        (overdue > 0 ? ` — ${overdue} overdue ${overdue === 1 ? "task is" : "tasks are"} still waiting.` : ".")
+    );
+  } else {
+    parts.push(
+      `${firstName}, no study tasks are planned for today` +
+        (overdue > 0 ? ` and ${overdue} ${overdue === 1 ? "is" : "are"} overdue` : "") +
+        " — add one in the schedule below."
+    );
+  }
 
-    // 2. Simulate AI "thinking" time (1.5 to 2.5 seconds)
-    const thinkTimer = setTimeout(() => {
-      setIsThinking(false);
-    }, 1500 + Math.random() * 1000);
+  const { current, best, activeToday } = m.streak;
+  if (activeToday) {
+    parts.push(
+      `${formatMinutes(m.studyTime.todaySeconds)} studied today — your ${plural(current, "day")} streak is safe.`
+    );
+  } else if (current > 0) {
+    parts.push(`Study at least 2 minutes today to extend your ${plural(current, "day")} streak.`);
+  } else if (best > 0) {
+    parts.push(`Study today to start a new streak (your best is ${plural(best, "day")}).`);
+  } else {
+    parts.push("Study for a few minutes today to start your first streak.");
+  }
 
-    return () => clearTimeout(thinkTimer);
-  }, [firstName, streak, points]);
+  return parts.join(" ");
+}
 
-  useEffect(() => {
-    // 3. Typewriter effect
-    if (!isThinking && message) {
-      let i = 0;
-      setDisplayedText(""); // reset
-      
-      const typeTimer = setInterval(() => {
-        i++;
-        setDisplayedText(message.substring(0, i));
-        if (i >= message.length) {
-          clearInterval(typeTimer);
-        }
-      }, 30); // typing speed
-
-      return () => clearInterval(typeTimer);
-    }
-  }, [isThinking, message]);
+export default function AiMotivationWidget({ firstName, metrics, isLoading = false }: TodayFocusWidgetProps) {
+  const message = metrics
+    ? buildFocusLine(firstName, metrics)
+    : isLoading
+      ? "Loading today's plan…"
+      : "Today's plan could not be loaded right now. Refresh the page to try again.";
 
   return (
     <div className={styles.widgetContainer}>
       <div className={styles.avatarBox}>
-        <svg className={styles.sparkleIcon} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" />
         </svg>
       </div>
-      
+
       <div className={styles.messageBox}>
-        <div className={styles.aiHeader}>
-          TechnoCAT AI Assistant
-        </div>
-        
-        {isThinking ? (
-          <div className={styles.typingIndicator}>
-            <span className={styles.dot}></span>
-            <span className={styles.dot}></span>
-            <span className={styles.dot}></span>
-          </div>
-        ) : (
-          <p className={styles.messageContent}>
-            {/* Highlight numbers and emojis if needed, but simple string is fine for now */}
-            {displayedText}
-          </p>
-        )}
+        <div className={styles.aiHeader}>Today&apos;s Focus</div>
+        <p className={styles.messageContent}>{message}</p>
       </div>
+
+      {metrics && (
+        <div className={styles.streakBox} title="A day counts when you study for at least 2 minutes">
+          <span className={styles.streakValue}>{metrics.streak.current}</span>
+          <span className={styles.streakLabel}>day streak</span>
+          <span className={styles.streakBest}>Best: {plural(metrics.streak.best, "day")}</span>
+        </div>
+      )}
     </div>
   );
 }

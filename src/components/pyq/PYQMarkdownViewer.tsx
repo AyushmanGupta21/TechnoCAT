@@ -1,7 +1,56 @@
 "use client";
 
 import React, { useState } from "react";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import styles from "./PYQMarkdownViewer.module.css";
+
+// ── Math (LaTeX) support ───────────────────────────────────────────────────────────
+// Question banks (e.g. CAT PYQs) write maths as \( … \), \[ … \] or $$ … $$. Segments are
+// rendered with KaTeX; invalid notation falls back to the original text instead of throwing.
+const MATH_RE = /\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)/g;
+const TOKEN_RE = /\u0000M(\d+)\u0000/g;
+
+function renderMath(tex: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(tex, { displayMode, throwOnError: false, strict: "ignore", output: "html" });
+  } catch {
+    return tex.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+  }
+}
+
+/** Replaces every math segment with a placeholder token and returns the rendered HTML list. */
+function extractMath(content: string): { text: string; html: string[] } {
+  const html: string[] = [];
+  const text = content.replace(MATH_RE, (_m, display?: string, dollars?: string, inline?: string) => {
+    const isDisplay = display !== undefined || dollars !== undefined;
+    html.push(renderMath((display ?? dollars ?? inline ?? "").trim(), isDisplay));
+    return `\u0000M${html.length - 1}\u0000`;
+  });
+  return { text, html };
+}
+
+/** Splits text on math placeholders, emitting rendered math spans between plain text. */
+function withMath(text: string, html: string[], keyPrefix: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let i = 0;
+  for (const m of text.matchAll(TOKEN_RE)) {
+    if (m.index! > last) out.push(<React.Fragment key={`${keyPrefix}-t${i}`}>{text.slice(last, m.index)}</React.Fragment>);
+    out.push(<span key={`${keyPrefix}-m${i}`} dangerouslySetInnerHTML={{ __html: html[Number(m[1])] ?? "" }} />);
+    last = m.index! + m[0].length;
+    i++;
+  }
+  if (last < text.length) out.push(<React.Fragment key={`${keyPrefix}-t${i}`}>{text.slice(last)}</React.Fragment>);
+  return out;
+}
+
+/** Single-line text that may contain maths, e.g. answer options. */
+export function MathText({ text }: { text: string }) {
+  if (!text) return null;
+  const { text: t, html } = extractMath(text);
+  return <>{withMath(t, html, "mt")}</>;
+}
 
 interface PYQMarkdownViewerProps {
   content: string;
@@ -13,18 +62,21 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
 
   if (!content) return null;
 
+  // Pull maths out first so paragraph/table splitting cannot break LaTeX apart.
+  const math = extractMath(content);
+
   // Split content into atomic block elements (paragraphs, tables, images, lists)
-  const rawBlocks = content.split(/\n\s*\n/);
+  const rawBlocks = math.text.split(/\n\s*\n/);
   const elements: React.ReactNode[] = [];
 
   const parseInline = (text: string): React.ReactNode => {
-    // Basic inline bold formatting (**bold**)
+    // Inline bold (**bold**) + rendered maths
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith("**") && part.endsWith("**")) {
-        return <strong key={i}>{part.slice(2, -2)}</strong>;
+        return <strong key={i}>{withMath(part.slice(2, -2), math.html, `b${i}`)}</strong>;
       }
-      return part;
+      return <React.Fragment key={i}>{withMath(part, math.html, `p${i}`)}</React.Fragment>;
     });
   };
 

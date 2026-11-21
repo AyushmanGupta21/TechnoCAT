@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         targetYear: user.target_year || "CAT 2026",
         dreamSchool: user.dream_school || "",
         preferences: user.preferences || {},
+        leaderboardOptOut: Boolean(user.leaderboard_opt_out),
         isGuest: false,
         isDemo,
       },
@@ -48,8 +49,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Please sign in." }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { fullName, avatarUrl, phone, targetYear, dreamSchool, preferences } = body;
+    const body = await request.json().catch(() => ({}));
+    const { fullName, avatarUrl, phone, targetYear, dreamSchool, preferences, leaderboardOptOut } = body;
 
     const updates: {
       fullName?: string;
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
       targetYear?: string;
       dreamSchool?: string;
       preferences?: any;
+      leaderboardOptOut?: boolean;
     } = {};
 
     if (typeof fullName === "string" && fullName.trim().length > 0) {
@@ -82,7 +84,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (preferences !== undefined) {
-      updates.preferences = preferences;
+      if (!preferences || typeof preferences !== "object" || Array.isArray(preferences)) {
+        return NextResponse.json({ error: "preferences must be an object" }, { status: 400 });
+      }
+      // Merge (not replace): different screens own different keys (settings switches,
+      // predictor profile, …) and must not wipe each other's data.
+      const current = await getProfileById(userId);
+      updates.preferences = { ...(current?.preferences || {}), ...preferences };
+    }
+
+    if (typeof leaderboardOptOut === "boolean") {
+      updates.leaderboardOptOut = leaderboardOptOut;
     }
 
     const updatedUser = await updateProfile(userId, updates);
@@ -100,11 +112,12 @@ export async function POST(request: NextRequest) {
             targetYear: updatedUser.target_year || "CAT 2026",
             dreamSchool: updatedUser.dream_school || "",
             preferences: updatedUser.preferences || {},
+            leaderboardOptOut: Boolean(updatedUser.leaderboard_opt_out),
           }
         : null,
     });
   } catch (error: any) {
     console.error("[Profile POST API Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to update profile." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update profile." }, { status: 500 });
   }
 }

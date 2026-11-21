@@ -1,25 +1,57 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import styles from "./LeaderboardWidget.module.css";
-import { useAuth } from "@/context/AuthContext";
+import type { Leaderboard, LeaderboardPeriod, LeaderboardEntry } from "@/lib/leaderboard";
 
-const mockLeaderboard = [
-  { id: "u1", name: "Ravi Kumar", points: 2450, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" },
-  { id: "u2", name: "Shreya Rao", points: 2100, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" },
-  { id: "u3", name: "Aisha Patel", points: 1950, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80" },
-  { id: "u4", name: "David Chen", points: 1820, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" },
-  { id: "u5", name: "Priya Sharma", points: 1650, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" },
-];
+function initials(name: string): string {
+  return name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+}
 
 export default function LeaderboardWidget() {
-  const { user } = useAuth();
-  
+  const [period, setPeriod] = useState<LeaderboardPeriod>("week");
+  const [board, setBoard] = useState<Leaderboard | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError(false);
+    fetch(`/api/leaderboard?period=${period}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data: Leaderboard) => !cancelled && setBoard(data))
+      .catch(() => !cancelled && setError(true));
+    return () => { cancelled = true; };
+  }, [period]);
+
+  const row = (person: LeaderboardEntry, key: string) => (
+    <div key={key} className={`${styles.listItem} ${person.isCurrentUser ? styles.isCurrentUser : ""}`}>
+      <span className={`${styles.rank} ${person.rank <= 3 ? styles.topRank : ""}`}>{person.rank}</span>
+      {person.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={person.avatarUrl} alt="" className={styles.avatar} />
+      ) : (
+        <span className={styles.avatar} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#E0E7FF", color: "#3730A3", fontSize: 12, fontWeight: 700 }}>
+          {initials(person.displayName)}
+        </span>
+      )}
+      <div className={styles.userInfo}>
+        <p className={styles.userName}>
+          {person.displayName}
+          {person.isCurrentUser && <span className={styles.currentUserBadge}>You</span>}
+        </p>
+        <p className={styles.userPoints}>{person.points.toLocaleString("en-IN")} XP</p>
+      </div>
+    </div>
+  );
+
+  const meOutsideTop = board?.me && !board.entries.some((e) => e.isCurrentUser);
+
   return (
     <div className={styles.widgetBox}>
       <div className={styles.widgetHeader}>
         <h2 className={styles.title}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
             <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
             <path d="M4 22h16" />
@@ -27,29 +59,52 @@ export default function LeaderboardWidget() {
             <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
             <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
           </svg>
-          Weekly Leaderboard
+          Leaderboard
+          {board?.isSample && <span className={styles.currentUserBadge} style={{ marginLeft: 8 }}>Sample data</span>}
         </h2>
+        <div role="tablist" aria-label="Leaderboard period" style={{ display: "flex", gap: 4 }}>
+          {(["week", "all"] as LeaderboardPeriod[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="tab"
+              aria-selected={period === p}
+              onClick={() => setPeriod(p)}
+              style={{
+                border: "1px solid #E2E8F0", borderRadius: 8, padding: "3px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                background: period === p ? "#0F172A" : "#FFFFFF", color: period === p ? "#FFFFFF" : "#475569",
+              }}
+            >
+              {p === "week" ? "This week" : "All time"}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className={styles.list}>
-        {mockLeaderboard.map((person, index) => {
-          const isCurrentUser = user && user.fullName === person.name;
-          return (
-            <div key={person.id} className={`${styles.listItem} ${isCurrentUser ? styles.isCurrentUser : ''}`}>
-              <span className={`${styles.rank} ${index < 3 ? styles.topRank : ''}`}>
-                {index + 1}
-              </span>
-              <img src={person.avatar} alt={person.name} className={styles.avatar} />
-              <div className={styles.userInfo}>
-                <p className={styles.userName}>
-                  {person.name}
-                  {isCurrentUser && <span className={styles.currentUserBadge}>You</span>}
-                </p>
-                <p className={styles.userPoints}>{person.points} XP</p>
-              </div>
-            </div>
-          );
-        })}
+        {error && <p className={styles.userPoints}>The leaderboard could not be loaded. Please try again later.</p>}
+        {!error && !board && <p className={styles.userPoints}>Loading…</p>}
+        {board && board.entries.length === 0 && (
+          <p className={styles.userPoints}>
+            {period === "week" ? "No points earned by anyone this week yet." : "No points earned yet."} Complete lessons and
+            quizzes to earn XP and appear here.
+          </p>
+        )}
+        {board?.entries.map((p) => row(p, `${p.rank}-${p.displayName}`))}
+        {meOutsideTop && board?.me && (
+          <>
+            <p className={styles.userPoints} style={{ textAlign: "center", margin: "4px 0" }}>⋯</p>
+            {row(board.me, "me")}
+          </>
+        )}
+        {board && !board.isSample && (
+          <p className={styles.userPoints} style={{ marginTop: 8 }}>
+            {board.optedOut
+              ? "You are hidden from the leaderboard. "
+              : `${board.participants} student${board.participants === 1 ? "" : "s"} ranked · names shown as first name + initial. `}
+            <Link href="/settings">{board.optedOut ? "Show me again" : "Privacy settings"}</Link>
+          </p>
+        )}
       </div>
     </div>
   );

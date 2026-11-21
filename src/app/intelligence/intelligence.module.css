@@ -2718,3 +2718,17 @@
   from { opacity: 0; transform: translateY(100%); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Readiness component weight + plain-language definition */
+.metricWeight {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.metricDef {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748B;
+  margin: 6px 0 0 0;
+}

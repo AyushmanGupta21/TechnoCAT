@@ -1568,3 +1568,8 @@
   }
 }
 
+
+/* Phase 3: passage / data set for PYQ review */
+.contextBox { margin: 0 0 12px 0; font-size: 13px; color: #334155; }
+.contextBox summary { cursor: pointer; font-weight: 600; color: #2563EB; }
+.contextText { margin-top: 8px; padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; white-space: pre-wrap; line-height: 1.55; max-height: 320px; overflow-y: auto; }
