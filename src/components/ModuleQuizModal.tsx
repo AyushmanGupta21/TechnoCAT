@@ -7,6 +7,7 @@ import { notifyQuizCompleted } from "@/services/notificationService";
 import PYQMarkdownViewer from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
 
 interface ModuleQuizModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ interface ModuleQuizModalProps {
   initialStrikes?: number;
   customDurationSeconds?: number;
   scoringScheme?: "standard" | "cat";
+  /** When set, the finished attempt is recorded on the server (graded server-side). */
+  attemptContext?: QuizAttemptContext;
   onClose: () => void;
   onPass: (score: number, total: number, earnedPoints: number, analysis: QuizAnalysis) => void;
   onFail: (score: number, total: number, analysis: QuizAnalysis) => void;
@@ -45,6 +48,7 @@ export default function ModuleQuizModal({
   initialStrikes = 0,
   customDurationSeconds,
   scoringScheme = "standard",
+  attemptContext,
   onClose,
   onPass,
   onFail,
@@ -234,6 +238,9 @@ export default function ModuleQuizModal({
     questionsKey: "",
   });
 
+  // Guards against recording the same attempt twice (e.g. timer expiry + click).
+  const attemptRecordedRef = useRef(false);
+
   const handleSubmit = useCallback(() => {
     const isCat = scoringScheme === "cat";
     const rawResult = isCat
@@ -264,6 +271,14 @@ export default function ModuleQuizModal({
     setAnalysis(finalResult);
     setIsSubmitted(true);
 
+    if (attemptContext && !attemptRecordedRef.current) {
+      attemptRecordedRef.current = true;
+      void submitQuizAttempt(attemptContext, questions, selectedAnswers, {
+        durationSeconds: timeTakenSeconds,
+        strikes: penaltyMarks,
+      });
+    }
+
     const points = isGrandQuiz ? 100 : 50;
 
     try {
@@ -276,7 +291,7 @@ export default function ModuleQuizModal({
     } catch (err) {
       console.error("Quiz submission callback error:", err);
     }
-  }, [title, questions, selectedAnswers, scoringScheme, isGrandQuiz, initialDuration, timeLeft, onPass, onFail]);
+  }, [title, questions, selectedAnswers, scoringScheme, isGrandQuiz, initialDuration, timeLeft, onPass, onFail, attemptContext]);
 
 
   const handleSubmitRef = useRef(handleSubmit);
@@ -347,6 +362,7 @@ export default function ModuleQuizModal({
     // (This prevents the quiz from restarting when parent state updates on submission)
     if (!isNewSession) return;
 
+    attemptRecordedRef.current = initialReviewMode; // review sessions never record
     setCurrentIdx(0);
     setSelectedAnswers(initialAnswers || {});
     setIsSubmitted(initialReviewMode);

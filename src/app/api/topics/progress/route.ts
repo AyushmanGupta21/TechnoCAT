@@ -33,22 +33,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { topicId, lessonId, totalLessons } = await request.json();
+    const { topicId, lessonId } = await request.json().catch(() => ({}));
 
-    if (!topicId || !lessonId) {
+    if (typeof topicId !== "string" || typeof lessonId !== "string" || !topicId || !lessonId) {
       return NextResponse.json({ error: "Missing topicId or lessonId" }, { status: 400 });
     }
 
-    const updated = await updateLessonCompletion(
-      userId,
-      topicId,
-      lessonId,
-      totalLessons || 25
-    );
+    const updated = await updateLessonCompletion(userId, topicId, lessonId);
+    if (!updated) {
+      return NextResponse.json({ error: "Unknown topic or lesson" }, { status: 404 });
+    }
 
-    return NextResponse.json({ success: true, progress: updated });
+    return NextResponse.json({ success: true, progress: updated, pointsAwarded: updated.pointsAwarded });
   } catch (error: any) {
     console.error("[Progress API Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to update progress" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update progress" }, { status: 500 });
   }
 }

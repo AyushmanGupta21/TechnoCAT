@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.userId;
 
-    const limit = consumeRateLimit(`chat:${userId}`, 40, 10 * 60 * 1000);
+    const limit = await consumeRateLimit(`chat:${userId}`, 40, 10 * 60 * 1000);
     if (!limit.allowed) {
       return NextResponse.json(
         { error: "You're asking questions too quickly. Please wait a few minutes." },

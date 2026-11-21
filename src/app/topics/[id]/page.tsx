@@ -30,6 +30,8 @@ import {
 } from "@/services/quizCacheService";
 import styles from "./topicDetail.module.css";
 import BrandLogo from "@/components/BrandLogo";
+import { submitQuizAttempt } from "@/services/quizAttemptService";
+import { useStudyHeartbeat } from "@/hooks/useStudyHeartbeat";
 
 function parseLessonDuration(durationStr?: string): number {
   if (!durationStr) return 0;
@@ -303,13 +305,15 @@ export default function TopicDetailPage() {
     initialAnswers?: Record<number, number | string>;
     initialAnalysis?: QuizAnalysis | null;
     initialStrikes?: number;
-
+    /** Module title, for recording module quiz attempts on the server. */
+    moduleKey?: string;
   } | null>(null);
 
   // Practice quiz modal state (TechnoEEE lesson viewer)
   const [activeQuizModal, setActiveQuizModal] = useState<{
     title: string;
     questions: any[];
+    lessonId: string;
   } | null>(null);
 
   const [aiQuizOpen, setAiQuizOpen] = useState<boolean>(false);
@@ -825,6 +829,14 @@ export default function TopicDetailPage() {
     return () => window.removeEventListener("message", handleMessage);
   }, [activeLesson.id, duration, markLessonCompleted, markLessonAsReviewed]);
 
+  // Real study time: counted only while the video plays and the tab is visible.
+  useStudyHeartbeat({
+    enabled: Boolean(user) && !isDemo,
+    topicId: topic.id,
+    lessonId: activeLesson.id,
+    active: playerState === "playing",
+  });
+
   // Request current playback time from YouTube
   useEffect(() => {
     if (playerState !== "playing") return;
@@ -930,6 +942,7 @@ export default function TopicDetailPage() {
       isOpen: true,
       title: `${modTitle.split(":")[0]} Compulsory Quiz`,
       isGrandQuiz: false,
+      moduleKey: modTitle,
       questions,
       attemptNumber: attempts,
     });
@@ -1171,6 +1184,7 @@ export default function TopicDetailPage() {
       isOpen: true,
       title: `${modTitle.split(":")[0]} Compulsory Quiz`,
       isGrandQuiz: false,
+      moduleKey: modTitle,
       questions: report.questions,
       attemptNumber: report.attemptNumber,
       initialReviewMode: true,
@@ -1235,6 +1249,7 @@ export default function TopicDetailPage() {
       isOpen: true,
       title: `${modTitle.split(":")[0]} Compulsory Quiz`,
       isGrandQuiz: false,
+      moduleKey: modTitle,
       questions: cleanReport.questions,
       attemptNumber: cleanReport.attemptNumber,
       initialReviewMode: true,
@@ -2136,6 +2151,7 @@ export default function TopicDetailPage() {
                   setActiveQuizModal({
                     title: `${activeLesson.code ? `${activeLesson.code}: ` : ""}${activeLesson.title}`,
                     questions: knowledge.quiz,
+                    lessonId: activeLesson.id,
                   });
                 }}
               >
@@ -2260,7 +2276,7 @@ export default function TopicDetailPage() {
                 playVideo();
               }}
               onLaunchFullQuiz={(quiz) => {
-                setActiveQuizModal(quiz);
+                setActiveQuizModal({ ...quiz, lessonId: activeLesson.id });
               }}
               externalPrompt={externalAiPrompt}
             />
@@ -2895,6 +2911,15 @@ export default function TopicDetailPage() {
           initialAnswers={moduleQuizModal.initialAnswers}
           initialAnalysis={moduleQuizModal.initialAnalysis}
           initialStrikes={moduleQuizModal.initialStrikes}
+          attemptContext={
+            user && !isDemo
+              ? moduleQuizModal.isGrandQuiz
+                ? { kind: "grand_quiz", topicId: topic.id }
+                : moduleQuizModal.moduleKey
+                  ? { kind: "module_quiz", topicId: topic.id, moduleKey: moduleQuizModal.moduleKey }
+                  : undefined
+              : undefined
+          }
           onClose={() => setModuleQuizModal(null)}
           onPass={handleQuizPassed}
           onFail={handleQuizFailed}
@@ -2913,6 +2938,22 @@ export default function TopicDetailPage() {
         <QuizViewer
           title={activeQuizModal.title}
           questions={activeQuizModal.questions}
+          onSubmitQuiz={(_score, _total, { answers, durationSeconds }) => {
+            if (!user || isDemo) return; // demo account is a showcase; nothing is recorded
+            const lessonId = activeQuizModal.lessonId;
+            const served = activeQuizModal.questions.map((_q, idx) => ({ id: `lesson:${lessonId}:${idx}` }));
+            const byIndex: Record<number, number> = {};
+            for (const [idx, letter] of Object.entries(answers)) {
+              const option = ["A", "B", "C", "D"].indexOf(letter);
+              if (option >= 0) byIndex[Number(idx)] = option;
+            }
+            void submitQuizAttempt(
+              { kind: "lesson_practice", topicId: topic.id, lessonId },
+              served,
+              byIndex,
+              { durationSeconds }
+            );
+          }}
           onClose={() => setActiveQuizModal(null)}
         />
       )}

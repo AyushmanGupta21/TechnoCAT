@@ -16,7 +16,12 @@ interface QuizViewerProps {
   title: string;
   questions: AnyQuizQuestion[];
   onClose: () => void;
-  onSubmitQuiz?: (score: number, total: number) => void;
+  /** Called once on submit with the score and the raw answers (option letter per question index). */
+  onSubmitQuiz?: (
+    score: number,
+    total: number,
+    details: { answers: Record<number, string>; durationSeconds: number }
+  ) => void;
 }
 
 // Normalized internal question format
@@ -84,6 +89,7 @@ export default function QuizViewer({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(Math.max(60, questions.length * 45));
+  const initialTimeRef = React.useRef(Math.max(60, questions.length * 45));
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -125,7 +131,12 @@ export default function QuizViewer({
       }
     });
     setScore(calculatedScore);
-    if (onSubmitQuiz) onSubmitQuiz(calculatedScore, questions.length);
+    if (onSubmitQuiz) {
+      onSubmitQuiz(calculatedScore, questions.length, {
+        answers: selectedAnswers,
+        durationSeconds: Math.max(0, initialTimeRef.current - timeLeft),
+      });
+    }
   };
 
   const handleRetake = () => {

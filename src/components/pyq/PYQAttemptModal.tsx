@@ -145,6 +145,12 @@ export default function PYQAttemptModal({
         maxAttempts={3}
         customDurationSeconds={40 * 60} // 40 minutes strict official CAT regulations
         scoringScheme="cat"
+        attemptContext={{
+          kind: "pyq",
+          topicId: sectionMeta?.topicId,
+          section,
+          sourceRef: `CAT-${year}-${slot}-${section}`,
+        }}
         onClose={() => {
           setInExam(false);
           setExamAttemptNumber(null);

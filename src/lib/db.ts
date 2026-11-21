@@ -1,5 +1,8 @@
 import { Pool, types, type PoolConfig, type PoolClient } from "pg";
-import { CURRICULUM_TASKS_TEMPLATE } from "@/data/curriculumScheduleData";
+import { CURRICULUM_TASKS_TEMPLATE, type CurriculumTaskTemplate } from "@/data/curriculumScheduleData";
+import { todayInAppTz, addDays } from "@/lib/time";
+import { getTopicById } from "@/data/topicsData";
+import { awardPoints } from "@/lib/points";
 import { isDemoEmail } from "@/lib/demo";
 
 // Force PostgreSQL DATE column (OID 1082) to always parse as a clean 'YYYY-MM-DD' string
@@ -160,6 +163,9 @@ export async function updateProfile(
   return res.rows[0] || null;
 }
 
+/** Anything that can run a query: the shared `query` helper or a transaction client. */
+export type Queryable = { query: (text: string, params?: unknown[]) => Promise<{ rows: any[] }> };
+
 /** Run `fn` inside a single transaction on one pooled connection. */
 export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await getPool().connect();
@@ -272,41 +278,15 @@ export async function getDashboardData(userId: string) {
 
   const inProgressCount = inProgressTopics.length;
   const completedCount = completedTopics.length;
-  const totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0);
-  const totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0);
-
-  const hours = Math.floor(totalWatchingMinutes / 60);
-  const mins = totalWatchingMinutes % 60;
-  const watchingTimeString = `${hours}h ${mins} min`;
-
-  // 2. Study sessions for the past 7 days (Sun through Sat)
-  const sessionsRes = await query(
-    `SELECT study_date, learning_hours, challenge_hours, total_hours 
-     FROM public.study_sessions 
-     WHERE user_id = $1 
-     ORDER BY study_date ASC 
-     LIMIT 7`,
-    [userId]
-  );
-
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const recordedSessions = sessionsRes.rows || [];
-
   let weeklyStats: any[] = [];
-  if (recordedSessions.length > 0) {
-    weeklyStats = recordedSessions.map((s, idx) => {
-      const d = new Date(s.study_date);
-      const dayName = dayNames[d.getDay()] || dayNames[idx % 7];
-      return {
-        day: dayName,
-        learning: Math.round(parseFloat(s.learning_hours || "0") * 10),
-        challenge: Math.round(parseFloat(s.challenge_hours || "0") * 10),
-        rawLearning: parseFloat(s.learning_hours || "0"),
-        rawChallenge: parseFloat(s.challenge_hours || "0"),
-      };
-    });
-  } else if (isDemo) {
-    // Demo user fallback
+  let totalWatchingMinutes = 0;
+  let totalPointsEarned = 0;
+
+  if (isDemo) {
+    // Showcase account: prefilled sample numbers (see src/lib/demo.ts).
+    totalWatchingMinutes = rows.reduce((sum, r) => sum + (r.watching_time_minutes || 0), 0);
+    totalPointsEarned = rows.reduce((sum, r) => sum + (r.points_earned || 0), 0);
     weeklyStats = [
       { day: "Sun", learning: 50, challenge: 40, rawLearning: 2.5, rawChallenge: 1.8 },
       { day: "Mon", learning: 75, challenge: 60, rawLearning: 4.2, rawChallenge: 2.9 },
@@ -317,20 +297,59 @@ export async function getDashboardData(userId: string) {
       { day: "Sat", learning: 28, challenge: 22, rawLearning: 1.8, rawChallenge: 1.0 },
     ];
   } else {
-    // Real user with 0 sessions: 7 clean zero-days of the current week
-    const today = new Date();
-    weeklyStats = [6, 5, 4, 3, 2, 1, 0].map((dOffset) => {
-      const date = new Date(today);
-      date.setDate(date.getDate() - dOffset);
+    // Real account: everything is derived from recorded activity and the points ledger.
+    const [ledgerRes, activityRes] = await Promise.all([
+      query(`SELECT points, reason, ref FROM public.points_ledger WHERE user_id = $1`, [userId]),
+      query(
+        `SELECT activity_date::text AS d, kind, topic_id, seconds FROM public.study_activity WHERE user_id = $1`,
+        [userId]
+      ),
+    ]);
+
+    // Per-topic lesson minutes and points, written onto the topic rows used by the UI.
+    const lessonSecondsByTopic: Record<string, number> = {};
+    for (const a of activityRes.rows) {
+      if (a.kind === "lesson" && a.topic_id) lessonSecondsByTopic[a.topic_id] = (lessonSecondsByTopic[a.topic_id] || 0) + a.seconds;
+    }
+    const pointsByTopic: Record<string, number> = {};
+    for (const p of ledgerRes.rows) {
+      totalPointsEarned += p.points;
+      let topicId: string | null = null;
+      if (p.reason === "grand_quiz_passed") topicId = p.ref;
+      else if (p.reason === "module_quiz_passed") topicId = String(p.ref).split("::")[0];
+      else if (p.reason === "lesson_completed") topicId = rows.find((r) => getTopicLessonIds(r.topic_id).has(p.ref))?.topic_id ?? null;
+      if (topicId) pointsByTopic[topicId] = (pointsByTopic[topicId] || 0) + p.points;
+    }
+    for (const r of rows) {
+      r.watching_time_minutes = Math.round((lessonSecondsByTopic[r.topic_id] || 0) / 60);
+      r.points_earned = pointsByTopic[r.topic_id] || 0;
+    }
+    totalWatchingMinutes = Math.round(
+      activityRes.rows.filter((a) => a.kind === "lesson").reduce((s, a) => s + a.seconds, 0) / 60
+    );
+
+    // Last 7 days ending today (app timezone): lessons = learning, quizzes/PYQs = challenge.
+    const today = todayInAppTz();
+    weeklyStats = [6, 5, 4, 3, 2, 1, 0].map((offset) => {
+      const date = addDays(today, -offset);
+      const dayRows = activityRes.rows.filter((a) => a.d === date);
+      const learningHours = dayRows.filter((a) => a.kind === "lesson").reduce((s, a) => s + a.seconds, 0) / 3600;
+      const challengeHours = dayRows.filter((a) => a.kind !== "lesson").reduce((s, a) => s + a.seconds, 0) / 3600;
+      const [y, m, d] = date.split("-").map(Number);
       return {
-        day: dayNames[date.getDay()],
-        learning: 0,
-        challenge: 0,
-        rawLearning: 0,
-        rawChallenge: 0,
+        day: dayNames[new Date(Date.UTC(y, m - 1, d)).getUTCDay()],
+        date,
+        learning: Math.round(learningHours * 10),
+        challenge: Math.round(challengeHours * 10),
+        rawLearning: Math.round(learningHours * 100) / 100,
+        rawChallenge: Math.round(challengeHours * 100) / 100,
       };
     });
   }
+
+  const hours = Math.floor(totalWatchingMinutes / 60);
+  const mins = totalWatchingMinutes % 60;
+  const watchingTimeString = `${hours}h ${mins} min`;
 
   // Calculate weekly totals
   const totalLearning = weeklyStats.reduce((sum, item) => sum + (item.rawLearning || 0), 0);
@@ -338,12 +357,10 @@ export async function getDashboardData(userId: string) {
   const totalWeek = Math.round(totalLearning + totalChallenge);
   const avgDay = Math.round((totalWeek / 7) * 10) / 10;
 
-  // 3. Ensure study tasks are auto-populated from curriculum for enrolled topics if not present
-  const topicsToUse = enrolledTopics.length > 0
-    ? enrolledTopics
-    : (isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"] : []);
-  if (topicsToUse.length > 0) {
-    await ensureCurriculumTasksForUser(userId, topicsToUse);
+  // 3. Study tasks are scheduled once at enrollment (scheduleCurriculumForTopic); only the
+  //    demo showcase account is re-anchored around today.
+  if (isDemo) {
+    await ensureDemoShowcaseSchedule(userId);
   }
 
   const tasksRes = await query(
@@ -562,103 +579,95 @@ export async function getUserReadinessMetrics(
   }
 }
 
-// ── Automatic Curriculum Task Population (Continuous 30-Day Rolling Window) ──
-export async function ensureCurriculumTasksForUser(userId: string, enrolledTopics: string[]) {
-  try {
-    const topicsToSchedule = enrolledTopics.length > 0
-      ? enrolledTopics
-      : ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"];
+// ── Curriculum scheduling (study plan relative to each student's enrollment) ──
 
-    const isEnrolledQA = topicsToSchedule.some(t => t.includes("qa") || t.includes("quant"));
-    const isEnrolledDILR = topicsToSchedule.some(t => t.includes("dilr") || t.includes("data"));
-    const isEnrolledVARC = topicsToSchedule.some(t => t.includes("varc") || t.includes("verbal"));
+/** Maps a topic id to its curriculum section. */
+function sectionForTopic(topicId: string): "QA" | "DILR" | "VARC" | null {
+  const id = topicId.toLowerCase();
+  if (id.startsWith("qa")) return "QA";
+  if (id.startsWith("dilr")) return "DILR";
+  if (id.startsWith("varc")) return "VARC";
+  return null;
+}
 
-    // Rolling 30-day window: starts at 1st of current month up through (today + 30 days)
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    const todayDay = now.getDate();
+async function insertCurriculumTasks(
+  db: Queryable,
+  userId: string,
+  rows: { date: string; task: CurriculumTaskTemplate; completed: boolean }[]
+): Promise<number> {
+  if (rows.length === 0) return 0;
+  const res = await db.query(
+    `INSERT INTO public.study_tasks
+       (user_id, title, task_date, is_completed, category, code, time_range, duration, subtitle, template_code)
+     SELECT $1, t.title, t.task_date::date, t.is_completed, t.category, t.code, t.time_range, t.duration, t.subtitle, t.code
+     FROM UNNEST($2::text[], $3::text[], $4::boolean[], $5::text[], $6::text[], $7::text[], $8::text[], $9::text[])
+          AS t(title, task_date, is_completed, category, code, time_range, duration, subtitle)
+     ON CONFLICT (user_id, template_code) WHERE template_code IS NOT NULL DO NOTHING
+     RETURNING id`,
+    [
+      userId,
+      rows.map((r) => r.task.title),
+      rows.map((r) => r.date),
+      rows.map((r) => r.completed),
+      rows.map((r) => r.task.category),
+      rows.map((r) => r.task.code),
+      rows.map((r) => r.task.timeRange),
+      rows.map((r) => r.task.duration),
+      rows.map((r) => r.task.subtitle),
+    ]
+  );
+  return res.rows.length;
+}
 
-    const startDate = new Date(currentYear, currentMonth, 1); // 1st of current month (e.g. Oct 1)
-    const todayDate = new Date(currentYear, currentMonth, todayDay);
-    const rollingEndDate = new Date(currentYear, currentMonth, todayDay + 30); // 30-day rolling window
+/**
+ * Schedules the standard study plan for the section of `topicId`, starting on `startDate`
+ * (default: today in the app timezone) and keeping the template's day spacing. Mock tasks
+ * are scheduled once, anchored to the student's first enrollment. Idempotent: tasks that
+ * are already scheduled (same template code) are never duplicated or moved.
+ */
+export async function scheduleCurriculumForTopic(
+  userId: string,
+  topicId: string,
+  startDate: string = todayInAppTz(),
+  db: Queryable = { query }
+): Promise<number> {
+  const section = sectionForTopic(topicId);
+  if (!section) return 0;
 
-    const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-01`;
-    const rollingEndStr = `${rollingEndDate.getFullYear()}-${String(rollingEndDate.getMonth() + 1).padStart(2, "0")}-${String(rollingEndDate.getDate()).padStart(2, "0")}`;
-    const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+  const sectionTasks = CURRICULUM_TASKS_TEMPLATE.filter((t) => t.category === section);
+  const firstDay = Math.min(...sectionTasks.map((t) => t.planDay));
+  const rows = sectionTasks.map((task) => ({ date: addDays(startDate, task.planDay - firstDay), task, completed: false }));
 
-    // Fetch existing task dates for this user in this rolling window range
-    const existingDatesRes = await query(
-      `SELECT DISTINCT task_date::text as task_date 
-       FROM public.study_tasks 
-       WHERE user_id = $1 AND task_date >= $2 AND task_date <= $3`,
-      [userId, startDateStr, rollingEndStr]
-    );
+  // Mock tests follow the overall plan from day 1 of the student's first enrollment.
+  const mocks = CURRICULUM_TASKS_TEMPLATE.filter((t) => t.category === "Mock");
+  rows.push(...mocks.map((task) => ({ date: addDays(startDate, task.planDay - 1), task, completed: false })));
 
-    const existingDateSet = new Set(existingDatesRes.rows.map((r: any) => r.task_date));
+  return insertCurriculumTasks(db, userId, rows);
+}
 
-    // Iterate through every single day in the continuous range [startDate, rollingEndDate]
-    const cur = new Date(startDate);
-    while (cur <= rollingEndDate) {
-      const curYear = cur.getFullYear();
-      const curMonth = cur.getMonth(); // 0-indexed (9 for Oct, 10 for Nov)
-      const curDay = cur.getDate();
-      const curDateStr = `${curYear}-${String(curMonth + 1).padStart(2, "0")}-${String(curDay).padStart(2, "0")}`;
+/**
+ * Demo showcase only: keeps the demo account's plan positioned around today (started three
+ * weeks ago, mostly done, a short backlog) so the dashboard always looks like an active student.
+ * Re-anchors at most once per day, when no curriculum task falls on today.
+ */
+export async function ensureDemoShowcaseSchedule(userId: string): Promise<void> {
+  const today = todayInAppTz();
+  const hasToday = await query(
+    `SELECT 1 FROM public.study_tasks WHERE user_id = $1 AND template_code IS NOT NULL AND task_date = $2 LIMIT 1`,
+    [userId, today]
+  );
+  if (hasToday.rows.length > 0) return;
 
-      // If this date is NOT yet populated, assign from curriculum template
-      if (!existingDateSet.has(curDateStr)) {
-        let templateMatches = CURRICULUM_TASKS_TEMPLATE.filter(
-          (t) => t.monthIndex === curMonth && t.day === curDay && t.year === curYear
-        );
-
-        // Fallback: If template is keyed by general day, match day and appropriate month
-        if (templateMatches.length === 0) {
-          templateMatches = CURRICULUM_TASKS_TEMPLATE.filter(
-            (t) => t.day === curDay && (t.monthIndex === curMonth || t.monthIndex === 9 || t.monthIndex === 10)
-          );
-        }
-
-        // Filter by enrolled categories
-        const filteredMatches = templateMatches.filter((t) => {
-          if (t.category === "QA" && !isEnrolledQA) return false;
-          if (t.category === "DILR" && !isEnrolledDILR) return false;
-          if (t.category === "VARC" && !isEnrolledVARC) return false;
-          return true;
-        });
-
-        // Insert tasks for this date
-        for (const t of filteredMatches) {
-          // Status: Day 1 of month marked completed; other past days uncompleted (overdue backlog); today & future uncompleted
-          let isCompleted = false;
-          if (curDateStr < todayStr && curDay === 1) {
-            isCompleted = true;
-          }
-
-          await query(
-            `INSERT INTO public.study_tasks 
-             (user_id, title, task_date, is_completed, category, code, time_range, duration, subtitle)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [
-              userId,
-              t.title,
-              curDateStr,
-              isCompleted,
-              t.category,
-              t.code,
-              t.timeRange,
-              t.duration,
-              t.subtitle,
-            ]
-          ).catch(() => {});
-        }
-      }
-
-      // Increment by 1 day
-      cur.setDate(cur.getDate() + 1);
-    }
-  } catch (err) {
-    console.error("[ensureCurriculumTasksForUser Error]", err);
-  }
+  const start = addDays(today, -21);
+  const backlogFrom = addDays(today, -2);
+  await withTransaction(async (client) => {
+    await client.query(`DELETE FROM public.study_tasks WHERE user_id = $1 AND template_code IS NOT NULL`, [userId]);
+    const rows = CURRICULUM_TASKS_TEMPLATE.map((task) => {
+      const date = addDays(start, task.planDay - 1);
+      return { date, task, completed: date < backlogFrom };
+    });
+    await insertCurriculumTasks(client, userId, rows);
+  });
 }
 
 // ── Calendar Task Operations ──
@@ -693,45 +702,43 @@ export async function toggleStudyTask(userId: string, taskId: string, isComplete
 }
 
 // ── Topic Progress Operations ──
-export async function updateLessonCompletion(userId: string, topicId: string, lessonId: string, totalLessonsInTopic: number) {
-  // 1. Fetch current progress
-  const current = await query(
-    `SELECT completed_lessons, points_earned, watching_time_minutes 
-     FROM public.topic_progress 
-     WHERE user_id = $1 AND topic_id = $2`,
-    [userId, topicId]
-  );
+/** All lesson ids that belong to a topic (flat list + module lists), from the curriculum data. */
+export function getTopicLessonIds(topicId: string): Set<string> {
+  const topic = getTopicById(topicId);
+  const ids = new Set<string>();
+  if (!topic) return ids;
+  for (const l of topic.lessons || []) ids.add(l.id);
+  for (const m of topic.modules || []) for (const l of m.lessons || []) ids.add(l.id);
+  return ids;
+}
 
-  let completedList: string[] = [];
-  let points = 10;
-  let watchingMins = 30;
+/**
+ * Marks a lesson complete exactly once (repeat calls change nothing) and awards the lesson
+ * points through the points ledger. Progress % is computed from the topic's real lesson
+ * count on the server. Returns null if the topic/lesson does not exist.
+ */
+export async function updateLessonCompletion(userId: string, topicId: string, lessonId: string) {
+  const lessonIds = getTopicLessonIds(topicId);
+  if (!lessonIds.has(lessonId)) return null;
+  const total = lessonIds.size;
 
-  if (current.rows.length > 0) {
-    completedList = current.rows[0].completed_lessons || [];
-    points = (current.rows[0].points_earned || 0) + 5;
-    watchingMins = (current.rows[0].watching_time_minutes || 0) + 25;
-  }
-
-  if (!completedList.includes(lessonId)) {
-    completedList.push(lessonId);
-  }
-
-  const percent = Math.min(100, Math.round((completedList.length / Math.max(1, totalLessonsInTopic)) * 100));
-
-  const upsert = await query(
-    `INSERT INTO public.topic_progress (user_id, topic_id, progress_percent, completed_lessons, watching_time_minutes, points_earned, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, now())
-     ON CONFLICT (user_id, topic_id) DO UPDATE
-     SET progress_percent = EXCLUDED.progress_percent,
-         completed_lessons = EXCLUDED.completed_lessons,
-         watching_time_minutes = EXCLUDED.watching_time_minutes,
-         points_earned = EXCLUDED.points_earned,
-         updated_at = now()
-     RETURNING *`,
-    [userId, topicId, percent, completedList, watchingMins, points]
-  );
-
-  return upsert.rows[0];
+  return withTransaction(async (client) => {
+    const upsert = await client.query(
+      `INSERT INTO public.topic_progress AS tp (user_id, topic_id, progress_percent, completed_lessons, updated_at)
+       VALUES ($1, $2, LEAST(100, ROUND(100.0 / $4)), ARRAY[$3]::text[], NOW())
+       ON CONFLICT (user_id, topic_id) DO UPDATE SET
+         completed_lessons = CASE WHEN $3 = ANY(tp.completed_lessons) THEN tp.completed_lessons
+                                  ELSE array_append(tp.completed_lessons, $3) END,
+         progress_percent  = LEAST(100, ROUND(100.0 * cardinality(
+                               CASE WHEN $3 = ANY(tp.completed_lessons) THEN tp.completed_lessons
+                                    ELSE array_append(tp.completed_lessons, $3) END) / $4)),
+         updated_at        = NOW()
+       RETURNING *`,
+      [userId, topicId, lessonId, total]
+    );
+    const pointsAwarded = await awardPoints(userId, "lesson_completed", lessonId, client);
+    return { ...upsert.rows[0], pointsAwarded };
+  });
 }
 
 export async function getUserTopicProgress(userId: string) {
@@ -753,8 +760,8 @@ export async function enrollUserInTopic(userId: string, topicId: string) {
     [userId, topicId]
   );
 
-  // Auto-schedule curriculum tasks for this newly enrolled topic
-  await ensureCurriculumTasksForUser(userId, [topicId]).catch(() => {});
+  // Schedule this section's study plan starting today (idempotent).
+  await scheduleCurriculumForTopic(userId, topicId);
 
   if (res.rows.length > 0) {
     return res.rows[0];

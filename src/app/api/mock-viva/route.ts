@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Please sign in to get feedback." }, { status: 401 });
     }
-    const limit = consumeRateLimit(`mock-viva:${session.userId}`, 30, 10 * 60 * 1000);
+    const limit = await consumeRateLimit(`mock-viva:${session.userId}`, 30, 10 * 60 * 1000);
     if (!limit.allowed) {
       return NextResponse.json(
         { error: "Too many feedback requests. Please wait a few minutes." },

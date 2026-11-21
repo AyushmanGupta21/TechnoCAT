@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.userId;
 
-    const limit = consumeRateLimit(`mentor:${userId}`, 30, 10 * 60 * 1000);
+    const limit = await consumeRateLimit(`mentor:${userId}`, 30, 10 * 60 * 1000);
     if (!limit.allowed) {
       return NextResponse.json(
         { error: "You're sending messages too quickly. Please wait a few minutes." },

@@ -79,10 +79,10 @@ export async function POST(
       }
 
       const cleanEmail = email.trim().toLowerCase();
-      const ipLimit = consumeRateLimit(`login-ip:${ip}`, 50, FIFTEEN_MIN);
+      const ipLimit = await consumeRateLimit(`login-ip:${ip}`, 50, FIFTEEN_MIN);
       if (!ipLimit.allowed) return tooMany(ipLimit.retryAfterSeconds);
       const accountKey = `login:${ip}:${cleanEmail}`;
-      const accountLimit = consumeRateLimit(accountKey, 10, FIFTEEN_MIN);
+      const accountLimit = await consumeRateLimit(accountKey, 10, FIFTEEN_MIN);
       if (!accountLimit.allowed) return tooMany(accountLimit.retryAfterSeconds);
 
       const user = await getProfileByEmail(cleanEmail);
@@ -96,7 +96,7 @@ export async function POST(
         return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
       }
 
-      resetRateLimit(accountKey);
+      await resetRateLimit(accountKey);
       const response = NextResponse.json({ user: toClientUser(user) });
       setSessionCookie(response, user.id, user.email);
       return response;
@@ -108,7 +108,7 @@ export async function POST(
         return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
       }
 
-      const limit = consumeRateLimit(`signup:${ip}`, 10, ONE_HOUR);
+      const limit = await consumeRateLimit(`signup:${ip}`, 10, ONE_HOUR);
       if (!limit.allowed) return tooMany(limit.retryAfterSeconds);
 
       const cleanEmail = email.trim().toLowerCase();
@@ -157,7 +157,7 @@ export async function POST(
         );
       }
 
-      const limit = consumeRateLimit(`change-password:${session.userId}`, 10, FIFTEEN_MIN);
+      const limit = await consumeRateLimit(`change-password:${session.userId}`, 10, FIFTEEN_MIN);
       if (!limit.allowed) return tooMany(limit.retryAfterSeconds);
 
       const { currentPassword, newPassword } = await readJson(request);
