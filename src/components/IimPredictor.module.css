@@ -232,3 +232,31 @@
   color: var(--text-main);
   text-decoration: underline;
 }
+
+/* Mobile overflow guards (no effect on desktop) */
+@media (max-width: 640px) {
+  .widgetGrid {
+    padding: 24px 16px;
+  }
+
+  .widgetCard {
+    padding: 24px 18px;
+  }
+
+  .textContent,
+  .widgetCard {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .inputGroup input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .heading,
+  .desc,
+  .resultDesc {
+    overflow-wrap: anywhere;
+  }
+}

@@ -2,7 +2,8 @@
 //
 // The feed comes from GET /api/notifications, which derives every item from the student's
 // real data (study tasks, quiz attempts, points, announcements). Only the demo account gets
-// sample items, and those are flagged `isSample`. Read/dismissed state stays in localStorage
+// sample items, and those are flagged `isSample`. Read/dismissed state is saved on the server
+// (POST /api/notifications) and cached in localStorage
 // per user, keyed by the server's stable ids. Actions that "just happened" in this browser
 // (enrolment, reminder set, task completed) may add short-lived local entries for that user.
 
@@ -177,8 +178,18 @@ export function refreshNotifications(userId?: string): Promise<void> {
     try {
       const res = await fetch("/api/notifications", { cache: "no-store", credentials: "same-origin" });
       if (!res.ok) return; // keep whatever we had; never substitute fake items
-      const data = (await res.json()) as { items?: ServerNotification[] };
+      const data = (await res.json()) as {
+        items?: ServerNotification[];
+        state?: { readIds?: string[]; dismissedIds?: string[] };
+      };
       serverCache.set(uid, Array.isArray(data.items) ? data.items.map(fromServer) : []);
+      // Merge the account's saved read/dismissed state (shared across devices) into the local copy.
+      if (data.state) {
+        const local = getStoredState(uid);
+        local.readIds = Array.from(new Set([...local.readIds, ...(data.state.readIds || [])]));
+        local.dismissedIds = Array.from(new Set([...local.dismissedIds, ...(data.state.dismissedIds || [])]));
+        saveStoredState(local, uid);
+      }
       notifyListeners();
     } catch (err) {
       console.warn("[NotificationService] Could not load notifications:", err);
@@ -246,6 +257,17 @@ export function loadNotifications(userId?: string, _isDemo?: boolean): Notificat
   return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
 }
 
+/** Persist read / dismissed state on the server (best effort; local state is already updated). */
+function syncState(action: "read" | "dismiss", ids: string[]): void {
+  if (typeof window === "undefined" || ids.length === 0) return;
+  void fetch("/api/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ action, ids: ids.slice(0, 100) }),
+  }).catch(() => {});
+}
+
 /** Mark a single notification as read. */
 export function markAsRead(id: string, userId?: string): NotificationItem[] {
   const state = getStoredState(userId);
@@ -253,6 +275,7 @@ export function markAsRead(id: string, userId?: string): NotificationItem[] {
     state.readIds.push(id);
     saveStoredState(state, userId);
     notifyListeners();
+    syncState("read", [id]);
   }
   return loadNotifications(userId);
 }
@@ -264,6 +287,7 @@ export function markAllAsRead(userId?: string): NotificationItem[] {
   state.readIds = Array.from(new Set([...state.readIds, ...list.map((n) => n.id)]));
   saveStoredState(state, userId);
   notifyListeners();
+  syncState("read", list.map((n) => n.id));
   return loadNotifications(userId);
 }
 
@@ -274,6 +298,7 @@ export function dismissNotification(id: string, userId?: string): NotificationIt
     state.dismissedIds.push(id);
     saveStoredState(state, userId);
     notifyListeners();
+    syncState("dismiss", [id]);
   }
   return loadNotifications(userId);
 }
@@ -286,6 +311,7 @@ export function clearAllNotifications(userId?: string): NotificationItem[] {
   state.customList = [];
   saveStoredState(state, userId);
   notifyListeners();
+  syncState("dismiss", list.map((n) => n.id));
   return loadNotifications(userId);
 }
 

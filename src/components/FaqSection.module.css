@@ -353,3 +353,17 @@
     font-size: 14px;
   }
 }
+
+@media (max-width: 640px) {
+  .heroContent,
+  .questionLeft {
+    min-width: 0;
+  }
+
+  .heading,
+  .subHeading,
+  .questionText,
+  .answer {
+    overflow-wrap: anywhere;
+  }
+}

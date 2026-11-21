@@ -86,7 +86,7 @@ export async function query<T = any>(text: string, params?: any[]): Promise<{ ro
 // ── User / Profiles Helpers ──
 export async function getProfileByEmail(email: string) {
   const res = await query(
-    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, leaderboard_opt_out, created_at 
+    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, leaderboard_opt_out, session_version, created_at 
      FROM public.profiles 
      WHERE LOWER(email) = LOWER($1) 
      LIMIT 1`,
@@ -97,7 +97,7 @@ export async function getProfileByEmail(email: string) {
 
 export async function getProfileById(id: string) {
   const res = await query(
-    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, leaderboard_opt_out, created_at 
+    `SELECT id, email, password_hash, full_name, role, avatar_url, phone, target_year, dream_school, preferences, leaderboard_opt_out, session_version, created_at 
      FROM public.profiles 
      WHERE id = $1 
      LIMIT 1`,

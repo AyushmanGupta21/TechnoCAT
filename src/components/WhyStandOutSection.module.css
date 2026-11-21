@@ -160,9 +160,24 @@
    ========================================================================== */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .conceptTag {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .headingWrapper {
+    max-width: 100%;
+  }
+
+  .heading {
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (min-width: 640px) {

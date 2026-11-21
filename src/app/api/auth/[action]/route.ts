@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getProfileByEmail, getProfileById, createProfile, updateProfilePassword, deleteProfile } from "@/lib/db";
 import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
-import { getSession, setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
+import { getVerifiedSession, setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
+import { query } from "@/lib/db";
 import { consumeRateLimit, resetRateLimit, getClientIp } from "@/lib/auth/rateLimit";
 import { isDemoEmail } from "@/lib/demo";
 
@@ -98,7 +99,7 @@ export async function POST(
 
       await resetRateLimit(accountKey);
       const response = NextResponse.json({ user: toClientUser(user) });
-      setSessionCookie(response, user.id, user.email);
+      setSessionCookie(response, user.id, user.email, user.session_version ?? 1);
       return response;
     }
 
@@ -146,7 +147,7 @@ export async function POST(
     }
 
     if (action === "change-password") {
-      const session = getSession(request);
+      const session = await getVerifiedSession(request);
       if (!session) {
         return NextResponse.json({ error: "Please sign in to change your password." }, { status: 401 });
       }
@@ -182,15 +183,21 @@ export async function POST(
       }
 
       await updateProfilePassword(user.id, await bcrypt.hash(newPassword, BCRYPT_COST));
+      // Revoke every other session: bump the version; this device gets a fresh token below.
+      const bumped = await query<{ session_version: number }>(
+        `UPDATE public.profiles SET session_version = session_version + 1 WHERE id = $1 RETURNING session_version`,
+        [user.id]
+      );
+      const newVersion = bumped.rows[0]?.session_version ?? 1;
 
       // Re-issue the session so the current device stays signed in.
       const response = NextResponse.json({ success: true, message: "Password updated successfully!" });
-      setSessionCookie(response, user.id, user.email);
+      setSessionCookie(response, user.id, user.email, newVersion);
       return response;
     }
 
     if (action === "delete-account") {
-      const session = getSession(request);
+      const session = await getVerifiedSession(request);
       if (!session) {
         return NextResponse.json({ error: "Please sign in to delete your account." }, { status: 401 });
       }
@@ -238,9 +245,12 @@ export async function GET(
     return NextResponse.json({ error: "Invalid action" }, { status: 404 });
   }
 
-  const session = getSession(request);
+  const session = await getVerifiedSession(request).catch(() => null);
   if (!session) {
-    return NextResponse.json({ user: null });
+    // No session, or a session revoked by a password change on another device.
+    const response = NextResponse.json({ user: null });
+    if (request.cookies.get("technocat_session")) clearSessionCookie(response);
+    return response;
   }
 
   try {

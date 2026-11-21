@@ -17,7 +17,7 @@ import PricingSection from "@/components/PricingSection";
 
 export default function Home() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", paddingBottom: "80px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", paddingBottom: "80px", maxWidth: "100%", overflowX: "clip" }}>
       <Navbar />
 
       {/* Spacer for fixed navbar - mobile only */}

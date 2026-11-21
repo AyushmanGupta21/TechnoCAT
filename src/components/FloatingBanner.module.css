@@ -56,6 +56,23 @@
   color: var(--text-main);
 }
 
+@media (max-width: 640px) {
+  .textWrap {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .badge {
+    flex-shrink: 0;
+  }
+
+  .text {
+    min-width: 0;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+}
+
 .ctaBtn {
   background: var(--accent);
   color: #fff;

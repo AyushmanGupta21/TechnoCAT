@@ -481,3 +481,93 @@
   font-size: 18px;
   font-weight: 900;
 }
+
+/* --- Mobile overflow fixes --- */
+.modeCard,
+.classicHeaderLeft,
+.modernHeaderLeft,
+.classicFeature,
+.modernFeature,
+.classicMockupOuter,
+.modernMockupOuter {
+  min-width: 0;
+}
+
+.classicCheck,
+.modernCheck,
+.classicIconBox,
+.modernIconBox {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .modeCard {
+    padding: 24px 20px;
+    border-radius: 24px;
+  }
+
+  .classicHeader,
+  .modernHeader {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .classicHeaderLeft,
+  .modernHeaderLeft {
+    gap: 12px;
+  }
+
+  .classicIconBox,
+  .modernIconBox {
+    width: 52px;
+    height: 52px;
+  }
+
+  .classicTitle,
+  .modernTitle {
+    font-size: 1.5rem;
+  }
+
+  .classicFeatures,
+  .modernFeatures {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .classicFeature,
+  .modernFeature {
+    font-size: 13px;
+    gap: 8px;
+    overflow-wrap: anywhere;
+  }
+
+  .classicMockHeader {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .classicMockOption,
+  .modernMockQ,
+  .classicMockQ {
+    overflow-wrap: anywhere;
+  }
+
+  .modernMockOptions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .modernMockOption {
+    padding: 10px 8px;
+  }
+
+  .decorModernShape1 {
+    right: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .classicFeatures,
+  .modernFeatures {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

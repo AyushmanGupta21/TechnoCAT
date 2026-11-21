@@ -19,6 +19,7 @@ export interface Session {
   userId: string;
   email: string;
   isDemo: boolean;
+  sessionVersion: number; // must equal profiles.session_version (bumped on password change)
 }
 
 interface SessionPayload {
@@ -27,6 +28,7 @@ interface SessionPayload {
   email: string;
   iat: number;
   exp: number;
+  sv?: number; // session version; tokens issued before versioning count as 1
 }
 
 function getSecret(): Buffer {
@@ -43,7 +45,7 @@ function sign(data: string): string {
   return crypto.createHmac("sha256", getSecret()).update(data).digest("base64url");
 }
 
-export function createSessionToken(userId: string, email: string): string {
+export function createSessionToken(userId: string, email: string, sessionVersion = 1): string {
   const now = Math.floor(Date.now() / 1000);
   const payload: SessionPayload = {
     v: 1,
@@ -51,6 +53,7 @@ export function createSessionToken(userId: string, email: string): string {
     email: email.trim().toLowerCase(),
     iat: now,
     exp: now + SESSION_TTL_SECONDS,
+    sv: sessionVersion,
   };
   const encoded = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
   return `${encoded}.${sign(encoded)}`;
@@ -79,7 +82,8 @@ export function verifySessionToken(token: string | undefined | null): Session | 
   if (typeof payload.exp !== "number" || payload.exp <= Math.floor(Date.now() / 1000)) return null;
   if (typeof payload.email !== "string") return null;
 
-  return { userId: payload.sub, email: payload.email, isDemo: isDemoEmail(payload.email) };
+  const sessionVersion = Number.isInteger(payload.sv) ? (payload.sv as number) : 1;
+  return { userId: payload.sub, email: payload.email, isDemo: isDemoEmail(payload.email), sessionVersion };
 }
 
 function cookieOptions() {
@@ -93,8 +97,8 @@ function cookieOptions() {
 }
 
 /** Attach a fresh session cookie to a route-handler response. */
-export function setSessionCookie(response: NextResponse, userId: string, email: string): void {
-  response.cookies.set(SESSION_COOKIE, createSessionToken(userId, email), cookieOptions());
+export function setSessionCookie(response: NextResponse, userId: string, email: string, sessionVersion = 1): void {
+  response.cookies.set(SESSION_COOKIE, createSessionToken(userId, email, sessionVersion), cookieOptions());
   response.cookies.delete(LEGACY_COOKIE);
 }
 
@@ -113,4 +117,19 @@ export function getSession(request: NextRequest): Session | null {
 export async function getServerSession(): Promise<Session | null> {
   const store = await cookies();
   return verifySessionToken(store.get(SESSION_COOKIE)?.value);
+}
+
+/**
+ * Like getSession, but also checks the token's session version against the database, so
+ * sessions are revoked after a password change. Used where it matters most: /api/auth/me
+ * (every page load signs revoked devices out) and account-security actions.
+ */
+export async function getVerifiedSession(request: NextRequest): Promise<Session | null> {
+  const session = getSession(request);
+  if (!session) return null;
+  const { query } = await import("@/lib/db");
+  const res = await query<{ session_version: number }>(`SELECT session_version FROM public.profiles WHERE id = $1`, [session.userId]);
+  const current = res.rows[0]?.session_version;
+  if (current === undefined || current !== session.sessionVersion) return null;
+  return session;
 }

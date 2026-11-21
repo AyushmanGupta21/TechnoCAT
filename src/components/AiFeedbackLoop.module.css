@@ -770,3 +770,67 @@
   line-height: 1.5;
   max-width: 90%;
 }
+
+/* ==========================================================================
+   MOBILE OVERFLOW GUARDS (no effect on desktop)
+   ========================================================================== */
+@media (max-width: 640px) {
+  .mockInterfaceBody {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+
+  .analysisContentRow,
+  .planBodyRow {
+    min-width: 0;
+  }
+
+  .errorCategoryList,
+  .planItemsList {
+    min-width: 0;
+  }
+
+  .errorCatRow,
+  .planItem {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .donutContainer {
+    width: 70px;
+    height: 70px;
+  }
+
+  .planGraphBox {
+    width: 70px;
+    height: 60px;
+  }
+
+  .analysisTopRow,
+  .planTopRow {
+    gap: 8px;
+  }
+
+  .analysisTitle,
+  .planTitle {
+    min-width: 0;
+  }
+
+  .weakTopicsPill {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .aiTutorBanner {
+    padding: 28px 20px;
+  }
+
+  .aiTutorContent,
+  .aiTutorMockup {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .aiTutorTitle {
+    overflow-wrap: anywhere;
+  }
+}

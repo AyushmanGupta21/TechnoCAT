@@ -631,3 +631,34 @@
     transform: scale(1.2);
   }
 }
+
+/* Mobile: keep every hero row inside the viewport (no horizontal overflow at 360-430px) */
+@media (max-width: 640px) {
+  .leftCol,
+  .rightCol,
+  .rightContentWrapper,
+  .sectionalsLeft {
+    min-width: 0;
+  }
+
+  .heading,
+  .description,
+  .sectionalsTitle,
+  .sectionalsDesc {
+    overflow-wrap: anywhere;
+  }
+
+  .featureChips,
+  .statsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .freeAttemptBtn,
+  .enrollBtn,
+  .pyqBtn,
+  .whatsappBtn {
+    white-space: normal;
+    text-align: center;
+    min-width: 0;
+  }
+}

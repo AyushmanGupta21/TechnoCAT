@@ -139,3 +139,44 @@
   color: var(--text-main);
   line-height: 1.4;
 }
+
+/* --- Mobile overflow fixes --- */
+.statCard,
+.featureItem,
+.featureLabel {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .featureRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statCard {
+    padding: 20px 16px;
+  }
+
+  .statTitle,
+  .statDetail,
+  .featureLabel {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 520px) {
+  .featureRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .statNumber {
+    font-size: 2rem;
+  }
+}

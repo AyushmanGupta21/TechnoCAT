@@ -72,6 +72,98 @@ function formatDurationReadable(seconds: number): string {
   return `${m}m`;
 }
 
+/** Row shape of GET /api/quiz/attempts (only the fields this page reads). */
+interface ServerQuizAttempt {
+  id: string | number;
+  kind: string;
+  module_key: string | null;
+  percentage: number | string | null;
+  passed: boolean | null;
+  submitted_at: string;
+}
+
+/** Module keys are stored with "&amp;" decoded; compare titles loosely. */
+const normModuleKey = (s: string) => s.replace(/&amp;/g, "&").trim().toLowerCase();
+
+interface ReplayedModuleState {
+  attemptsUsed: number;
+  consecutiveFailures: number;
+  quizPassed: boolean;
+  quizScore: number | null;
+  highestScore: number;
+  /** Server time (ms) of the attempt that locked the module, if it is still locked. */
+  lockedSince: number | null;
+}
+
+/**
+ * Replays a module's server-recorded quiz attempts (oldest first) through the same rules the
+ * page applies locally: 3 failed attempts without a pass or 5 consecutive fails lock the quiz
+ * (a 5-fail streak also revokes a pass) until every module lecture is rewatched, which grants
+ * 3 fresh attempts. An attempt recorded after a lock implies the lock was lifted by a rewatch
+ * (possibly on another device); a lock that is still current is lifted if this device logged a
+ * rewatch of every module lecture after the locking attempt.
+ */
+function replayModuleAttempts(
+  chronological: ServerQuizAttempt[],
+  lessonIds: string[],
+  watchLog: Record<string, number>
+): ReplayedModuleState {
+  let used = 0;
+  let streak = 0;
+  let passed = false;
+  let best = 0;
+  let last: number | null = null;
+  let lockedSince: number | null = null;
+  for (const a of chronological) {
+    if (lockedSince !== null) {
+      used = 0;
+      streak = 0;
+    }
+    const pct = Math.round(Number(a.percentage) || 0);
+    used += 1;
+    best = Math.max(best, pct);
+    last = pct;
+    if (a.passed) {
+      passed = true;
+      streak = 0;
+    } else {
+      streak += 1;
+      if (streak >= 5) {
+        passed = false;
+        used = 3;
+      }
+    }
+    lockedSince = (!passed && used >= 3) || streak >= 5 ? Date.parse(a.submitted_at) || Date.now() : null;
+  }
+  if (
+    lockedSince !== null &&
+    lessonIds.length > 0 &&
+    lessonIds.every((id) => (watchLog[id] || 0) > (lockedSince as number))
+  ) {
+    used = 0;
+    streak = 0;
+    lockedSince = null;
+  }
+  return {
+    attemptsUsed: used,
+    consecutiveFailures: streak,
+    quizPassed: passed,
+    quizScore: last === null ? null : passed ? best : last,
+    highestScore: best,
+    lockedSince,
+  };
+}
+
+const isModuleLocked = (m?: ModuleProgressItem) =>
+  Boolean(m && !m.quizPassed && ((m.attemptsUsed || 0) >= 3 || (m.consecutiveFailures || 0) >= 5));
+
+/** Module titles used to contain "&amp;"; normalise keys of progress cached by older builds. */
+function normalizeModuleKeys<T>(map: Record<string, T>): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const [k, v] of Object.entries(map)) out[k.replace(/&amp;/g, "&")] = v;
+  return out;
+}
+
 export default function TopicDetailPage() {
   const router = useRouter();
   const { id } = useParams();
@@ -197,7 +289,7 @@ export default function TopicDetailPage() {
             }
           }
         } else if (parsed.activeModuleTitle) {
-          setActiveModuleTitle(parsed.activeModuleTitle);
+          setActiveModuleTitle(String(parsed.activeModuleTitle).replace(/&amp;/g, "&"));
         }
 
         if (resumeLessonId && topic.lessons.some((l) => l.id === resumeLessonId)) {
@@ -205,6 +297,7 @@ export default function TopicDetailPage() {
         }
 
         if (parsed.modulesProgress) {
+          parsed.modulesProgress = normalizeModuleKeys(parsed.modulesProgress);
           const cleaned: Record<string, ModuleProgressItem> = {};
           for (const k of Object.keys(parsed.modulesProgress)) {
             const item = parsed.modulesProgress[k];
@@ -227,37 +320,198 @@ export default function TopicDetailPage() {
     } catch {}
   }, [storageKey, topic.lessons, modulesList]);
 
-  // If real user, verify enrollment and sync completed lessons from DB
-  useEffect(() => {
-    if (!isDemo && user) {
-      fetch("/api/topics/progress")
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (data?.progress && Array.isArray(data.progress)) {
-            const thisTopic = data.progress.find((p: any) => p.topic_id === topic.id);
-            if (!thisTopic) {
-              // Real user is NOT enrolled in this course yet! Redirect to /browse to enroll
-              router.replace("/browse");
-              return;
-            }
-            if (Array.isArray(thisTopic.completed_lessons) && thisTopic.completed_lessons.length > 0) {
-              setCompletedLessonIds(thisTopic.completed_lessons);
-              // Auto-advance to next uncompleted lesson if current active is completed
-              const nextUncompleted = topic.lessons.find((l) => !thisTopic.completed_lessons.includes(l.id));
-              if (nextUncompleted) {
-                setActiveLessonId(nextUncompleted.id);
-                const parentMod = modulesList.find((m) => m.lessons.some((l) => l.id === nextUncompleted.id));
-                if (parentMod) {
-                  setActiveModuleTitle(parentMod.title);
-                  setExpandedModules((prev) => ({ ...prev, [parentMod.title]: true }));
-                }
-              }
-            }
-          }
-        })
-        .catch(() => {});
+  // ---- Server is the source of truth for real users (localStorage is only a first-paint cache) ----
+  // Per-device log of when each lecture was (re)watched to completion, used to tell whether a
+  // module locked by the server-side attempt history has been rewatched since the lock.
+  const watchLogKey = `technocat_watchlog_${user?.id || "anon"}_${topic.id}`;
+  const readWatchLog = useCallback((): Record<string, number> => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(watchLogKey) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
     }
-  }, [isDemo, user, topic.id, topic.lessons, modulesList, router]);
+  }, [watchLogKey]);
+
+  // Quiz attempts submitted in this session that the server may not have recorded yet (keyed by
+  // normalised module title), and the server attempt counts last seen per module.
+  const pendingModuleAttemptsRef = useRef<Record<string, number>>({});
+  const serverModuleCountsRef = useRef<Record<string, number>>({});
+  const pendingGrandPassRef = useRef(false);
+  const syncTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const syncProgressFromServer = useCallback(
+    async (isInitialLoad: boolean) => {
+      if (isDemo || !user || typeof window === "undefined") return;
+      const getJson = (url: string) =>
+        fetch(url)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null);
+      const [progressData, attemptsData] = await Promise.all([
+        getJson("/api/topics/progress"),
+        getJson(`/api/quiz/attempts?topicId=${encodeURIComponent(topic.id)}`),
+      ]);
+      if (!Array.isArray(progressData?.progress)) return; // offline / error: keep the cached state
+      const thisTopic = progressData.progress.find((p: any) => p.topic_id === topic.id);
+      if (!thisTopic) {
+        // Real user is NOT enrolled in this course yet! Redirect to /browse to enroll
+        router.replace("/browse");
+        return;
+      }
+      const serverCompleted: string[] = Array.isArray(thisTopic.completed_lessons)
+        ? thisTopic.completed_lessons
+        : [];
+
+      let cached: any = null;
+      try {
+        cached = JSON.parse(localStorage.getItem(storageKey) || "null");
+      } catch {}
+      const cachedModules: Record<string, ModuleProgressItem> =
+        cached?.modulesProgress && typeof cached.modulesProgress === "object" ? normalizeModuleKeys(cached.modulesProgress) : {};
+      const cachedCompleted: string[] = Array.isArray(cached?.completedLessonIds) ? cached.completedLessonIds : [];
+      const watchLog = readWatchLog();
+
+      const hasAttempts = Array.isArray(attemptsData?.attempts);
+      const byModule = new Map<string, ServerQuizAttempt[]>();
+      if (hasAttempts) {
+        // API returns newest first; replay oldest first.
+        for (const a of [...(attemptsData.attempts as ServerQuizAttempt[])].reverse()) {
+          if (a.kind !== "module_quiz" || !a.module_key) continue;
+          const key = normModuleKey(a.module_key);
+          if (!byModule.has(key)) byModule.set(key, []);
+          byModule.get(key)!.push(a);
+        }
+      }
+
+      // For lessons of locked modules: whether they count as (re)watched since the lock.
+      const lockedLessonDone = new Map<string, boolean>();
+      const nextModules: Record<string, ModuleProgressItem> = { ...cachedModules };
+      for (const mod of modulesList) {
+        const key = normModuleKey(mod.title);
+        const base: ModuleProgressItem = cachedModules[mod.title] || {
+          moduleTitle: mod.title,
+          totalLessons: mod.lessons.length,
+          completedLessons: 0,
+          quizScore: null,
+          quizPassed: false,
+          attemptsUsed: 0,
+        };
+        const list = byModule.get(key) || [];
+        const pending = pendingModuleAttemptsRef.current[key] || 0;
+        const serverLagging = pending > 0 && list.length < (serverModuleCountsRef.current[key] || 0) + pending;
+        if (!hasAttempts || serverLagging) {
+          // No (up-to-date) server data for this module yet: keep the local state, and for a
+          // locally locked module trust the local completed list for its lectures.
+          nextModules[mod.title] = base;
+          if (isModuleLocked(base)) {
+            mod.lessons.forEach((l) => lockedLessonDone.set(l.id, cachedCompleted.includes(l.id)));
+          }
+          continue;
+        }
+        pendingModuleAttemptsRef.current[key] = 0;
+        serverModuleCountsRef.current[key] = list.length;
+        const r = replayModuleAttempts(
+          list,
+          mod.lessons.map((l) => l.id),
+          watchLog
+        );
+        if (r.lockedSince !== null) {
+          const since = r.lockedSince;
+          mod.lessons.forEach((l) => lockedLessonDone.set(l.id, (watchLog[l.id] || 0) > since));
+        }
+        nextModules[mod.title] = {
+          ...base,
+          moduleTitle: mod.title,
+          totalLessons: mod.lessons.length,
+          attemptsUsed: r.attemptsUsed,
+          consecutiveFailures: r.consecutiveFailures,
+          quizPassed: r.quizPassed,
+          quizScore: r.quizScore,
+          highestScore: list.length > 0 ? r.highestScore : undefined,
+          // Prevents the cache loader's "hardcoded test pass" cleanup from hiding a real pass.
+          explicitlyPassedByUser: r.quizPassed || undefined,
+        } as ModuleProgressItem;
+      }
+
+      // Completed lectures: the server's list, minus lectures of currently locked modules that
+      // still have to be rewatched (the server's record itself is left untouched).
+      const completedSet = new Set(serverCompleted.filter((id) => lockedLessonDone.get(id) ?? true));
+      lockedLessonDone.forEach((done, id) => {
+        if (done) completedSet.add(id);
+      });
+      const nextCompleted = Array.from(completedSet);
+      for (const mod of modulesList) {
+        if (nextModules[mod.title]) {
+          nextModules[mod.title] = {
+            ...nextModules[mod.title],
+            completedLessons: mod.lessons.filter((l) => completedSet.has(l.id)).length,
+          };
+        }
+      }
+
+      let nextGrand = cached?.grandQuizPassed === true;
+      if (hasAttempts) {
+        if (attemptsData.grandQuizPassed) {
+          nextGrand = true;
+          pendingGrandPassRef.current = false;
+        } else if (!pendingGrandPassRef.current) {
+          nextGrand = false;
+        }
+      }
+
+      setCompletedLessonIds(nextCompleted);
+      setModulesProgress(nextModules);
+      setGrandQuizPassed(nextGrand);
+      try {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            ...(cached || {}),
+            completedLessonIds: nextCompleted,
+            modulesProgress: nextModules,
+            grandQuizPassed: nextGrand,
+          })
+        );
+      } catch {}
+
+      if (isInitialLoad && nextCompleted.length > 0) {
+        // Auto-advance to next uncompleted lesson
+        const nextUncompleted = topic.lessons.find((l) => !completedSet.has(l.id));
+        if (nextUncompleted) {
+          setActiveLessonId(nextUncompleted.id);
+          const parentMod = modulesList.find((m) => m.lessons.some((l) => l.id === nextUncompleted.id));
+          if (parentMod) {
+            setActiveModuleTitle(parentMod.title);
+            setExpandedModules((prev) => ({ ...prev, [parentMod.title]: true }));
+          }
+        }
+      }
+    },
+    [isDemo, user, topic.id, topic.lessons, modulesList, router, storageKey, readWatchLog]
+  );
+
+  // If real user, verify enrollment and hydrate lessons + quiz progress from the server
+  useEffect(() => {
+    if (!isDemo && user) void syncProgressFromServer(true);
+  }, [isDemo, user, syncProgressFromServer]);
+
+  useEffect(() => {
+    const timers = syncTimersRef;
+    return () => timers.current.forEach(clearTimeout);
+  }, []);
+
+  /** Called after a module/grand quiz is submitted: re-sync once the server has recorded it. */
+  const noteQuizAttemptSubmitted = (modTitle: string, isGrand: boolean, passed: boolean) => {
+    if (isDemo || !user) return;
+    if (isGrand) {
+      if (passed) pendingGrandPassRef.current = true;
+    } else {
+      const key = normModuleKey(modTitle);
+      pendingModuleAttemptsRef.current[key] = (pendingModuleAttemptsRef.current[key] || 0) + 1;
+    }
+    syncTimersRef.current.forEach(clearTimeout);
+    syncTimersRef.current = [2500, 8000].map((ms) => setTimeout(() => void syncProgressFromServer(false), ms));
+  };
 
   const saveProgressToStorage = useCallback(
     (
@@ -726,6 +980,10 @@ export default function TopicDetailPage() {
       const nextUncompleted = topic.lessons.find((l) => !newCompleted.includes(l.id));
 
       if (!isDemo && user) {
+        // Log the (re)watch time so a server-side quiz lock can be lifted after a rewatch.
+        try {
+          localStorage.setItem(watchLogKey, JSON.stringify({ ...readWatchLog(), [lessonId]: Date.now() }));
+        } catch {}
         fetch("/api/topics/progress", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -758,6 +1016,8 @@ export default function TopicDetailPage() {
       grandQuizPassed,
       isDemo,
       user,
+      watchLogKey,
+      readWatchLog,
     ]
   );
 
@@ -1339,6 +1599,7 @@ export default function TopicDetailPage() {
       (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
     );
     const modTitle = isGrand ? "GRAND_QUIZ" : matchedModule?.title || activeModuleTitle;
+    noteQuizAttemptSubmitted(modTitle, isGrand, true);
 
     // Mark questions as used so they never repeat
     if (moduleQuizModal?.questions) {
@@ -1461,6 +1722,7 @@ export default function TopicDetailPage() {
       (m) => m.title.startsWith(currentModTitle) || m.title === currentModTitle
     );
     const modTitle = isGrand ? "GRAND_QUIZ" : matchedModule?.title || activeModuleTitle;
+    noteQuizAttemptSubmitted(modTitle, isGrand, false);
 
     // Mark questions as used so retakes get fresh questions
     if (moduleQuizModal?.questions) {

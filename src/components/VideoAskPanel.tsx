@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { QuizQuestion } from "@/data/videoPortions";
+import { MathText } from "@/components/pyq/PYQMarkdownViewer";
 import styles from "./VideoAskPanel.module.css";
 
 interface ChatMessage {
@@ -62,6 +63,28 @@ function parseTimestampToSeconds(timeStr: string): number | null {
   return null;
 }
 
+// [⏱ mm:ss], [mm:ss], [h:mm:ss] or a range [mm:ss - mm:ss]
+const TIME_SRC = String.raw`\d{1,3}:\d{2}(?::\d{2})?`;
+const CLOCK_SRC = String.raw`(?:⏱️?\s*)?`;
+const TIMESTAMP_SRC = String.raw`\[${CLOCK_SRC}${TIME_SRC}(?:\s*[-–—]\s*${CLOCK_SRC}${TIME_SRC})?\]`;
+const TIMESTAMP_PARTS_RE = new RegExp(
+  String.raw`\[${CLOCK_SRC}(${TIME_SRC})(?:\s*[-–—]\s*${CLOCK_SRC}(${TIME_SRC}))?\]`
+);
+// Emphasis markers wrapping only a timestamp, e.g. "**[08:30 - 18:45]**" -> "[08:30 - 18:45]"
+const WRAPPED_TIMESTAMP_RE = new RegExp(String.raw`(\*{1,3}|_{1,2})\s*(${TIMESTAMP_SRC})\s*\1`, "g");
+// Groups: 1 LaTeX, 2 inline code, 3 timestamp, 4/5 bold, 6/7 italic
+const INLINE_RE = new RegExp(
+  [
+    String.raw`(\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]|\$\$[\s\S]+?\$\$)`,
+    String.raw`(\x60[^\x60\n]+\x60)`,
+    `(${TIMESTAMP_SRC})`,
+    String.raw`\*\*(?!\s)(.+?)(?<!\s)\*\*`,
+    String.raw`__(?!\s)(.+?)(?<!\s)__`,
+    String.raw`\*(?![\s*])(.+?)(?<![\s*])\*`,
+    String.raw`(?<![A-Za-z0-9_])_(?![\s_])(.+?)(?<![\s_])_(?![A-Za-z0-9_])`,
+  ].join("|")
+);
+
 // Markdown and clickable timestamp renderer
 function FormattedText({
   text,
@@ -75,15 +98,11 @@ function FormattedText({
   if (!text) return null;
 
   // Process text line by line
-  const lines = text.split("\n");
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
 
-  const renderWithTimestamps = (content: string) => {
-    // Regex for [⏱ mm:ss] or [mm:ss] or [mm:ss - mm:ss]
-    const parts = content.split(/(\[(?:⏱\s*)?[\d:]+(?:\s*-\s*[\d:]+)?\])/g);
-
-    return parts.map((part, i) => {
-      const match = part.match(/\[(?:⏱\s*)?([\d:]+)(?:\s*-\s*([\d:]+))?\]/);
-      if (match) {
+  const renderTimestamp = (raw: string, key: string) => {
+    const match = raw.match(TIMESTAMP_PARTS_RE);
+    if (!match) return raw;
         const firstTime = match[1];
         const seconds = parseTimestampToSeconds(firstTime);
         const locked =
@@ -93,7 +112,7 @@ function FormattedText({
 
         return (
           <button
-            key={i}
+            key={key}
             type="button"
             className={locked ? `${styles.timestampBadge} ${styles.timestampBadgeLocked}` : styles.timestampBadge}
             disabled={locked}
@@ -120,68 +139,127 @@ function FormattedText({
                 <polyline points="12 6 12 12 16 14" />
               </svg>
             )}
-            {match[0].replace("[", "").replace("]", "").replace("⏱", "").trim()}
+            {match[0].replace(/[[\]⏱️]/g, "").trim()}
           </button>
         );
-      }
-
-      // Render bold spans
-      const boldParts = part.split(/\*\*(.*?)\*\*/g);
-      return boldParts.map((bp, j) =>
-        j % 2 === 1 ? <strong key={j}>{bp}</strong> : bp
-      );
-    });
   };
 
-  return (
-    <div style={{ lineHeight: "1.6", fontSize: "13.5px" }}>
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        if (!trimmed) return <div key={idx} style={{ height: "6px" }} />;
+  // Inline markdown: LaTeX, `code`, timestamps, **bold** / __bold__, *italic* / _italic_ (nested).
+  const renderInline = (content: string, keyPrefix: string): React.ReactNode[] => {
+    const out: React.ReactNode[] = [];
+    const re = new RegExp(INLINE_RE.source, "g");
+    let last = 0;
+    let n = 0;
+    let prevWasTs = false;
+    let m: RegExpExecArray | null;
 
-        if (trimmed.startsWith("### ")) {
-          return (
-            <h4
-              key={idx}
-              style={{
-                fontSize: "14px",
-                fontWeight: "700",
-                color: "#111827",
-                margin: "10px 0 4px",
-              }}
-            >
-              {renderWithTimestamps(trimmed.replace("### ", ""))}
-            </h4>
-          );
-        }
+    const pushText = (s: string, beforeTs: boolean) => {
+      // Unmatched "**" never carries meaning; stray * / _ hugging a timestamp badge are leftovers.
+      let t = s.replace(/\*{2,}/g, "");
+      if (beforeTs) t = t.replace(/[*_]+(\s*)$/, "$1");
+      if (prevWasTs) t = t.replace(/^(\s*)[*_]+/, "$1");
+      if (t) out.push(<React.Fragment key={`${keyPrefix}-t${n++}`}>{t}</React.Fragment>);
+    };
 
-        const isBullet = trimmed.startsWith("- ") || trimmed.startsWith("* ");
-        const isNum = /^\d+\.\s/.test(trimmed);
-        const content = isBullet
-          ? trimmed.slice(2)
-          : isNum
-          ? trimmed.replace(/^\d+\.\s/, "")
-          : trimmed;
+    while ((m = re.exec(content)) !== null) {
+      const [whole, math, code, ts, bold1, bold2, ital1, ital2] = m;
+      pushText(content.slice(last, m.index), Boolean(ts));
+      const key = `${keyPrefix}-${n++}`;
+      if (math) out.push(<MathText key={key} text={math} />);
+      else if (code) out.push(<code key={key} className={styles.inlineCode}>{code.slice(1, -1)}</code>);
+      else if (ts) out.push(renderTimestamp(ts, key));
+      else if (bold1 !== undefined || bold2 !== undefined)
+        out.push(<strong key={key}>{renderInline(bold1 ?? bold2, key)}</strong>);
+      else out.push(<em key={key}>{renderInline(ital1 ?? ital2 ?? "", key)}</em>);
+      prevWasTs = Boolean(ts);
+      last = m.index + whole.length;
+    }
+    pushText(content.slice(last), false);
+    return out;
+  };
 
-        if (isBullet || isNum) {
-          return (
-            <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "5px" }}>
-              <span style={{ color: "#ED1C24", fontWeight: "700", flexShrink: 0 }}>
-                {isNum ? trimmed.match(/^\d+/)?.[0] + "." : "•"}
-              </span>
-              <span>{renderWithTimestamps(content)}</span>
-            </div>
-          );
-        }
+  const renderLine = (content: string, key: string) =>
+    renderInline(content.replace(WRAPPED_TIMESTAMP_RE, "$2"), key);
 
-        return (
-          <p key={idx} style={{ margin: "0 0 6px 0" }}>
-            {renderWithTimestamps(trimmed)}
-          </p>
-        );
-      })}
-    </div>
-  );
+  const blocks: React.ReactNode[] = [];
+  let inFence = false;
+
+  lines.forEach((line, idx) => {
+    const key = `l${idx}`;
+    const trimmed = line.trim();
+
+    if (/^(```|~~~)/.test(trimmed)) {
+      inFence = !inFence;
+      return;
+    }
+    if (inFence) {
+      blocks.push(
+        <div key={key} className={styles.codeLine}>
+          {line || " "}
+        </div>
+      );
+      return;
+    }
+
+    if (!trimmed) {
+      blocks.push(<div key={key} style={{ height: "6px" }} />);
+      return;
+    }
+
+    // Horizontal rule: ---, ***, ___
+    if (/^([-*_])(\s*\1){2,}$/.test(trimmed)) {
+      blocks.push(<hr key={key} style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />);
+      return;
+    }
+
+    const heading = trimmed.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/);
+    if (heading) {
+      const level = heading[1].length;
+      const Tag = level <= 2 ? "h3" : level === 3 ? "h4" : "h5";
+      blocks.push(
+        <Tag
+          key={key}
+          style={{
+            fontSize: level <= 2 ? "15px" : level === 3 ? "14px" : "13.5px",
+            fontWeight: "700",
+            color: "#111827",
+            margin: "10px 0 4px",
+          }}
+        >
+          {renderLine(heading[2], key)}
+        </Tag>
+      );
+      return;
+    }
+
+    const body = trimmed.replace(/^>\s?/, "");
+    const bullet = body.match(/^[-*+•]\s+(.*)$/);
+    const numbered = body.match(/^(\d+)[.)]\s+(.*)$/);
+
+    if (bullet || numbered) {
+      const indentWidth = (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, "    ").length;
+      const depth = Math.min(3, Math.floor(indentWidth / 2));
+      blocks.push(
+        <div key={key} style={{ display: "flex", gap: "8px", marginBottom: "5px", marginLeft: depth * 14 }}>
+          <span style={{ color: "#ED1C24", fontWeight: "700", flexShrink: 0 }}>
+            {numbered ? `${numbered[1]}.` : depth > 0 ? "◦" : "•"}
+          </span>
+          <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>
+            {renderLine(numbered ? numbered[2] : bullet![1], key)}
+          </span>
+        </div>
+      );
+      return;
+    }
+
+    blocks.push(
+      <p key={key} style={{ margin: "0 0 6px 0", overflowWrap: "anywhere" }}>
+        {renderLine(body, key)}
+      </p>
+    );
+  });
+
+  return <div style={{ lineHeight: "1.6", fontSize: "13.5px" }}>{blocks}</div>;
 }
 
 // Interactive Multiple-Choice Quiz Block (TechnoEEE pattern)
