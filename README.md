@@ -9,7 +9,7 @@
 [![React](https://img.shields.io/badge/React-19.2.8-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pg--8.23-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
 </div>
 
@@ -26,14 +26,13 @@
   - [5. Interactive Video Solutions & Topic Drills](#5-interactive-video-solutions--topic-drills)
   - [6. B-School & IIM Call Predictor](#6-b-school--iim-call-predictor)
 - [Technology Stack](#-technology-stack)
-- [Repository & File Structure](#-repository--file-structure)
-- [Application Routes](#-application-routes)
-- [API Architecture](#-api-architecture)
+- [Repository Structure](#-repository-structure)
+- [API Overview](#-api-overview)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [Environment Setup](#environment-setup)
-  - [Installation & Development](#installation--development)
-  - [Building for Production](#building-for-production)
+  - [Setup](#setup)
+  - [Database changes](#database-changes)
+  - [Production build](#production-build)
 - [License](#-license)
 
 ---
@@ -92,184 +91,114 @@
 
 | Layer | Technology | Details |
 | :--- | :--- | :--- |
-| **Framework** | [Next.js 16.3.4](https://nextjs.org/) | App Router, Server Components, Turbopack Bundler |
-| **Library** | [React 19.2.8](https://react.dev/) | Client & Server Components, Hooks, Context API |
-| **Language** | [TypeScript 5.x](https://www.typescriptlang.org/) | Strict type checking, interface contracts |
-| **Database** | [PostgreSQL](https://www.postgresql.org/) & `pg` | Connection pooling with self-healing pooler support |
-| **Auth & Cloud** | [Supabase](https://supabase.com/) | Authentication, Row-Level Security, Managed Database |
-| **Styling** | CSS Modules | Light blue & white theme, responsive flex/grid layouts |
-| **Charts** | [Recharts 3.10.1](https://recharts.org/) | Study performance charts, bar charts, circular progress |
-| **Icons** | Clean Inline SVGs | Zero external icon bundle bloat; fast rendering |
+| **Framework** | [Next.js 16.3.4](https://nextjs.org/) | App Router, Route Handlers, Server Functions, Turbopack |
+| **Library** | [React 19.2.8](https://react.dev/) | Client components, hooks, Context API |
+| **Language** | [TypeScript 5.x](https://www.typescriptlang.org/) | Strict type checking |
+| **Database** | [Supabase](https://supabase.com/) Postgres via `pg` | Server-side connection pool (transaction pooler); RLS locks the public Data API |
+| **Auth** | Custom (bcrypt + signed session cookie) | `src/lib/auth/session.ts`, HMAC-signed `technocat_session` cookie, rate-limited login |
+| **AI** | NVIDIA NIM | Lesson chat, AI Mentor, Speak & Assess feedback (with local fallbacks) |
+| **Styling** | CSS Modules | Co-located with each page/component |
+| **Charts** | [Recharts 3](https://recharts.org/) | Study performance and analytics charts |
 
 ---
 
-## 📂 Repository & File Structure
+## 📂 Repository Structure
 
 ```text
-TechnoCat/
-├── public/                          # Static assets (logos, illustrations, mockups)
-│   ├── brand/                       # Official TechnoCAT logo + emblem (see src/components/BrandLogo.tsx)
-│   └── ...
+iQuanta-CAT-Mock/
+├── db/
+│   └── migrations/          # Versioned SQL schema (NNNN_name.sql), applied by scripts/migrate.mjs
+├── scripts/
+│   ├── migrate.mjs          # npm run db:migrate / db:status
+│   ├── db-backup.mjs        # npm run db:backup  → backups/<timestamp>/*.json (git-ignored)
+│   ├── db-introspect.mjs    # npm run db:introspect → regenerates the 0001 baseline from a live DB
+│   └── lib/db-env.mjs       # shared env loading + connection config for scripts
+├── public/
+│   ├── brand/               # Official TechnoCAT logo, emblem and original artwork
+│   ├── community/           # Community page illustrations
+│   └── pyq/                 # CAT previous-year-paper assets
 ├── src/
-│   ├── app/                         # Next.js App Router (Pages & API Handlers)
-│   │   ├── layout.tsx               # Root application layout with AuthProvider
-│   │   ├── page.tsx                 # High-conversion landing page
-│   │   ├── globals.css              # Global tokens, color variables, typography
-│   │   ├── analytics/               # Performance analytics & score diagnostics
-│   │   │   ├── page.tsx
-│   │   │   └── analytics.module.css
-│   │   ├── browse/                  # Past year papers (PYQs) & full mock catalog
-│   │   │   ├── page.tsx
-│   │   │   └── browse.module.css
-│   │   ├── dashboard/               # Core student study hub & planner
-│   │   │   ├── page.tsx             # Interactive dashboard with 30-day curriculum
-│   │   │   └── dashboard.module.css
-│   │   ├── intelligence/            # Central AI Intelligence Hub
-│   │   │   ├── page.tsx             # Hero, Readiness Meter, Improvement Loop
-│   │   │   ├── intelligence.module.css
-│   │   │   ├── ai-analysis/         # Detailed AI mock analysis view
-│   │   │   ├── b-school-predictor/  # Detailed IIM & B-school predictor tool
-│   │   │   ├── community/           # Aspirant discussion group
-│   │   │   └── error-tracking/      # Mistake pattern diagnosis
-│   │   ├── profile/edit/            # User account settings & target percentile
-│   │   ├── settings/                # Preferences & notifications
-│   │   ├── topics/                  # Modular topic syllabus (QA, DILR, VARC)
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx        # Dynamic topic page with video & quiz
-│   │   └── api/                     # Backend Serverless API Handlers
-│   │       ├── ai-analysis/         # AI diagnostic mock endpoints
-│   │       ├── auth/[action]/       # Signin, signup, guest authentication
-│   │       ├── chat/                # AI mentor doubt-solver integration
-│   │       ├── dashboard/           # Metrics, tasks, study hours database API
-│   │       ├── generate-quiz/       # Dynamic topic quiz generation
-│   │       └── topics/progress/     # Video portion and quiz progress updates
-│   ├── components/                  # Modular, Reusable UI Components
-│   │   ├── AuthModal.tsx            # Login & registration modal with guest pass
-│   │   ├── CardInfoModal.tsx        # Lightweight informational modal for features
-│   │   ├── DailyStudySchedule.tsx   # Intelligent Backlog Scheduler & daily tasks
-│   │   ├── StudyCalendarWidget.tsx  # Dynamic calendar with topic dots
-│   │   ├── StudyPerformanceChart.tsx# Recharts bar visualizer for learning hours
-│   │   ├── CatReadinessWidget.tsx   # Circular readiness score meter
-│   │   ├── FeaturesSection.tsx      # Landing key features with auth guard
-│   │   ├── HeroSection.tsx          # Landing hero banner with quick CTA buttons
-│   │   ├── IimPredictor.tsx         # Interactive IIM call predictor form
-│   │   ├── Navbar.tsx               # Global responsive navigation & drawer
-│   │   ├── PostLoginNavActions.tsx  # Notification bell & user profile dropdown
-│   │   ├── PricingSection.tsx       # Basic, Pro, and Premium subscription plans
-│   │   ├── TwoModesSection.tsx      # Classic Mode vs Modern Mode comparative UI
-│   │   ├── WhatYouGetSection.tsx    # 35 Mocks, 45 Sectionals, OMET deliverables
-│   │   ├── WhyStandOutSection.tsx   # Unique value propositions & video solutions
-│   │   └── ...
-│   ├── context/
-│   │   └── AuthContext.tsx          # Global authentication state, modal controls
-│   ├── data/
-│   │   ├── analyticsData.ts         # Mock score benchmarks and percentiles
-│   │   ├── moduleQuizData.ts        # Comprehensive quiz question banks
-│   │   ├── topicsData.ts            # QA, DILR, and VARC course curriculum
-│   │   └── videoPortions.ts         # Video chapter timestamps and solutions
+│   ├── app/                 # App Router pages and API route handlers
+│   │   ├── api/             # Backend endpoints (see API table below)
+│   │   ├── dashboard/  analytics/  browse/  topics/  mock-viva-prep/
+│   │   ├── intelligence/    # Intelligence Hub + ai-analysis, error-tracking, b-school-predictor,
+│   │   │                    #   learning-community (server actions in actions.ts)
+│   │   ├── profile/edit/  settings/
+│   │   ├── icon.png  apple-icon.png   # favicon / app icon (Techno India Group emblem)
+│   │   └── layout.tsx  page.tsx  globals.css
+│   ├── components/          # Reusable UI (BrandLogo, Navbar, Footer, AuthModal, widgets, pyq/…)
+│   ├── context/             # AuthContext (client session state + route guard)
+│   ├── data/                # Static curriculum, question banks, PYQ data
 │   ├── lib/
-│   │   ├── db.ts                    # Resilient PostgreSQL connection pooler
-│   │   └── supabase.ts              # Supabase client initialization
-│   └── services/
-│       └── quizCacheService.ts      # Local/session caching for quiz states
-├── package.json                     # Project scripts and dependencies
-├── tsconfig.json                    # TypeScript compiler configuration
-├── next.config.ts                   # Next.js runtime & bundler configuration
-└── README.md                        # Documentation
+│   │   ├── auth/            # session.ts (signed cookies), rateLimit.ts
+│   │   ├── db.ts            # pg pool + data-access helpers
+│   │   ├── demo.ts          # DEMO_EMAIL / isDemoEmail(): the showcase account
+│   │   └── …                # communityModeration.ts, nameUtils.ts
+│   └── services/            # Client-side services (notifications, quiz cache)
+├── .env.example             # Every environment variable the app needs
+└── AGENTS.md                # Notes for AI coding agents (Next.js 16 specifics)
 ```
 
----
-
-## 🗺 Application Routes
-
-| Route | Type | Description |
-| :--- | :--- | :--- |
-| `/` | Static | Landing page with feature showcases, pricing, and demo tools |
-| `/dashboard` | Static | Student command center: Study Scheduler, Calendar, Readiness |
-| `/intelligence` | Static | Central Intelligence Hub: Readiness Meter, AI Flow, Tool directory |
-| `/intelligence/ai-analysis` | Static | Granular mock performance diagnostics and time-loss charts |
-| `/intelligence/b-school-predictor` | Static | Profile diversity and percentile conversion calculator |
-| `/intelligence/error-tracking` | Static | Automated categorization of wrong answers & conceptual traps |
-| `/intelligence/community` | Static | Peer discussion forums and doubt exchanges |
-| `/topics` | Static | Syllabus directory for QA, DILR, and VARC modules |
-| `/topics/[id]` | Dynamic | Interactive topic player with video solutions and module tests |
-| `/browse` | Static | Classic Mode catalog & previous year papers (2022–2024 slots) |
-| `/analytics` | Static | Comprehensive longitudinal progress reports and accuracy trends |
-| `/profile/edit` | Static | Student profile, academic history, and target colleges |
-| `/settings` | Static | Platform preferences, daily reminder alerts, and study pacing |
+### The demo account
+`student@technocat.edu` is a **showcase account**: it intentionally displays prefilled sample data so the
+product can be demonstrated without weeks of real usage. Every other account only ever sees data derived
+from its own activity. All demo checks go through `isDemoEmail()` in `src/lib/demo.ts`.
 
 ---
 
-## 🔌 API Architecture
+## 🔌 API Overview
 
-All endpoints are built using Next.js Route Handlers (`src/app/api/*`):
+All endpoints are Next.js Route Handlers under `src/app/api/*`. Every endpoint except login/signup
+requires a valid session cookie and returns `401` otherwise.
 
-| Endpoint | Method | Functionality |
+| Endpoint | Methods | Purpose |
 | :--- | :--- | :--- |
-| `/api/auth/[action]` | `POST` | Authenticates users (`signin`, `signup`, `guest`), manages JWT sessions |
-| `/api/dashboard` | `GET` | Aggregates user metrics, weekly study hours, and active daily tasks |
-| `/api/ai-analysis` | `GET`, `POST` | Fetches mock diagnostics or generates AI question insights |
-| `/api/topics/progress` | `POST` | Updates completed video segments and quiz scores in PostgreSQL |
-| `/api/chat` | `POST` | Dispatches student queries to the 24x7 AI Doubt Solver tutor |
-| `/api/generate-quiz` | `POST` | Generates targeted practice sets for weak topics on demand |
+| `/api/auth/[action]` | `POST` login, signup, logout, change-password, delete-account · `GET` me | Accounts and sessions |
+| `/api/profile` | `GET`, `POST` | Profile details and preferences |
+| `/api/dashboard` | `GET`, `POST`, `PATCH` | Dashboard aggregate; create / toggle study tasks |
+| `/api/topics/enroll`, `/api/topics/progress` | `POST` · `GET`, `POST` | Topic enrollment and lesson progress |
+| `/api/pyq/attempts` | `GET`, `POST`, `PATCH` | Previous-year-paper attempts and section locks |
+| `/api/intelligence/*` | various | 7-day challenge, analysis views, error tracking, AI Mentor |
+| `/api/ai-analysis` | `GET` | Mock analysis |
+| `/api/chat` | `POST` | Lesson assistant |
+| `/api/mock-viva` | `POST` | Speak & Assess answer feedback |
 
 ---
 
 ## 💻 Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (version `18.18.0` or higher recommended)
-- `npm`, `pnpm`, or `yarn`
-- A PostgreSQL database instance or [Supabase](https://supabase.com/) project
+- [Node.js](https://nodejs.org/) 20+ and npm
+- Access to the Supabase project (or any PostgreSQL 15+ database)
 
-### Environment Setup
-Create a `.env.local` file in the project root directory:
-
-```env
-# Database Connection (PostgreSQL Pooler)
-PGHOST=aws-0-ap-southeast-1.pooler.supabase.com
-PGPORT=6543
-PGUSER=postgres.your-project-ref
-PGPASSWORD=your-database-password
-PGDATABASE=postgres
-
-# Supabase Auth & Public Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
-
-### Installation & Development
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/AyushmanGupta21/TechnoCAT.git
-   cd TechnoCAT
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Launch the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Access the application in your browser:
-   ```text
-   http://localhost:3001
-   ```
-
-### Building for Production
-Verify TypeScript compilation and produce an optimized Turbopack build:
-
+### Setup
 ```bash
-# Build production bundle
-npm run build
-
-# Start production server
-npm run start
+git clone https://github.com/AyushmanGupta21/TechnoCAT.git
+cd TechnoCAT
+npm install
+cp .env.example .env.local   # then fill in the values (ask a maintainer for the secrets)
+npm run dev                  # http://localhost:3001
 ```
+
+`.env.local` needs exactly these variables (see `.env.example`):
+`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `JWT_SECRET`, `NVIDIA_API_KEY`.
+Never commit `.env.local` or share it through public channels.
+
+### Database changes
+Schema changes are made **only** through migrations:
+```bash
+npm run db:backup     # always snapshot first
+# add db/migrations/NNNN_description.sql (next number, never edit an applied file)
+npm run db:migrate    # applies pending migrations, each in its own transaction
+npm run db:status     # shows applied / pending migrations
+```
+New tables must enable Row Level Security (see `0004_enable_rls_lockdown.sql`).
+
+### Production build
+```bash
+npm run build && npm run start
+```
+Deployment (Vercel) needs the same seven environment variables, with its own `JWT_SECRET`.
 
 ---
 
