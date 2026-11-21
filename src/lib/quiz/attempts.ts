@@ -7,9 +7,11 @@ import { awardPoints } from "@/lib/points";
 import { recordStudyTime, type ActivityKind } from "@/lib/activity";
 import { getTopicById } from "@/data/topicsData";
 import { MODULE_QUIZZES } from "@/data/moduleQuizData";
-import { getAnswerKey, normalizeSection, titaMatches, type QuestionType } from "@/lib/quiz/questionBank";
+import {
+  getAnswerKey, normalizeSection, titaMatches, loadGeneratedQuestions, type QuestionType, type AnswerKey,
+} from "@/lib/quiz/questionBank";
 
-export const QUIZ_KINDS = ["pyq", "module_quiz", "grand_quiz", "lesson_practice"] as const;
+export const QUIZ_KINDS = ["pyq", "module_quiz", "grand_quiz", "lesson_practice", "topic_drill"] as const;
 export type QuizKind = (typeof QUIZ_KINDS)[number];
 
 /** Marking schemes (must match what the UI explains to students). */
@@ -59,7 +61,7 @@ function validate(input: SubmitAttemptInput) {
     ids.add(r.questionId);
   }
 
-  if (input.kind === "module_quiz" || input.kind === "grand_quiz" || input.kind === "lesson_practice") {
+  if (input.kind === "module_quiz" || input.kind === "grand_quiz" || input.kind === "lesson_practice" || input.kind === "topic_drill") {
     if (!input.topicId || !getTopicById(input.topicId)) throw new AttemptValidationError("Unknown topic.");
   }
   if (input.kind === "module_quiz") {
@@ -90,16 +92,23 @@ interface GradedResponse {
   isCorrect: boolean;
   marks: number;
   timeSpentSeconds: number | null;
+  explanation: string | null;
 }
 
-/** Grades an attempt against the server answer key (pure; no database access). */
-export function gradeAttempt(input: SubmitAttemptInput) {
+/** Loads answer keys for AI-generated questions in an attempt (they live in the database). */
+export async function loadExtraKeys(input: SubmitAttemptInput): Promise<Map<string, AnswerKey>> {
+  const ids = Array.isArray(input?.responses) ? input.responses.map((r) => String(r?.questionId ?? "")) : [];
+  return (await loadGeneratedQuestions(ids)).keys;
+}
+
+/** Grades an attempt against the server answer key (pure; generated keys passed in). */
+export function gradeAttempt(input: SubmitAttemptInput, extraKeys?: Map<string, AnswerKey>) {
   validate(input);
   const scheme = SCHEMES[schemeFor(input.kind)];
   const fallbackSection = normalizeSection(input.section);
 
   const responses: GradedResponse[] = input.responses.map((r, position) => {
-    const key = getAnswerKey(r.questionId);
+    const key = getAnswerKey(r.questionId, extraKeys);
     if (!key) throw new AttemptValidationError(`Unknown question: ${r.questionId}`);
 
     const selectedOption =
@@ -137,6 +146,7 @@ export function gradeAttempt(input: SubmitAttemptInput) {
       isCorrect,
       marks,
       timeSpentSeconds: Number.isFinite(t) && t >= 0 ? Math.min(Math.round(t), MAX_DURATION_SECONDS) : null,
+      explanation: key.explanation ?? null,
     };
   });
 
@@ -159,7 +169,7 @@ export function gradeAttempt(input: SubmitAttemptInput) {
     finalScore,
     maxScore,
     percentage,
-    passed: input.kind === "lesson_practice" ? null : percentage >= scheme.passPercent,
+    passed: input.kind === "lesson_practice" || input.kind === "topic_drill" ? null : percentage >= scheme.passPercent,
     strikes,
     durationSeconds: Math.max(0, Math.min(MAX_DURATION_SECONDS, Math.round(Number(input.durationSeconds) || 0))),
     responses,
@@ -171,11 +181,12 @@ const ACTIVITY_FOR_KIND: Record<QuizKind, ActivityKind> = {
   module_quiz: "quiz",
   grand_quiz: "quiz",
   lesson_practice: "practice",
+  topic_drill: "practice",
 };
 
 /** Grades and stores an attempt, awards points and logs the study time, atomically. */
 export async function recordQuizAttempt(userId: string, input: SubmitAttemptInput) {
-  const graded = gradeAttempt(input);
+  const graded = gradeAttempt(input, await loadExtraKeys(input));
   const moduleKey = input.kind === "module_quiz" ? cleanTitle(input.moduleKey || "") : null;
   const section = normalizeSection(input.section);
 

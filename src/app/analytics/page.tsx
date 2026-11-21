@@ -43,6 +43,7 @@ const KIND_LABELS: Record<TestRecord["kind"], string> = {
   module_quiz: "Module quiz",
   grand_quiz: "Grand quiz",
   lesson_practice: "Lesson practice",
+  topic_drill: "Practice drills",
 };
 const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "all", label: "All" },

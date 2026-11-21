@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query, getProfileById, getUserReadinessMetrics } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
+import { nimChat } from "@/lib/ai/nim";
 import { consumeRateLimit } from "@/lib/auth/rateLimit";
+
+export const maxDuration = 30; // AI answers can take longer than the default function limit
 
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 2000;
@@ -139,50 +142,14 @@ MENTORING INSTRUCTIONS:
 5. If the user asks about their performance, refer strictly to the real performance data above without hallucinating fake numbers.
 6. Keep answers concise, highly impactful, and motivating — avoid unnecessary filler.`;
 
-    // 3. Attempt Call to NVIDIA NIM with Working Llama 3.2 11B / 90B
+    // 3. Ask the model (src/lib/ai/nim.ts); keep up to the last 8 turns for context.
     let aiResponse = "";
-    if (process.env.NVIDIA_API_KEY) {
-      const modelsToTry = [
-        "meta/llama-3.2-11b-vision-instruct",
-        "meta/llama-3.2-90b-vision-instruct",
-        "nvidia/nemotron-3-ultra-550b-a55b",
-      ];
-
-      for (const model of modelsToTry) {
-        try {
-          const apiMessages = [
-            { role: "system", content: systemPrompt },
-            ...conversation.slice(-8), // Keep up to last 8 turns for context
-          ];
-
-          const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
-            },
-            body: JSON.stringify({
-              model,
-              messages: apiMessages,
-              temperature: 0.6,
-              max_tokens: 800,
-            }),
-            signal: AbortSignal.timeout(9000),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data.choices?.[0]?.message?.content?.trim();
-            if (content) {
-              aiResponse = content;
-              break;
-            }
-          }
-        } catch (callErr) {
-          console.warn(`[NVIDIA Model ${model} Attempt Failed]`, callErr);
-        }
-      }
-    }
+    const result = await nimChat({
+      messages: [{ role: "system", content: systemPrompt }, ...conversation.slice(-8)],
+      temperature: 0.6,
+      maxTokens: 900,
+    });
+    if (result) aiResponse = result.content;
 
     // 4. Grounded CAT AI Fallback Engine (Ensures 100% Uptime & Dynamic Responses)
     if (!aiResponse) {

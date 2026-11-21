@@ -1,16 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+// Practice drill for a topic. Questions come from POST /api/quiz/generate (AI-written and/or
+// the authored bank, focused on the student's weak concepts); answers are graded on the server
+// via POST /api/quiz/attempts (kind "topic_drill") and reviewed with explanations.
+
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { notifyQuizCompleted } from "@/services/notificationService";
+import { MathText } from "@/components/pyq/PYQMarkdownViewer";
 import styles from "./TopicQuizModal.module.css";
 
-interface QuizQuestion {
+interface PracticeQuestion {
   id: string;
   question: string;
   options: string[];
-  correctIndex: number;
-  explanation: string;
+  concept: string | null;
+}
+
+interface GradedResponse {
+  questionId: string;
+  selectedOption: number | null;
+  correctOption: number | null;
+  isCorrect: boolean;
+  explanation: string | null;
 }
 
 interface TopicQuizModalProps {
@@ -19,179 +30,182 @@ interface TopicQuizModalProps {
   onClose: () => void;
 }
 
+const LETTERS = ["A", "B", "C", "D"];
+
 export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQuizModalProps) {
-  const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [source, setSource] = useState<"ai" | "bank" | "mixed">("bank");
+  const [focus, setFocus] = useState<string[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [startedAt] = useState(() => Date.now());
+  const [submitting, setSubmitting] = useState(false);
+  const [results, setResults] = useState<{ correct: number; total: number; responses: GradedResponse[] } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    // Fetch quiz from AI endpoint
-    async function generateQuiz() {
-      try {
-        const res = await fetch("/api/generate-quiz", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topicId, topicTitle })
-        });
-        if (res.ok) {
-          const text = await res.text();
-          if (text && text.trim().length > 0) {
-            const data = JSON.parse(text);
-            if (data?.questions) {
-              setQuestions(data.questions);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch quiz", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    generateQuiz();
-  }, [topicId, topicTitle]);
+    let cancelled = false;
+    fetch("/api/quiz/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topicId, count: 5 }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || "Could not create a practice quiz.");
+        return data;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setQuestions(data.questions || []);
+        setSource(data.source || "bank");
+        setFocus(data.focus || []);
+      })
+      .catch((e: Error) => !cancelled && setError(e.message))
+      .finally(() => !cancelled && setLoading(false));
+    return () => { cancelled = true; };
+  }, [topicId]);
 
   if (!mounted) return null;
 
-  const handleSelectOption = (idx: number) => {
-    if (showFeedback) return; // Prevent changing answer after submitting
-    setSelectedOption(idx);
-  };
+  const q = questions[current];
+  const answeredCount = Object.keys(answers).length;
 
-  const handleSubmit = () => {
-    if (selectedOption === null) return;
-    
-    setShowFeedback(true);
-    if (selectedOption === questions[currentIndex].correctIndex) {
-      setScore(prev => prev + 1);
+  const submit = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/quiz/attempts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "topic_drill",
+          topicId,
+          durationSeconds: Math.round((Date.now() - startedAt) / 1000),
+          responses: questions.map((question, i) => ({ questionId: question.id, selectedOption: answers[i] ?? null })),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Your answers could not be graded.");
+      setResults({ correct: data.attempt.correctCount, total: data.attempt.questionCount, responses: data.attempt.responses });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-    } else {
-      setIsFinished(true);
-      const finalScore = score + (selectedOption === questions[currentIndex].correctIndex ? 1 : 0);
-      notifyQuizCompleted(topicTitle, finalScore, questions.length);
-    }
-  };
+  const sourceLabel =
+    source === "ai" ? "AI-generated practice" : source === "mixed" ? "AI-generated + question bank" : "From the TechnoCAT question bank";
 
-  const currentQ = questions[currentIndex];
-
-  const modalContent = (
-    <div className={styles.modalOverlay} onClick={() => { if (isFinished || loading) onClose(); }}>
-      <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+  const modal = (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Practice drill: ${topicTitle}`}>
         <div className={styles.modalHeader}>
           <div>
-            <h2 className={styles.modalTitle}>AI Practice Quiz</h2>
-            <p className={styles.modalSubtitle}>{topicTitle}</p>
+            <h2 className={styles.modalTitle}>Practice Drill · {topicTitle}</h2>
+            <p className={styles.modalSubtitle}>
+              {sourceLabel}
+              {focus.length > 0 && ` · focused on ${focus.slice(0, 2).join(", ")}`}
+            </p>
           </div>
-          {isFinished || loading ? (
-            <button className={styles.closeBtn} onClick={onClose}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#dc2626", fontWeight: "700", background: "#fef2f2", padding: "6px 12px", borderRadius: "8px", border: "1px solid #fecaca" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span>Quiz Active</span>
-            </div>
-          )}
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
 
         <div className={styles.modalBody}>
-          {loading ? (
+          {loading && (
             <div className={styles.loadingState}>
               <div className={styles.spinner} />
-              <h3>Generating Questions...</h3>
-              <p>Using RAG to pull 80% from course material and 20% from PYQs.</p>
+              <p>Preparing questions for you…</p>
             </div>
-          ) : isFinished ? (
-            <div className={styles.resultsState}>
-              <div className={styles.resultsScore}>{score} / {questions.length}</div>
-              <p className={styles.resultsText}>
-                {score === questions.length ? "Perfect score! You're ready." : "Good job! Keep practicing."}
-              </p>
-              <button className={styles.btnPrimary} onClick={onClose}>Back to Course</button>
-            </div>
-          ) : currentQ ? (
+          )}
+
+          {!loading && error && !results && <p className={styles.resultsText}>{error}</p>}
+
+          {!loading && !results && q && (
             <>
               <div className={styles.questionHeader}>
-                <span>Question {currentIndex + 1} of {questions.length}</span>
+                Question {current + 1} of {questions.length}
+                {q.concept ? ` · ${q.concept}` : ""}
               </div>
-              <h3 className={styles.questionText}>{currentQ.question}</h3>
-              
+              <p className={styles.questionText}><MathText text={q.question} /></p>
               <div className={styles.optionsGrid}>
-                {currentQ.options.map((opt, idx) => {
-                  let btnClass = styles.optionBtn;
-                  if (selectedOption === idx) btnClass += ` ${styles.optionSelected}`;
-                  
-                  if (showFeedback) {
-                    if (idx === currentQ.correctIndex) {
-                      btnClass += ` ${styles.optionCorrect}`;
-                    } else if (selectedOption === idx) {
-                      btnClass += ` ${styles.optionIncorrect}`;
-                    }
-                  }
-
-                  return (
-                    <button 
-                      key={idx} 
-                      className={btnClass}
-                      onClick={() => handleSelectOption(idx)}
-                      disabled={showFeedback}
-                    >
-                      {opt}
-                      {showFeedback && idx === currentQ.correctIndex && (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                      )}
-                      {showFeedback && selectedOption === idx && idx !== currentQ.correctIndex && (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      )}
-                    </button>
-                  );
-                })}
+                {q.options.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`${styles.optionBtn} ${answers[current] === i ? styles.optionSelected : ""}`}
+                    onClick={() => setAnswers((prev) => ({ ...prev, [current]: i }))}
+                  >
+                    <strong>{LETTERS[i]}.</strong> <MathText text={opt} />
+                  </button>
+                ))}
               </div>
-
-              {showFeedback && (
-                <div className={styles.feedbackBox}>
-                  <strong>Explanation:</strong> {currentQ.explanation}
-                </div>
-              )}
             </>
-          ) : (
-            <div className={styles.loadingState}>Failed to load questions.</div>
+          )}
+
+          {results && (
+            <div className={styles.resultsState}>
+              <div className={styles.resultsScore}>{results.correct} / {results.total}</div>
+              <p className={styles.resultsText}>
+                Review each question below. Practice drills count towards your study time and concept accuracy.
+              </p>
+              {questions.map((question, i) => {
+                const r = results.responses[i];
+                return (
+                  <div key={question.id} className={styles.feedbackBox} style={{ textAlign: "left", marginTop: 12 }}>
+                    <p className={styles.questionText} style={{ fontSize: 14 }}>
+                      {i + 1}. <MathText text={question.question} />
+                    </p>
+                    {question.options.map((opt, oi) => (
+                      <div
+                        key={oi}
+                        className={`${styles.optionBtn} ${oi === r?.correctOption ? styles.optionCorrect : oi === r?.selectedOption ? styles.optionIncorrect : ""}`}
+                        style={{ cursor: "default", marginTop: 6 }}
+                      >
+                        <strong>{LETTERS[oi]}.</strong> <MathText text={opt} />
+                        {oi === r?.correctOption && " ✓"}
+                        {oi === r?.selectedOption && oi !== r?.correctOption && " (your answer)"}
+                      </div>
+                    ))}
+                    {r?.selectedOption === null && <p style={{ fontSize: 13, color: "#64748B" }}>Not answered.</p>}
+                    {r?.explanation && (
+                      <p style={{ fontSize: 13, color: "#334155", marginTop: 8 }}>
+                        <strong>Explanation:</strong> <MathText text={r.explanation} />
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
-        {!loading && !isFinished && (
-          <div className={styles.modalFooter}>
-            {!showFeedback ? (
-              <button 
-                className={styles.btnPrimary} 
-                disabled={selectedOption === null}
-                onClick={handleSubmit}
-              >
-                Submit Answer
+        <div className={styles.modalFooter}>
+          {!results && !loading && questions.length > 0 && (
+            <>
+              <button type="button" className={styles.btnPrimary} disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+                Previous
               </button>
-            ) : (
-              <button className={styles.btnPrimary} onClick={handleNext}>
-                {currentIndex < questions.length - 1 ? "Next Question" : "Finish Quiz"}
-              </button>
-            )}
-          </div>
-        )}
+              {current < questions.length - 1 ? (
+                <button type="button" className={styles.btnPrimary} onClick={() => setCurrent((c) => c + 1)}>Next</button>
+              ) : (
+                <button type="button" className={styles.btnPrimary} disabled={submitting} onClick={submit}>
+                  {submitting ? "Grading…" : `Submit (${answeredCount}/${questions.length} answered)`}
+                </button>
+              )}
+            </>
+          )}
+          {(results || (!loading && questions.length === 0)) && (
+            <button type="button" className={styles.btnPrimary} onClick={onClose}>Close</button>
+          )}
+        </div>
       </div>
     </div>
   );
 
-  return createPortal(modalContent, document.body);
+  return createPortal(modal, document.body);
 }

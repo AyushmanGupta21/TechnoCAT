@@ -34,6 +34,7 @@ const KIND_LABEL: Record<MistakeRecord["kind"], string> = {
   module_quiz: "Module quiz",
   grand_quiz: "Grand quiz",
   lesson_practice: "Lesson practice",
+  topic_drill: "Practice drills",
 };
 const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
 const ID_BATCH = 100;

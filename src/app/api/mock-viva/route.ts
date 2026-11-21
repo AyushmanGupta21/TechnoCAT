@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
+import { nimChat } from "@/lib/ai/nim";
 import { consumeRateLimit } from "@/lib/auth/rateLimit";
+
+export const maxDuration = 30; // AI answers can take longer than the default function limit
 
 interface VivaFeedback {
   score: number;
@@ -130,27 +133,17 @@ Expert pointers for this question: ${tips.join(" ")}`;
 
         const userPrompt = `INTERVIEW QUESTION: ${question}\n\nCANDIDATE'S ANSWER: ${answer}`;
 
-        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            temperature: 0.4,
-            max_tokens: 700,
-          }),
-          signal: AbortSignal.timeout(9000),
+        const result = await nimChat({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.4,
+          maxTokens: 900,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          const content: string = data.choices?.[0]?.message?.content?.trim() || "";
+        if (result) {
+          const content: string = result.content;
           // Extract JSON even if the model wrapped it in prose or fences.
           const match = content.match(/\{[\s\S]*\}/);
           if (match) {

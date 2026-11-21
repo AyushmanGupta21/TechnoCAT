@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { nimChat } from "@/lib/ai/nim";
 import { getSession } from "@/lib/auth/session";
 import { consumeRateLimit } from "@/lib/auth/rateLimit";
 import { getTopicById } from "@/data/topicsData";
 import { getLessonKnowledge, QuizQuestion } from "@/data/videoPortions";
+
+export const maxDuration = 30; // AI answers can take longer than the default function limit
 
 export async function POST(request: NextRequest) {
   try {
@@ -138,31 +141,17 @@ INSTRUCTIONS:
 3. Explicitly reference which portion/timestamp of the lecture (e.g. "[14:20 - 28:00]") explains this concept so the student can re-watch that portion.
 4. Keep the tone encouraging, academic, and focused on CAT shortcuts.`;
 
-          const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`
-            },
-            body: JSON.stringify({
-              model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: question.trim() }
-              ],
-              temperature: 0.5,
-              max_tokens: 800
-            }),
-            signal: AbortSignal.timeout(9000),
+          const result = await nimChat({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: question.trim() },
+            ],
+            temperature: 0.5,
+            maxTokens: 900,
           });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data.choices?.[0]?.message?.content?.trim();
-            if (content) {
-              aiResponse = content;
-              nvidiaSucceeded = true;
-            }
+          if (result) {
+            aiResponse = result.content;
+            nvidiaSucceeded = true;
           }
         } catch (nvidiaErr) {
           console.warn("[NVIDIA RAG Call Error, falling back to local engine]", nvidiaErr);

@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { consumeRateLimit } from "@/lib/auth/rateLimit";
 import {
   gradeAttempt,
+  loadExtraKeys,
   recordQuizAttempt,
   getAttemptSummary,
   AttemptValidationError,
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     // The demo account is a shared showcase: grade the attempt but never store it.
     if (session.isDemo) {
-      const graded = gradeAttempt(body);
+      const graded = gradeAttempt(body, await loadExtraKeys(body));
       return NextResponse.json({ success: true, recorded: false, attempt: { attemptId: null, pointsAwarded: 0, ...graded } });
     }
     const result = await recordQuizAttempt(session.userId, body);

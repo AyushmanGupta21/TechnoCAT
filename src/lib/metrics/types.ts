@@ -18,7 +18,7 @@ export interface SectionMetrics {
 
 export interface TestRecord {
   attemptId: string;
-  kind: "pyq" | "module_quiz" | "grand_quiz" | "lesson_practice";
+  kind: "pyq" | "module_quiz" | "grand_quiz" | "lesson_practice" | "topic_drill";
   title: string;
   topicId: string | null;
   section: SectionKey | null;

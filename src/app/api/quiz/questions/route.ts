@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { query } from "@/lib/db";
-import { getQuestionDetail } from "@/lib/quiz/questionBank";
+import { getQuestionDetail, loadGeneratedQuestions, type QuestionDetail } from "@/lib/quiz/questionBank";
 
 // GET /api/quiz/questions?ids=a,b,c — question text, options, answer and explanation for
 // review screens (error tracking, analysis). Only questions the student has ALREADY answered
@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
       );
       allowed = new Set(res.rows.map((r) => r.question_id));
     }
-    const questions: Record<string, ReturnType<typeof getQuestionDetail>> = {};
-    for (const id of ids) if (allowed.has(id)) questions[id] = getQuestionDetail(id);
+    const generated = (await loadGeneratedQuestions([...allowed])).details;
+    const questions: Record<string, QuestionDetail | null> = {};
+    for (const id of ids) if (allowed.has(id)) questions[id] = generated.get(id) ?? getQuestionDetail(id);
     return NextResponse.json({ questions }, { headers: { "Cache-Control": "private, max-age=300" } });
   } catch (error) {
     console.error("[Quiz Questions API Error]", error);

@@ -6,6 +6,7 @@
 //   qa0-s1-1, cat-grand-3         module / grand quiz banks (data/moduleQuizData.ts)
 //   <tag>-dyn-<seed>-<i>          parameterised filler questions; correct option is always 0
 //   lesson:<lessonId>:<index>     per-lecture practice quiz (data/videoPortions.ts)
+//   gen:<uuid>                    AI-generated practice question (public.generated_questions)
 
 import { MODULE_QUIZZES, GRAND_QUIZ_BANK, type ModuleQuestion } from "@/data/moduleQuizData";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/data/pyqData";
 import { getLessonKnowledge } from "@/data/videoPortions";
 import { getTopicById, TOPICS_DATA } from "@/data/topicsData";
+import { query } from "@/lib/db";
 
 export type QuestionType = "MCQ" | "TITA";
 export type Section = "VARC" | "DILR" | "QA";
@@ -28,6 +30,7 @@ export interface AnswerKey {
   concept: string | null;
   recommendedLessonId: string | null;
   section: Section | null;
+  explanation?: string | null;
 }
 
 let index: Map<string, AnswerKey> | null = null;
@@ -48,6 +51,7 @@ function fromModuleQuestion(q: ModuleQuestion): AnswerKey {
     concept: q.concept || null,
     recommendedLessonId: q.recommendedLessonId || null,
     section: null,
+    explanation: q.explanation || null,
   };
 }
 
@@ -74,6 +78,7 @@ function buildIndex(): Map<string, AnswerKey> {
             concept: rec?.concept || null,
             recommendedLessonId: rec?.lessonId || null,
             section: normalizeSection(q.section),
+            explanation: q.explanation || null,
           });
         }
       }
@@ -103,13 +108,18 @@ function lessonPracticeKey(questionId: string): AnswerKey | null {
       concept: lesson.title,
       recommendedLessonId: lesson.id,
       section: normalizeSection(getTopicById(topic.id)?.codePrefix),
+      explanation: q.explanation || null,
     };
   }
   return null;
 }
 
-/** Answer key for a question id, or null if the id is unknown. */
-export function getAnswerKey(questionId: string): AnswerKey | null {
+/**
+ * Answer key for a question id, or null if the id is unknown. Generated questions (gen:…) live
+ * in the database: load them first with loadGeneratedQuestions() and pass the map as `extra`.
+ */
+export function getAnswerKey(questionId: string, extra?: Map<string, AnswerKey>): AnswerKey | null {
+  if (extra?.has(questionId)) return extra.get(questionId)!;
   if (!index) index = buildIndex();
   const known = index.get(questionId);
   if (known) return known;
@@ -189,4 +199,40 @@ export function getQuestionDetail(questionId: string): QuestionDetail | null {
     }
   }
   return null; // e.g. parameterised "-dyn-" filler questions
+}
+
+// ── AI-generated questions (gen:<uuid>) ─────────────────────────────────────────────
+
+const GEN_PREFIX = "gen:";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isGeneratedId(id: string): boolean {
+  return id.startsWith(GEN_PREFIX) && UUID_RE.test(id.slice(GEN_PREFIX.length));
+}
+
+/** Loads answer keys + full details for generated question ids from the database. */
+export async function loadGeneratedQuestions(ids: string[]): Promise<{ keys: Map<string, AnswerKey>; details: Map<string, QuestionDetail> }> {
+  const keys = new Map<string, AnswerKey>();
+  const details = new Map<string, QuestionDetail>();
+  const uuids = ids.filter(isGeneratedId).map((id) => id.slice(GEN_PREFIX.length));
+  if (uuids.length === 0) return { keys, details };
+
+  const res = await query(
+    `SELECT id, topic_id, concept, question, options, correct_option, explanation
+     FROM public.generated_questions WHERE id = ANY($1::uuid[])`,
+    [uuids]
+  );
+  for (const r of res.rows) {
+    const id = GEN_PREFIX + r.id;
+    const section = normalizeSection(getTopicById(r.topic_id)?.codePrefix);
+    keys.set(id, {
+      type: "MCQ", correctOption: r.correct_option, correctTita: null, concept: r.concept,
+      recommendedLessonId: null, section, explanation: r.explanation,
+    });
+    details.set(id, {
+      id, type: "MCQ", text: r.question, context: null, options: r.options, correctOption: r.correct_option,
+      correctTita: null, explanation: r.explanation, concept: r.concept, recommendedLessonId: null,
+    });
+  }
+  return { keys, details };
 }

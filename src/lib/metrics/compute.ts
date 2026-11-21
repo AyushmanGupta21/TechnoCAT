@@ -45,6 +45,7 @@ function testTitle(a: any): string {
   }
   if (a.kind === "module_quiz") return a.module_key || "Module quiz";
   if (a.kind === "grand_quiz") return `Grand Quiz · ${getTopicById(a.topic_id)?.shortTitle ?? a.topic_id}`;
+  if (a.kind === "topic_drill") return `Practice drill · ${getTopicById(a.topic_id)?.shortTitle ?? a.topic_id}`;
   const lesson = getTopicById(a.topic_id)?.lessons.find((l) => l.id === a.lesson_id);
   return `Practice · ${lesson?.title ?? a.lesson_id}`;
 }
