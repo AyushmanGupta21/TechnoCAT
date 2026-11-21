@@ -489,6 +489,20 @@ export default function TopicDetailPage() {
     }, 2600);
   }, []);
 
+  // Seeks requested from outside the player (e.g. AI tutor timestamps) obey the same rule
+  // as the scrubber: never beyond the furthest point actually watched.
+  const seekWithinWatched = useCallback(
+    (targetSeconds: number) => {
+      if (targetSeconds > maxWatchedTimeRef.current + 1.2) {
+        triggerForwardWarning();
+        return false;
+      }
+      seekTo(targetSeconds);
+      return true;
+    },
+    [seekTo, triggerForwardWarning]
+  );
+
   const toggleMute = useCallback(() => {
     if (isMuted) {
       sendPlayerCommand("unMute");
@@ -2271,9 +2285,9 @@ export default function TopicDetailPage() {
               lessonCode={activeLesson.code}
               lessonTitle={activeLesson.title}
               lessonCoverage={activeLesson.coverage}
+              unlockedUntilSeconds={maxWatchedTime}
               onSeekTo={(seconds) => {
-                seekTo(seconds);
-                playVideo();
+                if (seekWithinWatched(seconds)) playVideo();
               }}
               onLaunchFullQuiz={(quiz) => {
                 setActiveQuizModal({ ...quiz, lessonId: activeLesson.id });

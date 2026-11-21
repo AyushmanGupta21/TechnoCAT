@@ -21,8 +21,25 @@ interface VideoAskPanelProps {
   lessonTitle: string;
   lessonCoverage?: string;
   onSeekTo?: (seconds: number) => void;
+  /**
+   * Furthest point (seconds) the student has actually watched. Timestamps after it are shown
+   * but locked, and unlock live as playback passes them (no skipping ahead via timestamps).
+   * Omit to allow every timestamp.
+   */
+  unlockedUntilSeconds?: number;
   onLaunchFullQuiz?: (quiz: { title: string; questions: QuizQuestion[] }) => void;
   externalPrompt?: { id: string; prompt: string } | null;
+}
+
+// Same tolerance as the player's scrubber, so a timestamp unlocks as playback reaches it.
+const SEEK_TOLERANCE_SECONDS = 1.2;
+
+function formatClock(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = String(s % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
 }
 
 const QUICK_CHIPS = [
@@ -49,9 +66,11 @@ function parseTimestampToSeconds(timeStr: string): number | null {
 function FormattedText({
   text,
   onSeekTo,
+  unlockedUntilSeconds,
 }: {
   text: string;
   onSeekTo?: (seconds: number) => void;
+  unlockedUntilSeconds?: number;
 }) {
   if (!text) return null;
 
@@ -67,23 +86,40 @@ function FormattedText({
       if (match) {
         const firstTime = match[1];
         const seconds = parseTimestampToSeconds(firstTime);
+        const locked =
+          seconds !== null &&
+          unlockedUntilSeconds !== undefined &&
+          seconds > unlockedUntilSeconds + SEEK_TOLERANCE_SECONDS;
 
         return (
           <button
             key={i}
             type="button"
-            className={styles.timestampBadge}
+            className={locked ? `${styles.timestampBadge} ${styles.timestampBadgeLocked}` : styles.timestampBadge}
+            disabled={locked}
+            aria-disabled={locked}
             onClick={() => {
-              if (seconds !== null && onSeekTo) {
+              if (!locked && seconds !== null && onSeekTo) {
                 onSeekTo(seconds);
               }
             }}
-            title={`Click to jump video to ${firstTime}`}
+            title={
+              locked
+                ? `Unlocks when the video reaches ${formatClock(seconds!)}. Keep watching to jump here.`
+                : `Click to jump video to ${firstTime}`
+            }
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
+            {locked ? (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="4" y="11" width="16" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            )}
             {match[0].replace("[", "").replace("]", "").replace("⏱", "").trim()}
           </button>
         );
@@ -313,6 +349,7 @@ export default function VideoAskPanel({
   lessonTitle,
   lessonCoverage,
   onSeekTo,
+  unlockedUntilSeconds,
   onLaunchFullQuiz,
   externalPrompt,
 }: VideoAskPanelProps) {
@@ -483,7 +520,7 @@ export default function VideoAskPanel({
                 msg.role === "user" ? styles.bubbleUser : styles.bubbleAi
               }`}
             >
-              <FormattedText text={msg.content} onSeekTo={onSeekTo} />
+              <FormattedText text={msg.content} onSeekTo={onSeekTo} unlockedUntilSeconds={unlockedUntilSeconds} />
 
               {/* Render Interactive Quiz Block if present */}
               {msg.quiz && (

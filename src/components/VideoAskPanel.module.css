@@ -305,6 +305,17 @@
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
+/* Timestamp the student has not reached yet: visible, not clickable until playback passes it */
+.timestampBadgeLocked,
+.timestampBadgeLocked:hover {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Interactive Quiz Block in Chat */
 .quizContainer {
   margin-top: 10px;
