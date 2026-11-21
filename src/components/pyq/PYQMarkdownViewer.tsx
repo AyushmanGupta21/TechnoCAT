@@ -43,32 +43,61 @@ export function preprocessMathAndText(raw: string): string {
     .replace(/Ã—/g, "×")
     .replace(/Ã·/g, "÷");
 
-  // 2. Unescape double backslashes before common LaTeX keywords
-  s = s.replace(/\\\\([a-zA-Z]+)/g, "\\$1");
+  // 2. Normalize {/frac} or /frac variants into \frac
+  s = s.replace(/\{\s*\/frac\s*\}/g, "\\frac");
+  s = s.replace(/(?<![a-zA-Z\\])\/frac\{/g, "\\frac{");
 
-  // 3. Fix unicode square roots e.g. \√3 -> \sqrt{3}, √3 -> \sqrt{3}, √π -> \sqrt{\pi}
+  // 3. Unescape double backslashes before common LaTeX keywords using callback
+  s = s.replace(/\\\\([a-zA-Z]+)/g, (_m, g1) => "\\" + g1);
+
+  // 4. Fix unicode square roots e.g. \√3 -> \sqrt{3}, √3 -> \sqrt{3}, √π -> \sqrt{\pi}
   s = s.replace(/\\?√\s*π/g, "\\sqrt{\\pi}");
-  s = s.replace(/\\?√\s*\{([^}]+)\}/g, "\\sqrt{$1}");
-  s = s.replace(/\\?√\s*\((\d+)\)/g, "\\sqrt{$1}");
-  s = s.replace(/\\?√\s*(\d+)/g, "\\sqrt{$1}");
-  s = s.replace(/\\?√\s*([a-zA-Z])(?![a-zA-Z])/g, "\\sqrt{$1}");
+  s = s.replace(/\\?√\s*\{([^}]+)\}/g, (_m, g1) => `\\sqrt{${g1}}`);
+  s = s.replace(/\\?√\s*\((\d+)\)/g, (_m, g1) => `\\sqrt{${g1}}`);
+  s = s.replace(/\\?√\s*(\d+)/g, (_m, g1) => `\\sqrt{${g1}}`);
+  s = s.replace(/\\?√\s*([a-zA-Z])(?![a-zA-Z])/g, (_m, g1) => `\\sqrt{${g1}}`);
 
-  // 4. Strip stray closing parenthesis artifact after fractions
-  s = s.replace(/(\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})\)/g, "$1");
+  // 5. Clean nested delimiters inside/around braces & parens
+  s = s.replace(/(\{\s*)\\\(/g, "$1").replace(/\\\)(\s*\})/g, "$1");
+  s = s.replace(/\(\s*\\\(\s*\\frac/g, "(\\frac");
 
-  // 5. Wrap raw standalone \frac expressions not already inside math delimiters
-  s = s.replace(/(?<!\\\(|\$|\\\[)\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}(?!\\\))/g, (m) => `\\(${m}\\)`);
+  // 6. Strip stray closing parenthesis artifact after fractions
+  s = s.replace(/(\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})\)/g, (_m, g1) => g1);
 
-  // 6. Ensure diagram images are separated into their own blocks so they render as full diagrams
+  // 7. Preserve existing math delimiters so we never inject \\( inside existing math blocks
+  const mathPlaceholders: string[] = [];
+  s = s.replace(MATH_RE, (match) => {
+    mathPlaceholders.push(match);
+    return `___MTH_${mathPlaceholders.length - 1}___`;
+  });
+
+  // 8. Now wrap standalone \\frac in \\( ... \\) safely
+  s = s.replace(/\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m) => `\\(${m}\\)`);
+
+  // 9. Restore existing math blocks
+  s = s.replace(/___MTH_(\d+)___/g, (_m, idx) => mathPlaceholders[Number(idx)]);
+
+  // 10. Ensure diagram images are separated into their own blocks so they render as full diagrams
   s = s.replace(/([^\n])\s*(!\[[^\n\]]*\]\s*\([^\n\)]+\))/g, "$1\n\n$2")
        .replace(/(!\[[^\n\]]*\]\s*\([^\n\)]+\))\s*([^\n])/g, "$1\n\n$2");
 
   return s;
 }
 
+/** Cleans LaTeX math strings before feeding to KaTeX */
+function cleanLatexMath(tex: string): string {
+  let t = tex.trim();
+  // Strip nested \\( and \\) inside math mode
+  t = t.replace(/\\\(|\\\)/g, " ");
+  // Fix common typo \pir -> \pi r
+  t = t.replace(/\\pi([a-zA-Z])/g, "\\pi $1");
+  return t;
+}
+
 function renderMath(tex: string, displayMode: boolean): string {
   try {
-    return katex.renderToString(tex, { displayMode, throwOnError: false, strict: "ignore", output: "html" });
+    const cleaned = cleanLatexMath(tex);
+    return katex.renderToString(cleaned, { displayMode, throwOnError: false, strict: "ignore", output: "html" });
   } catch {
     return tex.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
   }

@@ -72,7 +72,7 @@ export default function PYQAttemptModal({
   }, [isOpen, inExam, onClose]);
 
   const startExam = () => {
-    if (isSubjectLocked) return;
+    if (isSubjectLocked || rawQuestions.length === 0) return;
     setExamAttemptNumber(subjectAttemptsCount + 1);
     setInExam(true);
   };
@@ -300,7 +300,7 @@ export default function PYQAttemptModal({
             type="button"
             className={styles.startBtn}
             onClick={startExam}
-            disabled={isSubjectLocked}
+            disabled={isSubjectLocked || rawQuestions.length === 0}
           >
             <span>I Understand & Agree — Start Exam</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

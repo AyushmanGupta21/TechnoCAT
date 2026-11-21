@@ -141,7 +141,44 @@ export default function PYQStudyModal({
     };
   }, [isOpen]);
 
-  if (!mounted || !isOpen || questions.length === 0) return null;
+  if (!mounted || !isOpen) return null;
+
+  if (questions.length === 0) {
+    return createPortal(
+      <div className={styles.overlay} onClick={onClose}>
+        <div
+          className={styles.modalBox}
+          style={{ maxWidth: 440, margin: "auto", textAlign: "center", padding: "32px 24px" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ fontSize: 36, marginBottom: 16 }}>📋</div>
+          <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--foreground, #0f172a)", marginBottom: 8 }}>
+            No Questions Available
+          </h3>
+          <p style={{ color: "#64748b", fontSize: "0.88rem", lineHeight: 1.5, marginBottom: 24 }}>
+            CAT {year} ({slot} &bull; {section}) does not have archived questions. CAT exams prior to 2020 were conducted in 2 slots only.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: "10px 24px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   const currentQ = questions[currentIdx] || questions[0];
   const isTITA = currentQ.type === "TITA";

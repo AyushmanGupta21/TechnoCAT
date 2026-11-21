@@ -1532,7 +1532,7 @@ export default function ModuleQuizModal({
                           <div className={styles.titaReviewRow}>
                             <span className={styles.titaReviewLabel}>Correct Answer:</span>
                             <span className={styles.titaCorrectVal}>
-                              {q.titaAnswer || q.explanation.slice(0, 80)}
+                              <MathText text={q.titaAnswer || q.explanation.slice(0, 80)} />
                             </span>
                           </div>
                         </div>

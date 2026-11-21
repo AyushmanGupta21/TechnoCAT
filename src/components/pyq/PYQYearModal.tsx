@@ -125,7 +125,15 @@ export default function PYQYearModal({
     }
   }, [isOpen, loadAttempts]);
 
-  // Generate 9 section-slot cards
+  const yearInfo = useMemo(() => PYQ_YEARS.find((y) => y.year === year), [year]);
+  const availableSlots = useMemo(() => yearInfo?.slots || ["Slot 1", "Slot 2", "Slot 3"], [yearInfo]);
+
+  // Clean slot filters if current selected slot is not in available slots
+  useEffect(() => {
+    setSelectedSlots((prev) => prev.filter((s) => availableSlots.includes(s)));
+  }, [availableSlots]);
+
+  // Generate valid section-slot cards for available slots only
   const allCards = useMemo(() => {
     const list: Array<{
       slot: string;
@@ -133,18 +141,21 @@ export default function PYQYearModal({
       info: ReturnType<typeof getPYQSectionInfo>;
     }> = [];
 
-    ALL_SLOTS.forEach((slot) => {
+    availableSlots.forEach((slot) => {
       ALL_SECTIONS.forEach((section) => {
-        list.push({
-          slot,
-          section,
-          info: getPYQSectionInfo(year, slot, section),
-        });
+        const info = getPYQSectionInfo(year, slot, section);
+        if (info.totalCount > 0) {
+          list.push({
+            slot,
+            section,
+            info,
+          });
+        }
       });
     });
 
     return list;
-  }, [year]);
+  }, [year, availableSlots]);
 
   // Filter cards
   const filteredCards = useMemo(() => {
@@ -207,7 +218,7 @@ export default function PYQYearModal({
               {year === 2024 ? `TechnoCAT 6.0 Full Mock (Official CAT ${year})` : `CAT ${year} Previous Year Question Papers`}
             </h2>
             <p className={styles.headerSubtitle}>
-              Access all 3 Slots &amp; 3 Sections. Review detailed solutions in Study Mode or simulate official exam conditions in Timed Attempt Mode.
+              Access all {availableSlots.length} Slots &amp; 3 Sections. Review detailed solutions in Study Mode or simulate official exam conditions in Timed Attempt Mode.
             </p>
           </div>
 
@@ -268,7 +279,7 @@ export default function PYQYearModal({
             >
               All Slots
             </button>
-            {ALL_SLOTS.map((slot) => {
+            {availableSlots.map((slot) => {
               const isActive = selectedSlots.includes(slot);
               return (
                 <button
@@ -441,8 +452,9 @@ export default function PYQYearModal({
                     <button
                       type="button"
                       className={styles.btnStudy}
-                      onClick={() => setStudyModalTarget({ slot, section })}
-                      title="Read and study questions, options, and comprehensive solutions"
+                      onClick={() => info.totalCount > 0 && setStudyModalTarget({ slot, section })}
+                      disabled={info.totalCount === 0}
+                      title={info.totalCount === 0 ? "No questions available for this slot" : "Read and study questions, options, and comprehensive solutions"}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                       <span>Study PYQ</span>
