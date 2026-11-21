@@ -972,10 +972,10 @@
     "question_number": 1,
     "type": "TITA",
     "context": "",
-    "question": "A fruit seller has a total of 187 fruits consisting of apples, mangoes and oranges. The number of apples and mangoes are in the ratio 5 : 2. After she sells 75 apples, 26 mangoes and half of the oranges, the ratio of number of unsold apples to number of unsold oranges becomes 3 : 2. The total number of unsold fruits is",
+    "question": "A fruit seller has a total of 187 fruits consisting of apples, mangoes and oranges. The number of apples and mangoes are in the ratio 5:  2. After she sells 75 apples, 26 mangoes and half of the oranges, the ratio of number of unsold apples to number of unsold oranges becomes 3:  2. The total number of unsold fruits is",
     "options": [],
     "correct_answer": "66",
-    "explanation": "Ratio of number of apples and mangoes is \\(5: 2\\) Let the Number of apples\\(=5 x\\) Number of mangoes \\(=2 x\\) Number of oranges \\(=2 y\\) $$ 7 x+2 y=187--------(1) $$ She sells 75 apples, 26 mangoes and half of the oranges.\n\nNumber of unsold apples= \\(5 x-75\\) Number of unsold mangoes \\(=2 x-26\\) Number of unsold oranges \\(=y\\) Ratio of unsold apples to unsold oranges=3:2 $$ \\begin{array}{l} 5 x-75: y=3: 2 \\\\ 10 x-150=3 y \\end{array} $$ $$ 10 x-3 y=150------(2) $$ Multiplying equation(1) with 3 , we get \\(21 x+6 y=561\\) Multiplying equation(2) with 2 , we get \\(20 x-6 y=300\\) Adding the above two equations, \\(41 x =861\\) $$ x=861 / 41=21 $$ Substituting \\(x=21\\) in equation 1 , $$ 7(21)+2 y=187 $$ $$ \\begin{array}{l} 2 y=40 \\\\ y=20 \\end{array} $$ Total number of unsold fruits \\(=5 x-75+2 x-26+y=105-75+42-26+20=66\\) The question is \"A fruit seller has a total of 187 fruits consisting of apples, mangoes and oranges. The number of apples and mangoes are in the ratio 5 : 2. After she sells 75 apples, 26 mangoes and half of the oranges, the ratio of number of unsold apples to number of unsold oranges becomes 3 : 2. The total number of unsold fruits is \" Hence, the answer is '66'",
+    "explanation": "Ratio of number of apples and mangoes is \\(5: 2\\) Let the Number of apples\\(=5 x\\) Number of mangoes \\(=2 x\\) Number of oranges \\(=2 y\\) $$ 7 x+2 y=187--------(1) $$ She sells 75 apples, 26 mangoes and half of the oranges.\n\nNumber of unsold apples= \\(5 x-75\\) Number of unsold mangoes \\(=2 x-26\\) Number of unsold oranges \\(=y\\) Ratio of unsold apples to unsold oranges=3:2 $$ \\begin{array}{l} 5 x-75: y=3: 2 \\\\ 10 x-150=3 y \\end{array} $$ $$ 10 x-3 y=150------(2) $$ Multiplying equation(1) with 3 , we get \\(21 x+6 y=561\\) Multiplying equation(2) with 2 , we get \\(20 x-6 y=300\\) Adding the above two equations, \\(41 x =861\\) $$ x=861 / 41=21 $$ Substituting \\(x=21\\) in equation 1 , $$ 7(21)+2 y=187 $$ $$ \\begin{array}{l} 2 y=40 \\\\ y=20 \\end{array} $$ Total number of unsold fruits \\(=5 x-75+2 x-26+y=105-75+42-26+20=66\\) The question is \"A fruit seller has a total of 187 fruits consisting of apples, mangoes and oranges. The number of apples and mangoes are in the ratio 5:  2. After she sells 75 apples, 26 mangoes and half of the oranges, the ratio of number of unsold apples to number of unsold oranges becomes 3:  2. The total number of unsold fruits is \" Hence, the answer is '66'",
     "video_url": "https://www.youtube.com/embed/RLjd2bvQ8gg?si=ok4Rp1v9QAnZZ5wL&amp;start=963",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-1-Quant/quants-question-1.shtml",
     "images": []
@@ -1070,7 +1070,7 @@
     "question_number": 6,
     "type": "MCQ",
     "context": "",
-    "question": "In September, the incomes of Kamal, Amal and Vimal are in the ratio 8 : 6 : 5. They rent a house together, and Kamal pays 15%, Amal pays 12% and Vimal pays 18% of their respective incomes to cover the total house rent in that month.\n\nIn October, the house rent remains unchanged while their incomes increase by 10%, 12% and 15%, respectively. In October, the percentage of their total income that will be paid as house rent, is nearest to",
+    "question": "In September, the incomes of Kamal, Amal and Vimal are in the ratio 8:  6:  5. They rent a house together, and Kamal pays 15%, Amal pays 12% and Vimal pays 18% of their respective incomes to cover the total house rent in that month.\n\nIn October, the house rent remains unchanged while their incomes increase by 10%, 12% and 15%, respectively. In October, the percentage of their total income that will be paid as house rent, is nearest to",
     "options": [
       "14.84",
       "12.75",
@@ -1078,7 +1078,7 @@
       "15.18"
     ],
     "correct_answer": "Choice C\n13.26",
-    "explanation": "![Diagram](/pyq/2024/images/q6-exp.png)\n\nIn October, percentage of their total income that will be paid as house rent, is= (2.82x / 21.27x)*100 = 13.26 The question is \"In September, the incomes of Kamal, Amal and Vimal are in the ratio 8 â\\x88\\xb6 6 â\\x88\\xb6 5. They rent a house together, and Kamal pays 15%, Amal pays 12% and Vimal pays 18% of their respective incomes to cover the total house rent in that month. In October, the house rent remains unchanged while their incomes increase by 10%, 12% and 15%, respectively. In October, the percentage of their total income that will be paid as house rent, is nearest to\" Hence, the answer is '13.26' Choice C is the correct answer.",
+    "explanation": "![Diagram](/pyq/2024/images/q6-exp.png)\n\nIn October, percentage of their total income that will be paid as house rent, is= (2.82x / 21.27x)*100 = 13.26 The question is \"In September, the incomes of Kamal, Amal and Vimal are in the ratio 8 : 6 : 5. They rent a house together, and Kamal pays 15%, Amal pays 12% and Vimal pays 18% of their respective incomes to cover the total house rent in that month. In October, the house rent remains unchanged while their incomes increase by 10%, 12% and 15%, respectively. In October, the percentage of their total income that will be paid as house rent, is nearest to\" Hence, the answer is '13.26' Choice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/RLjd2bvQ8gg?si=8DHYQG8df61SHhgz&amp;start=2713",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-1-Quant/quants-question-6.shtml",
     "images": [
@@ -1190,7 +1190,7 @@
     "question_number": 12,
     "type": "MCQ",
     "context": "",
-    "question": "An amount of Rs 10000 is deposited in bank A for a certain number of years at a simple interest of 5% per annum. On maturity, the total amount received is deposited in bank B for another 5 years at a simple interest of 6% per annum. If the interests received from bank A and bank B are in the ratio 10 : 13, then the investment period, in years, in bank A is",
+    "question": "An amount of Rs 10000 is deposited in bank A for a certain number of years at a simple interest of 5% per annum. On maturity, the total amount received is deposited in bank B for another 5 years at a simple interest of 6% per annum. If the interests received from bank A and bank B are in the ratio 10:  13, then the investment period, in years, in bank A is",
     "options": [
       "4",
       "3",
@@ -1198,7 +1198,7 @@
       "5"
     ],
     "correct_answer": "Choice C\n6",
-    "explanation": "Interest from bank A = 10000*n*5 / 100 = 500n ( n is the Investment period, in years, in Bank A) Interest from bank B = (10000*6*5/ 100) + (500n*6*5/100) = 3000 + 150n ​ Ratio of interest from Bank A and Bank B= 500n/ 3000 + 150n = 10/13 6500n = 30000 + 1500n 5000n = 30000 N = 30000/5000 = 6 Investment period, in years, in Bank A = 6 The question is \"An amount of Rs 10000 is deposited in bank A for a certain number of years at a simple interest of 5% per annum. On maturity, the total amount received is deposited in bank B for another 5 years at a simple interest of 6% per annum. If the interests received from bank A and bank B are in the ratio 10 : 13, then the investment period, in years, in bank A is\" Hence, the answer is '6' Choice C is the correct answer.",
+    "explanation": "Interest from bank A = 10000*n*5 / 100 = 500n ( n is the Investment period, in years, in Bank A) Interest from bank B = (10000*6*5/ 100) + (500n*6*5/100) = 3000 + 150n ​ Ratio of interest from Bank A and Bank B= 500n/ 3000 + 150n = 10/13 6500n = 30000 + 1500n 5000n = 30000 N = 30000/5000 = 6 Investment period, in years, in Bank A = 6 The question is \"An amount of Rs 10000 is deposited in bank A for a certain number of years at a simple interest of 5% per annum. On maturity, the total amount received is deposited in bank B for another 5 years at a simple interest of 6% per annum. If the interests received from bank A and bank B are in the ratio 10:  13, then the investment period, in years, in bank A is\" Hence, the answer is '6' Choice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/RLjd2bvQ8gg?si=FhkA38T2QQe1KCfq&amp;start=2250",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-1-Quant/quants-question-12.shtml",
     "images": []
@@ -1301,13 +1301,13 @@
     "context": "",
     "question": "A glass is filled with milk. Two-thirds of its content is poured out and replaced with water. If this process of pouring out two-thirds the content and replacing with water is repeated three more times, then the final ratio of milk to water in the glass, is",
     "options": [
-      "1 : 27",
-      "1 : 81",
-      "1 : 26",
-      "1 : 80"
+      "1:  27",
+      "1:  81",
+      "1:  26",
+      "1:  80"
     ],
-    "correct_answer": "Choice D\n1 : 80",
-    "explanation": "Final concentration of milk \\(=\\) Initial concentration * \\((1-(x / v))^n\\) \\(x=\\) volume replaced \\(v =\\) total volume \\(n =\\) number of iterations Let initial quantity of milk \\(= y\\) litres Final concentration \\(=y(1-2 / 3)^4=y(1 / 3)^4=1 / 81 y\\) Volume of milk \\(=1 / 81 y\\) Volume of water \\(=y-(1 / 81 y)=80 / 81 y\\) Final ratio of milk to water in the glass \\(=1: 80\\) The question is \"A glass is filled with milk. Two-thirds of its content is poured out and replaced with water. If this process of pouring out two-thirds the content and replacing with water is repeated three more times, then the final ratio of milk to water in the glass, is\" Hence, the answer is '1 : 80' Choice D is the correct answer.",
+    "correct_answer": "Choice D\n1:  80",
+    "explanation": "Final concentration of milk \\(=\\) Initial concentration * \\((1-(x / v))^n\\) \\(x=\\) volume replaced \\(v =\\) total volume \\(n =\\) number of iterations Let initial quantity of milk \\(= y\\) litres Final concentration \\(=y(1-2 / 3)^4=y(1 / 3)^4=1 / 81 y\\) Volume of milk \\(=1 / 81 y\\) Volume of water \\(=y-(1 / 81 y)=80 / 81 y\\) Final ratio of milk to water in the glass \\(=1: 80\\) The question is \"A glass is filled with milk. Two-thirds of its content is poured out and replaced with water. If this process of pouring out two-thirds the content and replacing with water is repeated three more times, then the final ratio of milk to water in the glass, is\" Hence, the answer is '1:  80' Choice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/RLjd2bvQ8gg?si=Ndg255NhKvAGfNMi&amp;start=1914",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-1-Quant/quants-question-17.shtml",
     "images": []
@@ -1804,7 +1804,7 @@
       "Human efforts to avoid risky behaviours around large carnivores have proven effective in reducing conflict incidents."
     ],
     "correct_answer": "Choice A\nClimate change has had negligible effects on the frequency of carnivore-human interactions in affected regions.",
-    "explanation": "(There is one small part which is bold. Please retain that on the web page as well) This is a super controversial question, probably one of the most controversial VARC questions in the last few years! :) We disagree with the CAT official answer key on this. We along with many other students/providers had filed an objection against this question in 2024 but unfortunately, CAT did not accept it.\n\nAccording to the official answer key, the correct answer is Option A but we are confident that the correct answer is Option B.\n\nThe efficient way to solve this question is to turn it on its head by converting the false to true and inconsistent to consistent. Hence we will solve the question as “If True -> Consistent”.\n\nA - Consider these sentences from the passage - “Experts believe climate change also plays a part in the escalation of human-carnivore conflicts, but the correlation still needs to be ironed out.” This means there is uncertainty around climate change being a factor.\n\nIf there is uncertainty, we cannot conclusively talk about the effect of climate change. Hence we cannot determine whether it is negligible or significant (opposite of negligible and relevant in case we are solving this question as “If False”). Essentially, this option cannot be determined so it cannot be the correct answer.\n\nB - Consider these sentences from the passage - “As they become more reliant on human food they might find at campsites or in rubbish bins, they become less avoidant of humans. Losing that instinctive fear response…” This implies that carnivores lose their instinctive fear of humans, when consistently exposed to human food sources. Hence this is “If True -> Consistent” and is the correct answer.\n\nIf you falsify it, the option will be “Carnivores do not lose their instinctive fear of humans, when consistently exposed to human food sources”. Hence it’s “If False -> Inconsistent” which also makes it the correct answer.\n\nC - Consider this sentence from the passage - “Predatory or predation-related attacks are quite rare, only accounting for 17% of attacks in North America since 1955.” This implies that predatory attacks are not a common occurrence hence this is “If True -> Inconsistent” and hence not the answer.\n\nD - There is no discussion in the passage about human efforts to avoid risky behaviors around large carnivores hence this option is out of scope and cannot be determined. Therefore, it cannot be the correct answer.\n\nThe answer is 'Climate change has had negligible effects on the frequency of carnivore-human interactions in affected regions.' Choice A is the correct answer.",
+    "explanation": "(There is one small part which is bold. Please retain that on the web page as well) This is a super controversial question, probably one of the most controversial VARC questions in the last few years!: ) We disagree with the CAT official answer key on this. We along with many other students/providers had filed an objection against this question in 2024 but unfortunately, CAT did not accept it.\n\nAccording to the official answer key, the correct answer is Option A but we are confident that the correct answer is Option B.\n\nThe efficient way to solve this question is to turn it on its head by converting the false to true and inconsistent to consistent. Hence we will solve the question as “If True -> Consistent”.\n\nA - Consider these sentences from the passage - “Experts believe climate change also plays a part in the escalation of human-carnivore conflicts, but the correlation still needs to be ironed out.” This means there is uncertainty around climate change being a factor.\n\nIf there is uncertainty, we cannot conclusively talk about the effect of climate change. Hence we cannot determine whether it is negligible or significant (opposite of negligible and relevant in case we are solving this question as “If False”). Essentially, this option cannot be determined so it cannot be the correct answer.\n\nB - Consider these sentences from the passage - “As they become more reliant on human food they might find at campsites or in rubbish bins, they become less avoidant of humans. Losing that instinctive fear response…” This implies that carnivores lose their instinctive fear of humans, when consistently exposed to human food sources. Hence this is “If True -> Consistent” and is the correct answer.\n\nIf you falsify it, the option will be “Carnivores do not lose their instinctive fear of humans, when consistently exposed to human food sources”. Hence it’s “If False -> Inconsistent” which also makes it the correct answer.\n\nC - Consider this sentence from the passage - “Predatory or predation-related attacks are quite rare, only accounting for 17% of attacks in North America since 1955.” This implies that predatory attacks are not a common occurrence hence this is “If True -> Inconsistent” and hence not the answer.\n\nD - There is no discussion in the passage about human efforts to avoid risky behaviors around large carnivores hence this option is out of scope and cannot be determined. Therefore, it cannot be the correct answer.\n\nThe answer is 'Climate change has had negligible effects on the frequency of carnivore-human interactions in affected regions.' Choice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/BQwDwMUpPGY?si=1h27WqlQbNPSKbGF&amp;start=5673",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-VARC/verbal-question-20.shtml",
     "images": []
@@ -2155,7 +2155,7 @@
     "question": "For how many slots in the grid, placement of numbers CANNOT be determined with certainty?",
     "options": [],
     "correct_answer": "2",
-    "explanation": "We are given the conditions that numbers in any row appear in an increasing order from left to right. Also, numbers in any column appear in a decreasing order from top to bottom. The number 10 must be placed in Row 1, Column 4, as placing it anywhere else would mean that the number above it or right to it must be greater than 10, which is not possible.\n\n![Set 2](/pyq/2024/images/grid-1.png)\n\nNumber 1 is placed either in the same row or in the same column as 10. It can be in Top left or bottom-right. Neither 2 nor 3 is placed in the same row or in the same column as 10. Row 2 or row 3 without going into the last column. 4 and 6 are placed in the same row. Row 1 or Row 2. If they were in row 3, Row 2 would have to have 2, 3 in the first two columns and that would be impossible. If 4 and 6 were in row 2 then 6 would have to be in the last column as otherwise there would be no room for 2 & 3. If 6 were in the last column, there is no room for 7, 8 and 9. So, 4 & 6 have to be in the first row. Let us consider two possibilities 4 in Column 1, Row 1 or 4 in Row 1, Column 2. What happens to 7, 8, 9?\n\n![Set 2](/pyq/2024/images/grid-2.png)\n\nLet us consider two possibilities for 6. 6 could be in column 2 or column\n\n3. First row being 4, 5, 6, 10 is not possible. As then 9 would have to be just below 10 and then there is no room for 7 &\n\n8.\n\n![Set 2](/pyq/2024/images/grid-3.png)\n\nLet us now consider possibilities for 9. 9 has to be next to 10. Either to the left or just below.\n\n![Set 2](/pyq/2024/images/grid-4.png)\n\nNeither 7 nor 8 is placed in the same row or in the same column as 9. Final two possibilities.\n\n![Set 2](/pyq/2024/images/grid-5.png)\n\nThe question is \" For how many slots in the grid, placement of numbers CANNOT be determined with certainty? \" Answer : 2 slots. For number 2 and 3 the slots cannot be determined with certainty. Hence, the answer is '2'",
+    "explanation": "We are given the conditions that numbers in any row appear in an increasing order from left to right. Also, numbers in any column appear in a decreasing order from top to bottom. The number 10 must be placed in Row 1, Column 4, as placing it anywhere else would mean that the number above it or right to it must be greater than 10, which is not possible.\n\n![Set 2](/pyq/2024/images/grid-1.png)\n\nNumber 1 is placed either in the same row or in the same column as 10. It can be in Top left or bottom-right. Neither 2 nor 3 is placed in the same row or in the same column as 10. Row 2 or row 3 without going into the last column. 4 and 6 are placed in the same row. Row 1 or Row 2. If they were in row 3, Row 2 would have to have 2, 3 in the first two columns and that would be impossible. If 4 and 6 were in row 2 then 6 would have to be in the last column as otherwise there would be no room for 2 & 3. If 6 were in the last column, there is no room for 7, 8 and 9. So, 4 & 6 have to be in the first row. Let us consider two possibilities 4 in Column 1, Row 1 or 4 in Row 1, Column 2. What happens to 7, 8, 9?\n\n![Set 2](/pyq/2024/images/grid-2.png)\n\nLet us consider two possibilities for 6. 6 could be in column 2 or column\n\n3. First row being 4, 5, 6, 10 is not possible. As then 9 would have to be just below 10 and then there is no room for 7 &\n\n8.\n\n![Set 2](/pyq/2024/images/grid-3.png)\n\nLet us now consider possibilities for 9. 9 has to be next to 10. Either to the left or just below.\n\n![Set 2](/pyq/2024/images/grid-4.png)\n\nNeither 7 nor 8 is placed in the same row or in the same column as 9. Final two possibilities.\n\n![Set 2](/pyq/2024/images/grid-5.png)\n\nThe question is \" For how many slots in the grid, placement of numbers CANNOT be determined with certainty? \" Answer:  2 slots. For number 2 and 3 the slots cannot be determined with certainty. Hence, the answer is '2'",
     "video_url": "https://www.youtube.com/embed/snNDRgjrLIo?si=kNmYAxsroArjG08X&amp;start=2441",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-DILR/dilr-question-13.shtml",
     "images": [
@@ -2306,13 +2306,13 @@
     "context": "The two plots below give the following information about six firms A, B, C, D, E, and F for 2019 and 2023.\n\nPAT: The firm's profits after taxes in Rs. crores, ES: The firm's employee strength, that is the number of employees in the firm, and PRD: The percentage of the firm's PAT that they spend on Research and Development (R&D).\n\nIn the plots, the horizontal and vertical coordinates of point representing each firm gives their ES and PAT values respectively. The PRD values of each firm are proportional to the areas around the points representing each firm. The areas are comparable between the two plots, i.e., equal areas in the two plots represent the same PRD values for the two years.\n\n![Diagram](/pyq/2024/images/32842_332818_0_25976760_q8517_m.jpg)",
     "question": "The ratio of the amount of money spent by Firm C on R&D in 2019 to that in 2023 is closest to",
     "options": [
-      "5 : 9",
-      "9 : 5",
-      "9 : 4",
-      "5 : 6"
+      "5:  9",
+      "9:  5",
+      "9:  4",
+      "5:  6"
     ],
-    "correct_answer": "Choice B\n9 : 5",
-    "explanation": "![Set 4](/pyq/2024/images/dilr-2024.jpg)\n\nThe question is \"The ratio of the amount of money spent by Firm C on R&D in 2019 to that in 2023 is closest to\" Answer: Amount of money spent by any firm is proportional to areas on the firm’s PAT. The amount of money spent by Firm C on R&D in 2019 = 2400 * Ï * 1.5 * 1.5. The amount of money spent by Firm C on R&D in 2023 = 3000 * Ï * 1 * 1. Ratio = (2400 * 1.5 * 1.5) / (3000 * 1 * 1) = 9 / 5. Hence, the answer is '9 : 5' Choice B is the correct answer.",
+    "correct_answer": "Choice B\n9:  5",
+    "explanation": "![Set 4](/pyq/2024/images/dilr-2024.jpg)\n\nThe question is \"The ratio of the amount of money spent by Firm C on R&D in 2019 to that in 2023 is closest to\" Answer: Amount of money spent by any firm is proportional to areas on the firm’s PAT. The amount of money spent by Firm C on R&D in 2019 = 2400 * Ï * 1.5 * 1.5. The amount of money spent by Firm C on R&D in 2023 = 3000 * Ï * 1 * 1. Ratio = (2400 * 1.5 * 1.5) / (3000 * 1 * 1) = 9 / 5. Hence, the answer is '9:  5' Choice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/snNDRgjrLIo?si=_-YKBj8bNjffBBCY&amp;start=3479",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-DILR/dilr-question-20.shtml",
     "images": [
@@ -2685,13 +2685,13 @@
     "context": "",
     "question": "A bus starts at 9 am and follows a fixed route every day.\n\nOne day, it traveled at a constant speed of 60 km per hour and reached its destination 3.5 hours later than its scheduled arrival time. Next day, it traveled two-thirds of its route in one-third of its total scheduled travel time, and the remaining part of the route at 40 km per hour to reach just on time. The scheduled arrival time of the bus is",
     "options": [
-      "10 : 30 pm",
-      "7 : 00 pm",
-      "7 : 30 pm",
-      "9 : 00 pm"
+      "10:  30 pm",
+      "7:  00 pm",
+      "7:  30 pm",
+      "9:  00 pm"
     ],
-    "correct_answer": "Choice C\n7 : 30 pm",
-    "explanation": "Let the total distance be 3d and total scheduled time \\(=3 t\\). Therefore, Speed \\(=3 d / 3 t = d / t\\).\n\n![Diagram](/pyq/2024/images/Q17.png)\n\n\\(d / 2 t =40 km / hr\\).\n\nTherefore \\(d / t =80 km / hr\\).\n\nTotal distance \\(=80 * 3 t =60(3 t +3.5)\\) \\(12 t =9 t +10.5\\). Therefore, total time \\(=3 t =10.5\\) hours.\n\nThe scheduled arrive time = 9AM+ 10.5 hours= 7.30 PM.\n\nThe question is \"A bus starts at 9 am and follows a fixed route every day. One day, it traveled at a constant speed of 60 km per hour and reached its destination 3.5 hours later than its scheduled arrival time. Next day, it traveled two-thirds of its route in one-third of its total scheduled travel time, and the remaining part of the route at 40 km per hour to reach just on time. The scheduled arrival time of the bus is\" Hence, the answer is '7 : 30 pm' Choice C is the correct answer.",
+    "correct_answer": "Choice C\n7:  30 pm",
+    "explanation": "Let the total distance be 3d and total scheduled time \\(=3 t\\). Therefore, Speed \\(=3 d / 3 t = d / t\\).\n\n![Diagram](/pyq/2024/images/Q17.png)\n\n\\(d / 2 t =40 km / hr\\).\n\nTherefore \\(d / t =80 km / hr\\).\n\nTotal distance \\(=80 * 3 t =60(3 t +3.5)\\) \\(12 t =9 t +10.5\\). Therefore, total time \\(=3 t =10.5\\) hours.\n\nThe scheduled arrive time = 9AM+ 10.5 hours= 7.30 PM.\n\nThe question is \"A bus starts at 9 am and follows a fixed route every day. One day, it traveled at a constant speed of 60 km per hour and reached its destination 3.5 hours later than its scheduled arrival time. Next day, it traveled two-thirds of its route in one-third of its total scheduled travel time, and the remaining part of the route at 40 km per hour to reach just on time. The scheduled arrival time of the bus is\" Hence, the answer is '7:  30 pm' Choice C is the correct answer.",
     "video_url": "https://www.youtube.com/embed/cs5WSh9RFig?si=3rJG5AiztF2GNcYv&amp;start=781",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-Quant/quants-question-17.shtml",
     "images": [
@@ -2731,13 +2731,13 @@
     "context": "",
     "question": "A vessel contained a certain amount of a solution of acid and water. When 2 litres of water was added to it, the new solution had 50% acid concentration.\n\nWhen 15 litres of acid was further added to this new solution, the final solution had 80% acid concentration. The ratio of water and acid in the original solution was",
     "options": [
-      "5 : 3",
-      "4 : 5",
-      "5 : 4",
-      "3 : 5"
+      "5:  3",
+      "4:  5",
+      "5:  4",
+      "3:  5"
     ],
-    "correct_answer": "Choice D\n3 : 5",
-    "explanation": "Let initial quantity of acid= x.\n\nTherefore initial quantity of water= x-2.\n\nAdding 2 litres of water makes acid concentration to 50%.\n\nNow by adding 15 litres of acid, makes acid concentration to 80%.\n\nTherefore (x+15)/(2x+15)= 80/100; 5(x+15)= 4(2x+15); 5x+ 75= 8x+ 60 3x= 15 x= 5 Initial quantity of acid= 5 Initial quantity of water= 5-2= 3 Ratio of water and acid in the original solution was 3:5 The question is \"A vessel contained a certain amount of a solution of acid and water. When 2 litres of water was added to it, the new solution had 50% acid concentration.\n\nWhen 15 litres of acid was further added to this new solution, the final solution had 80% acid concentration. The ratio of water and acid in the original solution was\" Hence, the answer is '3 : 5' Choice D is the correct answer.",
+    "correct_answer": "Choice D\n3:  5",
+    "explanation": "Let initial quantity of acid= x.\n\nTherefore initial quantity of water= x-2.\n\nAdding 2 litres of water makes acid concentration to 50%.\n\nNow by adding 15 litres of acid, makes acid concentration to 80%.\n\nTherefore (x+15)/(2x+15)= 80/100; 5(x+15)= 4(2x+15); 5x+ 75= 8x+ 60 3x= 15 x= 5 Initial quantity of acid= 5 Initial quantity of water= 5-2= 3 Ratio of water and acid in the original solution was 3:5 The question is \"A vessel contained a certain amount of a solution of acid and water. When 2 litres of water was added to it, the new solution had 50% acid concentration.\n\nWhen 15 litres of acid was further added to this new solution, the final solution had 80% acid concentration. The ratio of water and acid in the original solution was\" Hence, the answer is '3:  5' Choice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/cs5WSh9RFig?si=qhQnxoiYcXFR2giR&amp;start=3551",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-Quant/quants-question-19.shtml",
     "images": []
@@ -2758,7 +2758,7 @@
       "\\(-5\\)\\(<\\)\\(x\\)\\(<\\)\\(\\frac{3}{2}\\) or \\(x>\\frac{3}{2}\\)"
     ],
     "correct_answer": "Choice B\n\\(x<-5\\) or \\(\\frac{3}{2}\\)\\(<\\)\\(x \\leq 8\\)",
-    "explanation": "\\[ \\begin{array}{l} 1 /(2 x-3)-1 /(x+5) \\geq 0 \\\\ (x+5-2 x+3) /(2 x-3)(x+5) \\geq 0 \\\\ (8-x) / 2(x-(3 / 2))(x+5) \\geq 0 \\\\ (x-8) /(x-(3 / 2))(x+5) \\leq 0 \\end{array} \\] The values of \\(x\\) satisfying the inequality : \\(x<-5\\) or \\(3 / 2\n\n![Diagram](/pyq/2024/images/Q20.png)\n\nThe question is \"All the values of \\(x\\) satisfying the inequality \\(\\frac{1}{x+5} \\leq \\frac{1}{2 x-3}\\) are\" Hence, the answer is '\\(x<-5\\) or \\(\\frac{3}{2} Choice B is the correct answer.",
+    "explanation": "\\[ \\begin{array}{l} 1 /(2 x-3)-1 /(x+5) \\geq 0 \\\\ (x+5-2 x+3) /(2 x-3)(x+5) \\geq 0 \\\\ (8-x) / 2(x-(3 / 2))(x+5) \\geq 0 \\\\ (x-8) /(x-(3 / 2))(x+5) \\leq 0 \\end{array} \\] The values of \\(x\\) satisfying the inequality:  \\(x<-5\\) or \\(3 / 2\n\n![Diagram](/pyq/2024/images/Q20.png)\n\nThe question is \"All the values of \\(x\\) satisfying the inequality \\(\\frac{1}{x+5} \\leq \\frac{1}{2 x-3}\\) are\" Hence, the answer is '\\(x<-5\\) or \\(\\frac{3}{2} Choice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/cs5WSh9RFig?si=ttJ7QxKwxbVKEjfn&amp;start=652",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-Quant/quants-question-20.shtml",
     "images": [
@@ -2789,15 +2789,15 @@
     "question_number": 22,
     "type": "MCQ",
     "context": "",
-    "question": "When Rajesh's age was same as the present age of Garima, the ratio of their ages was 3 : 2. When Garima's age becomes the same as the present age of Rajesh, the ratio of the ages of Rajesh and Garima will become",
+    "question": "When Rajesh's age was same as the present age of Garima, the ratio of their ages was 3:  2. When Garima's age becomes the same as the present age of Rajesh, the ratio of the ages of Rajesh and Garima will become",
     "options": [
-      "4 : 3",
-      "2 : 1",
-      "3 : 2",
-      "5 : 4"
+      "4:  3",
+      "2:  1",
+      "3:  2",
+      "5:  4"
     ],
-    "correct_answer": "Choice D\n5 : 4",
-    "explanation": "Let the ages of Rajesh and Garima be ‘R’ and ‘G’ respectively.\n\n![Diagram](/pyq/2024/images/Q22.png)\n\nRatio of their ages= 5:4( when Garima’s age is same as present age of Rajesh) The question is \"When Rajesh's age was same as the present age of Garima, the ratio of their ages was 3 : 2. When Garima's age becomes the same as the present age of Rajesh, the ratio of the ages of Rajesh and Garima will become\" Hence, the answer is '5 : 4' Choice D is the correct answer.",
+    "correct_answer": "Choice D\n5:  4",
+    "explanation": "Let the ages of Rajesh and Garima be ‘R’ and ‘G’ respectively.\n\n![Diagram](/pyq/2024/images/Q22.png)\n\nRatio of their ages= 5:4( when Garima’s age is same as present age of Rajesh) The question is \"When Rajesh's age was same as the present age of Garima, the ratio of their ages was 3:  2. When Garima's age becomes the same as the present age of Rajesh, the ratio of the ages of Rajesh and Garima will become\" Hence, the answer is '5:  4' Choice D is the correct answer.",
     "video_url": "https://www.youtube.com/embed/cs5WSh9RFig?si=eqfu0nN-Srn4700E&amp;start=3328",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-Quant/quants-question-22.shtml",
     "images": [
@@ -3800,7 +3800,7 @@
     "question_number": 2,
     "type": "MCQ",
     "context": "",
-    "question": "For some constant real numbers \\(p, k\\) and \\(a\\), consider the following system of linear equations in \\(x\\) and \\(y\\) :\n\n$$ \\begin{aligned} & p x-4 y=2 \\\\ & 3 x+k y=a \\end{aligned} $$ A necessary condition for the system to have no solution for \\((x, y)\\), is",
+    "question": "For some constant real numbers \\(p, k\\) and \\(a\\), consider the following system of linear equations in \\(x\\) and \\(y\\): \n\n$$ \\begin{aligned} & p x-4 y=2 \\\\ & 3 x+k y=a \\end{aligned} $$ A necessary condition for the system to have no solution for \\((x, y)\\), is",
     "options": [
       "\\(2 a+k \\neq 0\\)",
       "\\(a p-6=0\\)",
@@ -3808,7 +3808,7 @@
       "\\(k p+12 \\neq 0\\)"
     ],
     "correct_answer": "Choice A\n\\(2 a+k \\neq 0\\)",
-    "explanation": "A necessary condition for the system to have no solution for (ð¥,ð¦), is The condition is \\(\\frac{a_1}{a_2}=\\frac{b_1}{b_2} \\neq \\frac{c_1}{c_2}\\) i.e., \\(\\frac{p}{3}=\\frac{-4}{k} \\neq \\frac{2}{a}\\) For \\(\\frac{p}{3}=\\frac{-4}{k} ; \\quad p k+12=0\\) For \\(\\frac{-4}{k} \\neq \\frac{2}{a} ; \\quad-4 a \\neq 2 k \\Rightarrow 2 a+k \\neq 0\\) For \\(\\frac{p}{3} \\neq \\frac{2}{a} ; \\quad p a-6 \\neq 0\\) The question is \"For some constant real numbers \\(p, k\\) and \\(a\\), consider the following system of linear equations in \\(x\\) and \\(y\\) :\n\n$$ \\begin{aligned} & p x-4 y=2 \\\\ & 3 x+k y=a \\end{aligned} $$ A necessary condition for the system to have no solution for \\((x, y)\\), is \" Hence, the answer is '\\(2 a+k \\neq 0\\)' Choice A is the correct answer.",
+    "explanation": "A necessary condition for the system to have no solution for (ð¥,ð¦), is The condition is \\(\\frac{a_1}{a_2}=\\frac{b_1}{b_2} \\neq \\frac{c_1}{c_2}\\) i.e., \\(\\frac{p}{3}=\\frac{-4}{k} \\neq \\frac{2}{a}\\) For \\(\\frac{p}{3}=\\frac{-4}{k} ; \\quad p k+12=0\\) For \\(\\frac{-4}{k} \\neq \\frac{2}{a} ; \\quad-4 a \\neq 2 k \\Rightarrow 2 a+k \\neq 0\\) For \\(\\frac{p}{3} \\neq \\frac{2}{a} ; \\quad p a-6 \\neq 0\\) The question is \"For some constant real numbers \\(p, k\\) and \\(a\\), consider the following system of linear equations in \\(x\\) and \\(y\\): \n\n$$ \\begin{aligned} & p x-4 y=2 \\\\ & 3 x+k y=a \\end{aligned} $$ A necessary condition for the system to have no solution for \\((x, y)\\), is \" Hence, the answer is '\\(2 a+k \\neq 0\\)' Choice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/VoXHhJ6FBeA?si=KP0Qg79iCyFPPhSC",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-3-Quant/quants-question-2.shtml",
     "images": []
@@ -3988,10 +3988,10 @@
     "question_number": 11,
     "type": "TITA",
     "context": "",
-    "question": "Aman invests Rs 4000 in a bank at a certain rate of interest, compounded annually. If the ratio of the value of the investment after 3 years to the value of the investment after 5 years is 25 : 36, then the minimum number of years required for the value of the investment to exceed Rs 20000 is",
+    "question": "Aman invests Rs 4000 in a bank at a certain rate of interest, compounded annually. If the ratio of the value of the investment after 3 years to the value of the investment after 5 years is 25:  36, then the minimum number of years required for the value of the investment to exceed Rs 20000 is",
     "options": [],
     "correct_answer": "9",
-    "explanation": "\\[ \\(\\frac{4000 \\times\\left[1+\\frac{r}{100}\\right]^3}{4000 \\times\\left[1+\\frac{r}{100}\\right]^5}\\)=\\(\\frac{25}{36}\\) \\] Solving this, we get:\n\n\\[ \\begin{array}{l} 1+\\(\\frac{r}{100}\\)=\\(\\frac{6}{5}\\) \\\\ r=20 \\% \\end{array} \\] Now, \\[ \\begin{array}{l} 4000 \\times\\left[1+\\(\\frac{20}{100}\\)\\right]^n>20000 \\\\ \\text { i.e., } 1.2^n>5 \\\\ \\Rightarrow n=9 \\end{array} \\] The question is \"Aman invests Rs 4000 in a bank at a certain rate of interest, compounded annually. If the ratio of the value of the investment after 3 years to the value of the investment after 5 years is 25 : 36, then the minimum number of years required for the value of the investment to exceed Rs 20000 is\" Hence, the answer is '9'",
+    "explanation": "\\[ \\(\\frac{4000 \\times\\left[1+\\frac{r}{100}\\right]^3}{4000 \\times\\left[1+\\frac{r}{100}\\right]^5}\\)=\\(\\frac{25}{36}\\) \\] Solving this, we get:\n\n\\[ \\begin{array}{l} 1+\\(\\frac{r}{100}\\)=\\(\\frac{6}{5}\\) \\\\ r=20 \\% \\end{array} \\] Now, \\[ \\begin{array}{l} 4000 \\times\\left[1+\\(\\frac{20}{100}\\)\\right]^n>20000 \\\\ \\text { i.e., } 1.2^n>5 \\\\ \\Rightarrow n=9 \\end{array} \\] The question is \"Aman invests Rs 4000 in a bank at a certain rate of interest, compounded annually. If the ratio of the value of the investment after 3 years to the value of the investment after 5 years is 25:  36, then the minimum number of years required for the value of the investment to exceed Rs 20000 is\" Hence, the answer is '9'",
     "video_url": "https://www.youtube.com/embed/VoXHhJ6FBeA?si=iOe_IlzO55bJRi6A&amp;start=2386",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-3-Quant/quants-question-11.shtml",
     "images": []
@@ -4136,15 +4136,15 @@
     "question_number": 19,
     "type": "MCQ",
     "context": "",
-    "question": "Rajesh and Vimal own 20 hectares and 30 hectares of agricultural land, respectively, which are entirely covered by wheat and mustard crops. The cultivation area of wheat and mustard in the land owned by Vimal are in the ratio of 5 : 3. If the total cultivation area of wheat and mustard are in the ratio 11 : 9, then the ratio of cultivation area of wheat and mustard in the land owned by Rajesh is",
+    "question": "Rajesh and Vimal own 20 hectares and 30 hectares of agricultural land, respectively, which are entirely covered by wheat and mustard crops. The cultivation area of wheat and mustard in the land owned by Vimal are in the ratio of 5:  3. If the total cultivation area of wheat and mustard are in the ratio 11:  9, then the ratio of cultivation area of wheat and mustard in the land owned by Rajesh is",
     "options": [
-      "1 : 1",
-      "7 : 9",
-      "4 : 3",
-      "3 : 7"
+      "1:  1",
+      "7:  9",
+      "4:  3",
+      "3:  7"
     ],
-    "correct_answer": "Choice B\n7 : 9",
-    "explanation": "Total land area \\(=20+30=50\\) hectares In the total land area Wheat part \\(=\\frac{11}{20} \\times 50=\\frac{55}{2}\\) Mustard part \\(=\\frac{9}{20} \\times 50=\\frac{45}{2}\\) In Vimal's land area Mustard Wheat part \\(=\\frac{5}{8} \\times 30=\\frac{75}{4}\\) Mustard part \\(=\\frac{3}{8} \\times 30=\\frac{45}{4}\\) So, the land area for Rajesh Wheat part \\(=\\frac{55}{2}-\\frac{75}{4}=\\frac{35}{4}\\) Mustard part \\(=\\frac{45}{2}-\\frac{45}{4}=\\frac{45}{4}\\) Ratio, Wheat : Mustard \\(=\\frac{35}{4}: \\frac{45}{4}=7: 9\\) The question is \"Rajesh and Vimal own 20 hectares and 30 hectares of agricultural land, respectively, which are entirely covered by wheat and mustard crops. The cultivation area of wheat and mustard in the land owned by Vimal are in the ratio of 5 : 3. If the total cultivation area of wheat and mustard are in the ratio 11 : 9, then the ratio of cultivation area of wheat and mustard in the land owned by Rajesh is\" Hence, the answer is '7 : 9' Choice B is the correct answer.",
+    "correct_answer": "Choice B\n7:  9",
+    "explanation": "Total land area \\(=20+30=50\\) hectares In the total land area Wheat part \\(=\\frac{11}{20} \\times 50=\\frac{55}{2}\\) Mustard part \\(=\\frac{9}{20} \\times 50=\\frac{45}{2}\\) In Vimal's land area Mustard Wheat part \\(=\\frac{5}{8} \\times 30=\\frac{75}{4}\\) Mustard part \\(=\\frac{3}{8} \\times 30=\\frac{45}{4}\\) So, the land area for Rajesh Wheat part \\(=\\frac{55}{2}-\\frac{75}{4}=\\frac{35}{4}\\) Mustard part \\(=\\frac{45}{2}-\\frac{45}{4}=\\frac{45}{4}\\) Ratio, Wheat:  Mustard \\(=\\frac{35}{4}: \\frac{45}{4}=7: 9\\) The question is \"Rajesh and Vimal own 20 hectares and 30 hectares of agricultural land, respectively, which are entirely covered by wheat and mustard crops. The cultivation area of wheat and mustard in the land owned by Vimal are in the ratio of 5:  3. If the total cultivation area of wheat and mustard are in the ratio 11:  9, then the ratio of cultivation area of wheat and mustard in the land owned by Rajesh is\" Hence, the answer is '7:  9' Choice B is the correct answer.",
     "video_url": "https://www.youtube.com/embed/VoXHhJ6FBeA?si=tkRwp-5pqMWuI7Tj&amp;start=2220",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-3-Quant/quants-question-19.shtml",
     "images": []
