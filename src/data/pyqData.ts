@@ -2,6 +2,7 @@
 // Official CAT Previous Year Question Papers (2017-2024)
 import { TOPICS_DATA } from "./topicsData";
 import cat2024Raw from "./cat_2024_questions.json";
+import cat2023Raw from "./cat_2023_questions.json";
 
 export interface PYQQuestion {
   id: string;
@@ -90,9 +91,9 @@ export const PYQ_YEARS: PYQYearInfo[] = [
   {
     year: 2023,
     label: "CAT 2023",
-    available: false,
-    tagline: "Archived Paper • Coming Soon",
-    badge: "Coming Soon",
+    available: true,
+    tagline: "Official CAT Paper • 3 Slots • 198 Questions",
+    badge: "Official 2023 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
     sections: ["VARC", "DILR", "QUANT"],
     totalQuestions: 198,
@@ -142,11 +143,17 @@ export const SECTION_METADATA: Record<string, { title: string; topicId: string; 
 
 // Raw dataset typed
 const ALL_2024_QUESTIONS: PYQQuestion[] = cat2024Raw as PYQQuestion[];
+const ALL_2023_QUESTIONS: PYQQuestion[] = cat2023Raw as PYQQuestion[];
 
 // Load questions for specific Year, Slot, Section
 export function getPYQQuestions(year: number, slot: string, section: string): PYQQuestion[] {
   if (year === 2024) {
     return ALL_2024_QUESTIONS.filter(
+      (q) => q.slot.toLowerCase() === slot.toLowerCase() && q.section.toUpperCase() === section.toUpperCase()
+    ).sort((a, b) => a.question_number - b.question_number);
+  }
+  if (year === 2023) {
+    return ALL_2023_QUESTIONS.filter(
       (q) => q.slot.toLowerCase() === slot.toLowerCase() && q.section.toUpperCase() === section.toUpperCase()
     ).sort((a, b) => a.question_number - b.question_number);
   }
