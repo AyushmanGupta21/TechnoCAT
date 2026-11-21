@@ -4,6 +4,7 @@ import { TOPICS_DATA } from "./topicsData";
 import cat2024Raw from "./cat_2024_questions.json";
 import cat2023Raw from "./cat_2023_questions.json";
 import cat2022Raw from "./cat_2022_questions.json";
+import cat2021Raw from "./cat_2021_questions.json";
 
 export interface PYQQuestion {
   id: string;
@@ -112,9 +113,9 @@ export const PYQ_YEARS: PYQYearInfo[] = [
   {
     year: 2021,
     label: "CAT 2021",
-    available: false,
-    tagline: "Archived Paper • Coming Soon",
-    badge: "Coming Soon",
+    available: true,
+    tagline: "Official CAT Paper • 3 Slots • 198 Questions",
+    badge: "Official 2021 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
     sections: ["VARC", "DILR", "QUANT"],
     totalQuestions: 198,
@@ -146,6 +147,7 @@ export const SECTION_METADATA: Record<string, { title: string; topicId: string; 
 const ALL_2024_QUESTIONS: PYQQuestion[] = cat2024Raw as PYQQuestion[];
 const ALL_2023_QUESTIONS: PYQQuestion[] = cat2023Raw as PYQQuestion[];
 const ALL_2022_QUESTIONS: PYQQuestion[] = cat2022Raw as PYQQuestion[];
+const ALL_2021_QUESTIONS: PYQQuestion[] = cat2021Raw as PYQQuestion[];
 
 // Load questions for specific Year, Slot, Section
 export function getPYQQuestions(year: number, slot: string, section: string): PYQQuestion[] {
@@ -161,6 +163,11 @@ export function getPYQQuestions(year: number, slot: string, section: string): PY
   }
   if (year === 2022) {
     return ALL_2022_QUESTIONS.filter(
+      (q) => q.slot.toLowerCase() === slot.toLowerCase() && q.section.toUpperCase() === section.toUpperCase()
+    ).sort((a, b) => a.question_number - b.question_number);
+  }
+  if (year === 2021) {
+    return ALL_2021_QUESTIONS.filter(
       (q) => q.slot.toLowerCase() === slot.toLowerCase() && q.section.toUpperCase() === section.toUpperCase()
     ).sort((a, b) => a.question_number - b.question_number);
   }
