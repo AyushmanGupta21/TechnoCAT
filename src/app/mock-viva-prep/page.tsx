@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import styles from "./mock-viva-prep.module.css";
+import { useSpeechTranscription } from "@/hooks/useSpeechTranscription";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -1247,6 +1248,32 @@ interface VivaFeedback {
   improvements: string[];
   modelAnswer: string;
   source?: string;
+  delivery?: {
+    wordsPerMinute: number;
+    fillerCount: number;
+    paceVerdict: string;
+    notes: string[];
+  };
+}
+
+interface SpeechMetrics {
+  durationSeconds: number;
+  wordCount: number;
+  wordsPerMinute: number;
+  fillerCount: number;
+  longPauses: number;
+}
+
+// Whole-word, case-insensitive filler detection ("um"/"umm", "uh"/"uhh", "like", ...).
+const FILLER_RE = /\b(?:u+m+|u+h+|like|basically|actually|you know|so)\b/gi;
+
+function computeSpeechMetrics(transcript: string, durationSeconds: number, longPauses: number): SpeechMetrics {
+  const text = transcript.trim();
+  const wordCount = text ? text.split(/\s+/).length : 0;
+  const fillerCount = text ? (text.match(FILLER_RE) || []).length : 0;
+  const duration = Math.max(0, Math.round(durationSeconds));
+  const wordsPerMinute = duration > 0 ? Math.round((wordCount / duration) * 60) : 0;
+  return { durationSeconds: duration, wordCount, wordsPerMinute, fillerCount, longPauses };
 }
 
 type AnswerMode = "audio" | "text";
@@ -1269,6 +1296,11 @@ export default function MockVivaPrepPage() {
   const [feedback, setFeedback] = useState<VivaFeedback | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evalError, setEvalError] = useState<string | null>(null);
+  // Speech transcription (browser Web Speech API) + raw spoken text for delivery metrics
+  const speech = useSpeechTranscription("en-IN");
+  const [spokenTranscript, setSpokenTranscript] = useState("");
+  const [spokenSeconds, setSpokenSeconds] = useState(0);
+  const recordStartRef = useRef<number | null>(null);
 
   // ===== NEW INTERACTIVE DRAWERS STATE =====
   const [activeDrawer, setActiveDrawer] = useState<ActiveDrawer>(null);
@@ -1333,6 +1365,8 @@ export default function MockVivaPrepPage() {
 
   // Clean up any live recording resources
   const cleanupRecorder = () => {
+    speech.abort();
+    recordStartRef.current = null;
     if (recordTimerRef.current) {
       clearInterval(recordTimerRef.current);
       recordTimerRef.current = null;
@@ -1355,6 +1389,8 @@ export default function MockVivaPrepPage() {
     setFeedback(null);
     setEvalError(null);
     setRecorderError(null);
+    setSpokenTranscript("");
+    setSpokenSeconds(0);
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
@@ -1446,13 +1482,31 @@ export default function MockVivaPrepPage() {
       recorder.start();
       setIsRecording(true);
       setRecordSeconds(0);
+      recordStartRef.current = Date.now();
+      setSpokenSeconds(0);
+      setFeedback(null);
       recordTimerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
+
+      // Live transcription runs alongside the recorder; a new take replaces the old transcript.
+      if (speech.supported) {
+        setTextAnswer("");
+        setSpokenTranscript("");
+        speech.start((text) => {
+          setTextAnswer(text);
+          setSpokenTranscript(text);
+        });
+      }
     } catch {
       setRecorderError("Microphone access was blocked. Allow mic permission or type your answer instead.");
     }
   };
 
   const stopRecording = () => {
+    if (recordStartRef.current !== null) {
+      setSpokenSeconds((Date.now() - recordStartRef.current) / 1000);
+      recordStartRef.current = null;
+    }
+    speech.stop();
     if (recordTimerRef.current) {
       clearInterval(recordTimerRef.current);
       recordTimerRef.current = null;
@@ -1468,9 +1522,14 @@ export default function MockVivaPrepPage() {
     if (!currentQuestion || !activeCategory) return;
     const answerText = textAnswer.trim();
     if (!answerText) {
-      setEvalError("Type your answer in the box below to get AI feedback.");
+      setEvalError(
+        answerMode === "audio" && speech.supported
+          ? "We didn't catch any words — record again or type your answer in the box."
+          : "Type your answer in the box below to get AI feedback."
+      );
       return;
     }
+    const spoken = answerMode === "audio" && speechMetrics !== null;
     setIsEvaluating(true);
     setEvalError(null);
     setFeedback(null);
@@ -1484,6 +1543,18 @@ export default function MockVivaPrepPage() {
           answer: answerText,
           category: activeCategory.title,
           tips: currentQuestion.tips,
+          inputMode: spoken ? "speech" : "typed",
+          ...(spoken && speechMetrics
+            ? {
+                speech: {
+                  durationSeconds: speechMetrics.durationSeconds,
+                  wordCount: speechMetrics.wordCount,
+                  wordsPerMinute: speechMetrics.wordsPerMinute,
+                  fillerCount: speechMetrics.fillerCount,
+                  longPauses: speechMetrics.longPauses,
+                },
+              }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -1500,6 +1571,12 @@ export default function MockVivaPrepPage() {
   };
 
   const answerWordCount = textAnswer.trim() ? textAnswer.trim().split(/\s+/).length : 0;
+
+  // Delivery metrics from what was actually spoken (raw transcript, before any edits).
+  const speechMetrics = useMemo<SpeechMetrics | null>(() => {
+    if (isRecording || speech.listening || !spokenTranscript.trim() || spokenSeconds < 1) return null;
+    return computeSpeechMetrics(spokenTranscript, spokenSeconds, speech.longPauses);
+  }, [isRecording, speech.listening, spokenTranscript, spokenSeconds, speech.longPauses]);
 
   // ===== DRAWER 1 FILTERING LOGIC =====
   const filteredCategories = useMemo(() => {
@@ -1982,7 +2059,7 @@ export default function MockVivaPrepPage() {
                       </div>
                     </div>
 
-                    {answerMode === "audio" ? (
+                    {answerMode === "audio" && (
                       <div className={styles.recorder}>
                         <div className={`${styles.recordTime} ${isRecording ? styles.recordTimeLive : ""}`}>
                           {formatTime(recordSeconds)}
@@ -2014,25 +2091,49 @@ export default function MockVivaPrepPage() {
                           </div>
                         )}
                         {recorderError && <div className={styles.recorderError}>{recorderError}</div>}
-                        <p className={styles.recorderNote}>
-                          Recording lets you rehearse speaking aloud. For AI scoring, switch to &ldquo;Type Answer&rdquo; and paste or type what you said.
-                        </p>
+                        {speech.error && <div className={styles.recorderError}>{speech.error}</div>}
+                        {speech.supported === false ? (
+                          <p className={styles.speechUnsupported}>
+                            Live transcription isn&apos;t supported in this browser — type your answer in the box below. You can still record and play back your answer.
+                          </p>
+                        ) : (
+                          <p className={styles.recorderNote}>
+                            Transcribed in your browser as you speak (en-IN) — review and fix any mis-heard words before requesting feedback. Your audio is never uploaded or stored by TechnoCAT; note that some browsers (e.g. Chrome) use their own online speech service to transcribe.
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <>
+                    )}
+                    <>
                         <textarea
-                          className={styles.answerTextarea}
-                          placeholder="Type your answer here as you would speak it in the interview…"
+                          className={`${styles.answerTextarea} ${isRecording && speech.listening ? styles.answerTextareaLive : ""}`}
+                          placeholder={
+                            answerMode === "audio" && speech.supported
+                              ? isRecording
+                                ? "Listening… your words will appear here."
+                                : "Tap the mic and speak — your transcript will appear here for you to review and edit."
+                              : "Type your answer here as you would speak it in the interview…"
+                          }
                           value={textAnswer}
+                          readOnly={isRecording && speech.listening}
+                          aria-label="Your answer"
                           onChange={(e) => setTextAnswer(e.target.value)}
                         />
+                        {answerMode === "audio" && speechMetrics && (
+                          <div className={styles.speechMetricsRow} aria-label="Speech metrics">
+                            <span className={styles.speechMetric}><strong>{formatTime(speechMetrics.durationSeconds)}</strong> spoken</span>
+                            <span className={styles.speechMetric}><strong>{speechMetrics.wordCount}</strong> words</span>
+                            <span className={styles.speechMetric}><strong>{speechMetrics.wordsPerMinute}</strong> wpm</span>
+                            <span className={styles.speechMetric}><strong>{speechMetrics.fillerCount}</strong> fillers</span>
+                            <span className={styles.speechMetric}><strong>{speechMetrics.longPauses}</strong> long pauses</span>
+                          </div>
+                        )}
                         <div className={styles.answerFootRow}>
                           <span className={styles.wordCounter}>{answerWordCount} words</span>
                           <button
                             type="button"
                             className={styles.btnEvaluate}
                             onClick={evaluateAnswer}
-                            disabled={isEvaluating || !textAnswer.trim()}
+                            disabled={isEvaluating || isRecording || !textAnswer.trim()}
                           >
                             {isEvaluating ? (
                               <>
@@ -2050,8 +2151,7 @@ export default function MockVivaPrepPage() {
                           </button>
                         </div>
                         {evalError && <div className={styles.recorderError}>{evalError}</div>}
-                      </>
-                    )}
+                    </>
                   </div>
 
                   {/* ===== FEEDBACK ===== */}
@@ -2129,6 +2229,33 @@ export default function MockVivaPrepPage() {
                               Sample strong answer
                             </div>
                             <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
+                          </div>
+                        )}
+                        {feedback.delivery && (
+                          <div className={styles.deliveryBox}>
+                            <div className={styles.modelAnswerTitle}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+                              </svg>
+                              Delivery
+                              <span className={styles.deliveryTag}>Transcribed in your browser</span>
+                            </div>
+                            <div className={styles.speechMetricsRow}>
+                              <span className={styles.speechMetric}><strong>{feedback.delivery.wordsPerMinute}</strong> wpm</span>
+                              <span className={styles.speechMetric}><strong>{feedback.delivery.paceVerdict}</strong></span>
+                              <span className={styles.speechMetric}><strong>{feedback.delivery.fillerCount}</strong> filler words</span>
+                            </div>
+                            {feedback.delivery.notes.length > 0 && (
+                              <ul className={styles.feedbackList}>
+                                {feedback.delivery.notes.map((n, i) => (
+                                  <li key={i}>{n}</li>
+                                ))}
+                              </ul>
+                            )}
+                            <p className={styles.deliveryCaveat}>
+                              Pace and filler counts are computed from your browser&apos;s transcript and recording time; speech engines often drop fillers like &ldquo;um&rdquo;, so treat them as a lower bound.
+                            </p>
                           </div>
                         )}
                       </div>

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getProfileById, getUserReadinessMetrics } from "@/lib/db";
+import { query, getProfileById } from "@/lib/db";
+import { computeStudentMetrics } from "@/lib/metrics/compute";
+import { buildDemoMetrics } from "@/lib/metrics/demoFixture";
 import { getSession } from "@/lib/auth/session";
 import { nimChat } from "@/lib/ai/nim";
 import { consumeRateLimit } from "@/lib/auth/rateLimit";
@@ -63,6 +65,8 @@ export async function POST(request: NextRequest) {
     let mockAttemptsCount = 0;
     let recentScores: number[] = [];
     let completedLessonsCount = 0;
+    let weakConcepts: string[] = [];
+    let estimatedPercentile: number | null = null;
 
     if (userId) {
       try {
@@ -74,27 +78,21 @@ export async function POST(request: NextRequest) {
           dreamSchool = profile.dream_school || dreamSchool;
         }
 
-        readinessInfo = await getUserReadinessMetrics(userId);
-
-        const attemptsRes = await query(
-          `SELECT score, percentage, completed_at
-           FROM public.pyq_attempts
-           WHERE user_id = $1
-           ORDER BY completed_at DESC
-           LIMIT 5`,
-          [userId]
-        );
-        mockAttemptsCount = attemptsRes.rows?.length || 0;
-        recentScores = (attemptsRes.rows || []).map((r: any) => Number(r.score) || 0);
-
-        const topicProgressRes = await query(
-          `SELECT completed_lessons FROM public.topic_progress WHERE user_id = $1`,
-          [userId]
-        );
-        completedLessonsCount = (topicProgressRes.rows || []).reduce((acc: number, r: any) => {
-          if (Array.isArray(r.completed_lessons)) return acc + r.completed_lessons.length;
-          return acc;
-        }, 0);
+        // Same numbers the student sees on their pages (single metrics engine).
+        const m = session.isDemo ? buildDemoMetrics() : await computeStudentMetrics(userId);
+        readinessInfo = {
+          readiness: m.readiness.score ?? 0,
+          concepts: m.readiness.components.concepts,
+          accuracy: m.readiness.components.accuracy ?? 0,
+          speed: m.readiness.components.speed ?? 0,
+          consistency: m.readiness.components.consistency,
+          hasActivity: m.hasActivity,
+        };
+        mockAttemptsCount = m.tests.pyq.length;
+        recentScores = m.tests.pyq.slice(0, 5).map((t) => t.score);
+        completedLessonsCount = m.courses.lessonsCompleted;
+        weakConcepts = m.concepts.weak.slice(0, 4).map((c) => `${c.concept} (${c.accuracy}%)`);
+        estimatedPercentile = m.percentile.overallEstimate;
       } catch (err) {
         console.warn("[Mentor Context Query Error]", err);
       }
@@ -104,6 +102,8 @@ export async function POST(request: NextRequest) {
     const performanceContextText = readinessInfo.hasActivity
       ? `CURRENT STUDENT PERFORMANCE DATA (FROM TECHNOCAT DATABASE):
 - Overall CAT Readiness: ${readinessInfo.readiness}%
+- Weak concepts (from graded answers): ${weakConcepts.join(", ") || "none identified yet"}
+- Estimated CAT percentile (approximate, from PYQ section scores): ${estimatedPercentile ?? "not available yet"}
 - Concepts Mastery: ${readinessInfo.concepts}%
 - Mock Test Accuracy: ${readinessInfo.accuracy}%
 - Solving Speed: ${readinessInfo.speed}%

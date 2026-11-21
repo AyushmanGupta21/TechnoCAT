@@ -8,6 +8,13 @@ import PYQMarkdownViewer, { MathText } from "./pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
+import ProctorPanel, { ProctorConsent } from "./proctoring/ProctorPanel";
+import {
+  useProctoring,
+  logProctorEvent,
+  newAttemptKey,
+  type ProctorKind,
+} from "./proctoring/useProctoring";
 
 interface ModuleQuizModalProps {
   isOpen: boolean;
@@ -229,6 +236,55 @@ export default function ModuleQuizModal({
     strikesRef.current = strikes;
   }, [strikes]);
 
+  // Webcam proctoring. A timed (non-review) exam waits on a consent step; the timer and
+  // anti-cheat listeners only start once the student begins (with or without the camera).
+  const [examStarted, setExamStarted] = useState<boolean>(initialReviewMode);
+  const [proctored, setProctored] = useState<boolean>(false);
+  const attemptKeyRef = useRef<string>("");
+  // Shared strike path (set by the anti-cheat effect while the exam is running).
+  const registerViolationRef = useRef<(reason: string) => void>(() => {});
+  const proctorKind: ProctorKind =
+    attemptContext?.kind === "pyq" || attemptContext?.kind === "module_quiz" || attemptContext?.kind === "grand_quiz"
+      ? attemptContext.kind
+      : isGrandQuiz
+        ? "grand_quiz"
+        : "module_quiz";
+  const proctorKindRef = useRef<ProctorKind>(proctorKind);
+  useEffect(() => {
+    proctorKindRef.current = proctorKind;
+  }, [proctorKind]);
+
+  const handleProctorViolation = useCallback((event: Parameters<typeof logProctorEvent>[2], message: string) => {
+    if (!attemptKeyRef.current) attemptKeyRef.current = newAttemptKey();
+    logProctorEvent(attemptKeyRef.current, proctorKindRef.current, event);
+    registerViolationRef.current(`Webcam: ${message}`);
+  }, []);
+
+  const proctor = useProctoring({
+    running: isOpen && examStarted && !isSubmitted && proctored,
+    onViolation: handleProctorViolation,
+  });
+
+  const beginExam = useCallback(
+    (withCamera: boolean) => {
+      if (!attemptKeyRef.current) attemptKeyRef.current = newAttemptKey();
+      if (!withCamera) {
+        proctor.markOff();
+        logProctorEvent(attemptKeyRef.current, proctorKindRef.current, "proctoring_declined");
+      }
+      setProctored(withCamera);
+      endAtRef.current = Date.now() + initialDuration * 1000;
+      setTimeLeft(initialDuration);
+      setExamStarted(true);
+    },
+    [proctor, initialDuration]
+  );
+
+  const handleEnableCamera = useCallback(async () => {
+    const granted = await proctor.enable();
+    if (granted) beginExam(true);
+  }, [proctor, beginExam]);
+
   const [proctorAlert, setProctorAlert] = useState<string | null>(null);
   const proctorTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessionRef = useRef({
@@ -302,7 +358,7 @@ export default function ModuleQuizModal({
   // Timer effect: derive remaining time from a fixed deadline instead of decrementing,
   // so throttled/background timers can never make the clock fall behind.
   useEffect(() => {
-    if (!isOpen || isSubmitted) return;
+    if (!isOpen || isSubmitted || !examStarted) return;
 
     const tick = () => {
       if (endAtRef.current === null) {
@@ -322,7 +378,7 @@ export default function ModuleQuizModal({
       document.removeEventListener("visibilitychange", tick);
       window.removeEventListener("focus", tick);
     };
-  }, [isOpen, isSubmitted, initialDuration]);
+  }, [isOpen, isSubmitted, examStarted, initialDuration]);
 
   // Auto-submit when the time runs out
   useEffect(() => {
@@ -340,6 +396,7 @@ export default function ModuleQuizModal({
   useEffect(() => {
     if (!isOpen) {
       sessionRef.current.isOpen = false;
+      proctor.stopStream();
       return;
     }
 
@@ -386,6 +443,9 @@ export default function ModuleQuizModal({
       setRawScore(resolvedRaw);
       setStrikes(resolvedStrikes);
       strikesRef.current = resolvedStrikes;
+      setExamStarted(true);
+      setProctored(false);
+      proctor.reset();
     } else {
       setAnalysis(null);
       setRawScore(null);
@@ -394,7 +454,12 @@ export default function ModuleQuizModal({
       lastViolationTimeRef.current = 0;
       const freshDuration = customDurationSeconds ?? (isGrandQuiz ? 35 * 60 : 12 * 60);
       setTimeLeft(freshDuration);
-      endAtRef.current = Date.now() + freshDuration * 1000;
+      // The clock starts when the student begins (after the proctoring consent step).
+      endAtRef.current = null;
+      setExamStarted(false);
+      setProctored(false);
+      proctor.reset();
+      attemptKeyRef.current = newAttemptKey();
     }
     setProctorAlert(null);
     setReviewFilter("all");
@@ -414,7 +479,7 @@ export default function ModuleQuizModal({
 
   // PROCTORING & ANTI-CHEATING SECURITY CONTROLS
   useEffect(() => {
-    if (!isOpen || isSubmitted) return;
+    if (!isOpen || isSubmitted || !examStarted) return;
 
     const handleViolation = (reason: string) => {
       if (isSubmitted) return;
@@ -540,8 +605,11 @@ export default function ModuleQuizModal({
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("beforeunload", handleBeforeUnload);
+    // Webcam proctoring violations add strikes through this same path.
+    registerViolationRef.current = handleViolation;
 
     return () => {
+      registerViolationRef.current = () => {};
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("keydown", handleKeyDown);
@@ -549,7 +617,7 @@ export default function ModuleQuizModal({
       window.removeEventListener("beforeunload", handleBeforeUnload);
       if (proctorTimerRef.current) clearTimeout(proctorTimerRef.current);
     };
-  }, [isOpen, isSubmitted]);
+  }, [isOpen, isSubmitted, examStarted]);
 
   // Lock the page behind the exam and hide the site nav bar so it can never
   // be painted over the exam header (timer, strikes, lock badge).
@@ -565,6 +633,17 @@ export default function ModuleQuizModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  // In-modal retake (no onRetake handler): go back through the proctoring consent step.
+  const prepareFreshStart = () => {
+    endAtRef.current = null;
+    setExamStarted(false);
+    setProctored(false);
+    proctor.reset();
+    attemptKeyRef.current = newAttemptKey();
+  };
+
+  const showProctorConsent = !isSubmitted && !examStarted && !initialReviewMode;
 
   const currentQ = questions[currentIdx] || questions[0];
   const isLastQuestion = currentIdx === questions.length - 1;
@@ -628,6 +707,24 @@ export default function ModuleQuizModal({
       onDragStart={(e) => e.preventDefault()}
     >
       <div className={`${styles.modalBox} ${examPrefs.highContrast ? styles.highContrastExam : ""}`}>
+        {/* Webcam proctoring consent step (timer starts only after this) */}
+        {showProctorConsent && (
+          <ProctorConsent
+            status={proctor.status}
+            onEnable={() => void handleEnableCamera()}
+            onStartWithout={() => beginExam(false)}
+            onCancel={onClose}
+          />
+        )}
+        {/* Live camera preview + proctoring status while the exam runs */}
+        {examStarted && !isSubmitted && !initialReviewMode && (
+          <ProctorPanel
+            status={proctor.status}
+            liveHint={proctor.liveHint}
+            videoRef={proctor.videoRef}
+            proctored={proctored}
+          />
+        )}
         {/* Real-time Proctoring Warning Banner */}
         {proctorAlert && (
           <div className={styles.proctorWarningBanner}>
@@ -1097,7 +1194,7 @@ export default function ModuleQuizModal({
                   <span>Proctoring Strike Penalty Applied (-{strikes} Mark{strikes > 1 ? "s" : ""})</span>
                 </div>
                 <div className={styles.penaltyNoticeDesc}>
-                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for security policy violations (screenshot or tab switching detected).
+                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for security policy violations (screenshot, tab switching or webcam proctoring detected).
                   A penalty of <strong>-{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
                 </div>
               </div>
@@ -1554,6 +1651,7 @@ export default function ModuleQuizModal({
                         setRawScore(null);
                         setStrikes(0);
                         strikesRef.current = 0;
+                        prepareFreshStart();
                         setProctorAlert(null);
                         setShowSubmitConfirm(false);
                         setAutoSubmitNotice(null);
@@ -1595,6 +1693,7 @@ export default function ModuleQuizModal({
                       setRawScore(null);
                       setStrikes(0);
                       strikesRef.current = 0;
+                      prepareFreshStart();
                       setProctorAlert(null);
                       setShowSubmitConfirm(false);
                       setAutoSubmitNotice(null);

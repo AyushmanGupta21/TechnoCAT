@@ -3,6 +3,18 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./IimPredictor.module.css";
+import { TOP_B_SCHOOLS } from "@/data/bSchoolEngine";
+
+// Honest teaser: which listed schools' past GENERAL-category overall cutoffs the entered
+// percentile clears. The full predictor (after sign-in) also weighs academics, work-ex etc.
+function cutoffTeaser(percentileInput: string) {
+  const p = Number(percentileInput);
+  if (!Number.isFinite(p)) return { cleared: [] as typeof TOP_B_SCHOOLS, total: TOP_B_SCHOOLS.length };
+  const cleared = TOP_B_SCHOOLS.filter((s) => p >= s.overallCutoff.GENERAL).sort(
+    (a, b) => b.overallCutoff.GENERAL - a.overallCutoff.GENERAL
+  );
+  return { cleared, total: TOP_B_SCHOOLS.length };
+}
 
 export default function IimPredictor() {
   const router = useRouter();
@@ -70,7 +82,7 @@ export default function IimPredictor() {
             <div className={styles.tag}>FREE TOOL</div>
             <h2 className={styles.heading}>IIM Call Predictor</h2>
             <p className={styles.desc}>
-              Don't guess your chances. Use our AI-driven algorithm based on historical IIM admission data to check which top B-Schools you can convert.
+              Don't guess your chances. Compare your profile with past cutoffs and published selection criteria of top B-Schools.
             </p>
             <ul className={styles.features}>
               <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Based on real selection criteria</li>
@@ -140,13 +152,27 @@ export default function IimPredictor() {
             ) : (
               <div className={styles.resultView}>
                 <div className={styles.successIcon}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></div>
-                <h3 className={styles.formTitle}>Prediction Ready!</h3>
-                <p className={styles.resultDesc}>Based on your profile, you have a strong chance of converting <strong>4 Top IIMs</strong> and <strong>6 Non-IIM Tier-1 Colleges</strong>.</p>
-                <div className={styles.blurredList}>
-                  <div className={styles.blurRow}>IIM Ahmedabad - <span>Borderline</span></div>
-                  <div className={styles.blurRow}>IIM Bangalore - <span>High Chance</span></div>
-                  <div className={styles.blurRow}>FMS Delhi - <span>High Chance</span></div>
-                </div>
+                <h3 className={styles.formTitle}>Your quick check</h3>
+                {(() => {
+                  const { cleared, total } = cutoffTeaser(percentile);
+                  return (
+                    <>
+                      <p className={styles.resultDesc}>
+                        A {percentile} percentile clears the past general-category overall cutoff of{" "}
+                        <strong>{cleared.length} of {total}</strong> B-Schools in our list. Shortlists also depend on
+                        academics, work experience and category — the full report weighs all of them.
+                      </p>
+                      <div className={styles.blurredList}>
+                        {cleared.slice(0, 3).map((school) => (
+                          <div key={school.id} className={styles.blurRow}>
+                            {school.shortName} - <span>cutoff {school.overallCutoff.GENERAL}</span>
+                          </div>
+                        ))}
+                        {cleared.length === 0 && <div className={styles.blurRow}>No listed school's past cutoff yet</div>}
+                      </div>
+                    </>
+                  );
+                })()}
                 <button className={styles.signUpBtn} onClick={handleUnlockReport}>
                   {user && !user.isGuest ? "View Full Report →" : "Sign Up Free to Unlock Full Report"}
                 </button>

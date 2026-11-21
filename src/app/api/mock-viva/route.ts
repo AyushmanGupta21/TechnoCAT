@@ -13,6 +13,91 @@ interface VivaFeedback {
   modelAnswer: string;
 }
 
+interface SpeechInput {
+  durationSeconds: number;
+  wordCount: number;
+  wordsPerMinute: number;
+  fillerCount: number;
+  longPauses: number | null;
+}
+
+interface DeliveryFeedback {
+  wordsPerMinute: number;
+  fillerCount: number;
+  paceVerdict: string;
+  notes: string[];
+}
+
+function clampInt(value: unknown, min: number, max: number): number | null {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(Math.max(min, Math.min(max, n)));
+}
+
+/** Validate + clamp client-computed speech metrics. Returns null if unusable. */
+function parseSpeech(raw: unknown): SpeechInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const durationSeconds = clampInt(r.durationSeconds, 0, 1800);
+  const words = clampInt(r.wordCount, 0, 5000);
+  if (durationSeconds === null || words === null || durationSeconds < 1 || words < 1) return null;
+  // Recompute pace server-side so it is consistent with duration + word count.
+  const wordsPerMinute = clampInt((words / durationSeconds) * 60, 0, 400) ?? 0;
+  const fillerCount = clampInt(r.fillerCount, 0, words) ?? 0;
+  const longPauses = r.longPauses === undefined ? null : clampInt(r.longPauses, 0, 500);
+  return { durationSeconds, wordCount: words, wordsPerMinute, fillerCount, longPauses };
+}
+
+/** Deterministic pace verdict (ideal interview pace ~120-160 wpm). */
+function paceVerdict(s: SpeechInput): string {
+  if (s.durationSeconds < 10 || s.wordCount < 15) return "Too short to judge pace";
+  const wpm = s.wordsPerMinute;
+  if (wpm < 100) return "Too slow";
+  if (wpm < 120) return "Slightly slow";
+  if (wpm <= 160) return "Ideal pace";
+  if (wpm <= 180) return "Slightly fast";
+  return "Too fast";
+}
+
+/** Rule-based delivery notes used when the model gives none (or is unavailable). */
+function buildDeliveryNotes(s: SpeechInput): string[] {
+  const notes: string[] = [];
+  const verdict = paceVerdict(s);
+  if (verdict === "Too slow" || verdict === "Slightly slow") {
+    notes.push(`You spoke at about ${s.wordsPerMinute} words per minute — aim for 120-160 so the panel stays engaged; trim long hesitations.`);
+  } else if (verdict === "Too fast" || verdict === "Slightly fast") {
+    notes.push(`You spoke at about ${s.wordsPerMinute} words per minute — slow down towards 120-160 and pause briefly between key points.`);
+  } else if (verdict === "Ideal pace") {
+    notes.push(`Your pace of about ${s.wordsPerMinute} words per minute is in the comfortable 120-160 range.`);
+  } else {
+    notes.push("The answer was too short to judge pace reliably — try a fuller 45-90 second response.");
+  }
+  const fillerRate = (s.fillerCount / s.wordCount) * 100;
+  if (s.fillerCount === 0) {
+    notes.push("No filler words were detected in the transcript — nice and clean.");
+  } else if (fillerRate >= 5) {
+    notes.push(`${s.fillerCount} filler words (um, like, basically, you know, so…) were detected — replace them with a short silent pause.`);
+  } else {
+    notes.push(`${s.fillerCount} filler word${s.fillerCount === 1 ? " was" : "s were"} detected — a few are natural, but fewer sounds more assured.`);
+  }
+  if (s.longPauses !== null && s.longPauses >= 3) {
+    notes.push(`There were ${s.longPauses} long pauses (3s+) — a moment to think is fine, but structure your answer up front to keep it flowing.`);
+  }
+  return notes.slice(0, 4);
+}
+
+function buildDelivery(s: SpeechInput, modelNotes?: unknown): DeliveryFeedback {
+  const notes = Array.isArray(modelNotes)
+    ? modelNotes.map((n) => String(n).trim()).filter(Boolean).slice(0, 4)
+    : [];
+  return {
+    wordsPerMinute: s.wordsPerMinute,
+    fillerCount: s.fillerCount,
+    paceVerdict: paceVerdict(s),
+    notes: notes.length ? notes : buildDeliveryNotes(s),
+  };
+}
+
 function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
@@ -108,9 +193,11 @@ export async function POST(request: NextRequest) {
     const answer: string = (body?.answer || "").toString();
     const category: string = (body?.category || "the interview round").toString();
     const tips: string[] = Array.isArray(body?.tips) ? body.tips.map((t: unknown) => String(t)) : [];
+    const inputMode: "speech" | "typed" = body?.inputMode === "speech" ? "speech" : "typed";
+    const speech = inputMode === "speech" ? parseSpeech(body?.speech) : null;
 
     if (!answer.trim()) {
-      return NextResponse.json({ error: "Please type your answer before requesting feedback." }, { status: 400 });
+      return NextResponse.json({ error: "Please type or record your answer before requesting feedback." }, { status: 400 });
     }
 
     // Try NVIDIA NIM for a real AI evaluation, mirroring the chat route pattern.
@@ -126,12 +213,28 @@ Respond with ONLY a valid JSON object (no markdown, no code fences) in exactly t
   "verdict": "<one short sentence overall judgement>",
   "strengths": ["<2-4 concrete things done well>"],
   "improvements": ["<2-4 concrete, actionable fixes>"],
-  "modelAnswer": "<3-5 sentence example of a strong answer to this question>"
+  "modelAnswer": "<3-5 sentence example of a strong answer to this question>"${
+    speech
+      ? `,
+  "deliveryNotes": ["<1-3 short, specific notes on spoken delivery based ONLY on the metrics given>"]`
+      : ""
+  }
 }
-
+${
+  speech
+    ? `
+The answer was SPOKEN aloud and transcribed by the candidate's browser (the candidate may have corrected mis-heard words). Ignore minor transcription errors and missing punctuation when judging content. Delivery metrics measured from the recording are provided; ideal interview pace is roughly 120-160 words per minute, and fewer filler words is better. Do not claim to have heard tone, accent or voice quality — you only have the transcript and these numbers.
+`
+    : ""
+}
 Expert pointers for this question: ${tips.join(" ")}`;
 
-        const userPrompt = `INTERVIEW QUESTION: ${question}\n\nCANDIDATE'S ANSWER: ${answer}`;
+        const deliveryPrompt = speech
+          ? `\n\nDELIVERY METRICS (measured): duration ${speech.durationSeconds}s, ${speech.wordCount} words, ${speech.wordsPerMinute} words/minute (pace verdict: ${paceVerdict(speech)}), ${speech.fillerCount} filler words (um/uh/like/basically/actually/you know/so)${
+              speech.longPauses !== null ? `, ${speech.longPauses} pauses of 3s or more` : ""
+            }.`
+          : "";
+        const userPrompt = `INTERVIEW QUESTION: ${question}\n\nCANDIDATE'S ${speech ? "SPOKEN (TRANSCRIBED) " : ""}ANSWER: ${answer}${deliveryPrompt}`;
 
         const result = await nimChat({
           messages: [
@@ -156,7 +259,12 @@ Expert pointers for this question: ${tips.join(" ")}`;
               modelAnswer: String(parsed.modelAnswer || ""),
             };
             if (feedback.strengths.length || feedback.improvements.length) {
-              return NextResponse.json({ ...feedback, source: "ai" });
+              return NextResponse.json({
+                ...feedback,
+                ...(speech ? { delivery: buildDelivery(speech, parsed.deliveryNotes) } : {}),
+                inputMode,
+                source: "ai",
+              });
             }
           }
         }
@@ -167,7 +275,12 @@ Expert pointers for this question: ${tips.join(" ")}`;
 
     // Deterministic local fallback
     const fallback = buildFallbackFeedback(question, answer, tips);
-    return NextResponse.json({ ...fallback, source: "local" });
+    return NextResponse.json({
+      ...fallback,
+      ...(speech ? { delivery: buildDelivery(speech) } : {}),
+      inputMode,
+      source: "local",
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to evaluate answer.";
     console.error("[Mock Viva API Error]", message);

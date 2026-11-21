@@ -10,9 +10,11 @@
     "db:status": "node scripts/migrate.mjs --status",
     "db:introspect": "node scripts/db-introspect.mjs",
     "db:backup": "node scripts/db-backup.mjs",
-    "announcements": "node scripts/announcements.mjs"
+    "announcements": "node scripts/announcements.mjs",
+    "test:e2e": "node tests/e2e/run.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.3",
     "bcryptjs": "^3.0.3",
     "katex": "^0.16.47",
     "next": "16.3.4",

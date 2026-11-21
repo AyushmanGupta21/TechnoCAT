@@ -1,4 +1,12 @@
-// Dynamic & Live Notification Service for TechnoCAT
+// Notification service for TechnoCAT (client).
+//
+// The feed comes from GET /api/notifications, which derives every item from the student's
+// real data (study tasks, quiz attempts, points, announcements). Only the demo account gets
+// sample items, and those are flagged `isSample`. Read/dismissed state stays in localStorage
+// per user, keyed by the server's stable ids. Actions that "just happened" in this browser
+// (enrolment, reminder set, task completed) may add short-lived local entries for that user.
+
+import type { ServerNotification } from "@/lib/notifications";
 
 export type NotificationType =
   | "mock"
@@ -10,7 +18,11 @@ export type NotificationType =
   | "ai"
   | "quiz"
   | "milestone"
-  | "system";
+  | "system"
+  | "task"
+  | "live_class"
+  | "notice"
+  | "points";
 
 export type NotificationCategory = "all" | "unread" | "mocks" | "learning";
 
@@ -29,6 +41,8 @@ export interface NotificationItem {
   icon: string;
   iconBg: string;
   iconColor: string;
+  /** True only for showcase items shown to the demo account. */
+  isSample?: boolean;
 }
 
 interface NotificationStorageState {
@@ -37,236 +51,57 @@ interface NotificationStorageState {
   customList: NotificationItem[];
 }
 
-const STORAGE_KEY_PREFIX = "technocat_notifications_v2";
+const STORAGE_KEY_PREFIX = "technocat_notifications_v3";
+const UPDATE_EVENT = "technocat_notifications_updated";
+const LOCAL_ITEM_TTL_MS = 3 * 24 * 60 * 60 * 1000;
+const MAX_LOCAL_ITEMS = 20;
+const MAX_STORED_IDS = 300;
 
-const now = Date.now();
-const minute = 60 * 1000;
-const hour = 60 * minute;
-const day = 24 * hour;
+// Server feed cache, per user id. Populated by refreshNotifications().
+const serverCache = new Map<string, NotificationItem[]>();
+const inflight = new Map<string, Promise<void>>();
+let lastUserId: string | undefined;
 
-// Initial intelligent base notifications
-const BASE_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-streak-alert",
-    type: "streak_alert",
-    category: "learning",
-    title: "Study Streak Alert: 2 Days Pending",
-    desc: "You skipped scheduled VARC & QA practice drills. Spend 20 minutes today to maintain your CAT readiness momentum.",
-    time: "15m ago",
-    timestamp: now - 15 * minute,
-    read: false,
-    actionUrl: "/dashboard",
-    actionLabel: "Catch Up on Tasks",
-    priority: "urgent",
-    icon: "alert",
-    iconBg: "#FEF2F2",
-    iconColor: "#DC2626",
-  },
-  {
-    id: "notif-spaced-revision",
-    type: "revision",
-    category: "learning",
-    title: "Retention Check: Time to Revise Percentages",
-    desc: "It's been 6 days since your last Percentages session. A 10-minute formula review now locks in 85% long-term recall.",
-    time: "1 hour ago",
-    timestamp: now - 1 * hour,
-    read: false,
-    actionUrl: "/topics/qa-quantitative-ability",
-    actionLabel: "Revise Topic",
-    priority: "normal",
-    icon: "brain",
-    iconBg: "#F5F3FF",
-    iconColor: "#7C3AED",
-  },
-  {
-    id: "notif-mock-live",
-    type: "mock",
-    category: "mocks",
-    title: "TechnoCAT 6.0 Full Mock is Live",
-    desc: "Live All-India percentile benchmark open with 20,000+ serious aspirants. Attempt in realistic exam-timer conditions.",
-    time: "2 hours ago",
-    timestamp: now - 2 * hour,
-    read: false,
-    actionUrl: "/browse?section=mocks&mock=latest#pyq-section",
-    actionLabel: "Attempt Mock",
-    priority: "urgent",
-    icon: "target",
-    iconBg: "#EFF6FF",
-    iconColor: "#2563EB",
-  },
-  {
-    id: "notif-bschool-check",
-    type: "bschool",
-    category: "learning",
-    title: "B-School Probability Update: Check IIM Calls",
-    desc: "Your Quant accuracy is up +8%! Check how this impacts your shortlist probability for IIM Ahmedabad, Bangalore & FMS.",
-    time: "4 hours ago",
-    timestamp: now - 4 * hour,
-    read: false,
-    actionUrl: "/intelligence/b-school-predictor",
-    actionLabel: "Check IIM Calls",
-    priority: "normal",
-    icon: "bschool",
-    iconBg: "#ECFDF5",
-    iconColor: "#059669",
-  },
-  {
-    id: "notif-resume-video",
-    type: "resume",
-    category: "learning",
-    title: "Continue Watching: QA-1.1 Percentages",
-    desc: "Resume where you left off: Module 1.1 • Speed Maths & Fraction-to-Percentage Conversions with Rodha Quant.",
-    time: "Yesterday",
-    timestamp: now - 1 * day,
-    read: false,
-    actionUrl: "/topics/qa-quantitative-ability",
-    actionLabel: "Resume Video",
-    priority: "normal",
-    icon: "play",
-    iconBg: "#EFF6FF",
-    iconColor: "#2563EB",
-  },
-  {
-    id: "notif-cat-pyq",
-    type: "mock_pyq",
-    category: "mocks",
-    title: "CAT 2024 Actual Papers (All 3 Slots)",
-    desc: "Official question papers with step-by-step video solutions and timed exam simulation ready for practice.",
-    time: "Yesterday",
-    timestamp: now - 1.2 * day,
-    read: true,
-    actionUrl: "/browse?section=pyqs#pyq-section",
-    actionLabel: "Practice PYQ",
-    priority: "normal",
-    icon: "clipboard",
-    iconBg: "#F0FDF4",
-    iconColor: "#16A34A",
-  },
-  {
-    id: "notif-ai-error",
-    type: "ai",
-    category: "learning",
-    title: "AI Weak Topic Alert: Geometry Dips to 68%",
-    desc: "AI Error Tracker detected recurring negative marks on circle tangents and coordinate geometry.",
-    time: "2 days ago",
-    timestamp: now - 2 * day,
-    read: true,
-    actionUrl: "/intelligence/error-tracking",
-    actionLabel: "Inspect Errors",
-    priority: "normal",
-    icon: "search",
-    iconBg: "#FFF1F2",
-    iconColor: "#E11D48",
-  },
-  {
-    id: "notif-milestone-points",
-    type: "milestone",
-    category: "learning",
-    title: "Milestone Unlocked: 50 Quant Points!",
-    desc: "Great consistency! You've unlocked the Level 2 Quantitative Aptitude badge and jumped +42 ranks on the Leaderboard.",
-    time: "3 days ago",
-    timestamp: now - 3 * day,
-    read: true,
-    actionUrl: "/analytics",
-    actionLabel: "View Standing",
-    priority: "low",
-    icon: "trophy",
-    iconBg: "#FEF3C7",
-    iconColor: "#D97706",
-  },
-];
+const EMPTY_STATE = (): NotificationStorageState => ({ readIds: [], dismissedIds: [], customList: [] });
 
-const REAL_USER_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-welcome-cat2026",
-    type: "system",
-    category: "learning",
-    title: "Welcome to TechnoCAT 2026!",
-    desc: "Your adaptive learning path is ready. Start with Quantitative Ability Module 1.1 or explore the CAT curriculum.",
-    time: "5m ago",
-    timestamp: now - 5 * minute,
-    read: false,
-    actionUrl: "/topics/qa-quantitative-ability",
-    actionLabel: "Start Learning",
-    priority: "urgent",
-    icon: "rocket",
-    iconBg: "#EFF6FF",
-    iconColor: "#2563EB",
-  },
-  {
-    id: "notif-mock-live-real",
-    type: "mock",
-    category: "mocks",
-    title: "TechnoCAT 6.0 Full Mock is Live",
-    desc: "Live All-India percentile benchmark open with 20,000+ serious aspirants. Attempt in realistic exam-timer conditions.",
-    time: "2 hours ago",
-    timestamp: now - 2 * hour,
-    read: false,
-    actionUrl: "/browse?section=mocks&mock=latest#pyq-section",
-    actionLabel: "Attempt Mock",
-    priority: "urgent",
-    icon: "target",
-    iconBg: "#EFF6FF",
-    iconColor: "#2563EB",
-  },
-  {
-    id: "notif-diagnostic-benchmark",
-    type: "mock_pyq",
-    category: "mocks",
-    title: "Diagnostic Mock Test Ready",
-    desc: "Benchmark your starting CAT percentile across QA, DILR & VARC with a comprehensive 120-minute slot simulation.",
-    time: "5 hours ago",
-    timestamp: now - 5 * hour,
-    read: false,
-    actionUrl: "/browse#pyq-section",
-    actionLabel: "Take Diagnostic",
-    priority: "normal",
-    icon: "clipboard",
-    iconBg: "#F0FDF4",
-    iconColor: "#16A34A",
-  },
-  {
-    id: "notif-bschool-check-real",
-    type: "bschool",
-    category: "learning",
-    title: "Target IIM Shortlist Predictor",
-    desc: "Configure your academic profile (10th/12th/Grad) to calculate required CAT percentiles for IIM A, B, C & FMS.",
-    time: "1 day ago",
-    timestamp: now - 1 * day,
-    read: false,
-    actionUrl: "/intelligence/b-school-predictor",
-    actionLabel: "Predict Calls",
-    priority: "normal",
-    icon: "bschool",
-    iconBg: "#ECFDF5",
-    iconColor: "#059669",
-  },
-];
+function getStorageKey(userId: string): string {
+  return `${STORAGE_KEY_PREFIX}_${userId}`;
+}
 
-function getStorageKey(userId?: string): string {
-  const safeId = userId || "guest";
-  return `${STORAGE_KEY_PREFIX}_${safeId}`;
+function resolveUserId(userId?: string): string | undefined {
+  return userId || lastUserId;
 }
 
 function getStoredState(userId?: string): NotificationStorageState {
-  if (typeof window === "undefined") {
-    return { readIds: [], dismissedIds: [], customList: [] };
-  }
+  const uid = resolveUserId(userId);
+  if (typeof window === "undefined" || !uid) return EMPTY_STATE();
   try {
-    const raw = localStorage.getItem(getStorageKey(userId));
+    const raw = localStorage.getItem(getStorageKey(uid));
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw) as Partial<NotificationStorageState>;
+      return {
+        readIds: Array.isArray(parsed.readIds) ? parsed.readIds : [],
+        dismissedIds: Array.isArray(parsed.dismissedIds) ? parsed.dismissedIds : [],
+        customList: Array.isArray(parsed.customList) ? parsed.customList : [],
+      };
     }
   } catch (err) {
     console.warn("[NotificationService] Error reading from localStorage:", err);
   }
-  return { readIds: [], dismissedIds: [], customList: [] };
+  return EMPTY_STATE();
 }
 
 function saveStoredState(state: NotificationStorageState, userId?: string) {
-  if (typeof window === "undefined") return;
+  const uid = resolveUserId(userId);
+  if (typeof window === "undefined" || !uid) return;
+  const cutoff = Date.now() - LOCAL_ITEM_TTL_MS;
+  const pruned: NotificationStorageState = {
+    readIds: state.readIds.slice(-MAX_STORED_IDS),
+    dismissedIds: state.dismissedIds.slice(-MAX_STORED_IDS),
+    customList: state.customList.filter((n) => n.timestamp >= cutoff).slice(0, MAX_LOCAL_ITEMS),
+  };
   try {
-    localStorage.setItem(getStorageKey(userId), JSON.stringify(state));
+    localStorage.setItem(getStorageKey(uid), JSON.stringify(pruned));
   } catch (err) {
     console.warn("[NotificationService] Error writing to localStorage:", err);
   }
@@ -274,12 +109,13 @@ function saveStoredState(state: NotificationStorageState, userId?: string) {
 
 function notifyListeners() {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("technocat_notifications_updated"));
+    window.dispatchEvent(new Event(UPDATE_EVENT));
   }
 }
 
 /**
- * Format timestamp into human-readable relative time (e.g. "Just now", "15m ago", "2h ago", "Yesterday")
+ * Format timestamp into human-readable relative time (e.g. "Just now", "15m ago", "2h ago", "Yesterday").
+ * Future timestamps (upcoming classes) read as "Upcoming".
  */
 export function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
@@ -287,6 +123,7 @@ export function formatRelativeTime(timestamp: number): string {
   const hour = 60 * minute;
   const day = 24 * hour;
 
+  if (diff < -minute) return "Upcoming";
   if (diff < minute) return "Just now";
   if (diff < hour) return `${Math.max(1, Math.floor(diff / minute))}m ago`;
   if (diff < 24 * hour) return `${Math.floor(diff / hour)}h ago`;
@@ -294,103 +131,122 @@ export function formatRelativeTime(timestamp: number): string {
   return `${Math.floor(diff / day)} days ago`;
 }
 
-/**
- * Daily check: automatically triggers daily morning sprint notification if a new calendar day has arrived.
- */
-export function checkDailyNotifications(userId?: string): void {
-  if (typeof window === "undefined") return;
-  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-  const lastCheckKey = `technocat_last_daily_check_${userId || "guest"}`;
-  const lastCheck = localStorage.getItem(lastCheckKey);
+const ICONS: Record<ServerNotification["type"], { icon: string; iconBg: string; iconColor: string }> = {
+  task: { icon: "calendar", iconBg: "#EFF6FF", iconColor: "#2563EB" },
+  live_class: { icon: "schedule", iconBg: "#F5F3FF", iconColor: "#7C3AED" },
+  notice: { icon: "notes", iconBg: "#F0FDF4", iconColor: "#16A34A" },
+  quiz: { icon: "target", iconBg: "#ECFDF5", iconColor: "#059669" },
+  mock: { icon: "clipboard", iconBg: "#EFF6FF", iconColor: "#2563EB" },
+  points: { icon: "trophy", iconBg: "#FEF3C7", iconColor: "#D97706" },
+  system: { icon: "rocket", iconBg: "#EFF6FF", iconColor: "#2563EB" },
+};
 
-  if (lastCheck !== todayStr) {
-    localStorage.setItem(lastCheckKey, todayStr);
-
-    const state = getStoredState(userId);
-    const dayLabel = new Date().toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-
-    const newDailyItem: NotificationItem = {
-      id: `notif-daily-sprint-${todayStr}`,
-      type: "system",
-      category: "learning",
-      title: `Today's CAT Sprint Ready (${dayLabel})`,
-      desc: "Your adaptive study schedule is loaded with today's target drills. Maintain consistency to boost your CAT percentile.",
-      time: "Just now",
-      timestamp: Date.now(),
-      read: false,
-      actionUrl: "/dashboard",
-      actionLabel: "View Daily Tasks",
-      priority: "normal",
-      icon: "calendar",
-      iconBg: "#EFF6FF",
-      iconColor: "#2563EB",
-    };
-
-    // Avoid duplicate if already exists
-    if (!state.customList.some((n) => n.id === newDailyItem.id)) {
-      state.customList.unshift(newDailyItem);
-      saveStoredState(state, userId);
-      notifyListeners();
-    }
-  }
+function fromServer(n: ServerNotification): NotificationItem {
+  const timestamp = new Date(n.createdAt).getTime() || Date.now();
+  const style = ICONS[n.type] ?? ICONS.system;
+  const urgentOverdue = n.type === "task" && n.priority === "urgent";
+  return {
+    id: n.id,
+    type: n.type,
+    category: n.category,
+    title: n.title,
+    desc: n.desc,
+    time: formatRelativeTime(timestamp),
+    timestamp,
+    read: false,
+    actionUrl: n.actionUrl,
+    actionLabel: n.actionLabel,
+    priority: n.priority,
+    ...style,
+    ...(urgentOverdue ? { icon: "alert", iconBg: "#FEF2F2", iconColor: "#DC2626" } : {}),
+    isSample: n.isSample === true,
+  };
 }
 
 /**
- * Load all notifications for the user, applying read and dismissal states,
- * recomputing relative time dynamically.
+ * Fetch the user's feed from /api/notifications and notify listeners.
+ * Safe to call repeatedly; concurrent calls for the same user share one request.
  */
-export function loadNotifications(userId?: string, isDemo = true): NotificationItem[] {
-  const state = getStoredState(userId);
+export function refreshNotifications(userId?: string): Promise<void> {
+  const uid = resolveUserId(userId);
+  if (typeof window === "undefined" || !uid) return Promise.resolve();
+  lastUserId = uid;
+  const existing = inflight.get(uid);
+  if (existing) return existing;
+  const p = (async () => {
+    try {
+      const res = await fetch("/api/notifications", { cache: "no-store", credentials: "same-origin" });
+      if (!res.ok) return; // keep whatever we had; never substitute fake items
+      const data = (await res.json()) as { items?: ServerNotification[] };
+      serverCache.set(uid, Array.isArray(data.items) ? data.items.map(fromServer) : []);
+      notifyListeners();
+    } catch (err) {
+      console.warn("[NotificationService] Could not load notifications:", err);
+    } finally {
+      inflight.delete(uid);
+    }
+  })();
+  inflight.set(uid, p);
+  return p;
+}
+
+/** Forget cached items (e.g. on logout / user switch). */
+export function resetNotificationCache(): void {
+  serverCache.clear();
+  lastUserId = undefined;
+}
+
+function readPrefs(userId?: string) {
+  const prefs = { streakNotif: true, revisionNotif: true, mockAlerts: true, milestoneNotif: true };
+  if (typeof window === "undefined") return prefs;
+  try {
+    const stored = localStorage.getItem(`technocat_settings_${resolveUserId(userId) || "guest"}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      for (const key of Object.keys(prefs) as (keyof typeof prefs)[]) {
+        if (typeof parsed[key] === "boolean") prefs[key] = parsed[key];
+      }
+    }
+  } catch {}
+  return prefs;
+}
+
+/**
+ * Load the user's notifications (cached server feed + local "just happened" entries),
+ * applying read/dismissed state and recomputing relative times. Synchronous; call
+ * refreshNotifications() to pull fresh data from the server.
+ * The second argument is accepted for backwards compatibility and ignored — the server
+ * decides whether the account is the demo showcase.
+ */
+export function loadNotifications(userId?: string, _isDemo?: boolean): NotificationItem[] {
+  const uid = resolveUserId(userId);
+  if (!uid) return [];
+  const state = getStoredState(uid);
   const readSet = new Set(state.readIds);
   const dismissedSet = new Set(state.dismissedIds);
+  const prefs = readPrefs(uid);
+  const cutoff = Date.now() - LOCAL_ITEM_TTL_MS;
 
-  const baseNotifications = isDemo ? BASE_NOTIFICATIONS : REAL_USER_NOTIFICATIONS;
-  const combined = [...state.customList, ...baseNotifications];
+  const combined = [...state.customList.filter((n) => n.timestamp >= cutoff), ...(serverCache.get(uid) ?? [])];
 
-  // Read user notification preferences
-  let notifPrefs = { streakNotif: true, revisionNotif: true, mockAlerts: true, milestoneNotif: true };
-  if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem(`technocat_settings_${userId || "guest"}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (typeof parsed.streakNotif === "boolean") notifPrefs.streakNotif = parsed.streakNotif;
-        if (typeof parsed.revisionNotif === "boolean") notifPrefs.revisionNotif = parsed.revisionNotif;
-        if (typeof parsed.mockAlerts === "boolean") notifPrefs.mockAlerts = parsed.mockAlerts;
-        if (typeof parsed.milestoneNotif === "boolean") notifPrefs.milestoneNotif = parsed.milestoneNotif;
-      }
-    } catch {}
-  }
-
-  // Deduplicate by ID and apply preference filter
   const map = new Map<string, NotificationItem>();
   for (const item of combined) {
-    if (dismissedSet.has(item.id)) continue;
-    if (item.type === "streak_alert" && !notifPrefs.streakNotif) continue;
-    if (item.type === "revision" && !notifPrefs.revisionNotif) continue;
-    if ((item.type === "mock" || item.type === "mock_pyq") && !notifPrefs.mockAlerts) continue;
-    if ((item.type === "milestone" || item.type === "quiz") && !notifPrefs.milestoneNotif) continue;
-
-    if (!map.has(item.id)) {
-      map.set(item.id, {
-        ...item,
-        time: formatRelativeTime(item.timestamp),
-        read: readSet.has(item.id) || item.read,
-      });
-    }
+    if (dismissedSet.has(item.id) || map.has(item.id)) continue;
+    if ((item.type === "streak_alert" || item.type === "task") && !prefs.streakNotif) continue;
+    if (item.type === "revision" && !prefs.revisionNotif) continue;
+    if ((item.type === "mock" || item.type === "mock_pyq") && !prefs.mockAlerts) continue;
+    if ((item.type === "milestone" || item.type === "quiz" || item.type === "points") && !prefs.milestoneNotif) continue;
+    map.set(item.id, {
+      ...item,
+      time: formatRelativeTime(item.timestamp),
+      read: readSet.has(item.id) || item.read,
+    });
   }
 
-  // Sort descending by timestamp
   return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
 }
 
-/**
- * Mark a single notification as read.
- */
+/** Mark a single notification as read. */
 export function markAsRead(id: string, userId?: string): NotificationItem[] {
   const state = getStoredState(userId);
   if (!state.readIds.includes(id)) {
@@ -401,22 +257,17 @@ export function markAsRead(id: string, userId?: string): NotificationItem[] {
   return loadNotifications(userId);
 }
 
-/**
- * Mark all notifications as read.
- */
+/** Mark all current notifications as read. */
 export function markAllAsRead(userId?: string): NotificationItem[] {
   const list = loadNotifications(userId);
   const state = getStoredState(userId);
-  const allIds = list.map((n) => n.id);
-  state.readIds = Array.from(new Set([...state.readIds, ...allIds]));
+  state.readIds = Array.from(new Set([...state.readIds, ...list.map((n) => n.id)]));
   saveStoredState(state, userId);
   notifyListeners();
   return loadNotifications(userId);
 }
 
-/**
- * Dismiss / delete a single notification.
- */
+/** Dismiss a single notification. */
 export function dismissNotification(id: string, userId?: string): NotificationItem[] {
   const state = getStoredState(userId);
   if (!state.dismissedIds.includes(id)) {
@@ -427,87 +278,80 @@ export function dismissNotification(id: string, userId?: string): NotificationIt
   return loadNotifications(userId);
 }
 
-/**
- * Clear all notifications (dismiss all current items).
- */
+/** Dismiss all current notifications. */
 export function clearAllNotifications(userId?: string): NotificationItem[] {
   const list = loadNotifications(userId);
   const state = getStoredState(userId);
-  const allIds = list.map((n) => n.id);
-  state.dismissedIds = Array.from(new Set([...state.dismissedIds, ...allIds]));
-  saveStoredState(state, userId);
-  notifyListeners();
-  return [];
-}
-
-/**
- * Push a new dynamic notification into the user's feed.
- */
-export function pushNotification(
-  notif: Omit<NotificationItem, "id" | "timestamp" | "read" | "time">,
-  userId?: string
-): NotificationItem[] {
-  const state = getStoredState(userId);
-  const newItem: NotificationItem = {
-    ...notif,
-    id: `notif-custom-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-    time: "Just now",
-    timestamp: Date.now(),
-    read: false,
-  };
-  state.customList.unshift(newItem);
+  state.dismissedIds = Array.from(new Set([...state.dismissedIds, ...list.map((n) => n.id)]));
+  state.customList = [];
   saveStoredState(state, userId);
   notifyListeners();
   return loadNotifications(userId);
 }
 
-// ==========================================
-// ACTIVITY-BASED NOTIFICATION TRIGGERS
-// ==========================================
-
 /**
- * Triggered when a student completes a quiz or drill.
+ * Record something the user just did in this browser (e.g. enrolled in a topic, set a reminder).
+ * Stored locally for that user only and expires after 3 days. Without a known user it is a no-op.
  */
-export function notifyQuizCompleted(
-  quizTitle: string,
-  score: number,
-  total: number,
+export function pushNotification(
+  notif: Omit<NotificationItem, "id" | "timestamp" | "read" | "time">,
   userId?: string
 ): NotificationItem[] {
-  const percent = Math.round((score / total) * 100);
-  const earnedPoints = score * 5;
-  return pushNotification(
-    {
-      type: "quiz",
-      category: "learning",
-      title: `Quiz Completed: ${quizTitle}`,
-      desc: `You scored ${score}/${total} (${percent}% accuracy) and earned +${earnedPoints} practice points!`,
-      actionUrl: "/analytics",
-      actionLabel: "View Analytics",
-      priority: percent >= 80 ? "normal" : "urgent",
-      icon: "target",
-      iconBg: percent >= 80 ? "#ECFDF5" : "#FFFBEB",
-      iconColor: percent >= 80 ? "#059669" : "#D97706",
-    },
-    userId
-  );
+  const uid = resolveUserId(userId);
+  if (!uid) return [];
+  const state = getStoredState(uid);
+  const newItem: NotificationItem = {
+    ...notif,
+    isSample: false,
+    id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    time: "Just now",
+    timestamp: Date.now(),
+    read: false,
+  };
+  state.customList.unshift(newItem);
+  saveStoredState(state, uid);
+  notifyListeners();
+  return loadNotifications(uid);
 }
 
+// ==========================================
+// ACTIVITY-BASED TRIGGERS
+// ==========================================
+
 /**
- * Triggered when a student completes tasks in DailyStudySchedule.
+ * Called when a quiz is submitted. The attempt is recorded server-side, so instead of
+ * creating a local item we re-fetch the feed (after the save has had time to land).
  */
+export function notifyQuizCompleted(
+  _quizTitle: string,
+  _score: number,
+  _total: number,
+  userId?: string
+): NotificationItem[] {
+  const uid = resolveUserId(userId);
+  if (typeof window !== "undefined" && uid) {
+    window.setTimeout(() => void refreshNotifications(uid), 2500);
+  }
+  return loadNotifications(uid);
+}
+
+/** Called when a study task is ticked off; the task state itself lives in the database. */
 export function notifyTaskCompleted(
   taskTitle: string,
   remainingToday: number,
   userId?: string
 ): NotificationItem[] {
+  const uid = resolveUserId(userId);
+  if (typeof window !== "undefined" && uid) {
+    window.setTimeout(() => void refreshNotifications(uid), 1500);
+  }
   if (remainingToday === 0) {
     return pushNotification(
       {
         type: "milestone",
         category: "learning",
-        title: "All Tasks Finished Today!",
-        desc: "Outstanding work! You completed all scheduled drills for today and secured your study streak.",
+        title: "All tasks finished today!",
+        desc: "You completed every task scheduled for today.",
         actionUrl: "/dashboard",
         actionLabel: "View Schedule",
         priority: "normal",
@@ -515,100 +359,22 @@ export function notifyTaskCompleted(
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
       },
-      userId
+      uid
     );
   }
   return pushNotification(
     {
-      type: "resume",
+      type: "task",
       category: "learning",
-      title: `Task Completed: ${taskTitle}`,
-      desc: `Great progress! You have ${remainingToday} task${remainingToday > 1 ? "s" : ""} remaining in today's plan.`,
+      title: `Task completed: ${taskTitle}`,
+      desc: `${remainingToday} task${remainingToday > 1 ? "s" : ""} left in today's plan.`,
       actionUrl: "/dashboard",
-      actionLabel: "Continue Sprint",
+      actionLabel: "Continue",
       priority: "low",
       icon: "check",
       iconBg: "#F0FDF4",
       iconColor: "#16A34A",
     },
-    userId
-  );
-}
-
-/**
- * Triggered when user watches or resumes a video lesson.
- */
-export function notifyVideoProgress(
-  topicTitle: string,
-  moduleTitle: string,
-  topicUrl: string,
-  userId?: string
-): NotificationItem[] {
-  return pushNotification(
-    {
-      type: "resume",
-      category: "learning",
-      title: `Continue Watching: ${topicTitle}`,
-      desc: `Pick up where you left off on ${moduleTitle}. Keep your daily study pace going.`,
-      actionUrl: topicUrl,
-      actionLabel: "Resume Video",
-      priority: "normal",
-      icon: "play",
-      iconBg: "#EFF6FF",
-      iconColor: "#2563EB",
-    },
-    userId
-  );
-}
-
-/**
- * Triggered when a full mock or sectional mock is finished.
- */
-export function notifyMockResult(
-  mockName: string,
-  percentile: number,
-  score: number,
-  userId?: string
-): NotificationItem[] {
-  return pushNotification(
-    {
-      type: "mock",
-      category: "mocks",
-      title: `${mockName} Result Ready!`,
-      desc: `Your national benchmark is live: ${percentile} percentile with a score of ${score}. Check detailed question-by-question analysis.`,
-      actionUrl: "/intelligence/error-tracking",
-      actionLabel: "View Analysis",
-      priority: "urgent",
-      icon: "trophy",
-      iconBg: "#EFF6FF",
-      iconColor: "#2563EB",
-    },
-    userId
-  );
-}
-
-/**
- * Triggered when a topic requires spaced repetition revision.
- */
-export function notifySpacedRevision(
-  topicName: string,
-  daysAgo: number,
-  topicUrl: string,
-  userId?: string
-): NotificationItem[] {
-  return pushNotification(
-    {
-      type: "revision",
-      category: "learning",
-      title: `Retention Check: Revise ${topicName}`,
-      desc: `It's been ${daysAgo} days since your last ${topicName} drill. A quick 10-minute review now locks in long-term memory.`,
-      actionUrl: topicUrl,
-      actionLabel: "Revise Topic",
-      priority: "normal",
-      icon: "brain",
-      iconBg: "#F5F3FF",
-      iconColor: "#7C3AED",
-    },
-    userId
+    uid
   );
 }

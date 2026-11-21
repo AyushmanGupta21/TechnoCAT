@@ -194,6 +194,14 @@ npm run db:status     # shows applied / pending migrations
 ```
 New tables must enable Row Level Security (see `0004_enable_rls_lockdown.sql`).
 
+### End-to-end tests
+With the server running (`npm run build && npm run start`), run `npm run test:e2e`. It creates throwaway
+accounts against the configured database, checks recording, grading, metrics and the quiz generator, and deletes them.
+
+### Publishing live classes & notices
+`npm run announcements -- add-class --title "…" --starts "YYYY-MM-DD HH:MM" [--section QA] [--link https://…]`,
+`add-notice`, `list`, `remove <id>` (times are IST). See `scripts/announcements.mjs`.
+
 ### Production build
 ```bash
 npm run build && npm run start

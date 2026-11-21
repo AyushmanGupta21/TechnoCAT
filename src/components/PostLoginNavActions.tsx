@@ -11,7 +11,7 @@ import {
   NotificationItem,
   NotificationCategory,
   loadNotifications,
-  checkDailyNotifications,
+  refreshNotifications,
   markAsRead,
   markAllAsRead,
   dismissNotification,
@@ -82,8 +82,6 @@ export default function PostLoginNavActions() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const isDemo = Boolean(user && user.email === "student@technocat.edu");
-
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<NotificationCategory>("all");
 
@@ -91,25 +89,33 @@ export default function PostLoginNavActions() {
 
   useEffect(() => {
     setMounted(true);
-    // Check daily notifications on mount
-    checkDailyNotifications(user?.id);
+    if (!user?.id) {
+      setNotifications([]);
+      return;
+    }
+    const userId = user.id;
 
+    // Re-read cached feed + local read/dismissed state (also recomputes relative times).
     const refresh = () => {
-      setNotifications(loadNotifications(user?.id, isDemo));
+      setNotifications(loadNotifications(userId));
     };
 
     refresh();
+    // Pull the real feed from the server (derived from tasks, quizzes, points, announcements).
+    void refreshNotifications(userId);
 
-    // Listen to real-time notification updates triggered anywhere across the app
+    // Listen to notification updates triggered anywhere across the app
     window.addEventListener("technocat_notifications_updated", refresh);
-    // Refresh relative times (e.g. "Just now" -> "1m ago") every 60 seconds
-    const interval = setInterval(refresh, 60000);
+    // Refresh relative times every minute; re-fetch from the server every 5 minutes
+    const tick = setInterval(refresh, 60000);
+    const poll = setInterval(() => void refreshNotifications(userId), 5 * 60000);
 
     return () => {
       window.removeEventListener("technocat_notifications_updated", refresh);
-      clearInterval(interval);
+      clearInterval(tick);
+      clearInterval(poll);
     };
-  }, [user?.id, isDemo]);
+  }, [user?.id]);
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => !n.read).length;
@@ -522,12 +528,12 @@ export default function PostLoginNavActions() {
                         ? "No mock test alerts"
                         : activeTab === "learning"
                         ? "No learning reminders"
-                        : "You have no notifications"}
+                        : "You're all caught up"}
                     </h4>
                     <p className={styles.emptyDesc}>
                       {activeTab === "unread"
-                        ? "You're completely up to date with your CAT prep schedule!"
-                        : "Notifications about your mocks, revisions, and study tasks will appear here."}
+                        ? "You're all caught up with your CAT prep schedule."
+                        : "Reminders about your study tasks, quiz results, points and live classes will appear here."}
                     </p>
                   </div>
                 ) : (
@@ -553,6 +559,11 @@ export default function PostLoginNavActions() {
                       <div className={styles.notifContent}>
                         <div className={styles.notifHeaderRow}>
                           <h4 className={styles.notifTitle}>{notif.title}</h4>
+                          {notif.isSample && (
+                            <span className={styles.sampleTag} title="Sample notification shown on the demo account">
+                              Sample
+                            </span>
+                          )}
                           {notif.priority === "urgent" && (
                             <span className={styles.priorityUrgentTag}>
                               Alert
