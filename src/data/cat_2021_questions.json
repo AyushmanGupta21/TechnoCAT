@@ -1193,7 +1193,7 @@
     "question": "If \\(5 - \\log_{10}\\sqrt{1+x} + 4\\log_{10}\\sqrt{1-x} = \\log_{10}\\frac{1}{\\sqrt{1-x^2}}\\) , then 100 x equals",
     "options": [],
     "correct_answer": "99",
-    "explanation": "5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = \\log _{10} \\frac{1}{\\sqrt{1-x^{2}}}) 5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = \\log _{10} { \\left( \\(\\frac{1}{\\sqrt{1-x}}\\) \\(\\frac{1}{\\sqrt{1+x}}\\) \\right)}) 5 - \\log _{10} \\sqrt{1 + x}) + 4\\log _{10} \\sqrt{1 - x}) = - \\log _{10} \\sqrt{1 - x}) - \\log _{10} \\sqrt{1 + x}) 4\\log _{10} \\sqrt{1 - x}) + \\log _{10} \\sqrt{1 - x}) = -5 \\log _{10} \\sqrt{1 - x}) = -1 \\sqrt{1-x}) = \\(\\frac{1}{10}\\) 100x = 99. Therefore the answer should be 99.\n\nThe question is \" If \\(5 - \\log_{10}\\sqrt{1+x} + 4\\log_{10}\\sqrt{1-x} = \\log_{10}\\frac{1}{\\sqrt{1-x^2}}\\) , then 100 x equals \"\n\nHence, the answer is '99'",
+    "explanation": "5 - \\log_{10} \\sqrt{1 + x}) + 4\\log_{10} \\sqrt{1 - x}) = \\log_{10} \\frac{1}{\\sqrt{1-x^{2}}}) 5 - \\log_{10} \\sqrt{1 + x}) + 4\\log_{10} \\sqrt{1 - x}) = \\log_{10} { \\left( \\(\\frac{1}{\\sqrt{1-x}}\\) \\(\\frac{1}{\\sqrt{1+x}}\\) \\right)}) 5 - \\log_{10} \\sqrt{1 + x}) + 4\\log_{10} \\sqrt{1 - x}) = - \\log_{10} \\sqrt{1 - x}) - \\log_{10} \\sqrt{1 + x}) 4\\log_{10} \\sqrt{1 - x}) + \\log_{10} \\sqrt{1 - x}) = -5 \\log_{10} \\sqrt{1 - x}) = -1 \\sqrt{1-x}) = \\(\\frac{1}{10}\\) 100x = 99. Therefore the answer should be 99.\n\nThe question is \" If \\(5 - \\log_{10}\\sqrt{1+x} + 4\\log_{10}\\sqrt{1-x} = \\log_{10}\\frac{1}{\\sqrt{1-x^2}}\\) , then 100 x equals \"\n\nHence, the answer is '99'",
     "video_url": "https://www.youtube.com/embed/3VbQL0h1Ou4?start=446",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-1-Quant/quants-question-4.shtml",
     "images": []
@@ -4308,7 +4308,7 @@
     "question_number": 6,
     "type": "MCQ",
     "context": "",
-    "question": "For a real number a, if \\(\\frac{\\log _{15} a+\\log _{32} a}{\\left(\\log _{15} a\\right)\\left(\\log _{32} a\\right)}=\\) = 4 then a must lie in the range",
+    "question": "For a real number a, if \\(\\frac{\\log_{15} a+\\log_{32} a}{\\left(\\log_{15} a\\right)\\left(\\log_{32} a\\right)}=\\) = 4 then a must lie in the range",
     "options": [
       "4 < a < 5",
       "3 < a < 4",
@@ -4316,7 +4316,7 @@
       "2 < a < 3"
     ],
     "correct_answer": "Choice A\n4 < a < 5",
-    "explanation": "\\( \\frac { \\log _ { 15 } ^ { a } + \\log _ { 32 } ^ { a } } { \\left( \\log _ { 15 } ^ { a } \\times \\log _ { 32 } ^ { a } \\right) } \\) = 4 \\( \\frac { 1 } { \\log _ { 32 } ^ { a } } + \\frac { 1 } { \\log _ { 15 } ^ { a } } \\)= 4 \\( \\log _ { a } ^ { 32 } + \\log _ { a } ^ { 15 } \\)= 4 \\( \\log _ { a } ^ { ( 32 \\times 15 ) } \\) = 4 a4 = 32 × 15 = 480 We know that, 44 = 256 and 54 = 625 256 < 480 < 625 44 < a4 < 54 4 < a < 5\n\nThe question is \" For a real number a, if \\(\\frac{\\log _{15} a+\\log _{32} a}{\\left(\\log _{15} a\\right)\\left(\\log _{32} a\\right)}=\\) = 4 then a must lie in the range \"\n\nHence, the answer is '4 < a < 5'\n\nChoice A is the correct answer.",
+    "explanation": "\\( \\frac { \\log _ { 15 } ^ { a } + \\log _ { 32 } ^ { a } } { \\left( \\log _ { 15 } ^ { a } \\times \\log _ { 32 } ^ { a } \\right) } \\) = 4 \\( \\frac { 1 } { \\log _ { 32 } ^ { a } } + \\frac { 1 } { \\log _ { 15 } ^ { a } } \\)= 4 \\( \\log _ { a } ^ { 32 } + \\log _ { a } ^ { 15 } \\)= 4 \\( \\log _ { a } ^ { ( 32 \\times 15 ) } \\) = 4 a4 = 32 × 15 = 480 We know that, 44 = 256 and 54 = 625 256 < 480 < 625 44 < a4 < 54 4 < a < 5\n\nThe question is \" For a real number a, if \\(\\frac{\\log_{15} a+\\log_{32} a}{\\left(\\log_{15} a\\right)\\left(\\log_{32} a\\right)}=\\) = 4 then a must lie in the range \"\n\nHence, the answer is '4 < a < 5'\n\nChoice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/6zpApyeKhl0?start=828",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2021-Question-Paper-Slot-3-Quant/quants-question-6.shtml",
     "images": []

@@ -1391,10 +1391,10 @@
     "question_number": 22,
     "type": "TITA",
     "context": "",
-    "question": "If \\(x\\) is a positive real number such that \\(4 \\log _{10} x+4 \\log _{100} x+8 \\log _{1000} x=13\\), then the greatest integer not exceeding \\(x\\), is",
+    "question": "If \\(x\\) is a positive real number such that \\(4 \\log_{10} x+4 \\log_{100} x+8 \\log_{1000} x=13\\), then the greatest integer not exceeding \\(x\\), is",
     "options": [],
     "correct_answer": "31",
-    "explanation": "\\[ \\begin{array}{l} 4(\\log x / \\log 10)+4(\\log x / 2 \\log 10)+8(\\log x / 3 \\log 10)=13 \\\\ 4 \\log x+2 \\log x+(8 / 3) \\log x=13 \\\\ \\log x(4+2+8 / 3)=13 \\\\ (26 / 3) \\log x=13 \\\\ \\log x=3 / 2 \\\\ x=10^{1.5}=31.62 \\end{array} \\] The greater integer not exceeding \\(x=31\\) The question is \"If \\(x\\) is a positive real number such that \\(4 \\log _{10} x+4 \\log _{100} x+8 \\log _{1000} x=13\\), then the greatest integer not exceeding \\(x\\), is\" Hence, the answer is '31'",
+    "explanation": "\\[ \\begin{array}{l} 4(\\log x / \\log 10)+4(\\log x / 2 \\log 10)+8(\\log x / 3 \\log 10)=13 \\\\ 4 \\log x+2 \\log x+(8 / 3) \\log x=13 \\\\ \\log x(4+2+8 / 3)=13 \\\\ (26 / 3) \\log x=13 \\\\ \\log x=3 / 2 \\\\ x=10^{1.5}=31.62 \\end{array} \\] The greater integer not exceeding \\(x=31\\) The question is \"If \\(x\\) is a positive real number such that \\(4 \\log_{10} x+4 \\log_{100} x+8 \\log_{1000} x=13\\), then the greatest integer not exceeding \\(x\\), is\" Hence, the answer is '31'",
     "video_url": "https://www.youtube.com/embed/RLjd2bvQ8gg?si=EiVTb0tNyn892zsP&amp;start=1152",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-1-Quant/quants-question-22.shtml",
     "images": []
@@ -2536,10 +2536,10 @@
     "question_number": 9,
     "type": "TITA",
     "context": "",
-    "question": "If \\(a, b\\) and \\(c\\) are positive real numbers such that \\(a>10 \\geq b \\geq c\\) and \\(\\frac{\\log _8(a+b)}{\\log _2 c}+\\frac{\\log _{27}(a-b)}{\\log _3 c}=\\frac{2}{3}\\), then the greatest possible integer value of \\(a\\) is",
+    "question": "If \\(a, b\\) and \\(c\\) are positive real numbers such that \\(a>10 \\geq b \\geq c\\) and \\(\\frac{\\log _8(a+b)}{\\log _2 c}+\\frac{\\log_{27}(a-b)}{\\log _3 c}=\\frac{2}{3}\\), then the greatest possible integer value of \\(a\\) is",
     "options": [],
     "correct_answer": "14",
-    "explanation": "\\[ \\begin{array}{l} \\log _8(a+b) / \\log _2 c=\\{\\log (a+b) / \\log 8\\} /\\{\\log c / \\log 2\\}=(1 / 3) \\log _c(a+b) \\\\ \\log _{27}(a-b) / \\log _3 c=\\{\\log (a-b) / \\log 27\\} /\\{\\log c / \\log 3\\}=(1 / 3) \\log _c(a-b) \\\\ (1 / 3) \\log _c(a+b)+(1 / 3) \\log { }_c(a-b)=(1 / 3) \\log _c\\{(a+b)(a-b)\\}=2 / 3 \\\\ \\log _c\\{(a+b)(a-b)\\}=2 \\\\ c^2=a^2-b^2 \\\\ a^2=b^2+c^2 \\end{array} \\] a should be an integer. The greatest possible integer value of \\(a\\) is possible if \\(b=c=10\\) \\[ a^2 \\leq 200 \\] The maximum value of \\(a=14\\) The question is \"If \\(a, b\\) and \\(c\\) are positive real numbers such that \\(a>10 \\geq b \\geq c\\) and \\(\\frac{\\log _8(a+b)}{\\log _2 c}+\\frac{\\log _{27}(a-b)}{\\log _3 c}=\\frac{2}{3}\\), then the greatest possible integer value of \\(a\\) is\" Hence, the answer is '14'",
+    "explanation": "\\[ \\begin{array}{l} \\log _8(a+b) / \\log _2 c=\\{\\log (a+b) / \\log 8\\} /\\{\\log c / \\log 2\\}=(1 / 3) \\log _c(a+b) \\\\ \\log_{27}(a-b) / \\log _3 c=\\{\\log (a-b) / \\log 27\\} /\\{\\log c / \\log 3\\}=(1 / 3) \\log _c(a-b) \\\\ (1 / 3) \\log _c(a+b)+(1 / 3) \\log { }_c(a-b)=(1 / 3) \\log _c\\{(a+b)(a-b)\\}=2 / 3 \\\\ \\log _c\\{(a+b)(a-b)\\}=2 \\\\ c^2=a^2-b^2 \\\\ a^2=b^2+c^2 \\end{array} \\] a should be an integer. The greatest possible integer value of \\(a\\) is possible if \\(b=c=10\\) \\[ a^2 \\leq 200 \\] The maximum value of \\(a=14\\) The question is \"If \\(a, b\\) and \\(c\\) are positive real numbers such that \\(a>10 \\geq b \\geq c\\) and \\(\\frac{\\log _8(a+b)}{\\log _2 c}+\\frac{\\log_{27}(a-b)}{\\log _3 c}=\\frac{2}{3}\\), then the greatest possible integer value of \\(a\\) is\" Hence, the answer is '14'",
     "video_url": "https://www.youtube.com/embed/cs5WSh9RFig?si=2xR4B_SGs1MmKEW_&amp;start=1597",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-2-Quant/quants-question-9.shtml",
     "images": []
@@ -4203,13 +4203,13 @@
     "context": "",
     "question": "The sum of all distinct real values of \\(x\\) that satisfy the equation \\(10^x+\\frac{4}{10^x}=\\frac{17}{2}\\), is",
     "options": [
-      "\\(2 \\log _{10} 2\\)",
-      "\\(3 \\log _{10} 2\\)",
-      "\\(4 \\log _{10} 2\\)",
-      "\\(\\log _{10} 2\\)"
+      "\\(2 \\log_{10} 2\\)",
+      "\\(3 \\log_{10} 2\\)",
+      "\\(4 \\log_{10} 2\\)",
+      "\\(\\log_{10} 2\\)"
     ],
-    "correct_answer": "Choice A\n\\(2 \\log _{10} 2\\)",
-    "explanation": "Let \\(10^x=y\\) Then, \\(y+\\frac{4}{y}=\\frac{17}{2}\\) \\[ 2 y^2-17 y+8=0 \\] After factorising the equation we get, \\((2 y-1)(y-8)=0\\) i.e., \\(y=8\\) or \\(y=1 / 2\\) \\[ \\Rightarrow 10^x=8 \\text { or } 10^x=1 / 2 \\] Taking log on both sides, we get \\[ \\begin{array}{lrc} \\log _{10} 8=x & \\text { or } & \\log _{10} 1 / 2=x \\\\ \\Rightarrow \\log _{10} 2^3=x & \\text { (or) } & \\log _{10} 2^{-1}=x \\\\ \\Rightarrow x=3 \\log _{10} 2 & \\text { (or) } & x=-\\log _{10} 2 \\end{array} \\] Sum of these possible values \\(=3 \\log _{10} 2+\\left(-\\log _{10} 2\\right)=2 \\log _{10} 2\\) The question is \"The sum of all distinct real values of \\(x\\) that satisfy the equation \\(10^x+\\frac{4}{10^x}=\\frac{17}{2}\\), is\" Hence, the answer is '\\(2 \\log _{10} 2\\)' Choice A is the correct answer.",
+    "correct_answer": "Choice A\n\\(2 \\log_{10} 2\\)",
+    "explanation": "Let \\(10^x=y\\) Then, \\(y+\\frac{4}{y}=\\frac{17}{2}\\) \\[ 2 y^2-17 y+8=0 \\] After factorising the equation we get, \\((2 y-1)(y-8)=0\\) i.e., \\(y=8\\) or \\(y=1 / 2\\) \\[ \\Rightarrow 10^x=8 \\text { or } 10^x=1 / 2 \\] Taking log on both sides, we get \\[ \\begin{array}{lrc} \\log_{10} 8=x & \\text { or } & \\log_{10} 1 / 2=x \\\\ \\Rightarrow \\log_{10} 2^3=x & \\text { (or) } & \\log_{10} 2^{-1}=x \\\\ \\Rightarrow x=3 \\log_{10} 2 & \\text { (or) } & x=-\\log_{10} 2 \\end{array} \\] Sum of these possible values \\(=3 \\log_{10} 2+\\left(-\\log_{10} 2\\right)=2 \\log_{10} 2\\) The question is \"The sum of all distinct real values of \\(x\\) that satisfy the equation \\(10^x+\\frac{4}{10^x}=\\frac{17}{2}\\), is\" Hence, the answer is '\\(2 \\log_{10} 2\\)' Choice A is the correct answer.",
     "video_url": "https://www.youtube.com/embed/VoXHhJ6FBeA?si=6gxnzhT-fBkPGeFA&amp;start=1706",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2024-Question-Paper-Slot-3-Quant/quants-question-22.shtml",
     "images": []

@@ -64,20 +64,44 @@ export function preprocessMathAndText(raw: string): string {
   // 6. Strip stray closing parenthesis artifact after fractions
   s = s.replace(/(\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})\)/g, (_m, g1) => g1);
 
-  // 7. Preserve existing math delimiters so we never inject \\( inside existing math blocks
+  // 7. Ordinals in English prose: 24 ^{th} -> 24th, 20^{th} -> 20th
+  s = s.replace(/(\d+)\s*\^\{\s*(st|nd|rd|th)\s*\}/gi, "$1$2");
+  s = s.replace(/(\\\([^\)]*\\frac[^\)]*\\\))\s*\^\{\s*(st|nd|rd|th)\s*\}/gi, "$1$2");
+
+  // 8. Units with powers: cm ^{3} -> cm³, m ^{2} -> m²
+  s = s.replace(/\b(cm|m|mm|km)\s*\^\{\s*3\s*\}/g, "$1³");
+  s = s.replace(/\b(cm|m|mm|km)\s*\^\{\s*2\s*\}/g, "$1²");
+
+  // 9. Normalize spaces in raw subscripts and superscripts:
+  // e.g. t _{1} -> t_{1}, 2n ^{2} -> 2n^{2}, (n-1) ^{2} -> (n-1)^{2}
+  s = s.replace(/([a-zA-Z0-9\)\]])\s+_\{\s*([^{}]+)\s*\}/g, "$1_{$2}");
+  s = s.replace(/([a-zA-Z0-9\)\]])\s+\^\{\s*([^{}]+)\s*\}/g, "$1^{$2}");
+
+  // 10. Preserve existing math delimiters so we never inject \( inside existing math blocks
   const mathPlaceholders: string[] = [];
   s = s.replace(MATH_RE, (match) => {
     mathPlaceholders.push(match);
     return `___MTH_${mathPlaceholders.length - 1}___`;
   });
 
-  // 8. Now wrap standalone \\frac in \\( ... \\) safely
+  // 11. Combinations outside math: ^{10} C _{2} -> \(^{10}\text{C}_{2}\)
+  s = s.replace(/\^\{\s*(\w+)\s*\}\s*C\s*_\{\s*(\w+)\s*\}/g, "___COMB_$1_$2___");
+  s = s.replace(/\b(\d+)\s*C\s*_\{\s*(\w+)\s*\}/g, "___COMB_$1_$2___");
+
+  // 12. Wrap standalone \frac outside existing math safely
   s = s.replace(/\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m) => `\\(${m}\\)`);
 
-  // 9. Restore existing math blocks
+  // 13. Wrap standalone subscript/superscript patterns outside math into \( ... \)
+  // E.g. t_{1}, S_{n-1}, 2n^{2}, (n-1)^{2}, (5.55)^{x}, (-1)^{n-1}
+  s = s.replace(/((?:\([a-zA-Z0-9\+\-\s\.]+\)|\[[a-zA-Z0-9\+\-\s\.]+\]|[a-zA-Z0-9]+)(?:_\{[^{}]+\}|\^\{[^{}]+\})+)/g, (m) => `\\(${m}\\)`);
+
+  // 14. Restore combinations as LaTeX
+  s = s.replace(/___COMB_(\w+)_(\w+)___/g, "\\(^{$1}\\text{C}_{$2}\\)");
+
+  // 15. Restore existing math blocks
   s = s.replace(/___MTH_(\d+)___/g, (_m, idx) => mathPlaceholders[Number(idx)]);
 
-  // 10. Ensure diagram images are separated into their own blocks so they render as full diagrams
+  // 16. Ensure diagram images are separated into their own blocks so they render as full diagrams
   s = s.replace(/([^\n])\s*(!\[[^\n\]]*\]\s*\([^\n\)]+\))/g, "$1\n\n$2")
        .replace(/(!\[[^\n\]]*\]\s*\([^\n\)]+\))\s*([^\n])/g, "$1\n\n$2");
 
@@ -87,7 +111,9 @@ export function preprocessMathAndText(raw: string): string {
 /** Cleans LaTeX math strings before feeding to KaTeX */
 function cleanLatexMath(tex: string): string {
   let t = tex.trim();
-  // Strip nested \\( and \\) inside math mode
+  // Strip stray trailing parenthesis artifact on fraction expressions e.g. \frac{a}{b})
+  t = t.replace(/(\\frac\{[^{}]*\}\{[^{}]*\})\)+$/g, "$1");
+  // Strip nested \( and \) inside math mode
   t = t.replace(/\\\(|\\\)/g, " ");
   // Fix common typo \pir -> \pi r
   t = t.replace(/\\pi([a-zA-Z])/g, "\\pi $1");

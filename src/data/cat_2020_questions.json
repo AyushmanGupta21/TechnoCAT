@@ -3035,7 +3035,7 @@
       "\\(\\frac{1}{\\sqrt{3}}\\)"
     ],
     "correct_answer": "Choice C\n\\(\\frac{1}{\\sqrt{2}}\\)",
-    "explanation": "Dividing by x on both numerator and denominator  \\frac{1}{\\sqrt{\\(\\frac{1+x^{4}}{x^{2}}\\)}})=\\frac{1}{\\sqrt{\\(\\frac{1}{x^{2}}\\)+x^{2}}})  \\(\\frac{1}{x^{2}}\\) + x2 ≥ 2  √[\\(\\frac{1}{x^{2}}\\)+x2] ≥ \\sqrt{2}  \\frac{1}{\\sqrt{\\(\\frac{1}{x^{2}}\\)+x^{2}}}) ≤ \\(\\frac{1}{\\sqrt{2}}\\)\n\nThe question is \"For real x, the maximum possible value of \\(\\frac{x}{√(1 + x^{4})}\\) is\"\n\nHence, the answer is, \"\\(\\frac{1}{\\sqrt{2}}\\)\"",
+    "explanation": "Dividing by \\(x\\) on both numerator and denominator:\n\n\\[ \\frac{1}{\\sqrt{\\frac{1+x^{4}}{x^{2}}}} = \\frac{1}{\\sqrt{\\frac{1}{x^{2}} + x^{2}}} \\]\n\nBy AM-GM inequality, for real \\(x \\neq 0\\):\n\n\\[ \\frac{1}{x^{2}} + x^{2} \\geq 2 \\]\n\nTaking square root on both sides:\n\n\\[ \\sqrt{\\frac{1}{x^{2}} + x^{2}} \\geq \\sqrt{2} \\]\n\nTaking the reciprocal reverses the inequality:\n\n\\[ \\frac{1}{\\sqrt{\\frac{1}{x^{2}} + x^{2}}} \\leq \\frac{1}{\\sqrt{2}} \\]\n\nThe question is \"For real x, the maximum possible value of \\(\\frac{x}{\\sqrt{1 + x^{4}}}\\) is\"\n\nHence, the answer is \"\\(\\frac{1}{\\sqrt{2}}\\)\"",
     "video_url": "https://www.youtube.com/embed/W3n_R5lQGng?start=3836",
     "source_url": "https://online.2iim.com/CAT-question-paper/CAT-2020-Question-Paper-Slot-2-Quant/quants-question-10.shtml",
     "images": []
