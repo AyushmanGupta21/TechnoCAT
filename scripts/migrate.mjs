@@ -30,7 +30,8 @@ function listMigrations() {
         version: file.replace(/\.sql$/, ""),
         file,
         sql,
-        checksum: crypto.createHash("sha256").update(sql).digest("hex").slice(0, 16),
+        // Line endings are normalised so a Git CRLF/LF checkout does not look like an edit.
+        checksum: crypto.createHash("sha256").update(sql.replace(/\r\n/g, "\n")).digest("hex").slice(0, 16),
       };
     });
 }

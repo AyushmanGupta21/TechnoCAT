@@ -38,6 +38,7 @@ const suites = [
   ["activity.test.mjs", [root, demoToken]],
   ["metrics.test.mjs", [root, demoToken]],
   ["quiz-generator.test.mjs", [demoToken]],
+  ["pyq-locks.test.mjs", [demoToken]],
 ];
 
 let failed = 0;

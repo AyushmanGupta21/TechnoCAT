@@ -67,45 +67,23 @@ export default function PYQYearModal({
     QUANT: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
   });
 
-  // Fetch attempts from server & localStorage
+  // Attempts and lock state come from the server only (locks are enforced there).
   const loadAttempts = useCallback(async () => {
     try {
+      // Old builds kept lock copies in the browser; remove them so they can never override the server.
+      ALL_SECTIONS.forEach((sec) => {
+        localStorage.removeItem(`technocat_pyq_attempts_${sec}`);
+        localStorage.removeItem(`technocat_pyq_lock_${sec}`);
+      });
       const res = await fetch(`/api/pyq/attempts?year=${year}`);
       if (res.ok) {
         const json = await res.json();
         if (json.attempts) setAttemptsData(json.attempts);
-        if (json.sectionStats) {
-          setSectionStats(json.sectionStats);
-          return;
-        }
+        if (json.sectionStats) setSectionStats(json.sectionStats);
       }
-    } catch {}
-
-    // LocalStorage fallback
-    const fallbackStats: Record<string, any> = {
-      VARC: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-      DILR: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-      QUANT: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-    };
-
-    ALL_SECTIONS.forEach((sec) => {
-      try {
-        const localAttempts = JSON.parse(localStorage.getItem(`technocat_pyq_attempts_${sec}`) || "[]");
-        const lockInfo = JSON.parse(localStorage.getItem(`technocat_pyq_lock_${sec}`) || "null");
-
-        fallbackStats[sec].attemptsCount = localAttempts.length;
-        if (localAttempts.length > 0) {
-          fallbackStats[sec].bestScore = Math.max(...localAttempts.map((a: any) => a.score || 0));
-          fallbackStats[sec].bestPercentage = Math.max(...localAttempts.map((a: any) => a.percentage || 0));
-        }
-        if (lockInfo?.isLocked) {
-          fallbackStats[sec].isLocked = true;
-          fallbackStats[sec].weakAreas = lockInfo.weakAreas || [];
-        }
-      } catch {}
-    });
-
-    setSectionStats(fallbackStats);
+    } catch (err) {
+      console.error("[PYQ] Could not load attempts", err);
+    }
   }, [year]);
 
   useEffect(() => {
@@ -290,7 +268,7 @@ export default function PYQYearModal({
                       {lockedSubject} Is Locked Across All Slots
                     </h3>
                     <p className={styles.lockoutSubtitle}>
-                      You have utilized all 3 attempts for {lockedSubject}. Complete the AI-prescribed weak-area checklist below ({completedCount} of {activeWeakAreas.length} completed). When all lessons are marked watched, attempts will automatically unlock!
+                      You have used all 3 attempts for {lockedSubject} in this cycle. Complete the weak-area lessons below, picked from the questions you missed ({completedCount} of {activeWeakAreas.length} done). The section unlocks automatically once every lesson is completed.
                     </p>
                   </div>
                 </div>

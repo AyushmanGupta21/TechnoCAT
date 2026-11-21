@@ -1,206 +1,142 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, savePYQAttempt, getPYQAttempts, unlockPYQSubject } from "@/lib/db";
+import { savePYQAttempt, getPYQAttempts } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
+import { getPYQQuestions, generateWeakAreaChecklist } from "@/data/pyqData";
+import { gradeAttempt } from "@/lib/quiz/attempts";
+import { getSectionLockStates, PYQ_SECTIONS, ATTEMPTS_PER_CYCLE, type PyqSection } from "@/lib/pyq/locks";
 
-async function resolveUserId(request: NextRequest): Promise<string | null> {
-  return getSession(request)?.userId ?? null;
+// PYQ section attempts. Locking is enforced HERE (not in the browser) — see src/lib/pyq/locks.ts.
+
+/** Shape the existing UI expects; attemptsCount = attempts used in the current 3-attempt cycle. */
+function toSectionStats(states: Awaited<ReturnType<typeof getSectionLockStates>>) {
+  const out: Record<string, unknown> = {};
+  for (const s of PYQ_SECTIONS) {
+    const st = states[s];
+    out[s] = {
+      attemptsCount: st.cycleAttempts,
+      totalAttempts: st.attemptsCount,
+      attemptsLeft: st.attemptsLeft,
+      maxAttempts: ATTEMPTS_PER_CYCLE,
+      isLocked: st.isLocked,
+      weakAreas: st.weakAreas,
+      bestScore: st.bestScore,
+      bestPercentage: st.bestPercentage,
+    };
+  }
+  return out;
 }
 
-// GET: Fetch all attempt history and subject lockout status
 export async function GET(request: NextRequest) {
+  const session = getSession(request);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const userId = await resolveUserId(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const section = searchParams.get("section") || undefined;
     const yearStr = searchParams.get("year");
     const year = yearStr ? parseInt(yearStr, 10) : undefined;
-
-    // Fetch attempts from DB
-    const attempts = await getPYQAttempts(userId, section, year);
-
-    // Grouping by section to compute lock status and attempts count
-    const sectionStats: Record<
-      string,
-      {
-        attemptsCount: number;
-        isLocked: boolean;
-        weakAreas: any[];
-        bestScore: number;
-        bestPercentage: number;
-      }
-    > = {
-      VARC: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-      DILR: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-      QUANT: { attemptsCount: 0, isLocked: false, weakAreas: [], bestScore: 0, bestPercentage: 0 },
-    };
-
-    // Also fetch completed lessons from topic_progress to auto-mark weak areas
-    const topicProgRes = await query(
-      `SELECT topic_id, completed_lessons FROM public.topic_progress WHERE user_id = $1`,
-      [userId]
-    );
-    const completedLessonIds = new Set<string>();
-    topicProgRes.rows.forEach((row: any) => {
-      if (Array.isArray(row.completed_lessons)) {
-        row.completed_lessons.forEach((lid: string) => completedLessonIds.add(lid));
-      }
-    });
-
-    attempts.forEach((att: any) => {
-      const sec = att.section?.toUpperCase();
-      if (sectionStats[sec]) {
-        sectionStats[sec].attemptsCount += 1;
-        if (att.score > sectionStats[sec].bestScore) {
-          sectionStats[sec].bestScore = att.score;
-          sectionStats[sec].bestPercentage = parseFloat(att.percentage) || 0;
-        }
-        if (att.is_locked) {
-          sectionStats[sec].isLocked = true;
-          if (Array.isArray(att.weak_areas) && att.weak_areas.length > 0) {
-            sectionStats[sec].weakAreas = att.weak_areas;
-          }
-        }
-      }
-    });
-
-    // Cross-check weak areas against completed lessons
-    Object.keys(sectionStats).forEach((sec) => {
-      const stat = sectionStats[sec];
-      if (stat.weakAreas && stat.weakAreas.length > 0) {
-        let allCompleted = true;
-        stat.weakAreas = stat.weakAreas.map((item: any) => {
-          const isDone = completedLessonIds.has(item.lessonId) || item.completed;
-          if (!isDone) allCompleted = false;
-          return { ...item, completed: isDone };
-        });
-
-        // Auto unlock if all weak areas are completed!
-        if (allCompleted && stat.isLocked) {
-          stat.isLocked = false;
-          // Async update in DB
-          unlockPYQSubject(userId, sec).catch(console.error);
-        }
-      }
-    });
-
-    return NextResponse.json({
-      success: true,
-      attempts,
-      sectionStats,
-    });
-  } catch (error: any) {
+    const [attempts, states] = await Promise.all([
+      getPYQAttempts(session.userId, section, year),
+      getSectionLockStates(session.userId),
+    ]);
+    return NextResponse.json({ success: true, attempts, sectionStats: toSectionStats(states) });
+  } catch (error) {
     console.error("[PYQ Attempts GET Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch PYQ attempts" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch PYQ attempts" }, { status: 500 });
   }
 }
 
-// POST: Save a new attempt and enforce subject-level locking
 export async function POST(request: NextRequest) {
+  const session = getSession(request);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-    const userId = await resolveUserId(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const body = await request.json().catch(() => ({}));
+    const year = Number(body?.year);
+    const slot = typeof body?.slot === "string" ? body.slot : "";
+    const section = String(body?.section || "").toUpperCase() as PyqSection;
+    if (!year || !slot || !PYQ_SECTIONS.includes(section)) {
+      return NextResponse.json({ error: "Missing or invalid year, slot or section" }, { status: 400 });
     }
 
-    const body = await request.json();
-    const {
+    const questions = getPYQQuestions(year, slot, section);
+    if (questions.length === 0) return NextResponse.json({ error: "Unknown paper" }, { status: 400 });
+
+    const before = await getSectionLockStates(session.userId);
+    if (before[section].isLocked) {
+      return NextResponse.json(
+        { error: `${section} is locked. Complete the weak-area lessons to unlock it.`, sectionStats: toSectionStats(before) },
+        { status: 423 }
+      );
+    }
+
+    // Grade on the server from the answer key (answers are keyed by question position).
+    const answers: Record<string, unknown> = body?.answers && typeof body.answers === "object" ? body.answers : {};
+    const graded = gradeAttempt({
+      kind: "pyq",
+      section,
+      sourceRef: `CAT-${year}-${slot}-${section}`,
+      durationSeconds: Number(body?.timeTakenSeconds) || 0,
+      strikes: Number(body?.strikes) || 0,
+      responses: questions.map((q, i) => {
+        const v = answers[i];
+        return q.type === "TITA"
+          ? { questionId: q.id, titaAnswer: typeof v === "string" || typeof v === "number" ? String(v) : null }
+          : { questionId: q.id, selectedOption: typeof v === "number" ? v : null };
+      }),
+    });
+
+    const missed = questions.filter((_q, i) => !graded.responses[i].isCorrect);
+    const weakAreas = generateWeakAreaChecklist(missed);
+    const r = graded.responses;
+    const count = (type: "MCQ" | "TITA", correct: boolean) =>
+      r.filter((x) => x.questionType === type && x.isAttempted && x.isCorrect === correct).length;
+
+    const saved = await savePYQAttempt({
+      userId: session.userId,
       year,
       slot,
       section,
-      attemptNum,
-      score,
-      total,
-      percentage,
-      mcqCorrect,
-      mcqWrong,
-      titaCorrect,
-      titaWrong,
-      unattempted,
-      strikes,
-      timeTakenSeconds,
+      attemptNum: before[section].cycleAttempts + 1,
+      score: graded.finalScore,
+      total: graded.maxScore,
+      percentage: graded.percentage,
+      mcqCorrect: count("MCQ", true),
+      mcqWrong: count("MCQ", false),
+      titaCorrect: count("TITA", true),
+      titaWrong: count("TITA", false),
+      unattempted: r.filter((x) => !x.isAttempted).length,
+      strikes: graded.strikes,
+      timeTakenSeconds: graded.durationSeconds,
       answers,
-      analysis,
+      analysis: {}, // full analysis lives in quiz_attempts / quiz_responses
+      isLocked: false,
       weakAreas,
-    } = body;
-
-    if (!year || !slot || !section) {
-      return NextResponse.json({ error: "Missing required fields (year, slot, section)" }, { status: 400 });
-    }
-
-    const sec = section.toUpperCase();
-
-    // Query existing attempts for this subject across ALL slots and years
-    const existing = await query(
-      `SELECT count(*) as count FROM public.pyq_attempts WHERE user_id = $1 AND UPPER(section) = $2`,
-      [userId, sec]
-    );
-    const prevAttemptsCount = parseInt(existing.rows[0]?.count || "0", 10);
-    const newTotalAttempts = prevAttemptsCount + 1;
-
-    // Subject-level locking rule: 3 total attempts locks this subject across all slots
-    const shouldLock = newTotalAttempts >= 3;
-
-    const saved = await savePYQAttempt({
-      userId,
-      year,
-      slot,
-      section: sec,
-      attemptNum: newTotalAttempts,
-      score: score || 0,
-      total: total || 68,
-      percentage: percentage || 0,
-      mcqCorrect: mcqCorrect || 0,
-      mcqWrong: mcqWrong || 0,
-      titaCorrect: titaCorrect || 0,
-      titaWrong: titaWrong || 0,
-      unattempted: unattempted || 0,
-      strikes: strikes || 0,
-      timeTakenSeconds: timeTakenSeconds || 0,
-      answers: answers || {},
-      analysis: analysis || {},
-      isLocked: shouldLock,
-      weakAreas: weakAreas || [],
     });
 
+    const after = await getSectionLockStates(session.userId);
     return NextResponse.json({
       success: true,
       attempt: saved,
-      totalSubjectAttempts: newTotalAttempts,
-      isLocked: shouldLock,
+      score: graded.finalScore,
+      total: graded.maxScore,
+      percentage: graded.percentage,
+      isLocked: after[section].isLocked,
+      sectionStats: toSectionStats(after),
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[PYQ Attempts POST Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to save PYQ attempt" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save PYQ attempt" }, { status: 500 });
   }
 }
 
-// PATCH: Manual unlock or update checklist
+// PATCH: re-evaluate locks (e.g. after finishing checklist lessons). Clients cannot force-unlock.
 export async function PATCH(request: NextRequest) {
+  const session = getSession(request);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const userId = await resolveUserId(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { section, action } = await request.json();
-    if (!section) {
-      return NextResponse.json({ error: "Missing section parameter" }, { status: 400 });
-    }
-
-    const sec = section.toUpperCase();
-
-    if (action === "unlock") {
-      await unlockPYQSubject(userId, sec);
-      return NextResponse.json({ success: true, message: `Unlocked section ${sec}` });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
+    return NextResponse.json({ success: true, sectionStats: toSectionStats(await getSectionLockStates(session.userId)) });
+  } catch (error) {
     console.error("[PYQ Attempts PATCH Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to update PYQ" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update PYQ status" }, { status: 500 });
   }
 }

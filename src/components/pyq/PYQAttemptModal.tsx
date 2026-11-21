@@ -105,26 +105,12 @@ export default function PYQAttemptModal({
         weakAreas,
       };
 
-      // Save to Supabase API
+      // The server grades the answers, builds the weak-area checklist and decides locking.
       await fetch("/api/pyq/attempts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }).catch(console.error);
-
-      // Save to localStorage fallback
-      const localKey = `technocat_pyq_attempts_${section}`;
-      const savedHistory = JSON.parse(localStorage.getItem(localKey) || "[]");
-      savedHistory.unshift({
-        ...payload,
-        completedAt: new Date().toISOString(),
-      });
-      localStorage.setItem(localKey, JSON.stringify(savedHistory));
-
-      // Check locking in localStorage
-      if (subjectAttemptsCount + 1 >= 3) {
-        localStorage.setItem(`technocat_pyq_lock_${section}`, JSON.stringify({ isLocked: true, weakAreas }));
-      }
 
       onExamFinished?.();
     } catch (err) {
