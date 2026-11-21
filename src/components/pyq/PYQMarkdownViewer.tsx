@@ -53,6 +53,10 @@ export function preprocessMathAndText(raw: string): string {
   // 5. Wrap raw standalone \frac expressions not already inside math delimiters
   s = s.replace(/(?<!\\\(|\$|\\\[)\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}(?!\\\))/g, (m) => `\\(${m}\\)`);
 
+  // 6. Ensure diagram images are separated into their own blocks so they render as full diagrams
+  s = s.replace(/([^\n])\s*(!\[[^\n\]]*\]\s*\([^\n\)]+\))/g, "$1\n\n$2")
+       .replace(/(!\[[^\n\]]*\]\s*\([^\n\)]+\))\s*([^\n])/g, "$1\n\n$2");
+
   return s;
 }
 
@@ -127,13 +131,35 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
   const elements: React.ReactNode[] = [];
 
   const parseInline = (text: string): React.ReactNode => {
-    // Inline bold (**bold**) + rendered maths
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return <strong key={i}>{withMath(part.slice(2, -2), math.html, `b${i}`)}</strong>;
+    // 1. Split on markdown images (supporting inline formula images and diagrams)
+    const imgParts = text.split(/(!\[[^\n\]]*\]\s*\([^\n\)]+\))/g);
+    return imgParts.map((part, pIdx) => {
+      const inlineImgMatch = part.match(/^!\[(.*?)\]\s*\((.*?)\)$/);
+      if (inlineImgMatch) {
+        const alt = inlineImgMatch[1] || "Diagram";
+        const src = inlineImgMatch[2];
+        const isInlineFormula = src.includes("image0") || src.includes("figa_img") || src.includes("wiz");
+        return (
+          <img
+            key={`inline-img-${pIdx}`}
+            src={src}
+            alt={alt}
+            className={isInlineFormula ? styles.inlineFormulaImg : styles.inlineChartImage}
+            onClick={() => setActiveImage({ src, alt })}
+            title="Click to view full diagram"
+            loading="lazy"
+          />
+        );
       }
-      return <React.Fragment key={i}>{withMath(part, math.html, `p${i}`)}</React.Fragment>;
+
+      // 2. Inline bold (**bold**) + rendered maths
+      const parts = part.split(/(\*\*.*?\*\*)/g);
+      return parts.map((subpart, i) => {
+        if (subpart.startsWith("**") && subpart.endsWith("**")) {
+          return <strong key={`b-${pIdx}-${i}`}>{withMath(subpart.slice(2, -2), math.html, `b${pIdx}-${i}`)}</strong>;
+        }
+        return <React.Fragment key={`p-${pIdx}-${i}`}>{withMath(subpart, math.html, `p${pIdx}-${i}`)}</React.Fragment>;
+      });
     });
   };
 
@@ -142,7 +168,7 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
     if (!trimmed) return;
 
     // 1. Check for Image Block: ![alt](url)
-    const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+    const imgMatch = trimmed.match(/^!\[(.*?)\]\s*\((.*?)\)$/);
     if (imgMatch) {
       const alt = imgMatch[1] || "Diagram";
       const src = imgMatch[2];

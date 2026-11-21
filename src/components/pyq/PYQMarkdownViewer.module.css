@@ -180,3 +180,25 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Inline diagram and formula images */
+.inlineFormulaImg {
+  display: inline-block;
+  vertical-align: middle;
+  max-height: 38px;
+  height: auto;
+  margin: 0 4px;
+  cursor: zoom-in;
+  border-radius: 4px;
+}
+
+.inlineChartImage {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  margin: 14px auto;
+  border-radius: 8px;
+  cursor: zoom-in;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
