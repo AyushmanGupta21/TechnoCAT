@@ -124,3 +124,69 @@ export function getAnswerKey(questionId: string): AnswerKey | null {
 export function titaMatches(given: string, expected: string): boolean {
   return given.trim().toLowerCase() === expected.trim().toLowerCase();
 }
+
+export interface QuestionDetail {
+  id: string;
+  type: QuestionType;
+  text: string;
+  context: string | null; // passage / data set for PYQs
+  options: string[];
+  correctOption: number | null;
+  correctTita: string | null;
+  explanation: string | null;
+  concept: string | null;
+  recommendedLessonId: string | null;
+}
+
+let detailIndex: Map<string, QuestionDetail> | null = null;
+
+function buildDetailIndex(): Map<string, QuestionDetail> {
+  const map = new Map<string, QuestionDetail>();
+  const fromModule = (q: ModuleQuestion): QuestionDetail => {
+    const key = fromModuleQuestion(q);
+    return {
+      id: q.id, type: key.type, text: q.q, context: q.context ?? null, options: q.options || [],
+      correctOption: key.correctOption, correctTita: key.correctTita, explanation: q.explanation || null,
+      concept: q.concept || null, recommendedLessonId: q.recommendedLessonId || null,
+    };
+  };
+  for (const modules of Object.values(MODULE_QUIZZES)) for (const qs of Object.values(modules)) for (const q of qs) map.set(q.id, fromModule(q));
+  for (const q of GRAND_QUIZ_BANK) map.set(q.id, fromModule(q));
+  for (const year of PYQ_YEARS) {
+    for (const slot of year.slots) {
+      for (const section of year.sections) {
+        for (const q of getPYQQuestions(year.year, slot, section)) {
+          const key = getAnswerKey(q.id)!;
+          map.set(q.id, {
+            id: q.id, type: key.type, text: q.question, context: q.context || null, options: q.options || [],
+            correctOption: key.correctOption, correctTita: key.correctTita, explanation: q.explanation || null,
+            concept: key.concept, recommendedLessonId: key.recommendedLessonId,
+          });
+        }
+      }
+    }
+  }
+  return map;
+}
+
+/** Full question content (text, options, answer, explanation) or null if not reproducible. */
+export function getQuestionDetail(questionId: string): QuestionDetail | null {
+  if (!detailIndex) detailIndex = buildDetailIndex();
+  const known = detailIndex.get(questionId);
+  if (known) return known;
+  if (questionId.startsWith("lesson:")) {
+    const [, lessonId, idxRaw] = questionId.split(":");
+    for (const topic of TOPICS_DATA) {
+      const lessons = [...(topic.lessons || []), ...(topic.modules || []).flatMap((m) => m.lessons || [])];
+      const lesson = lessons.find((l) => l.id === lessonId);
+      if (!lesson) continue;
+      const q = getLessonKnowledge(lesson.code, lesson.title, lesson.coverage).quiz[Number(idxRaw)];
+      if (!q) return null;
+      return {
+        id: questionId, type: "MCQ", text: q.q, context: null, options: q.options, correctOption: q.answer,
+        correctTita: null, explanation: q.explanation || null, concept: lesson.title, recommendedLessonId: lesson.id,
+      };
+    }
+  }
+  return null; // e.g. parameterised "-dyn-" filler questions
+}
