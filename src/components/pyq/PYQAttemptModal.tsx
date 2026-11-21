@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import ModuleQuizModal from "@/components/ModuleQuizModal";
 import { ModuleQuestion, QuizAnalysis } from "@/data/moduleQuizData";
 import {
@@ -39,6 +40,36 @@ export default function PYQAttemptModal({
   // Saving an attempt refreshes subjectAttemptsCount in the parent; if that fed
   // straight into the exam it would look like a new attempt and auto-start it.
   const [examAttemptNumber, setExamAttemptNumber] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scrolling when attempt modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Close on Escape key if not in exam
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !inExam) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, inExam, onClose]);
 
   const startExam = () => {
     if (isSubjectLocked) return;
@@ -153,7 +184,9 @@ export default function PYQAttemptModal({
   }
 
   // Pre-Exam Briefing Screen
-  return (
+  if (!mounted || !isOpen) return null;
+
+  return createPortal(
     <div className={styles.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={styles.briefingBox}>
         {/* Header */}
@@ -277,6 +310,7 @@ export default function PYQAttemptModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

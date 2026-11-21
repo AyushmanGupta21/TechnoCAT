@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   PYQ_YEARS,
@@ -47,6 +48,38 @@ export default function PYQYearModal({
     slot: string;
     section: "VARC" | "DILR" | "QUANT";
   } | null>(null);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scrolling when year modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Close on Escape key if no sub-modal is open
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !studyModalTarget && !attemptModalTarget && !analyticsTarget) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, studyModalTarget, attemptModalTarget, analyticsTarget, onClose]);
+
 
   // Attempt statistics & Lockout state per section
   const [attemptsData, setAttemptsData] = useState<any[]>([]);
@@ -149,9 +182,9 @@ export default function PYQYearModal({
     );
   };
 
-  if (!isOpen) return null;
+  if (!mounted || !isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={(e) => {
@@ -561,6 +594,7 @@ export default function PYQYearModal({
           />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

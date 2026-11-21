@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   PYQQuestion,
@@ -34,7 +35,35 @@ export default function PYQStudyModal({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [filterType, setFilterType] = useState<"ALL" | "MCQ" | "TITA">("ALL");
   const [isBlurred, setIsBlurred] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scrolling when study modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   // Load questions
   const questions: PYQQuestion[] = useMemo(() => {
@@ -112,7 +141,7 @@ export default function PYQStudyModal({
     };
   }, [isOpen]);
 
-  if (!isOpen || questions.length === 0) return null;
+  if (!mounted || !isOpen || questions.length === 0) return null;
 
   const currentQ = questions[currentIdx] || questions[0];
   const isTITA = currentQ.type === "TITA";
@@ -134,7 +163,7 @@ export default function PYQStudyModal({
     router.push(`/topics/${recommendation.topicId}?lesson=${recommendation.lessonId}`);
   };
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onContextMenu={(e) => e.preventDefault()}
@@ -168,6 +197,17 @@ export default function PYQStudyModal({
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={onClose}
+              title="Back to Papers List"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              <span>Back</span>
+            </button>
             <div className={styles.studyBadge}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -393,6 +433,7 @@ export default function PYQStudyModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
