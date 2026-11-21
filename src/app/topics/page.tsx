@@ -6,6 +6,7 @@ import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./topics.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 const categories = [
   "All Topics",
@@ -73,7 +74,7 @@ export default function TopicsListPage() {
           <nav className={styles.topNav} aria-label="Topics Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             {/* Nav Menu */}

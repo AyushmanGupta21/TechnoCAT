@@ -113,16 +113,10 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  width: 75px;
+  width: auto;
   height: 75px;
 }
 
-.logoImage {
-  height: 75px; /* Significantly larger to make the text legible */
-  width: 75px;
-  object-fit: contain;
-  display: block;
-}
 
 
 /* Nav links list */

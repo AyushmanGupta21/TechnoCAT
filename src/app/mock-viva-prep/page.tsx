@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import styles from "./mock-viva-prep.module.css";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
+import BrandLogo from "@/components/BrandLogo";
 
 interface VivaQuestion {
   tag: string;
@@ -1553,8 +1554,7 @@ export default function MockVivaPrepPage() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Speak & Assess Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

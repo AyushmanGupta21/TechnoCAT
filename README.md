@@ -108,7 +108,7 @@
 ```text
 TechnoCat/
 ├── public/                          # Static assets (logos, illustrations, mockups)
-│   ├── logo.jpg                     # Brand logo
+│   ├── brand/                       # Official TechnoCAT logo + emblem (see src/components/BrandLogo.tsx)
 │   └── ...
 ├── src/
 │   ├── app/                         # Next.js App Router (Pages & API Handlers)

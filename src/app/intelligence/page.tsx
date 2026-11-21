@@ -7,6 +7,7 @@ import Image from "next/image";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { useAuth } from "@/context/AuthContext";
 import AIMentorDrawer from "@/components/AIMentorDrawer";
+import BrandLogo from "@/components/BrandLogo";
 
 interface ChallengeData {
   startDate: string;
@@ -244,7 +245,7 @@ export default function IntelligenceHubPage() {
           <nav className={styles.topNav} aria-label="Dashboard Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             {/* Nav Menu */}

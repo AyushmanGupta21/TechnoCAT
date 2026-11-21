@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./AuthModal.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function AuthModal() {
   const {
@@ -126,7 +127,7 @@ export default function AuthModal() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div className={styles.brandLogo}>
-            <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+            <BrandLogo height={64} />
           </div>
           <p className={styles.modalSubtitle}>
             Your CAT preparation journey starts here.

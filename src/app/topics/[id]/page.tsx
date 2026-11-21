@@ -29,6 +29,7 @@ import {
   clearModuleQuizHistory,
 } from "@/services/quizCacheService";
 import styles from "./topicDetail.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 function parseLessonDuration(durationStr?: string): number {
   if (!durationStr) return 0;
@@ -1673,7 +1674,7 @@ export default function TopicDetailPage() {
           <nav className={styles.topNav} aria-label="Topic Detail Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

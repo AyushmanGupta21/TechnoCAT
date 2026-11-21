@@ -10,6 +10,7 @@ import { pushNotification } from "@/services/notificationService";
 import PYQSection from "@/components/pyq/PYQSection";
 import PYQYearModal from "@/components/pyq/PYQYearModal";
 import styles from "./browse.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function BrowsePage() {
   const { user } = useAuth();
@@ -243,7 +244,7 @@ export default function BrowsePage() {
           <nav className={styles.topNav}>
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             {/* Nav Menu */}

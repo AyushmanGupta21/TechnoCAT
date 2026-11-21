@@ -1,0 +1,7 @@
+.logo {
+  display: block;
+  max-width: none;
+  object-fit: contain;
+  flex-shrink: 0;
+  user-select: none;
+}

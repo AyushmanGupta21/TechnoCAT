@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./settings.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
@@ -207,7 +208,7 @@ function SettingsContent() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

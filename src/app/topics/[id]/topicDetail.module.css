@@ -62,7 +62,7 @@
   user-select: none;
   line-height: 1;
   gap: 0;
-  width: 75px;
+  width: auto;
   height: 75px;
   flex-shrink: 0;
   justify-self: start;
@@ -2819,9 +2819,3 @@
 }
 
 
-.logoImage {
-  height: 75px;
-  width: 75px;
-  object-fit: contain;
-  display: block;
-}

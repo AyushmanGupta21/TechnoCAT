@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName } from "@/lib/nameUtils";
 import { notifyTaskCompleted, pushNotification } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 interface WeeklyStat {
   day: string;
@@ -552,7 +553,7 @@ export default function DashboardPage() {
           <nav className={styles.topNav} aria-label="Dashboard Navigation">
             {/* Brand Logo */}
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             {/* Nav Menu */}

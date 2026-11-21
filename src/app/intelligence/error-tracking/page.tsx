@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./error-tracking.module.css";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
+import BrandLogo from "@/components/BrandLogo";
 import {
   PieChart,
   Pie,
@@ -150,7 +151,7 @@ export default function ErrorTrackingPage() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Error Tracking Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import styles from "./learning-community.module.css";
+import BrandLogo from "@/components/BrandLogo";
 import {
   CommunityCategory,
   CommunityPayload,
@@ -1645,7 +1646,7 @@ export default function LearningCommunityPage() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Learning Community Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

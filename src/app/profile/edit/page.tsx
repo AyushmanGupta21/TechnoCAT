@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PROFILE_ICON } from "@/lib/nameUtils";
 import styles from "./edit-profile.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
@@ -208,7 +209,7 @@ export default function EditProfilePage() {
         <div className={styles.headerInner}>
           <nav className={styles.topNav} aria-label="Main Navigation">
             <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={70} />
             </Link>
 
             <div className={styles.navLinks}>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import CardInfoModal, { CardInfoData } from "./CardInfoModal";
 import styles from "./Navbar.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 interface SubLink {
   label: string;
@@ -308,7 +309,7 @@ export default function Navbar() {
             <div className={styles.navLeft}>
               {/* Logo */}
               <Link href="/" className={styles.logoLink}>
-                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+                <BrandLogo height={70} />
               </Link>
 
 
@@ -481,7 +482,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className={styles.mobileLogoLink}>
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={50} />
             </Link>
           </div>
 
@@ -558,7 +559,7 @@ export default function Navbar() {
         <div className={styles.drawerHeader}>
           <div className={styles.drawerBrand}>
             <Link href="/" onClick={closeDrawer} className={styles.mobileLogoLink}>
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={50} />
             </Link>
 
           </div>

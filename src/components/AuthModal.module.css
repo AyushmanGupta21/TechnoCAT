@@ -89,11 +89,6 @@
   justify-content: center;
 }
 
-.logoImage {
-  height: 52px;
-  width: auto;
-  display: block;
-}
 
 .modalSubtitle {
   color: var(--text-muted);

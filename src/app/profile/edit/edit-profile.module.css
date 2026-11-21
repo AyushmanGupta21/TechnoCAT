@@ -64,7 +64,7 @@
   user-select: none;
   line-height: 1;
   gap: 0;
-  width: 75px;
+  width: auto;
   height: 75px;
   flex-shrink: 0;
   transition: opacity 0.2s;
@@ -75,12 +75,6 @@
   opacity: 0.9;
 }
 
-.logoImage {
-  height: 75px;
-  width: 75px;
-  object-fit: contain;
-  display: block;
-}
 
 .navLinks {
   display: none;

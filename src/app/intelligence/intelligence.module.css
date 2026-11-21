@@ -57,18 +57,12 @@
   display: inline-flex;
   align-items: center;
   text-decoration: none;
-  width: 75px;
+  width: auto;
   height: 75px;
   flex-shrink: 0;
   justify-self: start;
 }
 
-.logoImage {
-  height: 75px;
-  width: 75px;
-  object-fit: contain;
-  display: block;
-}
 
 .navLinks {
   display: none;

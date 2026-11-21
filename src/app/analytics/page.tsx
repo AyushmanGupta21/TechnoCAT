@@ -32,6 +32,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import styles from "./analytics.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 function renderBadgeIcon(iconName: string) {
   switch (iconName) {
@@ -335,7 +336,7 @@ function AnalyticsPageContent() {
           <nav className={styles.topNav} aria-label="Analytics Navigation">
             <div className={styles.topNavLeft}>
               <Link href="/dashboard" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+                <BrandLogo height={70} />
               </Link>
               <div className={styles.backNavGroup}>
                 <Link href="/dashboard" className={styles.backDashboardBtn}>

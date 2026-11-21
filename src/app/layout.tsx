@@ -21,12 +21,7 @@ export const metadata: Metadata = {
     description:
       "Boost your CAT preparation with TechnoCAT's AI Based mocks platform.",
   },
-  icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
-    apple: "/apple-icon",
-  },
+  // Icons come from the app/icon.png and app/apple-icon.png file conventions.
 };
 
 import { AuthProvider } from "@/context/AuthContext";

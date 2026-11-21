@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./Footer.module.css";
+import BrandLogo from "@/components/BrandLogo";
 
 interface FooterLinkItem {
   label: string;
@@ -196,7 +197,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className={styles.brandCol}>
             <Link href="/" className={styles.logoLink}>
-              <img src="/logo.jpg" alt="TechnoCAT Logo" className={styles.logoImage} />
+              <BrandLogo height={72} />
             </Link>
             <p className={styles.brandTagline}>Practice | Analyze | Improve</p>
             <p className={styles.brandDesc}>
