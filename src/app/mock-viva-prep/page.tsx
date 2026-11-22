@@ -6,6 +6,7 @@ import styles from "./mock-viva-prep.module.css";
 import { useSpeechTranscription } from "@/hooks/useSpeechTranscription";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import BrandLogo from "@/components/BrandLogo";
+import LiveViva, { type LiveVivaTypeMeta } from "@/components/viva/LiveViva";
 
 interface VivaQuestion {
   tag: string;
@@ -1214,6 +1215,11 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
   },
 ];
 
+// Icons + colours reused by the live viva type picker.
+const LIVE_VIVA_TYPE_META: Record<string, LiveVivaTypeMeta> = Object.fromEntries(
+  CATEGORIES.map((c) => [c.id, { icon: c.icon, color: c.color }])
+);
+
 const CHECKLIST = {
   before: {
     title: "Before the Interview",
@@ -1675,12 +1681,12 @@ export default function MockVivaPrepPage() {
               <button
                 type="button"
                 className={styles.btnPrimary}
-                onClick={() => startPractice("personal-hr")}
+                onClick={() => document.getElementById("live-viva")?.scrollIntoView({ behavior: "smooth" })}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <polygon points="6 3 20 12 6 21 6 3" />
                 </svg>
-                <span>Start a Mock Session &rarr;</span>
+                <span>Start a Live Viva &rarr;</span>
               </button>
               <a
                 href="#checklist"
@@ -1856,16 +1862,30 @@ export default function MockVivaPrepPage() {
 
       {/* ===== CONTENT ===== */}
       <div className={styles.contentWrapper}>
-        {/* CATEGORIES */}
+        {/* LIVE VIVA (primary mode) */}
+        <section id="live-viva" className={styles.roundSection} aria-labelledby="live-viva-title">
+          <div className={styles.sectionHead}>
+            <div className={styles.roundTitleRow}>
+              <span className={styles.titleAccentBar} aria-hidden="true" />
+              <h2 id="live-viva-title" className={styles.sectionTitle}>Live viva with camera and voice</h2>
+            </div>
+            <p className={styles.sectionSubtitle}>
+              Face an AI interview panel out loud: it asks adaptive follow-up questions by voice, listens to your answers, tracks eye contact and framing on your camera, and gives you a full report at the end.
+            </p>
+          </div>
+          <LiveViva typeMeta={LIVE_VIVA_TYPE_META} />
+        </section>
+
+        {/* CATEGORIES (question-by-question practice) */}
         <section id="interview-rounds" className={styles.roundSection}>
           <div className={styles.roundSectionHead}>
             <div className={styles.roundHeadLeft}>
               <div className={styles.roundTitleRow}>
                 <span className={styles.titleAccentBar} aria-hidden="true" />
-                <h2 className={styles.sectionTitle}>Choose an Interview Round</h2>
+                <h2 className={styles.sectionTitle}>Or Practise Question by Question</h2>
               </div>
               <p className={styles.sectionSubtitle}>
-                Pick a category to start a timed practice session with sample questions and expert pointers.
+                Prefer to go one question at a time? Pick a category for a timed practice session with sample questions, recordings and expert pointers.
               </p>
             </div>
             <button

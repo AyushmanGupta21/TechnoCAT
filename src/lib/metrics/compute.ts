@@ -145,7 +145,10 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
   // ── Tests ───────────────────────────────────────────────────────────────────
   const tests: TestRecord[] = attemptRes.rows.map((a) => {
     const section = (a.section as SectionKey | null) ?? sectionOf(a.topic_id);
-    const isFullPyqSection = a.kind === "pyq" && section && a.max_score === SECTION_MAX_MARKS[section];
+    // A full PYQ section (any year: e.g. DILR had 20 questions in 2021–23, 22 in 2024). Scores are
+    // scaled to the current pattern's maximum before estimating, so every year is comparable.
+    const isFullPyqSection = a.kind === "pyq" && section !== null && a.question_count >= 20 && a.max_score > 0;
+    const scaledScore = isFullPyqSection ? (a.final_score * SECTION_MAX_MARKS[section!]) / a.max_score : 0;
     return {
       attemptId: a.id,
       kind: a.kind,
@@ -163,7 +166,7 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
       passed: a.passed,
       durationSeconds: a.duration_seconds,
       secondsPerQuestion: a.attempted_count > 0 && a.duration_seconds > 0 ? Math.round(a.duration_seconds / a.attempted_count) : null,
-      estimatedPercentile: isFullPyqSection ? estimatePercentile(section!, a.final_score) : null,
+      estimatedPercentile: isFullPyqSection ? estimatePercentile(section!, scaledScore) : null,
       submittedAt: new Date(a.submitted_at).toISOString(),
     };
   });
@@ -231,14 +234,16 @@ export async function computeStudentMetrics(userId: string): Promise<StudentMetr
   const sections = {} as Record<SectionKey, SectionMetrics>;
   for (const s of ["VARC", "DILR", "QA"] as SectionKey[]) {
     const sp = pyq.filter((t) => t.section === s && t.estimatedPercentile !== null);
+    // Section scores on the current pattern's scale (e.g. a 60-mark 2023 DILR paper → /66).
+    const scaled = (t: TestRecord) => Math.round(((t.score * SECTION_MAX_MARKS[s]) / t.maxScore) * 10) / 10;
     sections[s] = {
       attempted: sectionAnswers[s].attempted,
       correct: sectionAnswers[s].correct,
       accuracy: pct(sectionAnswers[s].correct, sectionAnswers[s].attempted),
       pyqAttempts: pyq.filter((t) => t.section === s).length,
-      bestScore: sp.length ? Math.max(...sp.map((t) => t.score)) : null,
+      bestScore: sp.length ? Math.max(...sp.map(scaled)) : null,
       maxScore: SECTION_MAX_MARKS[s],
-      latestScore: sp[0]?.score ?? null,
+      latestScore: sp[0] ? scaled(sp[0]) : null,
       estimatedPercentile: sp[0]?.estimatedPercentile ?? null,
     };
   }

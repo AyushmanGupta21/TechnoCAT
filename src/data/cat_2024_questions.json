@@ -3514,15 +3514,10 @@
     "slot": "Slot 3",
     "section": "DILR",
     "question_number": 11,
-    "type": "MCQ",
+    "type": "TITA",
     "context": "The air-conditioner (AC) in a large room can be operated either in REGULAR mode or in POWER mode to reduce the temperature.\n\nIf the AC operates in REGULAR mode, then it brings down the temperature inside the room (called inside temperature) at a constant rate to the set temperature in 1 hour. If it operates in POWER mode, then this is achieved in 30 minutes.\n\nIf the AC is switched off, then the inside temperature rises at a constant rate so as to reach the temperature outside at the time of switching off in 1 hour.\n\nThe temperature outside has been falling at a constant rate from 7 pm onward until 3 am on a particular night. The following graph shows the inside temperature between 11 pm (23:00) and 2 am (2:00) that night.\n\n![Diagram](/pyq/2024/images/32842_332818_0_26395165_dilrq3.jpg)\n\nThe following facts are known about the AC operation that night. • The AC was turned on for the first time that night at 11 pm (23:00). • The AC setting was changed (including turning it on/off, and/or setting different temperatures) only at the beginning of the hour or at 30 minutes after the hour. • The AC was used in POWER mode for longer duration than in REGULAR mode during this 3-hour period.",
     "question": "What was the temperature outside, in degree Celsius, at 9 pm?",
-    "options": [
-      "Both I and II",
-      "Only I",
-      "Only II",
-      "Neither I nor II"
-    ],
+    "options": [],
     "correct_answer": "42",
     "explanation": "Following data was captured from the question:\n\n| TIME | TEMPERATURE | AC - ON/OFF | MODE | OUTSIDE TEMP |\n\n| --- | --- | --- | --- | --- |\n\n| 23:00 | 38 | ON |  |  |\n\n| 23:30 | 32 | ON |  |  |\n\n| 00:00 | 26 | OFF |  |  |\n\n| 00:30 | 31 | ON |  |  |\n\n| 01:00 | 26 | OFF |  |  |\n\n| 01:30 | 30 | ON |  |  |\n\n| 02:00 | 28 |  |  |  |\n\nSince AC is turned OFF at 12:00, it must reach the outside temperature at 12:00 in 1 hour.\n\nIt rises from 26 degrees to 31 degrees at 12:30 AM (an increase of 5 degrees in 30 minutes).\n\nIt clearly states that the outside temperature will be 31 + 5 = 36 degree Celsius at 12:00 AM.\n\nSimilarly, AC is turned OFF at 1:00 AM, it must reach the outside temperature at 1:00 AM in 1 hour.\n\nIt rises from 26 degrees to 30 degrees at 1:30 AM (an increase of 4 degrees in 30 minutes).\n\nIt clearly states that the outside temperature will be 30 + 4 = 34 degree Celsius at 1:00 AM.\n\nAlso, temperature outside has been falling at a constant rate from 7 PM onward until 3 AM on a particular night.\n\n| TIME | TEMPERATURE | AC - ON/OFF | MODE | OUTSIDE TEMP |\n\n| --- | --- | --- | --- | --- |\n\n| 23:00 | 38 | ON |  | 38 |\n\n| 23:30 | 32 | ON |  | 37 |\n\n| 00:00 | 26 | OFF | NA | 36 |\n\n| 00:30 | 31 | ON |  | 35 |\n\n| 01:00 | 26 | OFF | NA | 34 |\n\n| 01:30 | 30 | ON |  | 33 |\n\n| 02:00 | 28 |  |  | 32 |\n\nThe question is \"What was the temperature outside, in degree Celsius, at 9 pm?\" Solution: From the table we can infer that the outside temperature drops 1 degree Celsius for every 30 minutes. Temperature at 23:00 is 38 degrees. Hence at 9 PM it will be 38+1+1+1+1= 42 degrees Celsius. Hence, the answer is '42'",
     "video_url": "https://www.youtube.com/embed/s6pPneDkWmw?si=_BDIGeNHI6YLdkRq&amp;start=1880",
