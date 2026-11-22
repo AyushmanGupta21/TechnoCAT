@@ -837,6 +837,51 @@
   border-radius: 999px;
 }
 
+.noticeHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noticeUnreadHeaderBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1D4ED8;
+  background: #DBEAFE;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.markAllReadBtn {
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, scale 150ms ease-out;
+}
+
+.markAllReadBtn:hover {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #1D4ED8;
+}
+
+.markAllReadBtn:active {
+  scale: 0.97;
+}
+
+.markAllReadBtn:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
 .noticeList {
   display: flex;
   flex-direction: column;
@@ -860,6 +905,26 @@
   scale: 0.99;
 }
 
+.noticeCardButton {
+  all: unset;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: scale 150ms ease-out;
+}
+
+.noticeCardButton:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.noticeCardButton:active {
+  scale: 0.99;
+}
+
 .noticeItem {
   display: flex;
   align-items: flex-start;
@@ -873,15 +938,45 @@
   transition: background-color 180ms ease-out, border-color 180ms ease-out, box-shadow 180ms ease-out, transform 180ms ease-out;
 }
 
+.noticeItemUnread {
+  background: linear-gradient(135deg, #F8FAFF 0%, #EFF6FF 100%);
+  border-color: #BFDBFE;
+}
+
+.noticeNewBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  flex-shrink: 0;
+}
+
+.noticeNewDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
 .noticeCardLink .noticeItem {
   cursor: pointer;
 }
 
 .noticeCardLink:hover .noticeItem,
-.noticeCardLink:focus-visible .noticeItem {
+.noticeCardLink:focus-visible .noticeItem,
+.noticeCardButton:hover .noticeItem,
+.noticeCardButton:focus-visible .noticeItem {
   background: #FFFFFF;
-  border-color: #BFDBFE;
-  box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.12);
+  border-color: #93C5FD;
+  box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.14);
   transform: translateY(-1px);
 }
 
@@ -972,13 +1067,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   .noticeCardLink,
+  .noticeCardButton,
+  .markAllReadBtn,
   .noticeItem,
   .noticeChevron {
     transition: none;
   }
   .noticeCardLink:hover .noticeItem,
   .noticeCardLink:focus-visible .noticeItem,
+  .noticeCardButton:hover .noticeItem,
+  .noticeCardButton:focus-visible .noticeItem,
   .noticeCardLink:active,
+  .noticeCardButton:active,
+  .markAllReadBtn:active,
   .noticeCardLink:hover .noticeChevron,
   .noticeCardLink:focus-visible .noticeChevron {
     transform: none;

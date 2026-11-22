@@ -175,6 +175,16 @@ function toAgendaSession(c: LiveClass): AgendaSession {
   };
 }
 
+function istNoticeDateLabel(iso: string): string {
+  const day = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  const target = day(new Date(iso));
+  const today = new Date();
+  const yesterday = new Date(today.getTime() - 86400000);
+  if (target === day(today)) return "Posted Today";
+  if (target === day(yesterday)) return "Posted Yesterday";
+  return `Posted ${new Date(iso).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}`;
+}
+
 function toPrepNotice(n: Notice): PrepNotice {
   const info = SECTION_INFO[n.section ?? "GENERAL"] ?? SECTION_INFO.GENERAL;
   return {
@@ -184,7 +194,7 @@ function toPrepNotice(n: Notice): PrepNotice {
     badgeBg: info.softBg,
     badgeColor: info.color,
     desc: n.body || "",
-    dateNotice: `Posted ${new Date(n.publishedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}`,
+    dateNotice: istNoticeDateLabel(n.publishedAt),
     actionUrl: n.linkUrl,
   };
 }
@@ -235,6 +245,59 @@ export default function DashboardPage() {
   }, []);
 
   const [announcements, setAnnouncements] = useState<Announcements | null>(null);
+  const [visitedNoticeIds, setVisitedNoticeIds] = useState<string[]>([]);
+  const [noticesHydrated, setNoticesHydrated] = useState(false);
+
+  const visitedNoticesStorageKey = useMemo(() => {
+    const scope = user?.id || (isDemo ? "demo" : "anon");
+    return `technocat_visited_notices_${scope}`;
+  }, [user?.id, isDemo]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(visitedNoticesStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setVisitedNoticeIds(Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : []);
+    } catch {
+      setVisitedNoticeIds([]);
+    } finally {
+      setNoticesHydrated(true);
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === visitedNoticesStorageKey) {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : [];
+          setVisitedNoticeIds(Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : []);
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [visitedNoticesStorageKey]);
+
+  const markNoticeVisited = (noticeId: string) => {
+    setVisitedNoticeIds((prev) => {
+      if (prev.includes(noticeId)) return prev;
+      const next = [noticeId, ...prev].slice(0, 100);
+      try {
+        localStorage.setItem(visitedNoticesStorageKey, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const markAllNoticesVisited = (ids: string[]) => {
+    setVisitedNoticeIds((prev) => {
+      const merged = Array.from(new Set([...ids, ...prev])).slice(0, 100);
+      try {
+        localStorage.setItem(visitedNoticesStorageKey, JSON.stringify(merged));
+      } catch {}
+      return merged;
+    });
+  };
+
   useEffect(() => {
     if (!user) return;
     fetch("/api/announcements")
@@ -244,6 +307,11 @@ export default function DashboardPage() {
   }, [user]);
   const upcomingAgenda: AgendaSession[] = useMemo(() => (announcements?.liveClasses ?? []).map(toAgendaSession), [announcements]);
   const prepNotices: PrepNotice[] = useMemo(() => (announcements?.notices ?? []).map(toPrepNotice), [announcements]);
+  const visitedNoticeSet = useMemo(() => new Set(visitedNoticeIds), [visitedNoticeIds]);
+  const unreadNoticeCount = useMemo(
+    () => (noticesHydrated ? prepNotices.filter((n) => !visitedNoticeSet.has(n.id)).length : 0),
+    [noticesHydrated, prepNotices, visitedNoticeSet]
+  );
 
   // Calendar indicator dots — derived 100% from real DB tasks
   const taskCategoryMap = useMemo(() => {
@@ -958,24 +1026,36 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 4. CAT Prep Notices (Full Column Width) - Refined Notice Board */}
+            {/* 4. CAT Prep Notices (Full Column Width) - Dynamic Daily Notice Board */}
             <div className={styles.cardBox}>
               <div className={styles.noticeBoardHeader}>
                 <div className={styles.noticeBoardTitleGroup}>
                   <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
                   <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#B45309", padding: "3px 9px", borderRadius: "999px" }}>
-                    Official Updates
+                    Daily Updates
                   </span>
-                  {announcements?.isSample && (
-                    <span style={{ fontSize: "11px", fontWeight: "600", background: "#F1F5F9", color: "#475569", padding: "3px 9px", borderRadius: "999px" }}>
-                      Sample data
+                  {unreadNoticeCount > 0 && (
+                    <span className={styles.noticeUnreadHeaderBadge}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#2563EB" }} />
+                      {unreadNoticeCount} New
                     </span>
                   )}
                 </div>
                 {prepNotices.length > 0 && (
-                  <span className={styles.noticeCountPill}>
-                    {prepNotices.length} {prepNotices.length === 1 ? "Update" : "Updates"}
-                  </span>
+                  <div className={styles.noticeHeaderActions}>
+                    {unreadNoticeCount > 0 && (
+                      <button
+                        type="button"
+                        className={styles.markAllReadBtn}
+                        onClick={() => markAllNoticesVisited(prepNotices.map((n) => n.id))}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                    <span className={styles.noticeCountPill}>
+                      {prepNotices.length} {prepNotices.length === 1 ? "Update" : "Updates"}
+                    </span>
+                  </div>
                 )}
               </div>
               <div className={styles.noticeList}>
@@ -985,9 +1065,10 @@ export default function DashboardPage() {
                   </p>
                 )}
                 {prepNotices.map((notice) => {
+                  const isUnvisited = noticesHydrated && !visitedNoticeSet.has(notice.id);
                   const cardContent = (
                     <article
-                      className={styles.noticeItem}
+                      className={`${styles.noticeItem} ${isUnvisited ? styles.noticeItemUnread : ""}`}
                       style={{ borderLeftColor: notice.badgeColor }}
                     >
                       <div
@@ -1002,6 +1083,12 @@ export default function DashboardPage() {
                       </div>
                       <div className={styles.noticeContent}>
                         <div className={styles.noticeMetaRow}>
+                          {isUnvisited && (
+                            <span className={styles.noticeNewBanner}>
+                              <span className={styles.noticeNewDot} aria-hidden="true" />
+                              NEW
+                            </span>
+                          )}
                           <span
                             className={styles.noticeBadge}
                             style={{ background: notice.badgeBg, color: notice.badgeColor }}
@@ -1036,9 +1123,19 @@ export default function DashboardPage() {
                       key={notice.id}
                       href={notice.actionUrl}
                       className={styles.noticeCardLink}
+                      onClick={() => markNoticeVisited(notice.id)}
                     >
                       {cardContent}
                     </Link>
+                  ) : isUnvisited ? (
+                    <button
+                      key={notice.id}
+                      type="button"
+                      className={styles.noticeCardButton}
+                      onClick={() => markNoticeVisited(notice.id)}
+                    >
+                      {cardContent}
+                    </button>
                   ) : (
                     <div key={notice.id}>{cardContent}</div>
                   );
