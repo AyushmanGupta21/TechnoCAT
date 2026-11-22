@@ -5,6 +5,7 @@ import Link from "next/link";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
+import { DEMO_ENROLLED_TOPIC_IDS } from "@/lib/demo";
 import styles from "./topics.module.css";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -48,10 +49,13 @@ export default function TopicsListPage() {
     }
   }, [isDemo, user?.id]);
 
-  // For real users, only topics present in userProgressMap are enrolled courses!
+  // For real users, only topics present in userProgressMap are enrolled courses.
+  // For the demo user, restrict to the demo-enrolled topics so unenrolled catalog items stay in Browse only.
   const enrolledTopics = useMemo(() => {
     if (isDemo) {
-      return TOPICS_DATA;
+      return TOPICS_DATA.filter((topic: any) =>
+        (DEMO_ENROLLED_TOPIC_IDS as readonly string[]).includes(topic.id)
+      );
     }
     return TOPICS_DATA.filter((topic: any) => Boolean(userProgressMap[topic.id]));
   }, [isDemo, userProgressMap]);

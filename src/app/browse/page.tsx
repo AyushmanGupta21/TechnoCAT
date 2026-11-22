@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
+import { DEMO_ENROLLED_TOPIC_IDS } from "@/lib/demo";
 import { pushNotification } from "@/services/notificationService";
 import PYQSection from "@/components/pyq/PYQSection";
 import PYQYearModal from "@/components/pyq/PYQYearModal";
@@ -17,7 +18,7 @@ export default function BrowsePage() {
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
   const [enrolledTopics, setEnrolledTopics] = useState<string[]>(() => {
-    return isDemo ? ["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"] : [];
+    return isDemo ? [...DEMO_ENROLLED_TOPIC_IDS] : [];
   });
 
   const [enrollingTopicId, setEnrollingTopicId] = useState<string | null>(null);
@@ -54,7 +55,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     if (isDemo) {
-      setEnrolledTopics(["qa-quantitative-ability", "dilr-data-interpretation", "varc-verbal-ability"]);
+      setEnrolledTopics([...DEMO_ENROLLED_TOPIC_IDS]);
     } else {
       fetch("/api/topics/progress")
         .then((res) => (res.ok ? res.json() : null))

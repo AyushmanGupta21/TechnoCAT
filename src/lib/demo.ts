@@ -6,6 +6,12 @@
 
 export const DEMO_EMAIL = "student@technocat.edu";
 
+export const DEMO_ENROLLED_TOPIC_IDS = [
+  "qa-quantitative-ability",
+  "dilr-data-interpretation",
+  "varc-verbal-ability",
+] as const;
+
 export function isDemoEmail(email: string | null | undefined): boolean {
   return typeof email === "string" && email.trim().toLowerCase() === DEMO_EMAIL;
 }
