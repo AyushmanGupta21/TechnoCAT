@@ -12,6 +12,14 @@
   margin-bottom: 20px;
 }
 
+.headerBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
 .pillBadge {
   display: inline-flex;
   align-items: center;
@@ -23,7 +31,19 @@
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 700;
-  margin-bottom: 8px;
+}
+
+.headerNewPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .sectionTitle {
@@ -63,6 +83,11 @@
   transform: translateY(-4px);
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.12);
   border-color: #bae6fd;
+}
+
+.pyqCardNew {
+  border-color: #93c5fd;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.1);
 }
 
 .pyqCardDisabled {
@@ -110,7 +135,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   z-index: 2;
+}
+
+.bannerTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.newBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+  flex-shrink: 0;
+}
+
+.newDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
 }
 
 .statusPill {

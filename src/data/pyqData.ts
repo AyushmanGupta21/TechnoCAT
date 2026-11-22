@@ -42,6 +42,7 @@ export interface PYQYearInfo {
   year: number;
   label: string;
   available: boolean;
+  isNew?: boolean;
   tagline: string;
   badge: string;
   slots: string[];
@@ -98,6 +99,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2023,
     label: "CAT 2023",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 3 Slots • 198 Questions",
     badge: "Official 2023 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
@@ -108,6 +110,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2022,
     label: "CAT 2022",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 3 Slots • 198 Questions",
     badge: "Official 2022 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
@@ -118,6 +121,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2021,
     label: "CAT 2021",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 3 Slots • 198 Questions",
     badge: "Official 2021 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
@@ -128,6 +132,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2020,
     label: "CAT 2020",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 3 Slots • 228 Questions",
     badge: "Official 2020 Paper",
     slots: ["Slot 1", "Slot 2", "Slot 3"],
@@ -138,6 +143,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2019,
     label: "CAT 2019",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 2 Slots • 200 Questions",
     badge: "Official 2019 Paper",
     slots: ["Slot 1", "Slot 2"],
@@ -148,6 +154,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2018,
     label: "CAT 2018",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 2 Slots • 200 Questions",
     badge: "Official 2018 Paper",
     slots: ["Slot 1", "Slot 2"],
@@ -158,6 +165,7 @@ export const PYQ_YEARS: PYQYearInfo[] = [
     year: 2017,
     label: "CAT 2017",
     available: true,
+    isNew: true,
     tagline: "Official CAT Paper • 2 Slots • 200 Questions",
     badge: "Official 2017 Paper",
     slots: ["Slot 1", "Slot 2"],
