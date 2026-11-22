@@ -135,11 +135,11 @@ interface PrepNotice {
 }
 
 // Live classes and notices are published by staff (scripts/announcements.mjs → GET /api/announcements).
-const SECTION_INFO: Record<string, { label: string; color: string; topicUrl: string }> = {
-  QA: { label: "Quantitative Aptitude", color: "#ED1C24", topicUrl: "/topics/qa-quantitative-ability" },
-  DILR: { label: "Data Interpretation & Logical Reasoning", color: "#0D9488", topicUrl: "/topics/dilr-data-interpretation" },
-  VARC: { label: "Verbal Ability & Reading Comprehension", color: "#7C3AED", topicUrl: "/topics/varc-verbal-ability" },
-  GENERAL: { label: "General", color: "#2563EB", topicUrl: "/topics" },
+const SECTION_INFO: Record<string, { label: string; color: string; softBg: string; topicUrl: string }> = {
+  QA: { label: "Quantitative Aptitude", color: "#DC2626", softBg: "#FEF2F2", topicUrl: "/topics/qa-quantitative-ability" },
+  DILR: { label: "Data Interpretation & Logical Reasoning", color: "#0D9488", softBg: "#F0FDFA", topicUrl: "/topics/dilr-data-interpretation" },
+  VARC: { label: "Verbal Ability & Reading Comprehension", color: "#7C3AED", softBg: "#F5F3FF", topicUrl: "/topics/varc-verbal-ability" },
+  GENERAL: { label: "General", color: "#2563EB", softBg: "#EFF6FF", topicUrl: "/topics" },
 };
 
 const istTime = (iso: string) =>
@@ -181,7 +181,7 @@ function toPrepNotice(n: Notice): PrepNotice {
     id: n.id,
     title: n.title,
     badge: n.section && n.section !== "GENERAL" ? n.section : "Notice",
-    badgeBg: "#EFF6FF",
+    badgeBg: info.softBg,
     badgeColor: info.color,
     desc: n.body || "",
     dateNotice: `Posted ${new Date(n.publishedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}`,
@@ -958,20 +958,25 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 4. CAT Prep Notices (Full Column Width) - Dynamic & Clickable */}
+            {/* 4. CAT Prep Notices (Full Column Width) - Refined Notice Board */}
             <div className={styles.cardBox}>
-              <div className={styles.cardHeader}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div className={styles.noticeBoardHeader}>
+                <div className={styles.noticeBoardTitleGroup}>
                   <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
-                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#D97706", padding: "2px 8px", borderRadius: "6px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#B45309", padding: "3px 9px", borderRadius: "999px" }}>
                     Official Updates
                   </span>
                   {announcements?.isSample && (
-                    <span style={{ fontSize: "11px", fontWeight: "700", background: "#F1F5F9", color: "#475569", padding: "2px 8px", borderRadius: "6px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "600", background: "#F1F5F9", color: "#475569", padding: "3px 9px", borderRadius: "999px" }}>
                       Sample data
                     </span>
                   )}
                 </div>
+                {prepNotices.length > 0 && (
+                  <span className={styles.noticeCountPill}>
+                    {prepNotices.length} {prepNotices.length === 1 ? "Update" : "Updates"}
+                  </span>
+                )}
               </div>
               <div className={styles.noticeList}>
                 {prepNotices.length === 0 && (
@@ -979,56 +984,65 @@ export default function DashboardPage() {
                     No notices right now. Official TechnoCAT updates will show up here.
                   </p>
                 )}
-                {prepNotices.map((notice) => (
-                  <div
-                    key={notice.id}
-                    className={styles.noticeItem}
-                    onClick={() => notice.actionUrl && router.push(notice.actionUrl)}
-                    role={notice.actionUrl ? "button" : undefined}
-                    tabIndex={notice.actionUrl ? 0 : undefined}
-                    onKeyDown={(e) => {
-                      if (notice.actionUrl && (e.key === "Enter" || e.key === " ")) {
-                        router.push(notice.actionUrl);
-                      }
-                    }}
-                    title={notice.desc || undefined}
-                  >
-                    <div
-                      className={styles.noticeThumb}
-                      aria-hidden="true"
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", background: notice.badgeBg, color: notice.badgeColor }}
+                {prepNotices.map((notice) => {
+                  const cardContent = (
+                    <article
+                      className={styles.noticeItem}
+                      style={{ borderLeftColor: notice.badgeColor }}
                     >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 11l18-5v12L3 14v-3z" />
-                        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-                      </svg>
-                    </div>
-                    <div className={styles.noticeContent}>
-                      <span
-                        className={styles.noticeBadge}
+                      <div
+                        className={styles.noticeThumb}
+                        aria-hidden="true"
                         style={{ background: notice.badgeBg, color: notice.badgeColor }}
                       >
-                        {notice.badge}
-                      </span>
-                      <h3 className={styles.noticeTitle}>{notice.title}</h3>
-                      <span className={styles.noticeDate}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {notice.dateNotice}
-                      </span>
-                    </div>
-                    {notice.actionUrl && (
-                      <div className={styles.noticeCtaBtn}>
-                        <span>Open</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 11l18-5v12L3 14v-3z" />
+                          <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
                         </svg>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <div className={styles.noticeContent}>
+                        <div className={styles.noticeMetaRow}>
+                          <span
+                            className={styles.noticeBadge}
+                            style={{ background: notice.badgeBg, color: notice.badgeColor }}
+                          >
+                            {notice.badge}
+                          </span>
+                          <span className={styles.noticeDate}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            {notice.dateNotice}
+                          </span>
+                        </div>
+                        <h3 className={styles.noticeTitle}>{notice.title}</h3>
+                        {notice.desc && (
+                          <p className={styles.noticeDesc}>{notice.desc}</p>
+                        )}
+                      </div>
+                      {notice.actionUrl && (
+                        <span className={styles.noticeChevron} aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </span>
+                      )}
+                    </article>
+                  );
+
+                  return notice.actionUrl ? (
+                    <Link
+                      key={notice.id}
+                      href={notice.actionUrl}
+                      className={styles.noticeCardLink}
+                    >
+                      {cardContent}
+                    </Link>
+                  ) : (
+                    <div key={notice.id}>{cardContent}</div>
+                  );
+                })}
               </div>
             </div>
           </div>

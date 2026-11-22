@@ -812,100 +812,178 @@
 }
 
 /* Notice Board Card */
+.noticeBoardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.noticeBoardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.noticeCountPill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background: #F1F5F9;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
 .noticeList {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+}
+
+.noticeCardLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 14px;
+  transition: scale 150ms ease-out;
+}
+
+.noticeCardLink:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.noticeCardLink:active {
+  scale: 0.99;
 }
 
 .noticeItem {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
   border-radius: 14px;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-  text-decoration: none;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left-width: 3px;
   position: relative;
+  transition: background-color 180ms ease-out, border-color 180ms ease-out, box-shadow 180ms ease-out, transform 180ms ease-out;
 }
 
-.noticeItem:hover {
-  transform: translateY(-2px);
+.noticeCardLink .noticeItem {
+  cursor: pointer;
+}
+
+.noticeCardLink:hover .noticeItem,
+.noticeCardLink:focus-visible .noticeItem {
   background: #FFFFFF;
-  border-color: #93C5FD;
-  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08);
+  border-color: #BFDBFE;
+  box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
 }
 
 .noticeThumb {
-  width: 64px;
-  height: 54px;
-  border-radius: 10px;
-  object-fit: cover;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .noticeContent {
   display: flex;
   flex-direction: column;
+  gap: 4px;
   flex: 1;
   min-width: 0;
+}
+
+.noticeMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .noticeBadge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
-  border-radius: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 4px;
   width: fit-content;
 }
 
 .noticeTitle {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  color: #111827;
-  line-height: 1.35;
-  white-space: nowrap;
+  color: #0F172A;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.noticeCardLink:hover .noticeTitle,
+.noticeCardLink:focus-visible .noticeTitle {
+  color: #1D4ED8;
+}
+
+.noticeDesc {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .noticeDate {
-  font-size: 11px;
-  color: #6B7280;
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.noticeCtaBtn {
-  margin-left: auto;
+  font-size: 11.5px;
+  color: #64748B;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #4B5563;
-  padding: 6px 14px;
-  border-radius: 8px;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
-  flex-shrink: 0;
-  transition: all 0.15s;
 }
 
-.noticeItem:hover .noticeCtaBtn {
-  background: #2563EB;
-  color: #FFFFFF;
-  border-color: #2563EB;
+.noticeChevron {
+  color: #94A3B8;
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  transition: color 150ms ease-out, transform 150ms ease-out;
+}
+
+.noticeCardLink:hover .noticeChevron,
+.noticeCardLink:focus-visible .noticeChevron {
+  color: #2563EB;
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noticeCardLink,
+  .noticeItem,
+  .noticeChevron {
+    transition: none;
+  }
+  .noticeCardLink:hover .noticeItem,
+  .noticeCardLink:focus-visible .noticeItem,
+  .noticeCardLink:active,
+  .noticeCardLink:hover .noticeChevron,
+  .noticeCardLink:focus-visible .noticeChevron {
+    transform: none;
+    scale: none;
+  }
 }
 
 /* User Menu Dropdown */

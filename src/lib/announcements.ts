@@ -78,8 +78,8 @@ export function getDemoAnnouncements(): Announcements {
       { id: "demo-3", title: "VARC: Para jumble strategies", body: null, section: "VARC", host: "TechnoCAT Faculty", linkUrl: null, startsAt: at(3, 17), endsAt: at(3, 18), isLive: false },
     ],
     notices: [
-      { id: "demo-n1", title: "CAT 2024 Slot 3 PYQ sections are now available", body: "Attempt them under real exam timing from Browse → Past Papers.", section: "GENERAL", linkUrl: "/browse", publishedAt: at(-1, 10) },
-      { id: "demo-n2", title: "Weekly doubt-clearing session moved to Saturday", body: null, section: "GENERAL", linkUrl: null, publishedAt: at(-2, 9) },
+      { id: "demo-n1", title: "CAT 2024 Slot 3 PYQ sections are now available", body: "Attempt all three official sections under real exam timing from Browse → Past Papers.", section: "GENERAL", linkUrl: "/browse#pyq-section", publishedAt: at(-1, 10) },
+      { id: "demo-n2", title: "Weekly doubt-clearing session moved to Saturday", body: "Join the faculty Q&A and peer discussion thread for Quant & DILR doubts this Saturday at 6:00 PM IST.", section: "DILR", linkUrl: "/intelligence/learning-community", publishedAt: at(-2, 9) },
     ],
   };
 }
