@@ -3,10 +3,38 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  Bell,
+  BellOff,
+  Brain,
+  CalendarDays,
+  CheckCheck,
+  Check,
+  ChevronDown,
+  ClipboardList,
+  Clock,
+  Flame,
+  GraduationCap,
+  Home,
+  LogOut,
+  Monitor,
+  Play,
+  Rocket,
+  Search,
+  Shield,
+  Target,
+  Trophy,
+  UserPen,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import styles from "./PostLoginNavActions.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName, resolveUserAvatarUrl } from "@/lib/nameUtils";
-import { createPortal } from "react-dom";
 import {
   NotificationItem,
   NotificationCategory,
@@ -21,58 +49,39 @@ import {
 const TABS: { id: NotificationCategory; label: string }[] = [
   { id: "all", label: "All" },
   { id: "unread", label: "Unread" },
-  { id: "mocks", label: "Mocks & Tests" },
-  { id: "learning", label: "Learning & AI" },
+  { id: "mocks", label: "Mocks & tests" },
+  { id: "learning", label: "Learning" },
 ];
 
-function renderNotificationIcon(notif: NotificationItem) {
+function notificationIcon(notif: NotificationItem): LucideIcon {
   const type = notif.type;
   const iconKey = notif.icon;
-
-  if (iconKey === "alert" || type === "streak_alert") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
-  }
-  if (iconKey === "brain" || type === "revision") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 .88.29 1.7.78 2.36A4 4 0 0 0 7 12a4 4 0 0 0 .5 1.93A4 4 0 0 0 8 18a4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0 .5-4.07A4 4 0 0 0 17 12a4 4 0 0 0-1.78-3.64A4 4 0 0 0 16 6a4 4 0 0 0-4-4Z"/></svg>;
-  }
-  if (iconKey === "target" || type === "mock") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-  }
-  if (iconKey === "bschool" || type === "bschool") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-  }
-  if (iconKey === "play" || type === "resume") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
-  }
-  if (iconKey === "clipboard" || type === "mock_pyq" || iconKey === "notes") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>;
-  }
-  if (iconKey === "search" || type === "ai") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-  }
-  if (iconKey === "trophy" || type === "milestone") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
-  }
-  if (iconKey === "rocket" || type === "system") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4.5c1.62-1.63 5-2.5 5-2.5"/><path d="M12 15v5s3.03-.55 4.5-2c1.63-1.62 2.5-5 2.5-5"/></svg>;
-  }
-  if (iconKey === "calendar") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-  }
-  if (iconKey === "flame") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
-  }
-  if (iconKey === "check") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-  }
-  if (iconKey === "schedule") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-  }
-  if (iconKey === "learning") {
-    return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
-  }
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
+  if (iconKey === "alert" || type === "streak_alert") return AlertTriangle;
+  if (iconKey === "brain" || type === "revision") return Brain;
+  if (iconKey === "target" || type === "mock") return Target;
+  if (iconKey === "bschool" || type === "bschool") return Home;
+  if (iconKey === "play" || type === "resume") return Play;
+  if (iconKey === "clipboard" || type === "mock_pyq" || iconKey === "notes") return ClipboardList;
+  if (iconKey === "search" || type === "ai") return Search;
+  if (iconKey === "trophy" || type === "milestone") return Trophy;
+  if (iconKey === "rocket" || type === "system") return Rocket;
+  if (iconKey === "calendar") return CalendarDays;
+  if (iconKey === "flame") return Flame;
+  if (iconKey === "check") return Check;
+  if (iconKey === "schedule") return Clock;
+  if (iconKey === "learning") return GraduationCap;
+  return Bell;
 }
+
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "S";
+  const first = parts[0][0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] ?? "" : "";
+  return (first + last).toUpperCase();
+}
+
+const DEFAULT_AVATAR = resolveUserAvatarUrl(null);
 
 export default function PostLoginNavActions() {
   const router = useRouter();
@@ -81,11 +90,14 @@ export default function PostLoginNavActions() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const [anchor, setAnchor] = useState<{ top: number; right: number }>({ top: 76, right: 16 });
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<NotificationCategory>("all");
 
   const profileRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -146,11 +158,26 @@ export default function PostLoginNavActions() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle escape key and lock body scroll when notification drawer is open
+  // Close the profile menu on Escape
+  useEffect(() => {
+    if (!isProfileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsProfileOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isProfileOpen]);
+
+  // Handle escape key, lock body scroll and keep the popover anchored under the bell
   useEffect(() => {
     if (!isNotifOpen) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    const place = () => {
+      const r = bellRef.current?.getBoundingClientRect();
+      if (!r) return;
+      setAnchor({ top: Math.round(r.bottom + 10), right: Math.max(8, Math.round(window.innerWidth - r.right - 8)) });
+    };
+    place();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -159,17 +186,23 @@ export default function PostLoginNavActions() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", place);
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", place);
     };
   }, [isNotifOpen]);
 
   const displayName = resolveStudentName(user?.fullName, user?.email);
   const firstName = displayName.split(" ")[0] || displayName;
+  const initials = initialsOf(displayName);
 
-  // Default profile icon is /profile_icon.png, replaced by custom photo if provided by user
+  // Custom photo when the user uploaded one; otherwise an initials avatar
   const userAvatarUrl = resolveUserAvatarUrl(user?.avatarUrl);
+  const hasPhoto = userAvatarUrl !== DEFAULT_AVATAR && !avatarFailed;
+
+  useEffect(() => setAvatarFailed(false), [userAvatarUrl]);
 
   const userRole = user?.role
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
@@ -205,237 +238,126 @@ export default function PostLoginNavActions() {
     setNotifications(updated);
   };
 
+  const avatar = (size: "sm" | "lg") =>
+    hasPhoto ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={userAvatarUrl}
+        alt=""
+        className={size === "sm" ? styles.userAvatar : styles.dropdownHeaderAvatar}
+        onError={() => setAvatarFailed(true)}
+      />
+    ) : (
+      <span className={size === "sm" ? styles.avatarInitials : styles.avatarInitialsLg} aria-hidden="true">
+        {initials}
+      </span>
+    );
+
+  const closeProfile = () => setIsProfileOpen(false);
+
   return (
     <div className={styles.actionsContainer}>
-      {/* Notifications Bell Button with Live Badge */}
+      {/* Notifications bell with unread badge */}
       <button
+        ref={bellRef}
         type="button"
-        className={styles.iconBtn}
+        className={`${styles.iconBtn} ${isNotifOpen ? styles.iconBtnActive : ""}`}
         aria-label={`Notifications (${unreadCount} unread)`}
-        onClick={() => setIsNotifOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isNotifOpen}
+        onClick={() => {
+          setIsProfileOpen(false);
+          setIsNotifOpen(true);
+        }}
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        </svg>
-        {unreadCount > 0 && (
-          <span className={styles.unreadBadge}>
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        )}
+        <Bell size={19} strokeWidth={1.9} />
+        {unreadCount > 0 && <span className={styles.unreadBadge}>{unreadCount > 9 ? "9+" : unreadCount}</span>}
       </button>
 
-      {/* Profile Dropdown Area */}
+      {/* Profile menu */}
       <div className={styles.profileWrapper} ref={profileRef}>
-        <div
-          className={styles.userPill}
+        <button
+          type="button"
+          className={`${styles.userPill} ${isProfileOpen ? styles.userPillOpen : ""}`}
           onClick={() => setIsProfileOpen(!isProfileOpen)}
+          aria-haspopup="menu"
+          aria-expanded={isProfileOpen}
+          aria-label={`Account menu for ${displayName}`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={userAvatarUrl}
-            alt={displayName}
-            className={styles.userAvatar}
-            onError={(e) => {
-              e.currentTarget.src = "/profile_icon.png";
-            }}
-          />
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>{firstName}</span>
-            <span className={styles.userRole}>{userRole}</span>
-          </div>
-          <svg
-            className={`${styles.caretIcon} ${isProfileOpen ? styles.caretOpen : ""}`}
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
+          {avatar("sm")}
+          <span className={styles.userName}>{firstName}</span>
+          <ChevronDown size={15} strokeWidth={2} className={`${styles.caretIcon} ${isProfileOpen ? styles.caretOpen : ""}`} />
+        </button>
 
         {isProfileOpen && (
-          <div className={styles.profileDropdown}>
+          <div className={styles.profileDropdown} role="menu">
             <div className={styles.dropdownHeader}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={userAvatarUrl}
-                alt="Profile"
-                className={styles.dropdownHeaderAvatar}
-                onError={(e) => {
-                  e.currentTarget.src = "/profile_icon.png";
-                }}
-              />
+              {avatar("lg")}
               <div className={styles.dropdownHeaderInfo}>
                 <span className={styles.dropdownHeaderName}>{displayName}</span>
                 <span className={styles.dropdownHeaderRole} title={user?.email || ""}>
-                  {user?.email || ""}
+                  {user?.email || userRole}
                 </span>
               </div>
             </div>
 
             <div className={styles.dropdownList}>
-              <Link
-                href="/profile/edit"
-                className={styles.dropdownItem}
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                <span>Edit Profile</span>
+              <Link href="/profile/edit" className={styles.dropdownItem} onClick={closeProfile} role="menuitem">
+                <UserPen className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
+                <span>Edit profile</span>
               </Link>
-
-              <Link
-                href="/analytics"
-                className={styles.dropdownItem}
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-                <span>My Analytics &amp; Reports</span>
+              <Link href="/analytics" className={styles.dropdownItem} onClick={closeProfile} role="menuitem">
+                <BarChart3 className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
+                <span>My analytics &amp; reports</span>
               </Link>
 
               <div className={styles.dropdownDivider} />
+              <div className={styles.dropdownSectionHeader}>Settings</div>
 
-              <div className={styles.dropdownSectionHeader}>Settings &amp; Preferences</div>
-
-              <Link
-                href="/settings?tab=notifications"
-                className={styles.dropdownItem}
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
+              <Link href="/settings?tab=notifications" className={styles.dropdownItem} onClick={closeProfile} role="menuitem">
+                <Bell className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
                 <span>Notifications</span>
               </Link>
-
-              <Link
-                href="/settings?tab=exam"
-                className={styles.dropdownItem}
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-                <span>Exam Environment</span>
+              <Link href="/settings?tab=exam" className={styles.dropdownItem} onClick={closeProfile} role="menuitem">
+                <Monitor className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
+                <span>Exam environment</span>
               </Link>
-
-              <Link
-                href="/settings?tab=security"
-                className={styles.dropdownItem}
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <span>Account &amp; Security</span>
+              <Link href="/settings?tab=security" className={styles.dropdownItem} onClick={closeProfile} role="menuitem">
+                <Shield className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
+                <span>Account &amp; security</span>
               </Link>
 
               <div className={styles.dropdownDivider} />
 
               <button
                 type="button"
+                role="menuitem"
                 className={`${styles.dropdownItem} ${styles.logoutItem}`}
                 onClick={() => {
                   setIsProfileOpen(false);
                   logout();
                 }}
               >
-                <svg
-                  className={styles.dropdownItemIcon}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-                <span>Log Out</span>
+                <LogOut className={styles.dropdownItemIcon} size={16} strokeWidth={1.9} />
+                <span>Log out</span>
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Notification Drawer (Portal) */}
+      {/* Notification popover (portal) */}
       {isNotifOpen &&
         mounted &&
         createPortal(
           <>
+            <div className={styles.notificationOverlay} onClick={() => setIsNotifOpen(false)} />
             <div
-              className={styles.notificationOverlay}
-              onClick={() => setIsNotifOpen(false)}
-            />
-            <div className={styles.notificationDrawer}>
-              {/* Drawer Top Header */}
+              className={styles.notificationDrawer}
+              role="dialog"
+              aria-label="Notifications"
+              style={{ "--pop-top": `${anchor.top}px`, "--pop-right": `${anchor.right}px` } as React.CSSProperties}
+            >
               <div className={styles.drawerHeader}>
                 <div className={styles.drawerTitleRow}>
                   <h3 className={styles.drawerTitle}>Notifications</h3>
@@ -447,11 +369,8 @@ export default function PostLoginNavActions() {
                 </div>
                 <div className={styles.drawerHeaderActions}>
                   {unreadCount > 0 && (
-                    <button
-                      type="button"
-                      className={styles.markReadBtn}
-                      onClick={handleMarkAllRead}
-                    >
+                    <button type="button" className={styles.markReadBtn} onClick={handleMarkAllRead}>
+                      <CheckCheck size={15} strokeWidth={2} />
                       Mark all read
                     </button>
                   )}
@@ -461,23 +380,12 @@ export default function PostLoginNavActions() {
                     onClick={() => setIsNotifOpen(false)}
                     aria-label="Close notifications"
                   >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={17} strokeWidth={2} />
                   </button>
                 </div>
               </div>
 
-              {/* Category Filter Tabs */}
-              <div className={styles.tabsContainer}>
+              <div className={styles.tabsContainer} role="tablist">
                 {TABS.map((tab) => {
                   const count =
                     tab.id === "all"
@@ -490,37 +398,24 @@ export default function PostLoginNavActions() {
                     <button
                       key={tab.id}
                       type="button"
-                      className={`${styles.tabBtn} ${
-                        activeTab === tab.id ? styles.tabBtnActive : ""
-                      }`}
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ""}`}
                       onClick={() => setActiveTab(tab.id)}
                     >
                       <span>{tab.label}</span>
-                      {count > 0 && (
-                        <span className={styles.tabBadge}>{count}</span>
-                      )}
+                      {count > 0 && <span className={styles.tabBadge}>{count}</span>}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Notification Items List */}
               <div className={styles.drawerContent}>
                 {filteredNotifications.length === 0 ? (
                   <div className={styles.emptyState}>
-                    <div className={styles.emptyStateIcon}>
-                      <svg
-                        width="40"
-                        height="40"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#94A3B8"
-                        strokeWidth="1.5"
-                      >
-                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                      </svg>
-                    </div>
+                    <span className={styles.emptyStateIcon}>
+                      <BellOff size={26} strokeWidth={1.6} />
+                    </span>
                     <h4 className={styles.emptyTitle}>
                       {activeTab === "unread"
                         ? "No unread notifications"
@@ -537,110 +432,65 @@ export default function PostLoginNavActions() {
                     </p>
                   </div>
                 ) : (
-                  filteredNotifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className={`${styles.notificationItem} ${
-                        !notif.read ? styles.notificationItemUnread : ""
-                      }`}
-                      onClick={() => handleNotificationClick(notif)}
-                      title={`Click to open: ${notif.title}`}
-                    >
+                  filteredNotifications.map((notif) => {
+                    const Icon = notificationIcon(notif);
+                    return (
                       <div
-                        className={styles.notifIcon}
-                        style={{
-                          background: notif.iconBg,
-                          color: notif.iconColor,
-                        }}
+                        key={notif.id}
+                        className={`${styles.notificationItem} ${!notif.read ? styles.notificationItemUnread : ""}`}
+                        onClick={() => handleNotificationClick(notif)}
+                        title={`Click to open: ${notif.title}`}
                       >
-                        {renderNotificationIcon(notif)}
-                      </div>
+                        <span className={styles.notifIcon} style={{ color: notif.iconColor }}>
+                          <Icon size={17} strokeWidth={2} />
+                        </span>
 
-                      <div className={styles.notifContent}>
-                        <div className={styles.notifHeaderRow}>
-                          <h4 className={styles.notifTitle}>{notif.title}</h4>
-                          {notif.isSample && (
-                            <span className={styles.sampleTag} title="Sample notification shown on the demo account">
-                              Sample
-                            </span>
-                          )}
-                          {notif.priority === "urgent" && (
-                            <span className={styles.priorityUrgentTag}>
-                              Alert
-                            </span>
-                          )}
+                        <div className={styles.notifContent}>
+                          <div className={styles.notifHeaderRow}>
+                            <h4 className={styles.notifTitle}>{notif.title}</h4>
+                            {notif.isSample && (
+                              <span className={styles.sampleTag} title="Sample notification shown on the demo account">
+                                Sample
+                              </span>
+                            )}
+                            {notif.priority === "urgent" && <span className={styles.priorityUrgentTag}>Alert</span>}
+                          </div>
+                          <p className={styles.notifDesc}>{notif.desc}</p>
+
+                          <div className={styles.notifFooterRow}>
+                            <span className={styles.notifTime}>{notif.time}</span>
+                            {notif.actionLabel && (
+                              <button type="button" className={styles.notifActionBtn} onClick={(e) => handleActionClick(e, notif)}>
+                                <span>{notif.actionLabel}</span>
+                                <ArrowRight size={12} strokeWidth={2.4} />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <p className={styles.notifDesc}>{notif.desc}</p>
 
-                        <div className={styles.notifFooterRow}>
-                          <span className={styles.notifTime}>{notif.time}</span>
-                          {notif.actionLabel && (
-                            <button
-                              type="button"
-                              className={styles.notifActionBtn}
-                              onClick={(e) => handleActionClick(e, notif)}
-                            >
-                              <span>{notif.actionLabel}</span>
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                              >
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                                <polyline points="12 5 19 12 12 19" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Individual dismiss button */}
-                      <button
-                        type="button"
-                        className={styles.dismissBtn}
-                        onClick={(e) => handleDismiss(e, notif.id)}
-                        title="Dismiss notification"
-                        aria-label="Dismiss notification"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                        <button
+                          type="button"
+                          className={styles.dismissBtn}
+                          onClick={(e) => handleDismiss(e, notif.id)}
+                          title="Dismiss notification"
+                          aria-label="Dismiss notification"
                         >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                          <X size={14} strokeWidth={2} />
+                        </button>
 
-                      {!notif.read && (
-                        <div className={styles.unreadIndicator} />
-                      )}
-                    </div>
-                  ))
+                        {!notif.read && <span className={styles.unreadIndicator} />}
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
-              {/* Drawer Footer */}
               {notifications.length > 0 && (
                 <div className={styles.drawerFooter}>
-                  <button
-                    type="button"
-                    className={styles.clearAllBtn}
-                    onClick={handleClearAll}
-                  >
+                  <button type="button" className={styles.clearAllBtn} onClick={handleClearAll}>
                     Clear all
                   </button>
-                  <Link
-                    href="/settings"
-                    className={styles.settingsLink}
-                    onClick={() => setIsNotifOpen(false)}
-                  >
+                  <Link href="/settings" className={styles.settingsLink} onClick={() => setIsNotifOpen(false)}>
                     Notification preferences
                   </Link>
                 </div>

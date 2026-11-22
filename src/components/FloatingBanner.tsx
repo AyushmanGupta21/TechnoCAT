@@ -53,7 +53,7 @@ export default function FloatingBanner() {
           initial={{ opacity: 0, y: reduce ? 0 : 24 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: reduce ? 0 : 24 }}
-          transition={{ duration: reduce ? 0.15 : 0.5, ease: EASE_OUT }}
+          transition={{ duration: reduce ? 0.6 : 0.5, ease: EASE_OUT }}
         >
           <div className={`${styles.bar} glass-card`} data-tint="blue">
             <span className={`${ui.liveDot} ${styles.dot}`} aria-hidden="true" />

@@ -4,8 +4,43 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import styles from "./mock-viva-prep.module.css";
 import { useSpeechTranscription } from "@/hooks/useSpeechTranscription";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
-import BrandLogo from "@/components/BrandLogo";
+import {
+  ArrowLeft,
+  ArrowRight,
+  AudioLines,
+  BookOpen,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Compass,
+  GraduationCap,
+  HelpCircle,
+  Info,
+  Lightbulb,
+  ListChecks,
+  MessagesSquare,
+  Mic,
+  Newspaper,
+  Pause,
+  PenLine,
+  Play,
+  Search,
+  Sparkles,
+  Square,
+  Target,
+  Timer,
+  TrendingUp,
+  UserRound,
+  Users,
+  Video,
+  X,
+  Zap,
+} from "lucide-react";
+import AppNav from "@/components/app/AppNav";
+import { GradientText, Reveal, RevealGroup, RevealItem } from "@/components/landing/motion";
 import LiveViva, { type LiveVivaTypeMeta } from "@/components/viva/LiveViva";
 
 interface VivaQuestion {
@@ -49,17 +84,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "personal-hr",
     title: "Personal & HR",
     desc: "Questions about you, your background, strengths, weaknesses and career goals that open almost every IIM interview.",
-    color: "#2563EB",
+    color: "#3b82f6",
     bg: "linear-gradient(135deg, #2563EB, #3B82F6)",
     chip: "18 Questions",
     chipColor: "#1D4ED8",
     chipBg: "#EFF6FF",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    ),
+    icon: <UserRound size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "Icebreaker",
@@ -229,17 +259,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "academics",
     title: "Academics & Subject",
     desc: "Depth questions on your graduation stream, favourite subjects, and core concepts you claim to know.",
-    color: "#7C3AED",
+    color: "#8b5cf6",
     bg: "linear-gradient(135deg, #7C3AED, #8B5CF6)",
     chip: "20 Questions",
     chipColor: "#6D28D9",
     chipBg: "#F5F3FF",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-      </svg>
-    ),
+    icon: <GraduationCap size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "Core concept",
@@ -427,18 +452,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "current-affairs",
     title: "Current Affairs & GK",
     desc: "Economy, policy, business news and general awareness questions that test how informed you are.",
-    color: "#0284C7",
+    color: "#06b6d4",
     bg: "linear-gradient(135deg, #0284C7, #0EA5E9)",
     chip: "12 Questions",
     chipColor: "#0369A1",
     chipBg: "#F0F9FF",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      </svg>
-    ),
+    icon: <Newspaper size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "Indian Economy",
@@ -554,18 +573,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "gd-stress",
     title: "GD-PI & Stress Round",
     desc: "Tricky curveball questions, GD discussion topics, and high-pressure challenges to test your emotional composure.",
-    color: "#DC2626",
+    color: "#f43f5e",
     bg: "linear-gradient(135deg, #DC2626, #EF4444)",
     chip: "18 Questions",
     chipColor: "#B91C1C",
     chipBg: "#FEF2F2",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
-    ),
+    icon: <MessagesSquare size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "GD Topic",
@@ -735,18 +748,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "goals",
     title: "Career Goals & Motivation",
     desc: "Why this B-school, short vs long-term goals and how the program connects to your plan.",
-    color: "#059669",
+    color: "#10b981",
     bg: "linear-gradient(135deg, #059669, #10B981)",
     chip: "14 Questions",
     chipColor: "#047857",
     chipBg: "#F0FDF4",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="6" />
-        <circle cx="12" cy="12" r="2" />
-      </svg>
-    ),
+    icon: <Target size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "Short-term goal",
@@ -880,16 +887,12 @@ const CATEGORIES: VivaCategory[] = [
     id: "situational",
     title: "Situational & Behavioral",
     desc: "STAR-format scenarios on leadership, conflict, failure and ethics that reveal how you actually behave.",
-    color: "#D97706",
+    color: "#f59e0b",
     bg: "linear-gradient(135deg, #D97706, #F59E0B)",
     chip: "15 Questions",
     chipColor: "#B45309",
     chipBg: "#FFFBEB",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-      </svg>
-    ),
+    icon: <Lightbulb size={20} strokeWidth={2} />,
     questions: [
       {
         tag: "Leadership",
@@ -1037,7 +1040,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "Personal Interview (PI)",
     subtitle: "Know yourself, your background, strengths, weaknesses and goals.",
     questionCount: 18,
-    color: "#2563EB",
+    color: "#3b82f6",
     bg: "#EFF6FF",
     badgeBg: "#EFF6FF",
     badgeColor: "#1D4ED8",
@@ -1054,12 +1057,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Never disguise strengths as weaknesses; show genuine ongoing corrective effort.",
       "Know your graduation college, hometown history, and career decisions inside out.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    ),
+    icon: <UserRound size={20} strokeWidth={2} />,
   },
   {
     id: "round-academic",
@@ -1067,7 +1065,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "Academic Round",
     subtitle: "Subject-specific questions from your graduation stream.",
     questionCount: 20,
-    color: "#7C3AED",
+    color: "#8b5cf6",
     bg: "#F5F3FF",
     badgeBg: "#F5F3FF",
     badgeColor: "#6D28D9",
@@ -1084,12 +1082,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Be prepared to defend every acronym and technical term mentioned on your CV.",
       "If you do not know a formula or theorem, admit it gracefully rather than bluffing.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-      </svg>
-    ),
+    icon: <GraduationCap size={20} strokeWidth={2} />,
   },
   {
     id: "round-ca",
@@ -1097,7 +1090,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "Current Affairs Round",
     subtitle: "Questions on national, international events, economy and more.",
     questionCount: 12,
-    color: "#059669",
+    color: "#10b981",
     bg: "#F0FDF4",
     badgeBg: "#F0FDF4",
     badgeColor: "#047857",
@@ -1114,13 +1107,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Back claims with 2-3 verifiable figures (e.g. GDP growth, inflation rate).",
       "Adopt a neutral, managerial perspective instead of extreme political opinions.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      </svg>
-    ),
+    icon: <Newspaper size={20} strokeWidth={2} />,
   },
   {
     id: "round-gd",
@@ -1128,7 +1115,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "GD Round",
     subtitle: "Group discussion topics and structured arguments.",
     questionCount: 10,
-    color: "#D97706",
+    color: "#f59e0b",
     bg: "#FFFBEB",
     badgeBg: "#FFFBEB",
     badgeColor: "#B45309",
@@ -1145,14 +1132,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Acknowledge prior speakers' valid points before presenting counter-arguments.",
       "Help bring quiet or hesitant group members into the conversation.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
+    icon: <Users size={20} strokeWidth={2} />,
   },
   {
     id: "round-stress",
@@ -1160,7 +1140,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "Stress Interview Round",
     subtitle: "Tricky, situational and pressure handling questions.",
     questionCount: 8,
-    color: "#DC2626",
+    color: "#f43f5e",
     bg: "#FEF2F2",
     badgeBg: "#FEF2F2",
     badgeColor: "#B91C1C",
@@ -1177,11 +1157,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Pause for 2-3 seconds to take a breath before speaking; never interrupt the panel.",
       "Maintain respectful eye contact, smile, and defend your logic cordially.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>
-    ),
+    icon: <Zap size={20} strokeWidth={2} />,
   },
   {
     id: "round-behavioral",
@@ -1189,7 +1165,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
     title: "Behavioral Round",
     subtitle: "Real-life scenarios, leadership and decision making.",
     questionCount: 10,
-    color: "#0891B2",
+    color: "#06b6d4",
     bg: "#ECFEFF",
     badgeBg: "#ECFEFF",
     badgeColor: "#0E7490",
@@ -1206,12 +1182,7 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
       "Quantify your results wherever possible (hours saved, revenue boosted, metrics).",
       "Emphasize your individual contributions while appreciating team support.",
     ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0891B2" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z" />
-        <path d="M9 21h6" />
-      </svg>
-    ),
+    icon: <Lightbulb size={20} strokeWidth={2} />,
   },
 ];
 
@@ -1219,6 +1190,16 @@ const INTERVIEW_ROUNDS: InterviewRound[] = [
 const LIVE_VIVA_TYPE_META: Record<string, LiveVivaTypeMeta> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, { icon: c.icon, color: c.color }])
 );
+
+// Glass tint (r g b) per practice category, from the data palette.
+const CAT_TINT: Record<string, string> = {
+  "personal-hr": "59 130 246",
+  academics: "139 92 246",
+  "current-affairs": "6 182 212",
+  "gd-stress": "244 63 94",
+  goals: "16 185 129",
+  situational: "245 158 11",
+};
 
 const CHECKLIST = {
   before: {
@@ -1632,260 +1613,165 @@ export default function MockVivaPrepPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* ===== STICKY NAV ===== */}
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Speak & Assess Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+      <AppNav />
 
-            <div className={styles.navLinks}>
-              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-              <Link href="/browse" className={styles.navLink}>Browse</Link>
-              <Link href="/topics" className={styles.navLink}>My Topics</Link>
-              <Link href="/intelligence" className={styles.navLink}>Intelligence Hub</Link>
-              <Link href="/mock-viva-prep" className={`${styles.navLink} ${styles.navLinkActive}`}>Speak & Assess</Link>
-            </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== BREADCRUMB ===== */}
-      <div className={styles.breadcrumb}>
-        <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link> &gt; <span>Speak & Assess</span>
-      </div>
-
-      {/* ===== HERO ===== */}
+      {/* ===== PAGE HEADER ===== */}
       <section className={styles.heroSection}>
-        <div className={styles.heroCircleDecor1} aria-hidden="true" />
-        <div className={styles.heroCircleDecor2} aria-hidden="true" />
-        <div className={styles.heroDotsDecor} aria-hidden="true" />
-
         <div className={styles.heroInner}>
-          <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>
-              ✦ GD-PI &amp; INTERVIEW PREP
-            </div>
-            <h1 className={styles.heroTitle}>
-              Speak Up,<br />
-              <span className={styles.heroHighlight}>Assess Yourself,</span><br />
-              Walk in Confident.
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Answer real IIM-style interview questions out loud, play back your own recording and assess yourself with AI feedback — across HR, academics, current affairs and stress rounds.
-            </p>
-            <div className={styles.heroActions}>
-              <button
-                type="button"
-                className={styles.btnPrimary}
-                onClick={() => document.getElementById("live-viva")?.scrollIntoView({ behavior: "smooth" })}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <polygon points="6 3 20 12 6 21 6 3" />
-                </svg>
-                <span>Start a Live Viva &rarr;</span>
-              </button>
-              <a
-                href="#checklist"
-                className={styles.btnSecondary}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M9 11l3 3L22 4" />
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                </svg>
-                <span>View Prep Checklist</span>
-              </a>
-            </div>
-          </div>
-
-          {/* ===== YOUR PREP AT A GLANCE PANEL ===== */}
-          <div className={styles.prepGlancePanel}>
-            {/* Panel Header */}
-            <div className={styles.glanceHeader}>
-              <div className={styles.glanceHeaderLeft}>
-                <div className={styles.glanceHeaderIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
-                </div>
-                <div className={styles.glanceHeaderTitles}>
-                  <h3 className={styles.glanceTitle}>YOUR PREP AT A GLANCE</h3>
-                  <p className={styles.glanceSubtitle}>Everything you need for interview readiness.</p>
-                </div>
+          <RevealGroup className={styles.heroLeft} stagger={0.06}>
+            <RevealItem>
+              <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+                <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
+                <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+                <span className={styles.breadcrumbCurrent}>Speak &amp; Assess</span>
+              </nav>
+            </RevealItem>
+            <RevealItem>
+              <h1 className={styles.heroTitle}>
+                Speak up. <GradientText>Assess yourself.</GradientText> Walk in confident.
+              </h1>
+            </RevealItem>
+            <RevealItem>
+              <p className={styles.heroSubtitle}>
+                Answer real IIM-style interview questions out loud, play back your recording and get AI feedback — across HR, academics, current affairs and stress rounds.
+              </p>
+            </RevealItem>
+            <RevealItem>
+              <div className={styles.heroActions}>
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  onClick={() => document.getElementById("live-viva")?.scrollIntoView({ behavior: "smooth" })}
+                >
+                  <Video size={17} strokeWidth={2} aria-hidden="true" />
+                  <span>Start a live viva</span>
+                </button>
+                <a
+                  href="#checklist"
+                  className={styles.btnSecondary}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <ListChecks size={17} strokeWidth={2} aria-hidden="true" />
+                  <span>Prep checklist</span>
+                </a>
               </div>
-              <div className={styles.glanceHeaderAccent} aria-hidden="true">
-                <span className={styles.glanceAccentBadge}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
-                  </svg>
-                  PREP HUB
-                </span>
-              </div>
-            </div>
+            </RevealItem>
+          </RevealGroup>
 
-            {/* Three Feature Cards */}
-            <div className={styles.glanceCardsList}>
-              {/* Card 1: 68+ Curated interview questions */}
-              <button
-                type="button"
-                className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "questions" ? styles.statCardActiveBlue : ""}`}
-                onClick={() => setActiveDrawer("questions")}
-                title="Explore 68+ Curated Interview Questions"
-              >
-                <div className={styles.statCardLeft}>
-                  <div className={styles.statIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M8 2v4M16 2v4M3 10h18" />
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                    </svg>
-                  </div>
-                  <div className={styles.statTextCol}>
-                    <span className={styles.statValue}>68+</span>
+          {/* ===== PREP AT A GLANCE ===== */}
+          <Reveal delay={0.12} className={styles.prepGlanceWrap}>
+            <div className={`glass-card ${styles.prepGlancePanel}`} data-tint="blue">
+              <div className={styles.glanceHeader}>
+                <h3 className={styles.glanceTitle}>Your prep at a glance</h3>
+                <p className={styles.glanceSubtitle}>Everything you need for interview readiness.</p>
+              </div>
+
+              <div className={styles.glanceCardsList}>
+                <button
+                  type="button"
+                  className={`${styles.statCard} ${activeDrawer === "questions" ? styles.statCardActive : ""}`}
+                  style={{ "--stat": "var(--data-blue)" } as React.CSSProperties}
+                  onClick={() => setActiveDrawer("questions")}
+                  title="Explore 68+ curated interview questions"
+                >
+                  <span className={styles.statBar} aria-hidden="true" />
+                  <span className={styles.statValue}>68+</span>
+                  <span className={styles.statTextCol}>
                     <span className={styles.statLabel}>Curated interview questions</span>
-                  </div>
-                </div>
-                <div className={styles.statChevron}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </button>
+                    <span className={styles.statHint}>Browse by category</span>
+                  </span>
+                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                </button>
 
-              {/* Card 2: 6 Interview round categories */}
-              <button
-                type="button"
-                className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "rounds" ? styles.statCardActiveGreen : ""}`}
-                onClick={() => {
-                  setSelectedRoundDetailId(null);
-                  setActiveDrawer("rounds");
-                }}
-                title="Explore 6 Interview Round Categories"
-              >
-                <div className={styles.statCardLeft}>
-                  <div className={styles.statIcon} style={{ background: "#F0FDF4", color: "#059669" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
-                  </div>
-                  <div className={styles.statTextCol}>
-                    <span className={styles.statValue}>6</span>
+                <button
+                  type="button"
+                  className={`${styles.statCard} ${activeDrawer === "rounds" ? styles.statCardActive : ""}`}
+                  style={{ "--stat": "var(--data-emerald)" } as React.CSSProperties}
+                  onClick={() => {
+                    setSelectedRoundDetailId(null);
+                    setActiveDrawer("rounds");
+                  }}
+                  title="Explore 6 interview round categories"
+                >
+                  <span className={styles.statBar} aria-hidden="true" />
+                  <span className={styles.statValue}>6</span>
+                  <span className={styles.statTextCol}>
                     <span className={styles.statLabel}>Interview round categories</span>
-                  </div>
-                </div>
-                <div className={styles.statChevron}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </button>
+                    <span className={styles.statHint}>What each round tests</span>
+                  </span>
+                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                </button>
 
-              {/* Card 3: Timed Response practice mode */}
-              <button
-                type="button"
-                className={`${styles.statCard} ${styles.statCardInteractive} ${activeDrawer === "timed" ? styles.statCardActiveOrange : ""}`}
-                onClick={() => setActiveDrawer("timed")}
-                title="Start Timed Response Practice Mode"
-              >
-                <div className={styles.statCardLeft}>
-                  <div className={styles.statIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                  </div>
-                  <div className={styles.statTextCol}>
-                    <span className={styles.statValue}>Timed</span>
-                    <span className={styles.statLabel}>Response practice mode</span>
-                  </div>
-                </div>
-                <div className={styles.statChevron}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </button>
-            </div>
-
-            {/* Practice → Review → Improve Visual Learning Flow */}
-            <div className={styles.flowContainer}>
-              <div className={styles.flowTrack}>
-                <svg className={styles.flowLineSvg} viewBox="0 0 320 24" preserveAspectRatio="none" aria-hidden="true">
-                  <path d="M 32 12 C 90 4, 210 20, 276 12" stroke="#BAE6FD" strokeWidth="2" strokeDasharray="4 4" fill="none" />
-                </svg>
-
-                <div className={styles.flowStep}>
-                  <div className={styles.flowStepCircle} title="Step 1: Practice real interview questions">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                  </div>
-                  <span className={styles.flowStepText}>Practice</span>
-                </div>
-
-                <div className={styles.flowStep}>
-                  <div className={styles.flowStepCircle} title="Step 2: Review tips and feedback">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                  </div>
-                  <span className={styles.flowStepText}>Review</span>
-                </div>
-
-                <div className={styles.flowStep}>
-                  <div className={styles.flowStepCircle} title="Step 3: Improve with AI analysis">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <line x1="18" y1="20" x2="18" y2="10" />
-                      <line x1="12" y1="20" x2="12" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="14" />
-                    </svg>
-                  </div>
-                  <span className={styles.flowStepText}>Improve</span>
-                </div>
+                <button
+                  type="button"
+                  className={`${styles.statCard} ${activeDrawer === "timed" ? styles.statCardActive : ""}`}
+                  style={{ "--stat": "var(--data-amber)" } as React.CSSProperties}
+                  onClick={() => setActiveDrawer("timed")}
+                  title="Start timed response practice"
+                >
+                  <span className={styles.statBar} aria-hidden="true" />
+                  <span className={`${styles.statValue} ${styles.statValueSm}`}>
+                    <Timer size={20} strokeWidth={2} aria-hidden="true" />
+                  </span>
+                  <span className={styles.statTextCol}>
+                    <span className={styles.statLabel}>Timed response practice</span>
+                    <span className={styles.statHint}>30s, 60s or 120s answers</span>
+                  </span>
+                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                </button>
               </div>
+
+              <ol className={styles.flowContainer} aria-label="How it works">
+                <li className={styles.flowStep} title="Practice real interview questions">
+                  <span className={styles.flowStepCircle}>01</span>
+                  <span className={styles.flowStepText}>Practice</span>
+                </li>
+                <li className={styles.flowLine} aria-hidden="true" />
+                <li className={styles.flowStep} title="Review tips and feedback">
+                  <span className={styles.flowStepCircle}>02</span>
+                  <span className={styles.flowStepText}>Review</span>
+                </li>
+                <li className={styles.flowLine} aria-hidden="true" />
+                <li className={styles.flowStep} title="Improve with AI feedback">
+                  <span className={styles.flowStepCircle}>03</span>
+                  <span className={styles.flowStepText}>Improve</span>
+                </li>
+              </ol>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ===== CONTENT ===== */}
       <div className={styles.contentWrapper}>
-        {/* LIVE VIVA (primary mode) */}
+        {/* LIVE VIVA (featured) */}
         <section id="live-viva" className={styles.roundSection} aria-labelledby="live-viva-title">
-          <div className={styles.sectionHead}>
-            <div className={styles.roundTitleRow}>
-              <span className={styles.titleAccentBar} aria-hidden="true" />
-              <h2 id="live-viva-title" className={styles.sectionTitle}>Live viva with camera and voice</h2>
-            </div>
+          <Reveal className={styles.sectionHead}>
+            <span className={styles.sectionKicker}>
+              <span className={styles.liveDot} aria-hidden="true" /> Featured
+            </span>
+            <h2 id="live-viva-title" className={styles.sectionTitle}>
+              Live viva with <GradientText>camera and voice</GradientText>
+            </h2>
             <p className={styles.sectionSubtitle}>
               Face an AI interview panel out loud: it asks adaptive follow-up questions by voice, listens to your answers, tracks eye contact and framing on your camera, and gives you a full report at the end.
             </p>
-          </div>
-          <LiveViva typeMeta={LIVE_VIVA_TYPE_META} />
+          </Reveal>
+          <Reveal delay={0.08}>
+            <LiveViva typeMeta={LIVE_VIVA_TYPE_META} />
+          </Reveal>
         </section>
 
         {/* CATEGORIES (question-by-question practice) */}
         <section id="interview-rounds" className={styles.roundSection}>
-          <div className={styles.roundSectionHead}>
+          <Reveal className={styles.roundSectionHead}>
             <div className={styles.roundHeadLeft}>
-              <div className={styles.roundTitleRow}>
-                <span className={styles.titleAccentBar} aria-hidden="true" />
-                <h2 className={styles.sectionTitle}>Or Practise Question by Question</h2>
-              </div>
+              <h2 className={styles.sectionTitle}>Or practise question by question</h2>
               <p className={styles.sectionSubtitle}>
-                Prefer to go one question at a time? Pick a category for a timed practice session with sample questions, recordings and expert pointers.
+                Prefer one question at a time? Pick a category for a timed session with sample questions, recordings and expert pointers.
               </p>
             </div>
             <button
@@ -1897,233 +1783,200 @@ export default function MockVivaPrepPage() {
               }}
               title="Explore all 6 interview round categories in detail"
             >
-              <span>View All Rounds</span>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
+              <span>View all rounds</span>
+              <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
             </button>
-          </div>
+          </Reveal>
 
-          <div className={styles.catGrid}>
-            {CATEGORIES.map((cat) => {
-              const catKey = cat.id === "career-goals" || cat.id === "goals" ? "goals" : cat.id.replace(/-/g, "_");
-              const cardClass = styles[`catCard_${catKey}`] || "";
-              const topClass = styles[`catTop_${catKey}`] || "";
-              const iconClass = styles[`catIcon_${catKey}`] || "";
-              const badgeClass = styles[`catBadge_${catKey}`] || "";
-              const arrowClass = styles[`catArrow_${catKey}`] || "";
-
-              return (
+          <RevealGroup className={styles.catGrid} stagger={0.06}>
+            {CATEGORIES.map((cat) => (
+              <RevealItem key={cat.id} className={styles.catItem}>
                 <button
-                  key={cat.id}
                   type="button"
-                  className={`${styles.catCard} ${cardClass} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
+                  className={`glass-card ${styles.catCard} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
+                  data-tint="blue"
+                  style={{ "--tint": CAT_TINT[cat.id] ?? "59 130 246", "--cat": cat.color } as React.CSSProperties}
                   onClick={() => startPractice(cat.id)}
                   title={`Practice ${cat.title}`}
                 >
-                  <div className={`${styles.catCardTopBorder} ${topClass}`} />
-                  <div className={styles.catCardDecor} aria-hidden="true" />
-
-                  <div className={styles.catCardTop}>
-                    <div className={`${styles.catIcon} ${iconClass}`}>
-                      {cat.icon}
-                    </div>
-                    <h3 className={styles.catTitle}>{cat.title}</h3>
-                    <p className={styles.catDesc}>{cat.desc}</p>
-                  </div>
-
-                  <div className={styles.catFooter}>
-                    <span className={`${styles.catQuestionBadge} ${badgeClass}`}>
-                      {cat.chip}
+                  <span className={styles.catCardTop}>
+                    <span className={styles.catIcon} aria-hidden="true">{cat.icon}</span>
+                    <span className={styles.catQuestionBadge}>
+                      <strong>{cat.questions.length}</strong> questions
                     </span>
-                    <div className={`${styles.catArrowCircle} ${arrowClass}`} aria-hidden="true">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
+                  </span>
+                  <span className={styles.catTitle}>{cat.title}</span>
+                  <span className={styles.catDesc}>{cat.desc}</span>
+                  <span className={styles.catFooter}>
+                    <span className={styles.catTags} aria-hidden="true">
+                      {Array.from(new Set(cat.questions.map((q) => q.tag)))
+                        .slice(0, 3)
+                        .map((tag) => (
+                          <span key={tag} className={styles.catTag}>{tag}</span>
+                        ))}
+                    </span>
+                    <span className={styles.catArrowCircle} aria-hidden="true">
+                      <ArrowRight size={14} strokeWidth={2.2} />
+                    </span>
+                  </span>
                 </button>
-              );
-            })}
-          </div>
+              </RevealItem>
+            ))}
+          </RevealGroup>
         </section>
 
         {/* PRACTICE PANEL */}
-        <section ref={panelRef}>
-          <div className={styles.sectionHead}>
-            <div className={styles.roundTitleRow}>
-              <span className={styles.titleAccentBar} aria-hidden="true" />
-              <h2 className={styles.sectionTitle}>Practice Session</h2>
-            </div>
+        <section ref={panelRef} className={styles.roundSection}>
+          <Reveal className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Practice session</h2>
             <p className={styles.sectionSubtitle}>
-              Read the question, start speaking out loud, and keep an eye on your response time.
+              Read the question, answer out loud and keep an eye on your response time.
             </p>
-          </div>
+          </Reveal>
 
-          <div className={styles.qaPanel}>
-            {activeCategory && currentQuestion ? (
-              <>
-                <div className={styles.qaHeader}>
-                  <div className={styles.qaHeaderLeft}>
-                    <div className={styles.qaHeaderIcon}>{activeCategory.icon}</div>
-                    <div>
-                      <div className={styles.qaHeaderTitle}>{activeCategory.title}</div>
-                      <div className={styles.qaHeaderSub}>Mock personal interview round</div>
+          <Reveal delay={0.06}>
+            <div
+              className={`glass-card ${styles.qaPanel}`}
+              data-tint="blue"
+              style={activeCategory ? ({ "--tint": CAT_TINT[activeCategory.id] ?? "59 130 246", "--cat": activeCategory.color } as React.CSSProperties) : undefined}
+            >
+              {activeCategory && currentQuestion ? (
+                <>
+                  <div className={styles.qaHeader}>
+                    <div className={styles.qaHeaderLeft}>
+                      <span className={styles.qaHeaderIcon} aria-hidden="true">{activeCategory.icon}</span>
+                      <div>
+                        <div className={styles.qaHeaderTitle}>{activeCategory.title}</div>
+                        <div className={styles.qaHeaderSub}>Mock personal interview round</div>
+                      </div>
+                    </div>
+                    <div className={styles.qaTimerWrapper}>
+                      {activeTimedLimit && (
+                        <span className={styles.qaTimedModeBadge}>
+                          <Timer size={13} strokeWidth={2.2} aria-hidden="true" />
+                          {activeTimedLimit}s timed mode
+                        </span>
+                      )}
+                      <div
+                        className={`${styles.qaTimer} ${timerRunning ? styles.qaTimerRunning : ""} ${
+                          activeTimedLimit && elapsed >= activeTimedLimit ? styles.qaTimedWarning : ""
+                        }`}
+                      >
+                        <Clock size={15} strokeWidth={2.2} aria-hidden="true" />
+                        {formatTime(elapsed)} {activeTimedLimit ? `/ ${formatTime(activeTimedLimit)}` : ""}
+                      </div>
                     </div>
                   </div>
-                  <div className={styles.qaTimerWrapper}>
-                    {activeTimedLimit && (
-                      <span className={styles.qaTimedModeBadge}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {activeTimedLimit}s Timed Mode
+
+                  <div className={styles.qaProgressStrip}>
+                    <div className={styles.qaProgressMeta}>
+                      <div className={styles.qaProgressCount}>
+                        <span className={styles.qaProgressNum}>Question {questionIndex + 1}</span>
+                        <span className={styles.qaProgressTotal}> of {activeCategory.questions.length}</span>
+                      </div>
+                      <span className={styles.qaProgressPercent}>
+                        {Math.round(((questionIndex + 1) / activeCategory.questions.length) * 100)}% completed
                       </span>
-                    )}
-                    <div className={`${styles.qaTimer} ${timerRunning ? styles.qaTimerRunning : ""} ${activeTimedLimit && elapsed >= activeTimedLimit ? styles.qaTimedWarning : ""}`}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      {formatTime(elapsed)} {activeTimedLimit ? `/ ${formatTime(activeTimedLimit)}` : ""}
+                    </div>
+                    <div className={styles.qaProgressBar}>
+                      <div
+                        className={styles.qaProgressFill}
+                        style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
+                      />
                     </div>
                   </div>
-                </div>
 
-                <div className={styles.qaProgressStrip}>
-                  <div className={styles.qaProgressMeta}>
-                    <div className={styles.qaProgressCount}>
-                      <span className={styles.qaProgressNum}>Question {questionIndex + 1}</span>
-                      <span className={styles.qaProgressTotal}> of {activeCategory.questions.length}</span>
+                  <div className={styles.qaBody}>
+                    <div className={styles.qaQuestionCard}>
+                      <span className={styles.qaQuestionTag}>
+                        <HelpCircle size={13} strokeWidth={2.2} aria-hidden="true" />
+                        {currentQuestion.tag}
+                      </span>
+                      <p className={styles.qaQuestionText}>{currentQuestion.question}</p>
                     </div>
-                    <span className={styles.qaProgressPercent}>
-                      {Math.round(((questionIndex + 1) / activeCategory.questions.length) * 100)}% Completed
-                    </span>
-                  </div>
-                  <div className={styles.qaProgressBar}>
-                    <div
-                      className={styles.qaProgressFill}
-                      style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
-                    />
-                  </div>
-                </div>
 
-                <div className={styles.qaBody}>
-                  <div className={styles.qaQuestionCard}>
-                    <span className={styles.qaQuestionTag}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                      {currentQuestion.tag}
-                    </span>
-                    <p className={styles.qaQuestionText}>{currentQuestion.question}</p>
-                  </div>
-
-                  <div className={styles.qaTips}>
-                    <div className={styles.qaTipsTitle}>
-                      <div className={styles.qaTipsIcon} aria-hidden="true">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                        </svg>
+                    <div className={styles.qaTips}>
+                      <div className={styles.qaTipsTitle}>
+                        <Lightbulb size={16} strokeWidth={2} className={styles.qaTipsIcon} aria-hidden="true" />
+                        <span>How to answer this well</span>
                       </div>
-                      <span>How to answer this well</span>
-                    </div>
-                    <ul className={styles.qaTipsList}>
-                      {currentQuestion.tips.map((tip, i) => (
-                        <li key={i}>
-                          <span className={styles.tipArrow} aria-hidden="true">&rarr;</span>
-                          <span>{tip}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* ===== ANSWER AREA ===== */}
-                  <div className={styles.answerBlock}>
-                    <div className={styles.answerHead}>
-                      <div className={styles.answerTitle}>
-                        <div className={styles.answerTitleIcon} aria-hidden="true">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
-                          </svg>
-                        </div>
-                        <span>Your Answer</span>
-                      </div>
-                      <div className={styles.answerModeToggle}>
-                        <button
-                          type="button"
-                          className={`${styles.modeBtn} ${answerMode === "audio" ? styles.modeBtnActive : ""}`}
-                          onClick={() => setAnswerMode("audio")}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                          </svg>
-                          Record Audio
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.modeBtn} ${answerMode === "text" ? styles.modeBtnActive : ""}`}
-                          onClick={() => setAnswerMode("text")}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                          Type Answer
-                        </button>
-                      </div>
+                      <ul className={styles.qaTipsList}>
+                        {currentQuestion.tips.map((tip, i) => (
+                          <li key={i}>
+                            <span className={styles.tipArrow} aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
 
-                    {answerMode === "audio" && (
-                      <div className={styles.recorder}>
-                        <div className={`${styles.recordTime} ${isRecording ? styles.recordTimeLive : ""}`}>
-                          {formatTime(recordSeconds)}
+                    {/* ===== ANSWER AREA ===== */}
+                    <div className={styles.answerBlock}>
+                      <div className={styles.answerHead}>
+                        <div className={styles.answerTitle}>
+                          <Mic size={16} strokeWidth={2} className={styles.answerTitleIcon} aria-hidden="true" />
+                          <span>Your answer</span>
                         </div>
-                        <button
-                          type="button"
-                          className={`${styles.recordBtn} ${isRecording ? styles.recordBtnActive : ""}`}
-                          onClick={isRecording ? stopRecording : startRecording}
-                          aria-label={isRecording ? "Stop recording" : "Start recording"}
-                        >
-                          {isRecording ? (
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-                              <rect x="6" y="6" width="12" height="12" rx="2" />
-                            </svg>
-                          ) : (
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" />
-                            </svg>
-                          )}
-                        </button>
-                        <div className={styles.recordHint}>
-                          {isRecording ? "Recording… tap to stop" : audioUrl ? "Recorded — play it back below" : "Tap the mic and answer out loud"}
+                        <div className={styles.answerModeToggle}>
+                          <button
+                            type="button"
+                            className={`${styles.modeBtn} ${answerMode === "audio" ? styles.modeBtnActive : ""}`}
+                            onClick={() => setAnswerMode("audio")}
+                          >
+                            <Mic size={14} strokeWidth={2.2} aria-hidden="true" />
+                            Record audio
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.modeBtn} ${answerMode === "text" ? styles.modeBtnActive : ""}`}
+                            onClick={() => setAnswerMode("text")}
+                          >
+                            <PenLine size={14} strokeWidth={2.2} aria-hidden="true" />
+                            Type answer
+                          </button>
                         </div>
-                        {audioUrl && (
-                          <div className={styles.audioPlayback}>
-                            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                            <audio controls src={audioUrl} />
+                      </div>
+
+                      {answerMode === "audio" && (
+                        <div className={styles.recorder}>
+                          <div className={`${styles.recordTime} ${isRecording ? styles.recordTimeLive : ""}`}>
+                            {formatTime(recordSeconds)}
                           </div>
-                        )}
-                        {recorderError && <div className={styles.recorderError}>{recorderError}</div>}
-                        {speech.error && <div className={styles.recorderError}>{speech.error}</div>}
-                        {speech.supported === false ? (
-                          <p className={styles.speechUnsupported}>
-                            Live transcription isn&apos;t supported in this browser — type your answer in the box below. You can still record and play back your answer.
-                          </p>
-                        ) : (
-                          <p className={styles.recorderNote}>
-                            Transcribed in your browser as you speak (en-IN) — review and fix any mis-heard words before requesting feedback. Your audio is never uploaded or stored by TechnoCAT; note that some browsers (e.g. Chrome) use their own online speech service to transcribe.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    <>
+                          <button
+                            type="button"
+                            className={`${styles.recordBtn} ${isRecording ? styles.recordBtnActive : ""}`}
+                            onClick={isRecording ? stopRecording : startRecording}
+                            aria-label={isRecording ? "Stop recording" : "Start recording"}
+                          >
+                            {isRecording ? (
+                              <Square size={22} strokeWidth={2} fill="currentColor" aria-hidden="true" />
+                            ) : (
+                              <Mic size={28} strokeWidth={2} aria-hidden="true" />
+                            )}
+                          </button>
+                          <div className={styles.recordHint}>
+                            {isRecording ? "Recording… tap to stop" : audioUrl ? "Recorded — play it back below" : "Tap the mic and answer out loud"}
+                          </div>
+                          {audioUrl && (
+                            <div className={styles.audioPlayback}>
+                              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                              <audio controls src={audioUrl} />
+                            </div>
+                          )}
+                          {recorderError && <div className={styles.recorderError}>{recorderError}</div>}
+                          {speech.error && <div className={styles.recorderError}>{speech.error}</div>}
+                          {speech.supported === false ? (
+                            <p className={styles.speechUnsupported}>
+                              Live transcription isn&apos;t supported in this browser — type your answer in the box below. You can still record and play back your answer.
+                            </p>
+                          ) : (
+                            <p className={styles.recorderNote}>
+                              Transcribed in your browser as you speak (en-IN) — review and fix any mis-heard words before requesting feedback. Your audio is never uploaded or stored by TechnoCAT; note that some browsers (e.g. Chrome) use their own online speech service to transcribe.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      <>
                         <textarea
                           className={`${styles.answerTextarea} ${isRecording && speech.listening ? styles.answerTextareaLive : ""}`}
                           placeholder={
@@ -2140,11 +1993,21 @@ export default function MockVivaPrepPage() {
                         />
                         {answerMode === "audio" && speechMetrics && (
                           <div className={styles.speechMetricsRow} aria-label="Speech metrics">
-                            <span className={styles.speechMetric}><strong>{formatTime(speechMetrics.durationSeconds)}</strong> spoken</span>
-                            <span className={styles.speechMetric}><strong>{speechMetrics.wordCount}</strong> words</span>
-                            <span className={styles.speechMetric}><strong>{speechMetrics.wordsPerMinute}</strong> wpm</span>
-                            <span className={styles.speechMetric}><strong>{speechMetrics.fillerCount}</strong> fillers</span>
-                            <span className={styles.speechMetric}><strong>{speechMetrics.longPauses}</strong> long pauses</span>
+                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-blue)" } as React.CSSProperties}>
+                              <strong>{formatTime(speechMetrics.durationSeconds)}</strong> spoken
+                            </span>
+                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-teal)" } as React.CSSProperties}>
+                              <strong>{speechMetrics.wordCount}</strong> words
+                            </span>
+                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
+                              <strong>{speechMetrics.wordsPerMinute}</strong> wpm
+                            </span>
+                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-amber)" } as React.CSSProperties}>
+                              <strong>{speechMetrics.fillerCount}</strong> fillers
+                            </span>
+                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-coral)" } as React.CSSProperties}>
+                              <strong>{speechMetrics.longPauses}</strong> long pauses
+                            </span>
                           </div>
                         )}
                         <div className={styles.answerFootRow}>
@@ -2162,218 +2025,217 @@ export default function MockVivaPrepPage() {
                               </>
                             ) : (
                               <>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z" />
-                                </svg>
-                                Get AI Feedback
+                                <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
+                                Get AI feedback
                               </>
                             )}
                           </button>
                         </div>
                         {evalError && <div className={styles.recorderError}>{evalError}</div>}
-                    </>
-                  </div>
+                      </>
+                    </div>
 
-                  {/* ===== FEEDBACK ===== */}
-                  {feedback && (
-                    <div className={styles.feedbackCard}>
-                      <div className={styles.feedbackTop}>
-                        <div className={styles.scoreRing}>
-                          <svg width="72" height="72" viewBox="0 0 72 72">
-                            <circle cx="36" cy="36" r="30" fill="none" stroke="#E2E8F0" strokeWidth="8" />
-                            <circle
-                              cx="36"
-                              cy="36"
-                              r="30"
-                              fill="none"
-                              stroke={feedback.score >= 80 ? "#10B981" : feedback.score >= 65 ? "#2563EB" : "#F59E0B"}
-                              strokeWidth="8"
-                              strokeLinecap="round"
-                              strokeDasharray={2 * Math.PI * 30}
-                              strokeDashoffset={2 * Math.PI * 30 * (1 - feedback.score / 100)}
-                            />
-                          </svg>
-                          <div className={styles.scoreRingVal}>{feedback.score}</div>
+                    {/* ===== FEEDBACK ===== */}
+                    {feedback && (
+                      <div className={styles.feedbackCard}>
+                        <div className={styles.feedbackTop}>
+                          <div className={styles.scoreRing}>
+                            <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+                              <circle cx="38" cy="38" r="31" fill="none" stroke="rgba(12,23,48,0.07)" strokeWidth="8" />
+                              <circle
+                                cx="38"
+                                cy="38"
+                                r="31"
+                                fill="none"
+                                stroke={feedback.score >= 80 ? "var(--data-emerald)" : feedback.score >= 65 ? "var(--data-blue)" : "var(--data-amber)"}
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                                strokeDasharray={2 * Math.PI * 31}
+                                strokeDashoffset={2 * Math.PI * 31 * (1 - feedback.score / 100)}
+                                transform="rotate(-90 38 38)"
+                              />
+                            </svg>
+                            <div className={styles.scoreRingVal}>{feedback.score}</div>
+                          </div>
+                          <div className={styles.feedbackVerdict}>
+                            <span className={styles.feedbackVerdictLabel}>AI panel verdict</span>
+                            <span className={styles.feedbackVerdictText}>{feedback.verdict}</span>
+                            <span className={`${styles.feedbackSourceTag} ${feedback.source === "ai" ? styles.feedbackSourceAi : ""}`}>
+                              {feedback.source === "ai" ? "AI-evaluated" : "Rule-based estimate"}
+                            </span>
+                          </div>
                         </div>
-                        <div className={styles.feedbackVerdict}>
-                          <span className={styles.feedbackVerdictLabel}>AI Panel Verdict</span>
-                          <span className={styles.feedbackVerdictText}>{feedback.verdict}</span>
-                          <span
-                            className={styles.feedbackSourceTag}
-                            style={
-                              feedback.source === "ai"
-                                ? { background: "#EEF2FF", color: "#4F46E5" }
-                                : { background: "#F1F5F9", color: "#64748B" }
-                            }
-                          >
-                            {feedback.source === "ai" ? "AI-evaluated" : "Rule-based estimate"}
-                          </span>
+                        <div className={styles.feedbackBody}>
+                          <div className={`${styles.feedbackCol} ${styles.feedbackColGood}`}>
+                            <div className={styles.feedbackColTitle}>
+                              <CheckCircle2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                              What worked
+                            </div>
+                            <ul className={`${styles.feedbackList} ${styles.strengthList}`}>
+                              {feedback.strengths.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className={`${styles.feedbackCol} ${styles.feedbackColWarn}`}>
+                            <div className={styles.feedbackColTitle}>
+                              <TrendingUp size={16} strokeWidth={2.2} aria-hidden="true" />
+                              How to improve
+                            </div>
+                            <ul className={`${styles.feedbackList} ${styles.improveList}`}>
+                              {feedback.improvements.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          {feedback.modelAnswer && (
+                            <div className={styles.modelAnswerBox}>
+                              <div className={styles.modelAnswerTitle}>
+                                <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
+                                Sample strong answer
+                              </div>
+                              <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
+                            </div>
+                          )}
+                          {feedback.delivery && (
+                            <div className={styles.deliveryBox}>
+                              <div className={styles.modelAnswerTitle}>
+                                <AudioLines size={16} strokeWidth={2} aria-hidden="true" />
+                                Delivery
+                                <span className={styles.deliveryTag}>Transcribed in your browser</span>
+                              </div>
+                              <div className={styles.speechMetricsRow}>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
+                                  <strong>{feedback.delivery.wordsPerMinute}</strong> wpm
+                                </span>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-blue)" } as React.CSSProperties}>
+                                  <strong>{feedback.delivery.paceVerdict}</strong>
+                                </span>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-amber)" } as React.CSSProperties}>
+                                  <strong>{feedback.delivery.fillerCount}</strong> filler words
+                                </span>
+                              </div>
+                              {feedback.delivery.notes.length > 0 && (
+                                <ul className={styles.feedbackList}>
+                                  {feedback.delivery.notes.map((n, i) => (
+                                    <li key={i}>{n}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              <p className={styles.deliveryCaveat}>
+                                Pace and filler counts are computed from your browser&apos;s transcript and recording time; speech engines often drop fillers like &ldquo;um&rdquo;, so treat them as a lower bound.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className={styles.feedbackBody}>
-                        <div>
-                          <div className={styles.feedbackColTitle} style={{ color: "#059669" }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            What worked
-                          </div>
-                          <ul className={`${styles.feedbackList} ${styles.strengthList}`}>
-                            {feedback.strengths.map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <div className={styles.feedbackColTitle} style={{ color: "#D97706" }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="12" y1="20" x2="12" y2="10" />
-                              <polyline points="7 15 12 20 17 15" />
-                            </svg>
-                            How to improve
-                          </div>
-                          <ul className={`${styles.feedbackList} ${styles.improveList}`}>
-                            {feedback.improvements.map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        {feedback.modelAnswer && (
-                          <div className={styles.modelAnswerBox}>
-                            <div className={styles.modelAnswerTitle}>
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                <line x1="12" y1="17" x2="12.01" y2="17" />
-                              </svg>
-                              Sample strong answer
-                            </div>
-                            <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
-                          </div>
-                        )}
-                        {feedback.delivery && (
-                          <div className={styles.deliveryBox}>
-                            <div className={styles.modelAnswerTitle}>
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
-                              </svg>
-                              Delivery
-                              <span className={styles.deliveryTag}>Transcribed in your browser</span>
-                            </div>
-                            <div className={styles.speechMetricsRow}>
-                              <span className={styles.speechMetric}><strong>{feedback.delivery.wordsPerMinute}</strong> wpm</span>
-                              <span className={styles.speechMetric}><strong>{feedback.delivery.paceVerdict}</strong></span>
-                              <span className={styles.speechMetric}><strong>{feedback.delivery.fillerCount}</strong> filler words</span>
-                            </div>
-                            {feedback.delivery.notes.length > 0 && (
-                              <ul className={styles.feedbackList}>
-                                {feedback.delivery.notes.map((n, i) => (
-                                  <li key={i}>{n}</li>
-                                ))}
-                              </ul>
-                            )}
-                            <p className={styles.deliveryCaveat}>
-                              Pace and filler counts are computed from your browser&apos;s transcript and recording time; speech engines often drop fillers like &ldquo;um&rdquo;, so treat them as a lower bound.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className={styles.qaActions}>
-                    <div className={styles.qaActionsLeft}>
-                      <button
-                        className={styles.btnGhost}
-                        onClick={() => setTimerRunning((r) => !r)}
-                      >
-                        {timerRunning ? (
-                          <>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-                            Pause Timer
-                          </>
-                        ) : (
-                          <>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-                            Resume Timer
-                          </>
-                        )}
-                      </button>
-                      <button
-                        className={styles.btnGhost}
-                        onClick={prevQuestion}
-                        disabled={questionIndex === 0}
-                      >
-                        &larr; Previous
+                    <div className={styles.qaActions}>
+                      <div className={styles.qaActionsLeft}>
+                        <button className={styles.btnGhost} onClick={() => setTimerRunning((r) => !r)}>
+                          {timerRunning ? (
+                            <>
+                              <Pause size={14} strokeWidth={2.4} aria-hidden="true" />
+                              Pause timer
+                            </>
+                          ) : (
+                            <>
+                              <Play size={14} strokeWidth={2.4} aria-hidden="true" />
+                              Resume timer
+                            </>
+                          )}
+                        </button>
+                        <button className={styles.btnGhost} onClick={prevQuestion} disabled={questionIndex === 0}>
+                          <ArrowLeft size={14} strokeWidth={2.4} aria-hidden="true" />
+                          Previous
+                        </button>
+                      </div>
+                      <button className={styles.btnNext} onClick={nextQuestion}>
+                        {questionIndex < activeCategory.questions.length - 1 ? "Next question" : "Restart round"}
+                        <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
                       </button>
                     </div>
-                    <button className={styles.btnNext} onClick={nextQuestion}>
-                      {questionIndex < activeCategory.questions.length - 1 ? "Next Question" : "Restart Round"} &rarr;
-                    </button>
                   </div>
+                </>
+              ) : (
+                <div className={styles.qaEmpty}>
+                  <div className={styles.qaEmptyVisual} aria-hidden="true">
+                    {[0.35, 0.7, 0.5, 0.9, 0.6, 0.4, 0.75, 0.55, 0.3].map((h, i) => (
+                      <span key={i} style={{ height: `${Math.round(h * 100)}%` }} />
+                    ))}
+                  </div>
+                  <div className={styles.qaEmptyTitle}>No active session yet</div>
+                  <p className={styles.qaEmptyDesc}>
+                    Pick a category above, or open timed practice, to start answering questions with a timer and expert tips.
+                  </p>
+                  <button type="button" className={styles.btnGhost} onClick={() => setActiveDrawer("timed")}>
+                    <Timer size={15} strokeWidth={2.2} aria-hidden="true" />
+                    Start timed practice
+                  </button>
                 </div>
-              </>
-            ) : (
-              <div className={styles.qaEmpty}>
-                <div className={styles.qaEmptyIcon}>
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 9V5a3 3 0 0 0-6 0v4" />
-                    <rect x="5" y="9" width="14" height="11" rx="2" />
-                    <circle cx="12" cy="14" r="1.5" />
-                  </svg>
-                </div>
-                <div className={styles.qaEmptyTitle}>No active session yet</div>
-                <p className={styles.qaEmptyDesc}>
-                  Select an interview round above or hit &ldquo;Start a Mock Session&rdquo; to begin practicing with timed questions and expert tips.
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </Reveal>
         </section>
 
         {/* CHECKLIST */}
-        <section id="checklist">
-          <div className={styles.sectionHead}>
-            <div className={styles.roundTitleRow}>
-              <span className={styles.titleAccentBar} aria-hidden="true" />
-              <h2 className={styles.sectionTitle}>Your Self-Assessment Checklist</h2>
-            </div>
+        <section id="checklist" className={styles.roundSection}>
+          <Reveal className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Your self-assessment checklist</h2>
             <p className={styles.sectionSubtitle}>
               Tick these off as you prepare — a solid process beats last-minute cramming.
             </p>
-          </div>
-          <div className={styles.checklistGrid}>
-            {Object.entries(CHECKLIST).map(([groupKey, group]) => (
-              <div key={groupKey} className={styles.checkCard}>
-                <div className={styles.checkHead}>
-                  <div className={styles.checkHeadIcon} style={{ background: group.bg, color: group.color }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 11 12 14 22 4" />
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                    </svg>
-                  </div>
-                  <span className={styles.checkHeadTitle}>{group.title}</span>
-                </div>
-                {group.items.map((item, i) => {
-                  const key = `${groupKey}-${i}`;
-                  const done = checkedItems[key];
-                  return (
-                    <div key={key} className={styles.checkItem} onClick={() => toggleCheck(key)}>
-                      <div className={`${styles.checkBox} ${done ? styles.checkBoxChecked : ""}`}>
-                        {done && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                      <span className={`${styles.checkText} ${done ? styles.checkTextDone : ""}`}>{item}</span>
+          </Reveal>
+          <RevealGroup className={styles.checklistGrid} stagger={0.07}>
+            {Object.entries(CHECKLIST).map(([groupKey, group], gi) => {
+              const doneCount = group.items.filter((_, i) => checkedItems[`${groupKey}-${i}`]).length;
+              return (
+                <RevealItem key={groupKey}>
+                  <div
+                    className={`glass-card ${styles.checkCard}`}
+                    data-tint={gi === 0 ? "blue" : "teal"}
+                    style={{ "--chk": gi === 0 ? "var(--data-blue)" : "var(--data-emerald)" } as React.CSSProperties}
+                  >
+                    <div className={styles.checkHead}>
+                      <span className={styles.checkHeadTitle}>{group.title}</span>
+                      <span className={styles.checkCount}>
+                        <strong>{doneCount}</strong>/{group.items.length}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+                    <div className={styles.checkProgress} aria-hidden="true">
+                      <span style={{ width: `${(doneCount / group.items.length) * 100}%` }} />
+                    </div>
+                    {group.items.map((item, i) => {
+                      const key = `${groupKey}-${i}`;
+                      const done = checkedItems[key];
+                      return (
+                        <div
+                          key={key}
+                          className={styles.checkItem}
+                          onClick={() => toggleCheck(key)}
+                          role="checkbox"
+                          aria-checked={Boolean(done)}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === " " || e.key === "Enter") {
+                              e.preventDefault();
+                              toggleCheck(key);
+                            }
+                          }}
+                        >
+                          <div className={`${styles.checkBox} ${done ? styles.checkBoxChecked : ""}`}>
+                            {done && <Check size={12} strokeWidth={3.5} aria-hidden="true" />}
+                          </div>
+                          <span className={`${styles.checkText} ${done ? styles.checkTextDone : ""}`}>{item}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </RevealItem>
+              );
+            })}
+          </RevealGroup>
         </section>
       </div>
 
@@ -2392,11 +2254,8 @@ export default function MockVivaPrepPage() {
             {/* Fixed Header */}
             <div className={styles.drawerHeader}>
               <div className={styles.drawerHeaderLeft}>
-                <div className={styles.drawerHeaderIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M8 2v4M16 2v4M3 10h18" />
-                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                  </svg>
+                <div className={styles.drawerHeaderIcon} style={{ color: "var(--data-blue)" }}>
+                  <CalendarDays size={22} strokeWidth={2} />
                 </div>
                 <div>
                   <h3 className={styles.drawerHeaderTitle}>Curated Interview Questions</h3>
@@ -2409,20 +2268,14 @@ export default function MockVivaPrepPage() {
                 onClick={() => setActiveDrawer(null)}
                 aria-label="Close drawer"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} strokeWidth={2.2} />
               </button>
             </div>
 
             {/* Search Bar */}
             <div className={styles.drawerSearchBar}>
               <div className={styles.searchWrapper}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+                <Search size={16} strokeWidth={2} color="#66708a" />
                 <input
                   type="text"
                   className={styles.searchInput}
@@ -2438,10 +2291,7 @@ export default function MockVivaPrepPage() {
                     onClick={() => setSearchQuery("")}
                     aria-label="Clear search"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={14} strokeWidth={2.4} />
                   </button>
                 )}
               </div>
@@ -2521,9 +2371,7 @@ export default function MockVivaPrepPage() {
                             <span className={styles.questionText}>{q.question}</span>
                           </div>
                           <span className={styles.questionChevron}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="9 18 15 12 9 6" />
-                            </svg>
+                            <ChevronRight size={16} strokeWidth={2.2} />
                           </span>
                         </button>
                       ))}
@@ -2550,9 +2398,7 @@ export default function MockVivaPrepPage() {
                     {/* Tip card */}
                     <div className={styles.tipCard}>
                       <div className={styles.tipCardIcon}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                        </svg>
+                        <Lightbulb size={18} strokeWidth={2} />
                       </div>
                       <div>
                         <strong>Tip:</strong> Practice your answers out loud and focus on clear structure and real examples.
@@ -2596,11 +2442,8 @@ export default function MockVivaPrepPage() {
             {/* Fixed Header */}
             <div className={styles.drawerHeader}>
               <div className={styles.drawerHeaderLeft}>
-                <div className={styles.drawerHeaderIcon} style={{ background: "#F0FDF4", color: "#10B981" }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+                <div className={styles.drawerHeaderIcon} style={{ color: "var(--data-emerald)" }}>
+                  <CheckCircle2 size={22} strokeWidth={2} />
                 </div>
                 <div>
                   <h3 className={styles.drawerHeaderTitle}>Interview Round Categories</h3>
@@ -2613,10 +2456,7 @@ export default function MockVivaPrepPage() {
                 onClick={() => setActiveDrawer(null)}
                 aria-label="Close drawer"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} strokeWidth={2.2} />
               </button>
             </div>
 
@@ -2628,9 +2468,7 @@ export default function MockVivaPrepPage() {
                   className={styles.backToRoundsBtn}
                   onClick={() => setSelectedRoundDetailId(null)}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
+                  <ChevronLeft size={14} strokeWidth={2.4} />
                   Back to all interview rounds
                 </button>
 
@@ -2640,7 +2478,7 @@ export default function MockVivaPrepPage() {
                       {activeRoundDetail.icon}
                     </div>
                     <div>
-                      <h4 style={{ fontSize: "18px", fontWeight: 800, color: "#0F172A", margin: 0 }}>
+                      <h4 style={{ fontFamily: "var(--ff-display)", fontSize: "18px", fontWeight: 700, letterSpacing: "0.03em", textTransform: "uppercase", color: "var(--ink)", margin: 0 }}>
                         {activeRoundDetail.title}
                       </h4>
                       <span
@@ -2651,18 +2489,14 @@ export default function MockVivaPrepPage() {
                       </span>
                     </div>
                   </div>
-                  <p style={{ fontSize: "13.5px", color: "#475569", lineHeight: 1.55, margin: 0 }}>
+                  <p style={{ fontSize: "13.5px", color: "var(--ink-2)", lineHeight: 1.55, margin: 0 }}>
                     {activeRoundDetail.subtitle}
                   </p>
                 </div>
 
                 <div className={styles.roundDetailCard}>
                   <div className={styles.roundDetailSectionTitle}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
+                    <Info size={16} strokeWidth={2.2} color="var(--data-blue)" />
                     What the Interviewer Evaluates
                   </div>
                   <ul className={styles.roundDetailBulletList}>
@@ -2674,9 +2508,7 @@ export default function MockVivaPrepPage() {
 
                 <div className={styles.roundDetailCard}>
                   <div className={styles.roundDetailSectionTitle}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                    </svg>
+                    <Lightbulb size={16} strokeWidth={2.2} color="var(--data-amber)" />
                     Preparation Tips &amp; Strategy
                   </div>
                   <ul className={styles.roundDetailBulletList}>
@@ -2728,9 +2560,7 @@ export default function MockVivaPrepPage() {
                           </div>
                         </div>
                         <span className={styles.questionChevron}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
+                          <ChevronRight size={16} strokeWidth={2.2} />
                         </span>
                       </button>
                     </div>
@@ -2745,10 +2575,7 @@ export default function MockVivaPrepPage() {
                 >
                   <div className={styles.timelineHelperLeft}>
                     <div className={styles.timelineHelperIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                      </svg>
+                      <Compass size={20} strokeWidth={2} />
                     </div>
                     <div>
                       <div className={styles.timelineHelperTitle}>Not sure which round to start?</div>
@@ -2756,9 +2583,7 @@ export default function MockVivaPrepPage() {
                     </div>
                   </div>
                   <span className={styles.questionChevron}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    <ChevronRight size={16} strokeWidth={2.2} />
                   </span>
                 </div>
               </div>
@@ -2782,11 +2607,8 @@ export default function MockVivaPrepPage() {
             {/* Fixed Header */}
             <div className={styles.drawerHeader}>
               <div className={styles.drawerHeaderLeft}>
-                <div className={styles.drawerHeaderIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+                <div className={styles.drawerHeaderIcon} style={{ color: "var(--data-amber)" }}>
+                  <Timer size={22} strokeWidth={2} />
                 </div>
                 <div>
                   <h3 className={styles.drawerHeaderTitle}>Timed Response Practice</h3>
@@ -2799,10 +2621,7 @@ export default function MockVivaPrepPage() {
                 onClick={() => setActiveDrawer(null)}
                 aria-label="Close drawer"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} strokeWidth={2.2} />
               </button>
             </div>
 
@@ -2856,11 +2675,7 @@ export default function MockVivaPrepPage() {
               {/* How it works section */}
               <div className={styles.howItWorksBox}>
                 <div className={styles.howItWorksHead}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <circle cx="12" cy="12" r="6" />
-                    <circle cx="12" cy="12" r="2" />
-                  </svg>
+                  <Target size={18} strokeWidth={2.2} color="var(--data-violet)" />
                   <span>How it works?</span>
                 </div>
 
@@ -2868,41 +2683,31 @@ export default function MockVivaPrepPage() {
                   <ul className={styles.howItWorksList}>
                     <li>
                       <span className={styles.howItWorksCheck}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check size={15} strokeWidth={3} />
                       </span>
                       <span>You will get one question at a time</span>
                     </li>
                     <li>
                       <span className={styles.howItWorksCheck}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check size={15} strokeWidth={3} />
                       </span>
                       <span>Timer will start automatically</span>
                     </li>
                     <li>
                       <span className={styles.howItWorksCheck}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check size={15} strokeWidth={3} />
                       </span>
                       <span>Speak your answer before time ends</span>
                     </li>
                     <li>
                       <span className={styles.howItWorksCheck}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check size={15} strokeWidth={3} />
                       </span>
                       <span>You can move to the next question or retry</span>
                     </li>
                     <li>
                       <span className={styles.howItWorksCheck}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check size={15} strokeWidth={3} />
                       </span>
                       <span>Helps improve clarity, confidence and time management</span>
                     </li>
@@ -2910,27 +2715,23 @@ export default function MockVivaPrepPage() {
 
                   {/* Stopwatch Illustration Graphic */}
                   <div className={styles.howItWorksGraphic}>
-                    <svg width="86" height="86" viewBox="0 0 100 100" fill="none">
-                      <circle cx="50" cy="56" r="34" fill="#EFF6FF" stroke="#3B82F6" strokeWidth="4" />
-                      <circle cx="50" cy="56" r="28" fill="#FFFFFF" />
-                      <line x1="50" y1="22" x2="50" y2="15" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" />
-                      <line x1="42" y1="15" x2="58" y2="15" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" />
-                      <line x1="72" y1="30" x2="78" y2="24" stroke="#93C5FD" strokeWidth="3.5" strokeLinecap="round" />
-                      {/* Clock ticks */}
-                      <circle cx="50" cy="34" r="2" fill="#93C5FD" />
-                      <circle cx="72" cy="56" r="2" fill="#93C5FD" />
-                      <circle cx="50" cy="78" r="2" fill="#93C5FD" />
-                      <circle cx="28" cy="56" r="2" fill="#93C5FD" />
-                      {/* Clock hands */}
-                      <line x1="50" y1="56" x2="50" y2="40" stroke="#1D4ED8" strokeWidth="3.5" strokeLinecap="round" />
-                      <line x1="50" y1="56" x2="62" y2="56" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
-                      <circle cx="50" cy="56" r="4" fill="#1D4ED8" />
-                      {/* Sparkles / dots */}
-                      <circle cx="16" cy="38" r="2.5" fill="#60A5FA" opacity="0.6" />
-                      <circle cx="84" cy="44" r="2.5" fill="#60A5FA" opacity="0.6" />
-                      <circle cx="24" cy="74" r="2" fill="#93C5FD" opacity="0.5" />
-                      <circle cx="78" cy="76" r="2.5" fill="#60A5FA" opacity="0.5" />
+                    <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true">
+                      <circle cx="43" cy="43" r="36" fill="none" stroke="rgba(12,23,48,0.07)" strokeWidth="8" />
+                      <circle
+                        cx="43"
+                        cy="43"
+                        r="36"
+                        fill="none"
+                        stroke="var(--data-amber)"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 36}
+                        strokeDashoffset={2 * Math.PI * 36 * (1 - Math.min(timedDuration, 120) / 120)}
+                        transform="rotate(-90 43 43)"
+                        style={{ transition: "stroke-dashoffset 0.5s var(--ease-out)" }}
+                      />
                     </svg>
+                    <span className={styles.howItWorksGraphicVal}>{timedDuration}s</span>
                   </div>
                 </div>
               </div>

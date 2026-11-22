@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { MathText } from "@/components/pyq/PYQMarkdownViewer";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Lightbulb, Sparkles, X } from "lucide-react";
 import styles from "./TopicQuizModal.module.css";
 
 interface PracticeQuestion {
@@ -101,18 +102,29 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
   const sourceLabel =
     source === "ai" ? "AI-generated practice" : source === "mixed" ? "AI-generated + question bank" : "From the TechnoCAT question bank";
 
+  // Display-only breakdown of the server-graded result
+  const wrongCount = results ? results.responses.filter((r) => r && !r.isCorrect && r.selectedOption !== null).length : 0;
+  const skippedCount = results ? Math.max(0, results.total - results.correct - wrongCount) : 0;
+  const pct = (n: number) => (results && results.total > 0 ? `${(n / results.total) * 100}%` : "0%");
+  const accuracy = results && results.total > 0 ? Math.round((results.correct / results.total) * 100) : 0;
+
   const modal = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Practice drill: ${topicTitle}`}>
         <div className={styles.modalHeader}>
-          <div>
-            <h2 className={styles.modalTitle}>Practice Drill · {topicTitle}</h2>
-            <p className={styles.modalSubtitle}>
+          <div className={styles.headerText}>
+            <span className={styles.kicker}>
+              {source === "bank" ? <BookOpen size={14} aria-hidden="true" /> : <Sparkles size={14} aria-hidden="true" />}
               {sourceLabel}
-              {focus.length > 0 && ` · focused on ${focus.slice(0, 2).join(", ")}`}
-            </p>
+            </span>
+            <h2 className={styles.modalTitle}>Practice drill · {topicTitle}</h2>
+            {focus.length > 0 && (
+              <p className={styles.modalSubtitle}>Focused on {focus.slice(0, 2).join(", ")}</p>
+            )}
           </div>
-          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <X size={18} aria-hidden="true" />
+          </button>
         </div>
 
         <div className={styles.modalBody}>
@@ -123,15 +135,25 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
             </div>
           )}
 
-          {!loading && error && !results && <p className={styles.resultsText}>{error}</p>}
+          {!loading && error && !results && <p className={styles.errorText}>{error}</p>}
 
           {!loading && !results && q && (
             <>
               <div className={styles.questionHeader}>
-                Question {current + 1} of {questions.length}
-                {q.concept ? ` · ${q.concept}` : ""}
+                <span className={styles.qNumber}>
+                  Question <span className={styles.mono}>{current + 1}</span> of <span className={styles.mono}>{questions.length}</span>
+                </span>
+                {q.concept && <span className={styles.conceptChip}>{q.concept}</span>}
               </div>
-              <p className={styles.questionText}><MathText text={q.question} /></p>
+              <div className={styles.progress} aria-hidden="true">
+                {questions.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`${styles.progressSeg} ${i === current ? styles.progressCurrent : answers[i] !== undefined ? styles.progressDone : ""}`}
+                  />
+                ))}
+              </div>
+              <div className={styles.questionText}><MathText text={q.question} /></div>
               <div className={styles.optionsGrid}>
                 {q.options.map((opt, i) => (
                   <button
@@ -140,7 +162,8 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
                     className={`${styles.optionBtn} ${answers[current] === i ? styles.optionSelected : ""}`}
                     onClick={() => setAnswers((prev) => ({ ...prev, [current]: i }))}
                   >
-                    <strong>{LETTERS[i]}.</strong> <MathText text={opt} />
+                    <span className={styles.optionKey}>{LETTERS[i]}</span>
+                    <span className={styles.optionText}><MathText text={opt} /></span>
                   </button>
                 ))}
               </div>
@@ -149,33 +172,74 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
 
           {results && (
             <div className={styles.resultsState}>
-              <div className={styles.resultsScore}>{results.correct} / {results.total}</div>
+              <div className={styles.resultsTop}>
+                <div className={styles.scoreCard}>
+                  <span className={styles.scoreLabel}>Score</span>
+                  <div className={styles.resultsScore}>
+                    {results.correct}
+                    <span className={styles.scoreTotal}>/ {results.total}</span>
+                  </div>
+                  <div className={styles.accBar} role="img" aria-label={`${results.correct} correct, ${wrongCount} wrong, ${skippedCount} not answered`}>
+                    <span className={styles.accCorrect} style={{ width: pct(results.correct) }} />
+                    <span className={styles.accWrong} style={{ width: pct(wrongCount) }} />
+                    <span className={styles.accSkipped} style={{ width: pct(skippedCount) }} />
+                  </div>
+                </div>
+                <div className={styles.statStack}>
+                  <div className={`glass-card ${styles.statCard}`} data-tint="teal">
+                    <span className={styles.statValue}>{accuracy}%</span>
+                    <span className={styles.statLabel}>Accuracy</span>
+                  </div>
+                  <div className={`glass-card ${styles.statCard}`} data-tint="coral">
+                    <span className={styles.statValue}>{wrongCount}</span>
+                    <span className={styles.statLabel}>Wrong</span>
+                  </div>
+                  <div className={`glass-card ${styles.statCard}`} data-tint="violet">
+                    <span className={styles.statValue}>{skippedCount}</span>
+                    <span className={styles.statLabel}>Not answered</span>
+                  </div>
+                </div>
+              </div>
               <p className={styles.resultsText}>
                 Review each question below. Practice drills count towards your study time and concept accuracy.
               </p>
               {questions.map((question, i) => {
                 const r = results.responses[i];
                 return (
-                  <div key={question.id} className={styles.feedbackBox} style={{ textAlign: "left", marginTop: 12 }}>
-                    <p className={styles.questionText} style={{ fontSize: 14 }}>
-                      {i + 1}. <MathText text={question.question} />
-                    </p>
+                  <div key={question.id} className={`${styles.feedbackBox} ${r?.isCorrect ? styles.feedbackCorrect : styles.feedbackWrong}`}>
+                    <div className={styles.feedbackHead}>
+                      <span className={styles.feedbackNum}>Q{i + 1}</span>
+                      {r?.isCorrect ? (
+                        <span className={`${styles.mark} ${styles.markCorrect}`}><Check size={13} aria-hidden="true" />Correct</span>
+                      ) : r?.selectedOption === null ? (
+                        <span className={`${styles.mark} ${styles.markSkipped}`}>Not answered</span>
+                      ) : (
+                        <span className={`${styles.mark} ${styles.markWrong}`}><X size={13} aria-hidden="true" />Wrong</span>
+                      )}
+                    </div>
+                    <div className={styles.reviewQuestion}>
+                      <MathText text={question.question} />
+                    </div>
                     {question.options.map((opt, oi) => (
                       <div
                         key={oi}
-                        className={`${styles.optionBtn} ${oi === r?.correctOption ? styles.optionCorrect : oi === r?.selectedOption ? styles.optionIncorrect : ""}`}
-                        style={{ cursor: "default", marginTop: 6 }}
+                        className={`${styles.optionBtn} ${styles.optionStatic} ${oi === r?.correctOption ? styles.optionCorrect : oi === r?.selectedOption ? styles.optionIncorrect : ""}`}
                       >
-                        <strong>{LETTERS[oi]}.</strong> <MathText text={opt} />
-                        {oi === r?.correctOption && " ✓"}
-                        {oi === r?.selectedOption && oi !== r?.correctOption && " (your answer)"}
+                        <span className={styles.optionKey}>{LETTERS[oi]}</span>
+                        <span className={styles.optionText}><MathText text={opt} /></span>
+                        {oi === r?.correctOption && <Check size={16} className={styles.optionMark} aria-label="Correct answer" />}
+                        {oi === r?.selectedOption && oi !== r?.correctOption && (
+                          <span className={styles.yourAnswer}><X size={14} aria-hidden="true" />Your answer</span>
+                        )}
                       </div>
                     ))}
-                    {r?.selectedOption === null && <p style={{ fontSize: 13, color: "#64748B" }}>Not answered.</p>}
                     {r?.explanation && (
-                      <p style={{ fontSize: 13, color: "#334155", marginTop: 8 }}>
-                        <strong>Explanation:</strong> <MathText text={r.explanation} />
-                      </p>
+                      <div className={styles.explanation}>
+                        <Lightbulb size={15} aria-hidden="true" />
+                        <div>
+                          <strong>Explanation: </strong><MathText text={r.explanation} />
+                        </div>
+                      </div>
                     )}
                   </div>
                 );
@@ -187,14 +251,22 @@ export default function TopicQuizModal({ topicId, topicTitle, onClose }: TopicQu
         <div className={styles.modalFooter}>
           {!results && !loading && questions.length > 0 && (
             <>
-              <button type="button" className={styles.btnPrimary} disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+              <button type="button" className={styles.btnSecondary} disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+                <ArrowLeft size={16} aria-hidden="true" />
                 Previous
               </button>
               {current < questions.length - 1 ? (
-                <button type="button" className={styles.btnPrimary} onClick={() => setCurrent((c) => c + 1)}>Next</button>
+                <button type="button" className={styles.btnPrimary} onClick={() => setCurrent((c) => c + 1)}>
+                  Next
+                  <ArrowRight size={16} aria-hidden="true" />
+                </button>
               ) : (
                 <button type="button" className={styles.btnPrimary} disabled={submitting} onClick={submit}>
-                  {submitting ? "Grading…" : `Submit (${answeredCount}/${questions.length} answered)`}
+                  {submitting ? "Grading…" : (
+                    <>
+                      Submit <span className={styles.mono}>({answeredCount}/{questions.length} answered)</span>
+                    </>
+                  )}
                 </button>
               )}
             </>

@@ -3,6 +3,7 @@
 import React from "react";
 import styles from "./Proctoring.module.css";
 import type { ProctorStatus } from "./useProctoring";
+import { CircleAlert, Cpu, ScanFace, TriangleAlert, Video } from "lucide-react";
 
 const STATUS_LABEL: Record<ProctorStatus, string> = {
   idle: "Proctoring off",
@@ -69,30 +70,42 @@ export function ProctorConsent({ status, onEnable, onStartWithout, onCancel }: P
   return (
     <div className={styles.consentOverlay}>
       <div className={styles.consentCard} role="dialog" aria-modal="true" aria-labelledby="proctor-consent-title">
-        <div className={styles.consentIcon} aria-hidden="true">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M23 7l-7 5 7 5V7z" />
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-          </svg>
+        <div className={styles.consentHead}>
+          <span className={styles.consentIcon} aria-hidden="true">
+            <Video size={20} />
+          </span>
+          <div>
+            <span className={styles.consentKicker}>Before you begin</span>
+            <h3 id="proctor-consent-title" className={styles.consentTitle}>
+              Webcam proctoring
+            </h3>
+          </div>
         </div>
-        <h3 id="proctor-consent-title" className={styles.consentTitle}>
-          Webcam proctoring
-        </h3>
         <ul className={styles.consentList}>
           <li>
-            Your camera is used to check that you are alone, facing the screen and not using a phone.
+            <ScanFace size={17} className={styles.consentLiIcon} aria-hidden="true" />
+            <span>Your camera is used to check that you are alone, facing the screen and not using a phone.</span>
           </li>
           <li>
-            <strong>Video is processed on this device only.</strong> No video or images are uploaded; only short
-            event labels (e.g. &ldquo;no face detected&rdquo;) are recorded with your attempt.
+            <Cpu size={17} className={styles.consentLiIcon} aria-hidden="true" />
+            <span>
+              <strong>Video is processed on this device only.</strong> No video or images are uploaded; only short
+              event labels (e.g. &ldquo;no face detected&rdquo;) are recorded with your attempt.
+            </span>
           </li>
           <li>
-            Each confirmed violation counts as a proctoring strike (-1 mark), the same as switching tabs. 3 strikes
-            auto-submit the exam.
+            <TriangleAlert size={17} className={`${styles.consentLiIcon} ${styles.consentLiWarn}`} aria-hidden="true" />
+            <span>
+              Each confirmed violation counts as a proctoring strike (<b className={styles.mono}>-1</b> mark), the same
+              as switching tabs. <b className={styles.mono}>3</b> strikes auto-submit the exam.
+            </span>
           </li>
           <li className={styles.consentMuted}>
-            Automatic detection reduces cheating but is not perfect: it can miss things or occasionally misread
-            lighting and posture. Keep your face well lit and centred.
+            <CircleAlert size={17} className={styles.consentLiIcon} aria-hidden="true" />
+            <span>
+              Automatic detection reduces cheating but is not perfect: it can miss things or occasionally misread
+              lighting and posture. Keep your face well lit and centred.
+            </span>
           </li>
         </ul>
 

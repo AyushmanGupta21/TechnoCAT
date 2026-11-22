@@ -11,6 +11,20 @@ import {
 } from "@/data/pyqData";
 import PYQStudyModal from "./PYQStudyModal";
 import PYQAttemptModal from "./PYQAttemptModal";
+import {
+  BookOpen,
+  ChartColumn,
+  Check,
+  Circle,
+  CircleCheck,
+  Clock,
+  FileText,
+  Lock,
+  Play,
+  ShieldCheck,
+  Target,
+  X,
+} from "lucide-react";
 import styles from "./PYQYearModal.module.css";
 
 interface PYQYearModalProps {
@@ -21,6 +35,11 @@ interface PYQYearModalProps {
 
 const ALL_SLOTS = ["Slot 1", "Slot 2", "Slot 3"];
 const ALL_SECTIONS: Array<"VARC" | "DILR" | "QUANT"> = ["VARC", "DILR", "QUANT"];
+const SECTION_TINT: Record<"VARC" | "DILR" | "QUANT", "blue" | "teal" | "violet"> = {
+  VARC: "blue",
+  DILR: "teal",
+  QUANT: "violet",
+};
 
 export default function PYQYearModal({
   isOpen,
@@ -208,17 +227,21 @@ export default function PYQYearModal({
           <div className={styles.headerLeft}>
             <div className={styles.badgeRow}>
               <span className={styles.yearBadge}>
-                {year === 2024 ? "TechnoCAT 6.0 Full Mock & Official Archive" : `CAT ${year} Archive`}
+                {year === 2024 ? "TechnoCAT 6.0 full mock" : `CAT ${year} archive`}
               </span>
-              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
-                {year === 2024 ? "Free All-India Live Simulation • 3 Slots" : "Official Question Papers"}
+              <span className={styles.badgeMeta}>
+                {year === 2024 ? "Free all-India live simulation · 3 slots" : "Official question papers"}
               </span>
             </div>
             <h2 className={styles.headerTitle}>
-              {year === 2024 ? `TechnoCAT 6.0 Full Mock (Official CAT ${year})` : `CAT ${year} Previous Year Question Papers`}
+              {year === 2024 ? (
+                <>TechnoCAT 6.0 full mock <span className="text-gradient">(CAT {year})</span></>
+              ) : (
+                <>CAT <span className="text-gradient">{year}</span> previous year papers</>
+              )}
             </h2>
             <p className={styles.headerSubtitle}>
-              Access all {availableSlots.length} Slots &amp; 3 Sections. Review detailed solutions in Study Mode or simulate official exam conditions in Timed Attempt Mode.
+              {availableSlots.length} slots × 3 sections. Read solutions in study mode or sit a timed, proctored attempt.
             </p>
           </div>
 
@@ -227,16 +250,16 @@ export default function PYQYearModal({
             className={styles.closeBtn}
             onClick={onClose}
             title="Close"
+            aria-label="Close"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
         {/* Filter Controls Bar */}
         <div className={styles.filterBar}>
-          {/* Subject Filter Chips */}
           <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Subject:</span>
+            <span className={styles.filterLabel}>Section</span>
             <button
               type="button"
               className={`${styles.filterChip} ${
@@ -244,7 +267,7 @@ export default function PYQYearModal({
               }`}
               onClick={() => setSelectedSubjects([])}
             >
-              All Subjects
+              All
             </button>
             {ALL_SECTIONS.map((sec) => {
               const isActive = selectedSubjects.includes(sec);
@@ -258,18 +281,16 @@ export default function PYQYearModal({
                   }`}
                   onClick={() => toggleSubjectFilter(sec)}
                 >
+                  <span className={styles.secDot} data-sec={sec} aria-hidden="true" />
                   <span>{sec}</span>
-                  {isLocked && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "4px" }}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  )}
+                  {isLocked && <Lock size={12} aria-label="Locked" />}
                 </button>
               );
             })}
           </div>
 
-          {/* Slot Filter Chips */}
           <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Slot:</span>
+            <span className={styles.filterLabel}>Slot</span>
             <button
               type="button"
               className={`${styles.filterChip} ${
@@ -277,7 +298,7 @@ export default function PYQYearModal({
               }`}
               onClick={() => setSelectedSlots([])}
             >
-              All Slots
+              All
             </button>
             {availableSlots.map((slot) => {
               const isActive = selectedSlots.includes(slot);
@@ -299,22 +320,35 @@ export default function PYQYearModal({
 
         {/* Modal Body */}
         <div className={styles.bodyContent}>
-          {/* Smart Lockout & Weak Area Checklist Banner */}
+          {/* Lockout & weak-area checklist */}
           {lockedSubject && (
-            <div className={styles.lockoutBanner}>
+            <div className={`glass-card ${styles.lockoutBanner}`} data-tint="coral">
               <div className={styles.lockoutBannerHeader}>
                 <div className={styles.lockoutLeft}>
-                  <div className={styles.lockoutIcon}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  </div>
+                  <span className={styles.lockoutIcon} aria-hidden="true">
+                    <Lock size={18} />
+                  </span>
                   <div>
                     <h3 className={styles.lockoutTitle}>
-                      {lockedSubject} Is Locked Across All Slots
+                      {lockedSubject} is locked across all slots
                     </h3>
                     <p className={styles.lockoutSubtitle}>
-                      You have used all 3 attempts for {lockedSubject} in this cycle. Complete the weak-area lessons below, picked from the questions you missed ({completedCount} of {activeWeakAreas.length} done). The section unlocks automatically once every lesson is completed.
+                      You have used all 3 attempts for {lockedSubject} in this cycle. Finish the weak-area lessons below,
+                      picked from the questions you missed. The section unlocks automatically once every lesson is done.
                     </p>
                   </div>
+                </div>
+                <div className={styles.lockoutProgress}>
+                  <span className={styles.lockoutProgressVal}>
+                    {completedCount}<span>/{activeWeakAreas.length}</span>
+                  </span>
+                  <span className={styles.lockoutProgressLbl}>lessons done</span>
+                  <span className={styles.progressTrack} aria-hidden="true">
+                    <span
+                      className={styles.progressFill}
+                      style={{ width: `${activeWeakAreas.length ? Math.round((completedCount / activeWeakAreas.length) * 100) : 0}%` }}
+                    />
+                  </span>
                 </div>
               </div>
 
@@ -328,17 +362,14 @@ export default function PYQYearModal({
                       }`}
                     >
                       <div className={styles.checklistInfo}>
-                        <div
+                        <span
                           className={`${styles.checkCircle} ${
                             item.completed ? styles.circleDone : styles.circlePending
                           }`}
+                          aria-hidden="true"
                         >
-                          {item.completed ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          ) : (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>
-                          )}
-                        </div>
+                          {item.completed ? <CircleCheck size={18} /> : <Circle size={18} />}
+                        </span>
                         <div>
                           <div className={styles.checklistLessonTitle}>
                             {item.lessonTitle}
@@ -354,7 +385,13 @@ export default function PYQYearModal({
                         className={styles.studyLessonBtn}
                         onClick={() => handleStudyLesson(item.topicId, item.lessonId)}
                       >
-                        {item.completed ? "Review Again" : "Watch Lecture →"}
+                        {item.completed ? (
+                          "Review again"
+                        ) : (
+                          <>
+                            <Play size={13} aria-hidden="true" /> Watch lesson
+                          </>
+                        )}
                       </button>
                     </div>
                   ))}
@@ -372,77 +409,72 @@ export default function PYQYearModal({
               const attemptsCount = stat?.attemptsCount || 0;
 
               return (
-                <div key={`${slot}-${section}`} className={styles.sectionCard}>
+                <div
+                  key={`${slot}-${section}`}
+                  className={`glass-card ${styles.sectionCard} ${isLocked ? styles.sectionCardLocked : ""}`}
+                  data-tint={SECTION_TINT[section]}
+                  data-sec={section}
+                >
                   {/* Card Header */}
                   <div className={styles.cardHeader}>
                     <span className={styles.slotBadge}>{slot}</span>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        color: meta.color,
-                        background: `${meta.color}15`,
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                      }}
-                    >
-                      CAT {year}
-                    </span>
+                    <span className={styles.yearChip}>CAT {year}</span>
                   </div>
 
                   {/* Subject Name */}
                   <div className={styles.cardSubjectRow}>
-                    <div
-                      className={styles.subjectIcon}
-                      style={{ background: `${meta.color}15`, color: meta.color }}
-                    >
-                      {section === "VARC" ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                      ) : section === "DILR" ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.3 8.7 8.7 21.3c-1 1-2.5 1-3.4 0l-2.6-2.6c-1-1-1-2.5 0-3.4L15.3 2.7c1-1 2.5-1 3.4 0l2.6 2.6c1 1 1 2.5 0 3.4Z"/></svg>
-                      )}
-                    </div>
+                    <span className={styles.subjectIcon} aria-hidden="true" />
                     <div>
                       <h3 className={styles.subjectTitle}>{section}</h3>
-                      <span style={{ fontSize: "12px", color: "#64748b" }}>
-                        {meta.title}
-                      </span>
+                      <span className={styles.subjectFull}>{meta.title}</span>
                     </div>
                   </div>
 
                   {/* Specs */}
                   <div className={styles.cardSpecs}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <span>{info.durationMinutes} Mins</span>
+                    <span className={styles.specItem}>
+                      <Clock size={13} aria-hidden="true" />
+                      {info.durationMinutes} min
                     </span>
-                    <span>•</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                      <span>{info.totalCount} Questions</span>
+                    <span className={styles.specItem}>
+                      <FileText size={13} aria-hidden="true" />
+                      {info.totalCount} Qs
                     </span>
-                    <span>•</span>
-                    <span>{info.mcqCount} MCQ + {info.titaCount} TITA</span>
+                    <span className={styles.specItem}>
+                      {info.mcqCount} MCQ + {info.titaCount} TITA
+                    </span>
                   </div>
 
-                  {/* Status Badge */}
+                  {/* Attempts meter + status */}
                   <div className={styles.statusBadgeRow}>
+                    <div className={styles.meterRow}>
+                      <span className={styles.meterLabel}>Attempts</span>
+                      <span className={styles.meter} aria-label={`${attemptsCount} of 3 attempts used`}>
+                        {[0, 1, 2].map((i) => (
+                          <span
+                            key={i}
+                            className={`${styles.meterSeg} ${i < attemptsCount ? (isLocked ? styles.meterSegLocked : styles.meterSegOn) : ""}`}
+                          />
+                        ))}
+                      </span>
+                      <span className={styles.meterVal}>{Math.min(attemptsCount, 3)}/3</span>
+                    </div>
                     {isLocked ? (
                       <span className={`${styles.statusBadge} ${styles.statusLocked}`}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Subject Locked (3/3 Attempts)</span>
+                        <Lock size={13} aria-hidden="true" />
+                        <span>Section locked · finish the checklist</span>
                       </span>
                     ) : attemptsCount > 0 ? (
                       <span className={`${styles.statusBadge} ${styles.statusAttempted}`}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>{attemptsCount}/3 Attempts Used • Best: {stat.bestScore} Marks ({stat.bestPercentage}%)</span>
+                        <Check size={13} aria-hidden="true" />
+                        <span>
+                          Best <strong>{stat.bestScore}</strong> marks · <strong>{stat.bestPercentage}%</strong>
+                        </span>
                       </span>
                     ) : (
                       <span className={`${styles.statusBadge} ${styles.statusNotAttempted}`}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/></svg>
-                        <span>Not Attempted (0/3 Used)</span>
+                        <Circle size={12} aria-hidden="true" />
+                        <span>Not attempted yet</span>
                       </span>
                     )}
                   </div>
@@ -454,9 +486,9 @@ export default function PYQYearModal({
                       className={styles.btnStudy}
                       onClick={() => info.totalCount > 0 && setStudyModalTarget({ slot, section })}
                       disabled={info.totalCount === 0}
-                      title={info.totalCount === 0 ? "No questions available for this slot" : "Read and study questions, options, and comprehensive solutions"}
+                      title={info.totalCount === 0 ? "No questions available for this slot" : "Read questions, options and full solutions"}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                      <BookOpen size={15} aria-hidden="true" />
                       <span>Study PYQ</span>
                     </button>
 
@@ -467,11 +499,11 @@ export default function PYQYearModal({
                       disabled={isLocked}
                       title={
                         isLocked
-                          ? "Subject is locked. Complete the weak-area checklist to unlock."
-                          : "Take timed proctored exam under CAT exam conditions"
+                          ? "Section is locked. Complete the weak-area checklist to unlock."
+                          : "Take a timed, proctored attempt under CAT conditions"
                       }
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                      {isLocked ? <Lock size={15} aria-hidden="true" /> : <Target size={15} aria-hidden="true" />}
                       <span>Attempt</span>
                     </button>
 
@@ -479,9 +511,10 @@ export default function PYQYearModal({
                       type="button"
                       className={styles.btnAnalytics}
                       onClick={() => setAnalyticsTarget({ slot, section })}
-                      title="View Previous Attempts Analytics"
+                      title="View past attempts"
+                      aria-label="View past attempts"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                      <ChartColumn size={16} aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -501,19 +534,21 @@ export default function PYQYearModal({
             <div className={styles.analyticsPanel}>
               <div className={styles.analyticsHeader}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0f172a" }}>
-                    {analyticsTarget.section} Past Attempts Analytics
+                  <h3 className={styles.analyticsTitle}>
+                    <span className={styles.secDot} data-sec={analyticsTarget.section} aria-hidden="true" />
+                    {analyticsTarget.section} past attempts
                   </h3>
-                  <span style={{ fontSize: "12px", color: "#64748b" }}>
-                    {analyticsTarget.slot} • CAT {year}
+                  <span className={styles.analyticsSub}>
+                    {analyticsTarget.slot} · CAT {year}
                   </span>
                 </div>
                 <button
                   type="button"
                   className={styles.closeBtn}
                   onClick={() => setAnalyticsTarget(null)}
+                  aria-label="Close"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
 
@@ -525,54 +560,74 @@ export default function PYQYearModal({
 
                   if (sectionAttempts.length === 0) {
                     return (
-                      <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
-                        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px", color: "#94a3b8" }}>
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                        </div>
-                        <h4 style={{ margin: "0 0 4px 0", color: "#0f172a" }}>No Attempts Recorded Yet</h4>
-                        <p style={{ margin: 0, fontSize: "13px" }}>
-                          Take your first timed CAT attempt to unlock detailed analytics and AI diagnosis.
-                        </p>
+                      <div className={styles.emptyState}>
+                        <span className={styles.emptyBars} aria-hidden="true">
+                          <span style={{ height: "40%" }} />
+                          <span style={{ height: "70%" }} />
+                          <span style={{ height: "55%" }} />
+                        </span>
+                        <h4>No attempts recorded yet</h4>
+                        <p>Take your first timed attempt to see scores, accuracy and strikes here.</p>
                       </div>
                     );
                   }
 
-                  return sectionAttempts.map((att, idx) => (
-                    <div key={att.id || idx} className={styles.attemptItem}>
-                      <div className={styles.attemptItemHeader}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563eb", background: "#eff6ff", padding: "2px 8px", borderRadius: "6px" }}>
-                          Attempt #{sectionAttempts.length - idx} • {att.slot}
-                        </span>
-                        <span style={{ fontSize: "11.5px", color: "#64748b" }}>
-                          {att.completed_at ? new Date(att.completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recent"}
-                        </span>
-                      </div>
-
-                      <div className={styles.attemptScoreRow}>
-                        <span className={styles.attemptBigScore}>{att.score}</span>
-                        <span className={styles.attemptTotal}>/ {att.total} Marks</span>
-                        <span className={styles.attemptAccuracy}>{att.percentage}% Score</span>
-                      </div>
-
-                      <div className={styles.attemptMetricsGrid}>
-                        <div className={styles.attemptMetricItem}>
-                          <span>{att.mcq_correct || 0} / {att.mcq_wrong || 0}</span>
-                          <span>MCQ (R / W)</span>
-                        </div>
-                        <div className={styles.attemptMetricItem}>
-                          <span>{att.tita_correct || 0} / {att.tita_wrong || 0}</span>
-                          <span>TITA (R / W)</span>
-                        </div>
-                        <div className={styles.attemptMetricItem}>
-                          <span>{att.strikes || 0}</span>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span>Strikes</span>
+                  return sectionAttempts.map((att, idx) => {
+                    const mcqR = att.mcq_correct || 0;
+                    const mcqW = att.mcq_wrong || 0;
+                    const titaR = att.tita_correct || 0;
+                    const titaW = att.tita_wrong || 0;
+                    const mcqT = Math.max(1, mcqR + mcqW);
+                    const titaT = Math.max(1, titaR + titaW);
+                    return (
+                      <div
+                        key={att.id || idx}
+                        className={`glass-card ${styles.attemptItem}`}
+                        data-tint={idx === 0 ? "blue" : "teal"}
+                      >
+                        <div className={styles.attemptItemHeader}>
+                          <span className={styles.attemptTag}>
+                            Attempt #{sectionAttempts.length - idx} · {att.slot}
+                          </span>
+                          <span className={styles.attemptDate}>
+                            {att.completed_at ? new Date(att.completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recent"}
                           </span>
                         </div>
+
+                        <div className={styles.attemptScoreRow}>
+                          <span className={styles.attemptBigScore}>{att.score}</span>
+                          <span className={styles.attemptTotal}>/ {att.total} marks</span>
+                          <span className={styles.attemptAccuracy}>{att.percentage}%</span>
+                        </div>
+
+                        <div className={styles.attemptMetricsGrid}>
+                          <div className={styles.attemptMetricItem}>
+                            <span>{mcqR} / {mcqW}</span>
+                            <span>MCQ right / wrong</span>
+                            <span className={styles.rwBar} aria-hidden="true">
+                              <span className={styles.rwRight} style={{ width: `${(mcqR / mcqT) * 100}%` }} />
+                              <span className={styles.rwWrong} style={{ width: `${(mcqW / mcqT) * 100}%` }} />
+                            </span>
+                          </div>
+                          <div className={styles.attemptMetricItem}>
+                            <span>{titaR} / {titaW}</span>
+                            <span>TITA right / wrong</span>
+                            <span className={styles.rwBar} aria-hidden="true">
+                              <span className={styles.rwRight} style={{ width: `${(titaR / titaT) * 100}%` }} />
+                              <span className={styles.rwWrong} style={{ width: `${(titaW / titaT) * 100}%` }} />
+                            </span>
+                          </div>
+                          <div className={styles.attemptMetricItem}>
+                            <span className={(att.strikes || 0) > 0 ? styles.strikeVal : ""}>{att.strikes || 0}</span>
+                            <span className={styles.strikeLbl}>
+                              <ShieldCheck size={12} aria-hidden="true" />
+                              Strikes
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
               </div>
             </div>

@@ -6,6 +6,27 @@
 // Video and audio stay in the browser; only answer text + numeric metrics are sent.
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AudioLines,
+  Camera,
+  CameraOff,
+  Check,
+  Eye,
+  Gauge,
+  Keyboard,
+  Lock,
+  Mic,
+  MicOff,
+  Play,
+  RefreshCw,
+  ScanFace,
+  SkipForward,
+  Square,
+  Timer,
+  UserRound,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import styles from "./LiveViva.module.css";
 import { useSpeechTranscription } from "@/hooks/useSpeechTranscription";
 import { useFaceMetrics } from "./useFaceMetrics";
@@ -450,42 +471,64 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
     );
   }
 
+  const paceState: "good" | "warn" | null =
+    liveWpm === null ? null : liveWpm >= 120 && liveWpm <= 160 ? "good" : "warn";
+
   const cameraBox = (
     <div className={styles.videoBox}>
       {camState === "ready" ? (
         <video ref={attachVideo} className={styles.video} autoPlay playsInline muted aria-label="Your camera preview (mirrored)" />
       ) : (
         <div className={styles.videoPlaceholder}>
-          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M23 7l-7 5 7 5V7z" />
-            <rect x="1" y="5" width="15" height="14" rx="2" />
-          </svg>
+          {camState === "requesting" ? <Camera size={34} strokeWidth={1.6} aria-hidden="true" /> : <CameraOff size={34} strokeWidth={1.6} aria-hidden="true" />}
           <span>{camState === "requesting" ? "Waiting for permission…" : "Camera off"}</span>
         </div>
       )}
+      {/* framing guide corners */}
+      <span className={styles.frameGuide} aria-hidden="true" />
       {camState === "ready" && face.status === "loading" && <span className={styles.videoBadge}>Loading face analysis…</span>}
+      {stage === "live" && camState === "ready" && (
+        <span className={styles.videoRec} aria-hidden="true">
+          <span className={styles.recDot} /> REC
+        </span>
+      )}
     </div>
   );
 
   const indicators = camState === "ready" && face.status === "ready" && face.live && (
     <div className={styles.indicators} aria-live="polite">
       <span className={`${styles.pill} ${face.live.eyeContact ? styles.pillGood : styles.pillWarn}`}>
-        Eye contact: {face.live.eyeContact ? "good" : "look at camera"}
+        <Eye size={14} strokeWidth={2} aria-hidden="true" />
+        <span className={styles.pillLabel}>Eye contact</span>
+        <strong>{face.live.eyeContact ? "good" : "look at camera"}</strong>
       </span>
       <span className={`${styles.pill} ${face.live.framing ? styles.pillGood : styles.pillWarn}`}>
-        Framing: {face.live.framing ? "good" : "adjust"}
+        <ScanFace size={14} strokeWidth={2} aria-hidden="true" />
+        <span className={styles.pillLabel}>Framing</span>
+        <strong>{face.live.framing ? "good" : "adjust"}</strong>
       </span>
+      {stage === "live" && paceState && phase === "listening" && !typedMode && (
+        <span className={`${styles.pill} ${paceState === "good" ? styles.pillGood : styles.pillWarn}`}>
+          <Gauge size={14} strokeWidth={2} aria-hidden="true" />
+          <span className={styles.pillLabel}>Pace</span>
+          <strong>{liveWpm} wpm</strong>
+        </span>
+      )}
       {face.live.hint && <span className={styles.hint}>{face.live.hint}</span>}
     </div>
   );
 
   if (stage === "setup") {
+    const devLabel = (s: DeviceState) =>
+      s === "ready" ? "Ready" : s === "requesting" ? "Requesting…" : s === "denied" ? "Unavailable" : "Not checked";
     return (
       <div className={styles.wrap}>
         <div className={styles.setupGrid}>
           <div className={styles.setupForm}>
             <fieldset className={styles.fieldset}>
-              <legend className={styles.legend}>1. Viva type</legend>
+              <legend className={styles.legend}>
+                <span className={styles.stepNum}>1</span> Viva type
+              </legend>
               <div className={styles.typeGrid}>
                 {LIVE_VIVA_TYPES.map((t) => {
                   const meta = typeMeta[t.id] || {};
@@ -507,6 +550,11 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
                         <span className={styles.typeLabel}>{t.label}</span>
                         <span className={styles.typeBlurb}>{t.blurb}</span>
                       </span>
+                      {active && (
+                        <span className={styles.typeCheck} aria-hidden="true">
+                          <Check size={12} strokeWidth={3} />
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -515,7 +563,9 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
 
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span className={styles.legend}>2. Focus</span>
+                <span className={styles.legend}>
+                  <span className={styles.stepNum}>2</span> Focus
+                </span>
                 <select className={styles.select} value={topic} onChange={(e) => setTopic(e.target.value)}>
                   {vivaType.topics.map((t) => (
                     <option key={t} value={t}>{t}</option>
@@ -523,7 +573,9 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
                 </select>
               </label>
               <fieldset className={styles.fieldset}>
-                <legend className={styles.legend}>3. Length</legend>
+                <legend className={styles.legend}>
+                  <span className={styles.stepNum}>3</span> Length
+                </legend>
                 <div className={styles.segment}>
                   {LIVE_VIVA_LENGTHS.map((n) => (
                     <button
@@ -533,7 +585,7 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
                       className={`${styles.segBtn} ${length === n ? styles.segBtnActive : ""}`}
                       onClick={() => setLength(n)}
                     >
-                      {n} questions <small>~{n === 6 ? "8" : "15"} min</small>
+                      <span className={styles.segNum}>{n}</span> questions <small>~{n === 6 ? "8" : "15"} min</small>
                     </button>
                   ))}
                 </div>
@@ -541,39 +593,62 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
             </div>
 
             <p className={styles.privacy}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+              <Lock size={15} strokeWidth={2} aria-hidden="true" />
               Video and audio stay in your browser; only the text of your answers is sent to generate questions and feedback.
             </p>
           </div>
 
           <div className={styles.setupDevice}>
+            <div className={styles.deviceHead}>
+              <span className={styles.legend}>
+                <span className={styles.stepNum}>4</span> Camera &amp; mic check
+              </span>
+            </div>
             {cameraBox}
             {indicators}
             <ul className={styles.deviceList}>
               <li className={styles[`dev_${camState}`]}>
-                <strong>Camera:</strong> {camState === "ready" ? "ready" : camState === "requesting" ? "requesting…" : camState === "denied" ? "unavailable" : "not checked"}
-                {camMsg && <span className={styles.devMsg}>{camMsg}</span>}
+                <Camera size={16} strokeWidth={1.9} className={styles.devIcon} aria-hidden="true" />
+                <span className={styles.devText}>
+                  <span className={styles.devRow}>
+                    <strong>Camera</strong>
+                    <span className={styles.devState}>{devLabel(camState)}</span>
+                  </span>
+                  {camMsg && <span className={styles.devMsg}>{camMsg}</span>}
+                </span>
               </li>
               <li className={styles[`dev_${micState}`]}>
-                <strong>Microphone:</strong> {micState === "ready" ? "ready" : micState === "requesting" ? "requesting…" : micState === "denied" ? "unavailable" : "not checked"}
-                {micMsg && <span className={styles.devMsg}>{micMsg}</span>}
+                <Mic size={16} strokeWidth={1.9} className={styles.devIcon} aria-hidden="true" />
+                <span className={styles.devText}>
+                  <span className={styles.devRow}>
+                    <strong>Microphone</strong>
+                    <span className={styles.devState}>{devLabel(micState)}</span>
+                  </span>
+                  {micMsg && <span className={styles.devMsg}>{micMsg}</span>}
+                </span>
               </li>
               {speech.supported === false && (
                 <li className={styles.dev_denied}>
-                  <strong>Voice answers:</strong> not supported in this browser (use Chrome or Edge). You can type your answers instead.
+                  <AudioLines size={16} strokeWidth={1.9} className={styles.devIcon} aria-hidden="true" />
+                  <span className={styles.devText}>
+                    <strong>Voice answers</strong>
+                    <span className={styles.devMsg}>Not supported in this browser (use Chrome or Edge). You can type your answers instead.</span>
+                  </span>
                 </li>
               )}
               {voice.supported === false && (
                 <li className={styles.dev_denied}>
-                  <strong>Interviewer voice:</strong> not supported here; questions will be shown on screen.
+                  <Volume2 size={16} strokeWidth={1.9} className={styles.devIcon} aria-hidden="true" />
+                  <span className={styles.devText}>
+                    <strong>Interviewer voice</strong>
+                    <span className={styles.devMsg}>Not supported here; questions will be shown on screen.</span>
+                  </span>
                 </li>
               )}
             </ul>
             <div className={styles.actions}>
               <button type="button" className={styles.btnGhost} onClick={() => void checkDevices()} disabled={camState === "requesting"}>
+                <RefreshCw size={15} strokeWidth={2} aria-hidden="true" />
                 {camState === "idle" ? "Check camera & mic" : "Check again"}
               </button>
               <button
@@ -582,6 +657,7 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
                 onClick={startSession}
                 disabled={camState === "requesting" || micState === "requesting" || (camState === "idle" && micState === "idle")}
               >
+                <Play size={15} strokeWidth={2.2} fill="currentColor" aria-hidden="true" />
                 {camState === "ready" ? "Start live viva" : "Start without camera"}
               </button>
             </div>
@@ -594,30 +670,49 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
 
   // ---- live ----
   const stateLabel = phase === "thinking" ? "Thinking…" : phase === "speaking" ? "Speaking…" : "Listening…";
+  const progressPct = Math.min(100, Math.round((Math.max(questionNo, 1) / length) * 100));
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${styles.wrapLive}`}>
       <div className={styles.liveTop}>
         <span className={styles.liveTag}>
           <span className={styles.recDot} aria-hidden="true" /> Live viva · {vivaType.label}
         </span>
         <span className={styles.liveMeta}>
-          Question {Math.max(questionNo, 1)} of {length} · <span aria-label="Elapsed time">{formatTime(elapsed)}</span>
-          {liveWpm !== null && phase === "listening" && !typedMode && <> · {liveWpm} wpm</>}
+          <span className={styles.liveMetaItem}>
+            Question <strong>{Math.max(questionNo, 1)}</strong>/{length}
+          </span>
+          <span className={styles.liveMetaItem} aria-label="Elapsed time">
+            <Timer size={14} strokeWidth={2} aria-hidden="true" />
+            <strong>{formatTime(elapsed)}</strong>
+          </span>
+          {liveWpm !== null && phase === "listening" && !typedMode && (
+            <span className={styles.liveMetaItem}>
+              <strong>{liveWpm}</strong> wpm
+            </span>
+          )}
         </span>
+      </div>
+      <div className={styles.liveProgress} aria-hidden="true">
+        <span style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className={styles.liveGrid}>
         <div className={styles.livePanel}>
           <div className={`${styles.interviewer} ${styles[`ph_${phase}`]}`}>
             <div className={styles.avatar} aria-hidden="true">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+              <UserRound size={26} strokeWidth={1.8} />
             </div>
             <div className={styles.interviewerText}>
-              <span className={styles.interviewerName}>AI Panelist</span>
-              <span className={styles.stateLabel} role="status">{stateLabel}</span>
+              <span className={styles.interviewerName}>AI panelist</span>
+              <span className={styles.stateLabel} role="status">
+                <span className={styles.voiceBars} aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                {stateLabel}
+              </span>
             </div>
             <button
               type="button"
@@ -627,21 +722,12 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
               aria-label={voice.muted ? "Unmute interviewer voice" : "Mute interviewer voice"}
               title={voice.muted ? "Unmute voice" : "Mute voice"}
             >
-              {voice.muted ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M11 5L6 9H2v6h4l5 4V5z" />
-                  <path d="M23 9l-6 6M17 9l6 6" />
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M11 5L6 9H2v6h4l5 4V5z" />
-                  <path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
-                </svg>
-              )}
+              {voice.muted ? <VolumeX size={18} strokeWidth={2} aria-hidden="true" /> : <Volume2 size={18} strokeWidth={2} aria-hidden="true" />}
             </button>
           </div>
 
           <div className={styles.questionBox} aria-live="polite">
+            <span className={styles.questionKicker}>Question {Math.max(questionNo, 1)}</span>
             {question ? <p className={styles.questionText}>{question}</p> : <p className={styles.questionWait}>Preparing your first question…</p>}
           </div>
 
@@ -658,6 +744,7 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
           {typedMode ? (
             <div className={styles.answerArea}>
               <label className={styles.captionLabel} htmlFor="live-viva-typed">
+                <Keyboard size={14} strokeWidth={2} aria-hidden="true" />
                 {speech.error || "Voice answers aren't available here — type your answer."}
               </label>
               <textarea
@@ -678,10 +765,12 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
                     <span className={styles.micDot} aria-hidden="true" /> Your answer (live captions) — pauses of 4 s submit automatically
                   </>
                 ) : (
-                  "Your mic is paused while the panelist speaks."
+                  <>
+                    <MicOff size={14} strokeWidth={2} aria-hidden="true" /> Your mic is paused while the panelist speaks.
+                  </>
                 )}
               </span>
-              <div className={styles.captions} aria-live="off">
+              <div className={`${styles.captions} ${phase === "listening" ? styles.captionsLive : ""}`} aria-live="off">
                 {caption || <span className={styles.captionHint}>{phase === "listening" ? "Start speaking…" : "…"}</span>}
               </div>
             </div>
@@ -694,9 +783,11 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
               </button>
             )}
             <button type="button" className={styles.btnPrimary} onClick={() => submit(false)} disabled={phase !== "listening"}>
+              <Check size={16} strokeWidth={2.4} aria-hidden="true" />
               Done answering
             </button>
             <button type="button" className={styles.btnGhost} onClick={() => submit(true)} disabled={phase !== "listening"}>
+              <SkipForward size={15} strokeWidth={2} aria-hidden="true" />
               Skip question
             </button>
             {!typedMode && speech.supported && (
@@ -713,6 +804,7 @@ export default function LiveViva({ typeMeta = {} }: { typeMeta?: Record<string, 
               </button>
             )}
             <button type="button" className={styles.btnDanger} onClick={() => finish(false)}>
+              <Square size={13} strokeWidth={2.4} fill="currentColor" aria-hidden="true" />
               End session
             </button>
           </div>

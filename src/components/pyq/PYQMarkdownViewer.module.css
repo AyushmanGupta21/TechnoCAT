@@ -1,31 +1,30 @@
+/* Markdown + KaTeX renderer for questions, passages and solutions */
 .mdContainer {
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: #334155;
   font-family: inherit;
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
 }
 
 .mdPara {
-  margin-bottom: 14px;
-  color: #1e293b;
+  margin: 0 0 14px;
+  color: var(--ink);
 }
+.mdPara:last-child { margin-bottom: 0; }
 
-.mdPara:last-child {
-  margin-bottom: 0;
-}
-
-/* Image Wrapper */
+/* Image wrapper */
 .imageWrapper {
   margin: 18px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--surface);
   padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  box-shadow: var(--elev-1);
 }
 
 .chartImage {
@@ -33,34 +32,33 @@
   max-height: 480px;
   height: auto;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   cursor: zoom-in;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
 }
-
 .chartImage:hover {
   transform: scale(1.01);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 10px 24px -12px rgba(37, 86, 224, 0.35);
 }
 
 .imageCaption {
   margin-top: 8px;
   font-size: 12px;
-  color: #64748b;
-  display: flex;
+  color: var(--ink-3);
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-weight: 500;
 }
 
-/* Table Styling */
+/* Tables */
 .tableContainer {
   width: 100%;
   overflow-x: auto;
   margin: 18px 0;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .mdTable {
@@ -68,53 +66,48 @@
   border-collapse: collapse;
   font-size: 13.5px;
   text-align: left;
-  background: #ffffff;
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
 }
 
 .mdTable th {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: var(--blue-25);
+  color: var(--ink);
   font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
   padding: 10px 14px;
-  border-bottom: 2px solid #cbd5e1;
+  border-bottom: 1px solid var(--line-strong);
   white-space: nowrap;
 }
 
 .mdTable td {
   padding: 9px 14px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #334155;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
 }
-
-.mdTable tr:last-child td {
-  border-bottom: none;
-}
-
-.mdTable tr:nth-child(even) {
-  background: #f8fafc;
-}
-
-.mdTable tr:hover {
-  background: #f0f9ff;
-}
+.mdTable tr:last-child td { border-bottom: none; }
+.mdTable tr:nth-child(even) td { background: #fafcff; }
+.mdTable tr:hover td { background: var(--blue-50); }
 
 /* Lists */
 .mdList {
   margin: 12px 0;
-  padding-left: 24px;
+  padding-left: 22px;
 }
-
 .mdListItem {
   margin-bottom: 8px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
+.mdListItem::marker { color: var(--blue-500); }
 
-/* Lightbox Modal */
+/* Lightbox */
 .lightboxOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(8px);
+  background: rgba(12, 23, 48, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 99999;
   display: flex;
   align-items: center;
@@ -131,49 +124,46 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--surface);
   padding: 16px;
-  border-radius: 16px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-4);
 }
 
 .lightboxImg {
   max-width: 100%;
   max-height: 82vh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
 }
 
 .lightboxCloseBtn {
   position: absolute;
-  top: -16px;
-  right: -16px;
-  background: #ef4444;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  width: 36px;
-  height: 36px;
+  top: -14px;
+  right: -14px;
+  background: var(--ink);
+  color: #fff;
+  border: 2px solid #fff;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  font-size: 18px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s;
+  box-shadow: var(--elev-3);
+  transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur) var(--ease-out);
 }
-
 .lightboxCloseBtn:hover {
-  transform: scale(1.1);
-  background: #dc2626;
+  transform: scale(1.06);
+  background: var(--blue-700);
 }
 
 .lightboxHint {
   margin-top: 10px;
   font-size: 12px;
-  color: #64748b;
-  font-weight: 600;
+  color: var(--ink-3);
+  font-weight: 500;
 }
 
 @keyframes fadeIn {
@@ -197,8 +187,8 @@
   max-width: 100%;
   max-height: 480px;
   margin: 14px auto;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   cursor: zoom-in;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--line);
+  box-shadow: var(--elev-1);
 }

@@ -67,8 +67,8 @@ export const TOPICS_DATA: Topic[] = [
     "bannerGradient": "linear-gradient(135deg, #ED1C24 0%, #B91C1C 100%)",
     "bannerImage": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200&auto=format&fit=crop&q=85",
     "instructor": {
-      "name": "Ayushman & Rodha CAT Faculty",
-      "role": "Lead Quant Mentors • TechnoCAT",
+      "name": "TechnoCAT Quant Faculty",
+      "role": "Quantitative Ability • TechnoCAT",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80"
     },
     "progressPercent": 6,
@@ -1489,8 +1489,8 @@ export const TOPICS_DATA: Topic[] = [
     "bannerGradient": "linear-gradient(135deg, #059669 0%, #10B981 100%)",
     "bannerImage": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=85",
     "instructor": {
-      "name": "Rodha & TechnoCAT DILR Faculty",
-      "role": "DILR Strategy Specialists • TechnoCAT",
+      "name": "TechnoCAT DILR Faculty",
+      "role": "Data Interpretation & Logical Reasoning • TechnoCAT",
       "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80"
     },
     "progressPercent": 10,
@@ -2065,8 +2065,8 @@ export const TOPICS_DATA: Topic[] = [
     "title": "Topic C: Verbal Ability & Reading Comprehension (VARC)",
     "shortTitle": "Verbal Ability & Reading Comprehension (VARC)",
     "category": "Verbal Ability",
-    "description": "Master CAT VARC with Gejo Sreenivasan's proven methodology: effective reading, question type decoding, option elimination, and verbal logic.",
-    "fullAbout": "Master CAT VARC with Gejo Sreenivasan's proven methodology: effective reading, question type decoding, option elimination, and verbal logic.",
+    "description": "Master CAT VARC with a proven methodology: effective reading, question type decoding, option elimination, and verbal logic.",
+    "fullAbout": "Master CAT VARC with a proven methodology: effective reading, question type decoding, option elimination, and verbal logic.",
     "suitsFor": [
       "Students looking to eliminate close-option confusion in Reading Comprehension.",
       "Aspirants targeting 99 percentile through passage reasoning rather than vocabulary drills.",
@@ -2075,8 +2075,8 @@ export const TOPICS_DATA: Topic[] = [
     "bannerGradient": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
     "bannerImage": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&auto=format&fit=crop&q=85",
     "instructor": {
-      "name": "Gejo Sreenivasan & Career Launcher",
-      "role": "Chief VARC Mentor • TechnoCAT Partner",
+      "name": "TechnoCAT VARC Faculty",
+      "role": "Verbal Ability & Reading Comprehension • TechnoCAT",
       "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80"
     },
     "progressPercent": 11,
@@ -2615,8 +2615,8 @@ export const TOPICS_DATA: Topic[] = [
     "bannerGradient": "linear-gradient(135deg, #FF9A8B 0%, #FF6A88 55%, #FF99AC 100%)",
     "bannerImage": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop&q=85",
     "instructor": {
-      "name": "Simon Simorangkir",
-      "role": "Mentor • Illustrator at Google",
+      "name": "TechnoCAT Faculty",
+      "role": "CAT preparation • TechnoCAT",
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
     },
     "progressPercent": 4,

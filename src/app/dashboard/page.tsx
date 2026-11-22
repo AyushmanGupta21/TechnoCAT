@@ -3,7 +3,23 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarClock,
+  Check,
+  ChevronRight,
+  Clock,
+  Gauge,
+  Megaphone,
+  Play,
+  Plus,
+  Radio,
+  Trophy,
+  X,
+} from "lucide-react";
+import AppNav from "@/components/app/AppNav";
+import { Reveal, RevealGroup, RevealItem, CountUp, GradientText } from "@/components/landing/motion";
 import AiMotivationWidget from "@/components/AiMotivationWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import ContinueLearningWidget from "@/components/ContinueLearningWidget";
@@ -15,7 +31,6 @@ import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName } from "@/lib/nameUtils";
 import { notifyTaskCompleted, pushNotification } from "@/services/notificationService";
 import styles from "./dashboard.module.css";
-import BrandLogo from "@/components/BrandLogo";
 import type { StudentMetrics, SectionKey } from "@/lib/metrics/types";
 import type { Announcements, LiveClass, Notice } from "@/lib/announcements";
 
@@ -98,15 +113,13 @@ function recommendedNextStep(m: StudentMetrics): string {
   return "Keep your streak going and attempt a PYQ section this week to track your estimated percentile.";
 }
 
-/** Status badge for a section's timed-test accuracy. */
-function sectionBadge(accuracy: number | null, attempted: number): { text: string; color: string; bg: string } {
-  if (accuracy === null || attempted === 0) return { text: "No timed tests yet", color: "#64748B", bg: "#F1F5F9" };
-  if (accuracy >= 75) return { text: `${accuracy}% accuracy`, color: "#0D9488", bg: "#F0FDFA" };
-  if (accuracy >= 60) return { text: `${accuracy}% accuracy`, color: "#B45309", bg: "#FFFBEB" };
-  return { text: `${accuracy}% accuracy`, color: "#EF4444", bg: "#FEE2E2" };
+/** Status chip for a section's timed-test accuracy (tone maps to a CSS class). */
+function sectionBadge(accuracy: number | null, attempted: number): { text: string; tone: "none" | "good" | "mid" | "low" } {
+  if (accuracy === null || attempted === 0) return { text: "No timed tests yet", tone: "none" };
+  if (accuracy >= 75) return { text: `${accuracy}%`, tone: "good" };
+  if (accuracy >= 60) return { text: `${accuracy}%`, tone: "mid" };
+  return { text: `${accuracy}%`, tone: "low" };
 }
-
-
 
 interface AgendaSession {
   id: string;
@@ -136,10 +149,10 @@ interface PrepNotice {
 
 // Live classes and notices are published by staff (scripts/announcements.mjs → GET /api/announcements).
 const SECTION_INFO: Record<string, { label: string; color: string; softBg: string; topicUrl: string }> = {
-  QA: { label: "Quantitative Aptitude", color: "#DC2626", softBg: "#FEF2F2", topicUrl: "/topics/qa-quantitative-ability" },
-  DILR: { label: "Data Interpretation & Logical Reasoning", color: "#0D9488", softBg: "#F0FDFA", topicUrl: "/topics/dilr-data-interpretation" },
-  VARC: { label: "Verbal Ability & Reading Comprehension", color: "#7C3AED", softBg: "#F5F3FF", topicUrl: "/topics/varc-verbal-ability" },
-  GENERAL: { label: "General", color: "#2563EB", softBg: "#EFF6FF", topicUrl: "/topics" },
+  QA: { label: "Quantitative Aptitude", color: "#2563EB", softBg: "rgba(59, 130, 246, 0.1)", topicUrl: "/topics/qa-quantitative-ability" },
+  DILR: { label: "Data Interpretation & Logical Reasoning", color: "#0D9488", softBg: "rgba(20, 184, 166, 0.12)", topicUrl: "/topics/dilr-data-interpretation" },
+  VARC: { label: "Verbal Ability & Reading Comprehension", color: "#7C3AED", softBg: "rgba(139, 92, 246, 0.1)", topicUrl: "/topics/varc-verbal-ability" },
+  GENERAL: { label: "General", color: "#1C44BD", softBg: "rgba(28, 68, 189, 0.08)", topicUrl: "/topics" },
 };
 
 const istTime = (iso: string) =>
@@ -203,7 +216,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuth();
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
-  const [activeNav, setActiveNav] = useState("Dashboard");
 
   // Task list + enrolled topic ids (GET /api/dashboard)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -242,7 +254,10 @@ export default function DashboardPage() {
     setSelectedMonthIndex(now.getMonth());
     setSelectedYear(now.getFullYear());
     setSelectedDay(now.getDate());
+    setTodayLabel(now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
   }, []);
+  // Header date, set on the client so server and client markup match.
+  const [todayLabel, setTodayLabel] = useState("");
 
   const [announcements, setAnnouncements] = useState<Announcements | null>(null);
   const [visitedNoticeIds, setVisitedNoticeIds] = useState<string[]>([]);
@@ -625,543 +640,438 @@ export default function DashboardPage() {
     : 0;
   const last7Days = metrics ? metrics.studyTime.daily.slice(-7) : [];
 
+
+  // Stat-row vignettes (display only, derived from the same metrics)
+  const weekTotals = last7Days.map((d) => d.learningSeconds + d.practiceSeconds);
+  const weekMax = Math.max(1, ...weekTotals);
+  const syllabusBySection = SECTION_ORDER.map((key) => ({
+    key,
+    done: metrics
+      ? metrics.courses.topics.filter((t) => t.section === key).reduce((sum, t) => sum + t.lessonsCompleted, 0)
+      : 0,
+  }));
+  const syllabusTotal = metrics ? Math.max(1, metrics.courses.syllabusLessons) : 1;
+  const syllabusPercent = metrics ? Math.round((syllabusLessonsDone / syllabusTotal) * 100) : 0;
+  const latestPoints = metrics?.points.recent[0] ?? null;
+  const readinessScore = metrics?.readiness.score ?? null;
+  const RING = 2 * Math.PI * 17;
+
   return (
     <div className={styles.dashboardWrapper}>
-      {/* ===== HEADER SECTION ===== */}
-      {/* Sticky Top Navigation Bar */}
-      <header className={styles.stickyNavHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Dashboard Navigation">
-            {/* Brand Logo */}
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+      <AppNav />
 
-            {/* Nav Menu */}
-            <div className={styles.navLinks}>
-              {[
-                { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/browse" },
-                { name: "My Topics", href: "/topics" },
-                { name: "Intelligence Hub", href: "/intelligence" },
-                { name: "Speak & Assess", href: "/mock-viva-prep" },
-              ].map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.href === "#") {
-                      e.preventDefault();
-                    }
-                    setActiveNav(item.name);
-                  }}
-                  className={`${styles.navLink} ${activeNav === item.name ? styles.navLinkActive : ""}`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Right Utilities & Profile Dropdown */}
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero Welcome / Metrics Section */}
-      <div className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          {/* Welcome Row */}
-          <div className={styles.welcomeRow}>
-            <div>
-              <div className={styles.pillBadge}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Welcome Back, Aspirant
-              </div>
-              <h1 className={styles.welcomeHeading}>
-                Welcome back, <span className={styles.headingHighlight}>{firstName}</span>
-              </h1>
-              <p className={styles.welcomeSubtitle}>Here&apos;s a report on your study progress this week.</p>
-            </div>
-            <div className={styles.welcomeActions}>
-              <Link href="/browse" className={styles.addCourseBtn}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Browse Topics
-              </Link>
-            </div>
+      <main className={styles.page}>
+        {/* ===== PAGE HEADER ===== */}
+        <Reveal className={styles.pageHeader} y={16}>
+          <div className={styles.headerText}>
+            <p className={styles.headerDate}>
+              <span className={styles.liveDot} aria-hidden="true" />
+              <span suppressHydrationWarning>{todayLabel || " "}</span>
+            </p>
+            <h1 className={styles.pageTitle}>
+              Today&apos;s <GradientText>plan</GradientText>
+            </h1>
+            <p className={styles.pageSubtitle}>Your tasks, progress and next step for today, {firstName}.</p>
           </div>
+          <Link href="/browse" className={styles.primaryBtn}>
+            <Plus size={18} strokeWidth={2.25} aria-hidden="true" />
+            Browse topics
+          </Link>
+        </Reveal>
 
-          {/* Today's Focus (deterministic, from metrics.tasks / metrics.streak / metrics.studyTime) */}
-          <AiMotivationWidget firstName={firstName} metrics={metrics} isLoading={metricsLoading} />
+        {/* ===== TODAY'S FOCUS: the one place for guidance (tasks, streak, next step) ===== */}
+        <Reveal delay={0.04}>
+          <AiMotivationWidget
+            firstName={firstName}
+            metrics={metrics}
+            isLoading={metricsLoading}
+            nextStep={metrics ? recommendedNextStep(metrics) : undefined}
+          />
+        </Reveal>
 
-          {metricsError && !metricsLoading && (
-            <p className={styles.metricsErrorNote} role="status">{metricsError}</p>
-          )}
+        {metricsError && !metricsLoading && (
+          <p className={styles.metricsErrorNote} role="status">{metricsError}</p>
+        )}
 
-          {/* 4 KPI Cards Row — headline numbers that link to the detailed pages */}
-          <div className={styles.metricCardsRow}>
-            {/* Card 1: Readiness score -> Intelligence Hub breakdown */}
-            <Link
-              href="/intelligence"
-              className={`${styles.metricCard} ${styles.metricCardLink}`}
-              style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderLeft: '4px solid #8b5cf6' }}
-              title="See the readiness breakdown in the Intelligence Hub"
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconPurple}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                {kpiPending ? (
-                  <span className={styles.metricValue}>—</span>
-                ) : metrics.readiness.score !== null ? (
-                  <span className={styles.metricValue}>{metrics.readiness.score} / 100</span>
-                ) : (
-                  <span className={styles.metricValueEmpty}>Not yet</span>
-                )}
-                <span className={styles.metricLabel}>
-                  {!kpiPending && metrics.readiness.score === null ? "Readiness · take a timed test" : "CAT Readiness"}
-                </span>
-              </div>
-            </Link>
-
-            {/* Card 2: Study time this week -> My Analytics */}
-            <Link
-              href="/analytics"
-              className={`${styles.metricCard} ${styles.metricCardLink}`}
-              style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', borderLeft: '4px solid #0D9488' }}
-              title="See your study time in My Analytics"
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconGreen}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>
-                  {kpiPending ? "—" : formatDuration(metrics.studyTime.last7DaysSeconds)}
-                </span>
-                <span className={styles.metricLabel}>Study Time · last 7 days</span>
-              </div>
-            </Link>
-
-            {/* Card 3: Points -> My Analytics */}
-            <Link
-              href="/analytics"
-              className={`${styles.metricCard} ${styles.metricCardLink}`}
-              style={{ background: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', borderLeft: '4px solid #2563EB' }}
-              title="See how you earned your points in My Analytics"
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconOrange}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                  <path d="M4 22h16" />
-                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>
-                  {kpiPending ? "—" : `${metrics.points.total.toLocaleString("en-IN")} Points`}
-                </span>
-                <span className={styles.metricLabel}>Total Points</span>
-              </div>
-            </Link>
-
-            {/* Card 4: Syllabus lessons completed -> My Topics */}
-            <Link
-              href="/topics"
-              className={`${styles.metricCard} ${styles.metricCardLink}`}
-              style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderLeft: '4px solid #6366F1' }}
-              title="Open My Topics"
-            >
-              <div className={`${styles.metricIconBox} ${styles.iconPink}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div className={styles.metricInfo}>
-                <span className={styles.metricValue}>
-                  {kpiPending ? "—" : `${syllabusLessonsDone} / ${metrics.courses.syllabusLessons}`}
-                </span>
-                <span className={styles.metricLabel}>
-                  {kpiPending
-                    ? "CAT Syllabus Lessons"
-                    : `Syllabus lessons · ${metrics.courses.inProgress} in progress, ${metrics.courses.completed} done`}
-                </span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== MAIN DASHBOARD CONTENT AREA ===== */}
-      <main className={styles.mainContent}>
-        {/* Full Width Spotlight: Continue Learning Widget */}
-        <div style={{ marginBottom: "28px" }}>
-          <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
-        </div>
-
-        {/* 2-Column Responsive Dashboard Grid (Balanced Left & Right Columns) */}
-        <div className={styles.dashboardGrid}>
-          {/* LEFT COLUMN: Study Planner, Performance Chart & Upcoming Agenda */}
-          <div className={styles.dashboardCol}>
-            {/* 1. Daily Study Schedule & Tasks */}
-            <DailyStudySchedule
-              selectedMonthIndex={selectedMonthIndex}
-              selectedYear={selectedYear}
-              selectedDay={selectedDay}
-              tasks={scheduleTasks}
-              onToggleTask={handleToggleTask}
-              onAddTask={openAddTaskModal}
-              onAutoAssignDay={handleAutoAssignDay}
-              enrolledCount={enrolledCount}
-              isDemo={isDemo}
-            />
-
-            {/* 2. Study Performance: last 7 days (metrics.studyTime.daily) + deterministic weekly summary */}
-            <div className={styles.cardBox}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Study Performance</h2>
-                <div className={styles.chartLegend}>
-                  <div className={styles.legendItem}>
-                    <span className={styles.dotLearning} />
-                    <span>Learning</span>
-                  </div>
-                  <div className={styles.legendItem}>
-                    <span className={styles.dotChallenge} />
-                    <span>Practice</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.studyStatBody}>
-                <div style={{ flex: 1.25, minWidth: 0, width: "100%" }}>
-                  {metrics ? (
-                    <StudyPerformanceChart daily={last7Days} />
-                  ) : (
-                    <div className={styles.chartPlaceholder}>
-                      {metricsLoading ? "Loading your study time…" : "Study time could not be loaded right now."}
-                    </div>
-                  )}
-                </div>
-
-                {/* Weekly summary derived from metrics */}
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", borderLeft: "1px solid #F1F5F9", paddingLeft: "20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ padding: "6px", background: "#EFF6FF", borderRadius: "8px", color: "#2563EB" }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10" />
-                        <line x1="12" y1="20" x2="12" y2="4" />
-                        <line x1="6" y1="20" x2="6" y2="14" />
-                      </svg>
-                    </div>
-                    <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#1E293B", margin: 0 }}>This Week at a Glance</h3>
-                  </div>
-
-                  <p style={{ fontSize: "12.5px", color: "#475569", margin: 0, lineHeight: "1.5" }}>
-                    {metrics ? weeklySummary(metrics) : metricsLoading ? "Loading…" : "Your weekly summary is unavailable right now."}
-                  </p>
-
-                  {metrics && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
-                      {SECTION_ORDER.map((key) => {
-                        const sec = metrics.sections[key];
-                        const badge = sectionBadge(sec.accuracy, sec.attempted);
-                        return (
-                          <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "12px", fontWeight: "600", color: "#334155" }}>{SECTION_NAMES[key]} (timed tests)</span>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: badge.color, background: badge.bg, padding: "2px 8px", borderRadius: "6px" }}>
-                              {badge.text}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {metrics && (
-                    <div style={{ background: "#EFF6FF", padding: "10px 12px", borderRadius: "12px", border: "1px solid #BFDBFE" }}>
-                      <h4 style={{ fontSize: "11px", fontWeight: "700", color: "#1E3A8A", margin: "0 0 4px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>Recommended Next Step</h4>
-                      <p style={{ fontSize: "12px", color: "#1E40AF", margin: 0, fontWeight: "500", lineHeight: "1.4" }}>
-                        {recommendedNextStep(metrics)}
-                      </p>
-                    </div>
-                  )}
-
-                  <Link href="/analytics" style={{ fontSize: "12px", fontWeight: 600, color: "#2563EB", textDecoration: "none" }}>
-                    Full study analytics →
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Upcoming Agenda (Full Column Width) - Dynamic & Interactive */}
-            <div className={styles.cardBox}>
-              <div className={styles.cardHeader}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <h2 className={styles.cardTitle}>Upcoming Agenda</h2>
-                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#EFF6FF", color: "#2563EB", padding: "2px 8px", borderRadius: "6px" }}>
-                    Live & Upcoming
-                  </span>
-                  {announcements?.isSample && (
-                    <span style={{ fontSize: "11px", fontWeight: "700", background: "#F1F5F9", color: "#475569", padding: "2px 8px", borderRadius: "6px" }}>
-                      Sample data
+        {/* ===== STAT ROW: headline numbers that link to the detailed pages ===== */}
+        <RevealGroup className={styles.statRow}>
+          {/* Readiness -> Intelligence Hub */}
+          <RevealItem className={styles.statItem}>
+            <Link href="/intelligence" className={`glass-card ${styles.statCard}`} data-tint="blue" title="See the readiness breakdown in the Intelligence Hub">
+              <span className={styles.statLabel}>
+                <Gauge size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconBlue} />
+                CAT readiness
+              </span>
+              <div className={styles.statBody}>
+                <div className={styles.statMain}>
+                  {kpiPending ? (
+                    <span className={styles.statValue}>—</span>
+                  ) : readinessScore !== null ? (
+                    <span className={styles.statValue}>
+                      <CountUp to={readinessScore} />
+                      <span className={styles.statUnit}>/100</span>
                     </span>
+                  ) : (
+                    <span className={styles.statValueEmpty}>Not yet</span>
                   )}
+                  <span className={styles.statCaption}>
+                    {!kpiPending && readinessScore === null ? "Take a timed test to unlock" : "Coverage, accuracy, pace, consistency"}
+                  </span>
+                </div>
+                <svg className={styles.ring} viewBox="0 0 40 40" aria-hidden="true">
+                  <circle cx="20" cy="20" r="17" className={styles.ringTrack} />
+                  <circle
+                    cx="20"
+                    cy="20"
+                    r="17"
+                    className={styles.ringFill}
+                    strokeDasharray={RING}
+                    strokeDashoffset={RING * (1 - (readinessScore ?? 0) / 100)}
+                  />
+                </svg>
+              </div>
+            </Link>
+          </RevealItem>
+
+          {/* Study time this week -> My Analytics */}
+          <RevealItem className={styles.statItem}>
+            <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="teal" title="See your study time in My Analytics">
+              <span className={styles.statLabel}>
+                <Clock size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconTeal} />
+                Study time · 7 days
+              </span>
+              <div className={styles.statBody}>
+                <div className={styles.statMain}>
+                  <span className={styles.statValue}>{kpiPending ? "—" : formatDuration(metrics.studyTime.last7DaysSeconds)}</span>
+                  <span className={styles.statCaption}>
+                    {kpiPending ? "Learning + practice" : `${formatDuration(metrics.studyTime.todaySeconds)} today`}
+                  </span>
+                </div>
+                <div className={styles.miniBars} aria-hidden="true">
+                  {(weekTotals.length ? weekTotals : [0, 0, 0, 0, 0, 0, 0]).map((v, i, arr) => (
+                    <span
+                      key={i}
+                      className={`${styles.miniBar} ${i === arr.length - 1 ? styles.miniBarToday : ""}`}
+                      style={{ height: `${Math.max(8, Math.round((v / weekMax) * 100))}%` }}
+                    />
+                  ))}
                 </div>
               </div>
-              <div className={styles.agendaList}>
-                {upcomingAgenda.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "36px 20px", background: "#F8FAFC", borderRadius: "12px", border: "1px dashed #CBD5E1" }}>
-                    <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px auto" }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                    </div>
-                    <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#1E293B", margin: "0 0 4px 0" }}>
-                      No live classes scheduled right now
-                    </h4>
-                    <p style={{ fontSize: "13px", color: "#64748B", margin: "0 0 16px 0", maxWidth: "420px", marginLeft: "auto", marginRight: "auto" }}>
-                      Live masterclasses and faculty Q&amp;A sessions appear here as soon as they are announced. Meanwhile, keep going with your study plan.
+            </Link>
+          </RevealItem>
+
+          {/* Points -> My Analytics */}
+          <RevealItem className={styles.statItem}>
+            <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="amber" title="See how you earned your points in My Analytics">
+              <span className={styles.statLabel}>
+                <Trophy size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconAmber} />
+                Total points
+              </span>
+              <div className={styles.statMain}>
+                <span className={styles.statValue}>
+                  {kpiPending ? "—" : <CountUp to={metrics.points.total} />}
+                  {!kpiPending && <span className={styles.statUnit}>XP</span>}
+                </span>
+                {latestPoints ? (
+                  <span className={styles.pointsChip} title={latestPoints.reason}>
+                    <span className={styles.pointsChipValue}>+{latestPoints.points}</span>
+                    <span className={styles.pointsChipReason}>{latestPoints.reason}</span>
+                  </span>
+                ) : (
+                  <span className={styles.statCaption}>Earn XP from lessons and quizzes</span>
+                )}
+              </div>
+            </Link>
+          </RevealItem>
+
+          {/* Syllabus lessons completed -> My Topics */}
+          <RevealItem className={styles.statItem}>
+            <Link href="/topics" className={`glass-card ${styles.statCard}`} data-tint="violet" title="Open My Topics">
+              <span className={styles.statLabel}>
+                <BookOpen size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconViolet} />
+                Syllabus coverage
+              </span>
+              <div className={styles.statMain}>
+                <span className={styles.statValue}>
+                  {kpiPending ? "—" : syllabusLessonsDone}
+                  {!kpiPending && <span className={styles.statUnit}>/ {metrics.courses.syllabusLessons} lessons</span>}
+                </span>
+                <div className={styles.coverageBar} aria-hidden="true">
+                  {syllabusBySection.map((s) => (
+                    <span
+                      key={s.key}
+                      className={`${styles.coverageSeg} ${styles[`seg${s.key}`]}`}
+                      style={{ width: `${(s.done / syllabusTotal) * 100}%` }}
+                    />
+                  ))}
+                </div>
+                <span className={styles.statCaption}>
+                  {kpiPending
+                    ? "QA · DILR · VARC"
+                    : `${syllabusPercent}% · ${metrics.courses.inProgress} in progress, ${metrics.courses.completed} done`}
+                </span>
+              </div>
+            </Link>
+          </RevealItem>
+        </RevealGroup>
+
+        {/* ===== CONTINUE LEARNING (featured) ===== */}
+        <Reveal className={styles.sectionGap}>
+          <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
+        </Reveal>
+
+        {/* ===== TWO-COLUMN GRID ===== */}
+        <div className={styles.dashboardGrid}>
+          {/* LEFT: schedule, study performance, upcoming classes */}
+          <div className={styles.dashboardCol}>
+            <Reveal>
+              <DailyStudySchedule
+                selectedMonthIndex={selectedMonthIndex}
+                selectedYear={selectedYear}
+                selectedDay={selectedDay}
+                tasks={scheduleTasks}
+                onToggleTask={handleToggleTask}
+                onAddTask={openAddTaskModal}
+                onAutoAssignDay={handleAutoAssignDay}
+                enrolledCount={enrolledCount}
+                isDemo={isDemo}
+              />
+            </Reveal>
+
+            {/* Study performance: last 7 days (metrics.studyTime.daily) + weekly summary */}
+            <Reveal>
+              <section className={`glass-card ${styles.card}`} data-tint="teal">
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitle}>Study performance</h2>
+                  <div className={styles.chartLegend}>
+                    <span className={styles.legendItem}>
+                      <span className={`${styles.legendDot} ${styles.dotLearning}`} />
+                      Learning
+                    </span>
+                    <span className={styles.legendItem}>
+                      <span className={`${styles.legendDot} ${styles.dotPractice}`} />
+                      Practice
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.studyStatBody}>
+                  <div className={styles.chartArea}>
+                    {metrics ? (
+                      <StudyPerformanceChart daily={last7Days} />
+                    ) : (
+                      <div className={styles.chartPlaceholder}>
+                        {metricsLoading ? "Loading your study time…" : "Study time could not be loaded right now."}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.weekPanel}>
+                    <h3 className={styles.weekTitle}>This week</h3>
+                    <p className={styles.weekText}>
+                      {metrics ? weeklySummary(metrics) : metricsLoading ? "Loading…" : "Your weekly summary is unavailable right now."}
                     </p>
-                    <Link
-                      href="/browse"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "8px 16px",
-                        background: "#2563EB",
-                        color: "#FFFFFF",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        textDecoration: "none",
-                      }}
-                    >
-                      <span>Browse Courses &amp; Enroll</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
+
+                    {metrics && (
+                      <ul className={styles.sectionList}>
+                        {SECTION_ORDER.map((key) => {
+                          const sec = metrics.sections[key];
+                          const badge = sectionBadge(sec.accuracy, sec.attempted);
+                          return (
+                            <li key={key} className={styles.sectionRow}>
+                              <span className={styles.sectionName}>
+                                <span className={`${styles.sectionMarker} ${styles[`seg${key}`]}`} aria-hidden="true" />
+                                {SECTION_NAMES[key]}
+                                <span className={styles.sectionHint}>timed tests</span>
+                              </span>
+                              <span className={`${styles.accChip} ${styles[`acc_${badge.tone}`]}`}>{badge.text}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    <Link href="/analytics" className={styles.textLink}>
+                      Full study analytics
+                      <ArrowRight size={14} strokeWidth={2.25} aria-hidden="true" />
                     </Link>
                   </div>
-                ) : (
-                  upcomingAgenda.map((item) => (
-                  <div
-                    key={item.id}
-                    className={styles.agendaItem}
-                    onClick={() => {
-                      setLiveStreamAlert(null);
-                      setSelectedAgenda(item);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        setSelectedAgenda(item);
-                      }
-                    }}
-                  >
-                    <div className={styles.agendaLeft}>
-                      <div className={styles.agendaIconBox} style={{ background: item.iconBg }}>
-                        {item.activity === "Live Class" ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                        ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect width="20" height="14" x="2" y="3" rx="2" />
-                            <line x1="8" x2="16" y1="21" y2="21" />
-                            <line x1="12" x2="12" y1="17" y2="21" />
-                          </svg>
-                        )}
-                      </div>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          {item.isLiveNow && (
-                            <span className={styles.agendaLiveTag}>
-                              <span className={styles.agendaLivePulse} />
-                              Live now
-                            </span>
-                          )}
-                          <h3 className={styles.agendaTitle}>{item.title}</h3>
+                </div>
+              </section>
+            </Reveal>
+
+            {/* Upcoming live classes (published by staff) */}
+            <Reveal>
+              <section className={`glass-card ${styles.card}`} data-tint="blue">
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitle}>Upcoming classes</h2>
+                  {announcements?.isSample && <span className={styles.mutedChip}>Sample data</span>}
+                </div>
+                <div className={styles.agendaList}>
+                  {upcomingAgenda.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <CalendarClock size={22} strokeWidth={1.75} aria-hidden="true" className={styles.emptyIcon} />
+                      <h3 className={styles.emptyTitle}>No live classes scheduled right now</h3>
+                      <p className={styles.emptyText}>
+                        Live masterclasses and faculty Q&amp;A sessions appear here as soon as they are announced. Meanwhile, keep going with your study plan.
+                      </p>
+                      <Link href="/browse" className={styles.secondaryBtn}>
+                        Browse courses and enroll
+                        <ArrowRight size={14} strokeWidth={2.25} aria-hidden="true" />
+                      </Link>
+                    </div>
+                  ) : (
+                    upcomingAgenda.map((item) => (
+                      <div
+                        key={item.id}
+                        className={styles.agendaItem}
+                        onClick={() => {
+                          setLiveStreamAlert(null);
+                          setSelectedAgenda(item);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            setSelectedAgenda(item);
+                          }
+                        }}
+                      >
+                        <span className={styles.agendaMarker} style={{ background: item.iconBg }} aria-hidden="true" />
+                        <div className={styles.agendaMain}>
+                          <div className={styles.agendaTitleRow}>
+                            {item.isLiveNow && (
+                              <span className={styles.agendaLiveTag}>
+                                <span className={styles.agendaLivePulse} />
+                                Live now
+                              </span>
+                            )}
+                            <h3 className={styles.agendaTitle}>{item.title}</h3>
+                          </div>
+                          <p className={styles.agendaMeta}>
+                            <span className={styles.agendaFaculty}>{item.faculty}</span>
+                            <span aria-hidden="true">·</span>
+                            <span className={styles.mono}>{item.dateFormatted}</span>
+                          </p>
                         </div>
-                        <p className={styles.agendaMeta}>
-                          <span style={{ fontWeight: "600", color: "#4B5563" }}>{item.faculty}</span>
-                          <span>•</span>
-                          <span>{item.dateFormatted}</span>
-                        </p>
+                        <div className={styles.agendaRight}>
+                          <span className={styles.agendaMetaCol}>
+                            <span className={styles.agendaMetaLabel}>Duration</span>
+                            <span className={styles.agendaMetaVal}>{item.duration}</span>
+                          </span>
+                          <span className={styles.agendaCta}>
+                            {item.isLiveNow ? "Join class" : "View session"}
+                            <ChevronRight size={16} strokeWidth={2.25} aria-hidden="true" />
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className={styles.agendaRight}>
-                      <div className={styles.agendaMetaCol}>
-                        <span className={styles.agendaMetaLabel}>Duration</span>
-                        <span className={styles.agendaMetaVal}>{item.duration}</span>
-                      </div>
-                      <div className={styles.agendaMetaCol}>
-                        <span className={styles.agendaMetaLabel}>Activity</span>
-                        <span className={styles.agendaMetaVal}>{item.activity}</span>
-                      </div>
-                      <div className={styles.agendaCtaBtn}>
-                        <span>{item.isLiveNow ? "Join Class" : "View Session"}</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                )))}
-              </div>
-            </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </Reveal>
           </div>
 
-          {/* RIGHT COLUMN: Calendar, Readiness, Leaderboard & CAT Prep Notices */}
+          {/* RIGHT: calendar, percentile, leaderboard, notices */}
           <div className={styles.dashboardCol}>
-            {/* 1. Interactive Study Calendar */}
-            <StudyCalendarWidget
-              selectedMonthIndex={selectedMonthIndex}
-              onSelectMonthIndex={setSelectedMonthIndex}
-              selectedYear={selectedYear}
-              selectedDay={selectedDay}
-              onSelectDay={(day) => setSelectedDay(day)}
-              taskCategoryMap={taskCategoryMap}
-              isDemo={isDemo}
-            />
+            <Reveal>
+              <StudyCalendarWidget
+                selectedMonthIndex={selectedMonthIndex}
+                onSelectMonthIndex={setSelectedMonthIndex}
+                selectedYear={selectedYear}
+                selectedDay={selectedDay}
+                onSelectDay={(day) => setSelectedDay(day)}
+                taskCategoryMap={taskCategoryMap}
+                isDemo={isDemo}
+              />
+            </Reveal>
 
-            {/* 2. CAT Readiness: single score + estimated percentile; breakdown lives in /intelligence */}
-            <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
+            {/* Estimated percentile + readiness status; full breakdown lives in /intelligence */}
+            <Reveal>
+              <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
+            </Reveal>
 
-            {/* 3. Weekly Leaderboard */}
-            <LeaderboardWidget />
+            <Reveal>
+              <LeaderboardWidget />
+            </Reveal>
 
-            {/* 4. CAT Prep Notices - Dynamic Daily Notice Board */}
-            <div className={`${styles.cardBox} ${styles.noticeBoardCard}`}>
-              <div className={styles.noticeBoardHeader}>
-                <div className={styles.noticeBoardTitleGroup}>
-                  <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
-                  <span style={{ fontSize: "11px", fontWeight: "700", background: "#FEF3C7", color: "#B45309", padding: "3px 9px", borderRadius: "999px" }}>
-                    Daily Updates
-                  </span>
-                  {unreadNoticeCount > 0 && (
-                    <span className={styles.noticeUnreadHeaderBadge}>
-                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#2563EB" }} />
-                      {unreadNoticeCount} New
-                    </span>
+            {/* CAT prep notices */}
+            <Reveal>
+              <section className={`glass-card ${styles.card}`} data-tint="amber">
+                <div className={styles.cardHeader}>
+                  <div className={styles.titleGroup}>
+                    <h2 className={styles.cardTitle}>Notices</h2>
+                    {unreadNoticeCount > 0 && (
+                      <span className={styles.unreadChip}>
+                        <span className={styles.unreadDot} aria-hidden="true" />
+                        {unreadNoticeCount} new
+                      </span>
+                    )}
+                  </div>
+                  {prepNotices.length > 0 && unreadNoticeCount > 0 && (
+                    <button
+                      type="button"
+                      className={styles.markAllReadBtn}
+                      onClick={() => markAllNoticesVisited(prepNotices.map((n) => n.id))}
+                    >
+                      Mark all read
+                    </button>
                   )}
+                </div>
+                <div className={styles.noticeList}>
+                  {prepNotices.length === 0 && (
+                    <p className={styles.emptyText}>No notices right now. Official TechnoCAT updates will show up here.</p>
+                  )}
+                  {prepNotices.map((notice) => {
+                    const isUnvisited = noticesHydrated && !visitedNoticeSet.has(notice.id);
+                    const cardContent = (
+                      <article className={`${styles.noticeItem} ${isUnvisited ? styles.noticeItemUnread : ""}`}>
+                        <Megaphone size={16} strokeWidth={2} aria-hidden="true" className={styles.noticeIcon} style={{ color: notice.badgeColor }} />
+                        <div className={styles.noticeContent}>
+                          <div className={styles.noticeMetaRow}>
+                            {isUnvisited && <span className={styles.noticeNew}>New</span>}
+                            <span className={styles.noticeBadge} style={{ background: notice.badgeBg, color: notice.badgeColor }}>
+                              {notice.badge}
+                            </span>
+                            <span className={styles.noticeDate}>{notice.dateNotice}</span>
+                          </div>
+                          <h3 className={styles.noticeTitle}>{notice.title}</h3>
+                          {notice.desc && <p className={styles.noticeDesc}>{notice.desc}</p>}
+                        </div>
+                        {notice.actionUrl && <ChevronRight size={16} strokeWidth={2.25} aria-hidden="true" className={styles.noticeChevron} />}
+                      </article>
+                    );
+
+                    return notice.actionUrl ? (
+                      <Link
+                        key={notice.id}
+                        href={notice.actionUrl}
+                        className={styles.noticeCardLink}
+                        onClick={() => markNoticeVisited(notice.id)}
+                      >
+                        {cardContent}
+                      </Link>
+                    ) : isUnvisited ? (
+                      <button
+                        key={notice.id}
+                        type="button"
+                        className={styles.noticeCardButton}
+                        onClick={() => markNoticeVisited(notice.id)}
+                      >
+                        {cardContent}
+                      </button>
+                    ) : (
+                      <div key={notice.id}>{cardContent}</div>
+                    );
+                  })}
                 </div>
                 {prepNotices.length > 0 && (
-                  <div className={styles.noticeHeaderActions}>
-                    {unreadNoticeCount > 0 && (
-                      <button
-                        type="button"
-                        className={styles.markAllReadBtn}
-                        onClick={() => markAllNoticesVisited(prepNotices.map((n) => n.id))}
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                    <span className={styles.noticeCountPill}>
-                      {prepNotices.length} {prepNotices.length === 1 ? "Update" : "Updates"}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className={styles.noticeList}>
-                {prepNotices.length === 0 && (
-                  <p style={{ fontSize: "13px", color: "#64748B", padding: "12px 4px", margin: 0 }}>
-                    No notices right now. Official TechnoCAT updates will show up here.
+                  <p className={styles.noticeFoot}>
+                    {prepNotices.length} {prepNotices.length === 1 ? "update" : "updates"}
                   </p>
                 )}
-                {prepNotices.map((notice) => {
-                  const isUnvisited = noticesHydrated && !visitedNoticeSet.has(notice.id);
-                  const cardContent = (
-                    <article
-                      className={`${styles.noticeItem} ${isUnvisited ? styles.noticeItemUnread : ""}`}
-                      style={{ borderLeftColor: notice.badgeColor }}
-                    >
-                      <div
-                        className={styles.noticeThumb}
-                        aria-hidden="true"
-                        style={{ background: notice.badgeBg, color: notice.badgeColor }}
-                      >
-                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 11l18-5v12L3 14v-3z" />
-                          <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-                        </svg>
-                      </div>
-                      <div className={styles.noticeContent}>
-                        <div className={styles.noticeMetaRow}>
-                          {isUnvisited && (
-                            <span className={styles.noticeNewBanner}>
-                              <span className={styles.noticeNewDot} aria-hidden="true" />
-                              NEW
-                            </span>
-                          )}
-                          <span
-                            className={styles.noticeBadge}
-                            style={{ background: notice.badgeBg, color: notice.badgeColor }}
-                          >
-                            {notice.badge}
-                          </span>
-                          <span className={styles.noticeDate}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                              <circle cx="12" cy="12" r="10" />
-                              <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            {notice.dateNotice}
-                          </span>
-                        </div>
-                        <h3 className={styles.noticeTitle}>{notice.title}</h3>
-                        {notice.desc && (
-                          <p className={styles.noticeDesc}>{notice.desc}</p>
-                        )}
-                      </div>
-                      {notice.actionUrl && (
-                        <span className={styles.noticeChevron} aria-hidden="true">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
-                        </span>
-                      )}
-                    </article>
-                  );
-
-                  return notice.actionUrl ? (
-                    <Link
-                      key={notice.id}
-                      href={notice.actionUrl}
-                      className={styles.noticeCardLink}
-                      onClick={() => markNoticeVisited(notice.id)}
-                    >
-                      {cardContent}
-                    </Link>
-                  ) : isUnvisited ? (
-                    <button
-                      key={notice.id}
-                      type="button"
-                      className={styles.noticeCardButton}
-                      onClick={() => markNoticeVisited(notice.id)}
-                    >
-                      {cardContent}
-                    </button>
-                  ) : (
-                    <div key={notice.id}>{cardContent}</div>
-                  );
-                })}
-              </div>
-            </div>
+              </section>
+            </Reveal>
           </div>
         </div>
       </main>
@@ -1171,19 +1081,15 @@ export default function DashboardPage() {
         <div className={styles.modalBackdrop} onClick={() => setIsTaskModalOpen(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Add Study Task</h3>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setIsTaskModalOpen(false)}
-                aria-label="Close"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <h3 className={styles.modalTitle}>Add study task</h3>
+              <button className={styles.modalCloseBtn} onClick={() => setIsTaskModalOpen(false)} aria-label="Close">
+                <X size={18} strokeWidth={2} />
               </button>
             </div>
 
             <form onSubmit={handleAddTask}>
               <div className={styles.formGroup}>
-                <label htmlFor="task-title-input" className={styles.formLabel}>Task Title</label>
+                <label htmlFor="task-title-input" className={styles.formLabel}>Task title</label>
                 <input
                   id="task-title-input"
                   type="text"
@@ -1197,7 +1103,7 @@ export default function DashboardPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="task-date-input" className={styles.formLabel}>Target Date</label>
+                <label htmlFor="task-date-input" className={styles.formLabel}>Target date</label>
                 <input
                   id="task-date-input"
                   type="date"
@@ -1209,20 +1115,11 @@ export default function DashboardPage() {
               </div>
 
               <div className={styles.modalActions}>
-                <button
-                  type="button"
-                  onClick={() => setIsTaskModalOpen(false)}
-                  className={styles.cancelBtn}
-                >
+                <button type="button" onClick={() => setIsTaskModalOpen(false)} className={styles.cancelBtn}>
                   Cancel
                 </button>
-                <button
-                  id="create-task-submit-btn"
-                  type="submit"
-                  disabled={isSubmittingTask}
-                  className={styles.submitBtn}
-                >
-                  {isSubmittingTask ? "Saving..." : "Create Task"}
+                <button id="create-task-submit-btn" type="submit" disabled={isSubmittingTask} className={styles.submitBtn}>
+                  {isSubmittingTask ? "Saving..." : "Create task"}
                 </button>
               </div>
             </form>
@@ -1234,53 +1131,27 @@ export default function DashboardPage() {
       {selectedAgenda && (
         <div className={styles.modalBackdrop} onClick={() => setSelectedAgenda(null)}>
           <div className={styles.agendaModalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader} style={{ marginBottom: "14px" }}>
+            <div className={styles.modalHeader}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <span
-                    style={{
-                      background: selectedAgenda.isLiveNow ? "#FEF2F2" : "#F0FDF4",
-                      color: selectedAgenda.isLiveNow ? "#DC2626" : "#16A34A",
-                      fontSize: "11px",
-                      fontWeight: "700",
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {selectedAgenda.activity}
-                  </span>
-                </div>
-                <h3 className={styles.modalTitle} style={{ fontSize: "19px", lineHeight: "1.3" }}>
-                  {selectedAgenda.title}
-                </h3>
+                <span className={`${styles.activityChip} ${selectedAgenda.isLiveNow ? styles.activityChipLive : ""}`}>
+                  {selectedAgenda.isLiveNow ? <Radio size={12} strokeWidth={2.25} aria-hidden="true" /> : null}
+                  {selectedAgenda.activity}
+                </span>
+                <h3 className={styles.modalTitle}>{selectedAgenda.title}</h3>
               </div>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setSelectedAgenda(null)}
-                aria-label="Close modal"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <button type="button" className={styles.modalCloseBtn} onClick={() => setSelectedAgenda(null)} aria-label="Close modal">
+                <X size={18} strokeWidth={2} />
               </button>
             </div>
 
-            {/* Faculty Box */}
             <div className={styles.agendaFacultyBox}>
-              <div className={styles.agendaFacultyAvatar}>
-                {selectedAgenda.faculty.charAt(0)}
-              </div>
-              <div>
-                <div style={{ fontSize: "13.5px", fontWeight: "700", color: "#1E3A8A" }}>
-                  {selectedAgenda.faculty}
-                </div>
-              </div>
+              <span className={styles.agendaFacultyAvatar}>{selectedAgenda.faculty.charAt(0)}</span>
+              <span className={styles.agendaFacultyName}>{selectedAgenda.faculty}</span>
             </div>
 
-            {/* Meta Grid */}
             <div className={styles.agendaModalMetaGrid}>
               <div className={styles.agendaModalMetaItem}>
-                <label>Date & Time</label>
+                <label>Date &amp; time</label>
                 <span>{selectedAgenda.dateFormatted}</span>
               </div>
               <div className={styles.agendaModalMetaItem}>
@@ -1293,49 +1164,30 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Syllabus (only when the announcement lists one) */}
             {selectedAgenda.syllabus.length > 0 && (
-            <div>
-              <h4 style={{ fontSize: "13px", fontWeight: "700", color: "#111827", margin: "14px 0 8px" }}>
-                Session Key Takeaways & Syllabus:
-              </h4>
-              <div className={styles.agendaSyllabusList}>
-                {selectedAgenda.syllabus.map((item, idx) => (
-                  <div key={idx} className={styles.agendaSyllabusItem}>
-                    <svg className={styles.agendaSyllabusCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M20 6L9 17l-5-5"/>
-                    </svg>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            )}
-
-            {liveStreamAlert && (
-              <div style={{ background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "10px 14px", borderRadius: "10px", color: "#065F46", fontSize: "12.5px", fontWeight: "600", marginBottom: "14px" }}>
-                {liveStreamAlert}
+              <div>
+                <h4 className={styles.syllabusHeading}>What the session covers</h4>
+                <div className={styles.agendaSyllabusList}>
+                  {selectedAgenda.syllabus.map((item, idx) => (
+                    <div key={idx} className={styles.agendaSyllabusItem}>
+                      <Check size={16} strokeWidth={2.5} className={styles.agendaSyllabusCheck} aria-hidden="true" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Actions */}
+            {liveStreamAlert && <div className={styles.alertNote}>{liveStreamAlert}</div>}
+
             <div className={styles.agendaModalActions}>
               {selectedAgenda.joinUrl ? (
-                <a
-                  href={selectedAgenda.joinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.agendaPrimaryAction}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                  <span>{selectedAgenda.isLiveNow ? "Join Class" : "Open Class Link"}</span>
+                <a href={selectedAgenda.joinUrl} target="_blank" rel="noopener noreferrer" className={styles.agendaPrimaryAction}>
+                  <Play size={16} strokeWidth={2.25} aria-hidden="true" />
+                  <span>{selectedAgenda.isLiveNow ? "Join class" : "Open class link"}</span>
                 </a>
               ) : (
-                <span className={styles.agendaSecondaryAction} style={{ cursor: "default" }}>
-                  Joining link will be shared before the class
-                </span>
+                <span className={styles.agendaPendingNote}>Joining link will be shared before the class</span>
               )}
 
               <button
@@ -1362,24 +1214,21 @@ export default function DashboardPage() {
                 }}
               >
                 {agendaReminderSaved[selectedAgenda.id] ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Reminder Set</span>
-                  </span>
+                  <>
+                    <Check size={14} strokeWidth={2.5} aria-hidden="true" />
+                    <span>Reminder set</span>
+                  </>
                 ) : (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>Remind Me</span>
-                  </span>
+                  <>
+                    <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                    <span>Remind me</span>
+                  </>
                 )}
               </button>
 
-              <Link
-                href={selectedAgenda.topicUrl}
-                className={styles.agendaSecondaryAction}
-                onClick={() => setSelectedAgenda(null)}
-              >
-                View Topic →
+              <Link href={selectedAgenda.topicUrl} className={styles.agendaSecondaryAction} onClick={() => setSelectedAgenda(null)}>
+                View topic
+                <ArrowRight size={14} strokeWidth={2.25} aria-hidden="true" />
               </Link>
             </div>
           </div>

@@ -3,11 +3,53 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  ArrowBigUp,
+  ArrowRight,
+  Bookmark,
+  BookOpen,
+  Camera,
+  ChartColumn,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CircleCheck,
+  CircleExclamationPoint,
+  CircleQuestionMark,
+  Clock,
+  CloudUpload,
+  Coffee,
+  Ellipsis,
+  Flag,
+  FolderOpen,
+  GraduationCap,
+  House,
+  ImagePlus,
+  MessageCircle,
+  MessageSquare,
+  Reply,
+  Search,
+  Send,
+  ShieldCheck,
+  SquareCheck,
+  SquarePen,
+  Star,
+  Target,
+  ThumbsUp,
+  Trash,
+  TrendingUp,
+  Trophy,
+  Users,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import AppNav from "@/components/app/AppNav";
+import BackLink from "@/components/app/BackLink";
+import { Reveal, RevealGroup, RevealItem, SpotlightCard, CountUp, GradientText } from "@/components/landing/motion";
 import styles from "./learning-community.module.css";
-import BrandLogo from "@/components/BrandLogo";
 import {
   CommunityCategory,
   CommunityPayload,
@@ -29,79 +71,6 @@ interface CategoryMeta {
   desc: string;
   iconBg: string;
   iconColor: string;
-}
-
-function getCategoryPopoverIcon(category: CommunityCategory) {
-  switch (category) {
-    case "General Discussion":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      );
-    case "CAT Strategy":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
-        </svg>
-      );
-    case "Doubt Solving":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      );
-    case "Study Resources":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-        </svg>
-      );
-    case "Mocks & Analysis":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-      );
-    case "College Discussions":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M3 21h18" />
-          <path d="M3 10h18" />
-          <path d="M5 6l7-3 7 3" />
-          <path d="M4 10v11" />
-          <path d="M20 10v11" />
-          <path d="M8 14v4" />
-          <path d="M12 14v4" />
-          <path d="M16 14v4" />
-        </svg>
-      );
-    case "Motivation & Journey":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-      );
-    case "Off-topic":
-      return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-          <line x1="6" y1="1" x2="6" y2="4" />
-          <line x1="10" y1="1" x2="10" y2="4" />
-          <line x1="14" y1="1" x2="14" y2="4" />
-        </svg>
-      );
-    default:
-      return null;
-  }
 }
 
 const CATEGORIES_CONFIG: CategoryMeta[] = [
@@ -302,96 +271,84 @@ function getAuthorAvatar(authorName: string): string | null {
   return map[authorName] || null;
 }
 
-function getCategoryBadgeClass(cat: CommunityCategory): string {
-  switch (cat) {
-    case "General Discussion":
-      return `${styles.categoryBadge} ${styles.catGeneral}`;
-    case "CAT Strategy":
-      return `${styles.categoryBadge} ${styles.catStrategy}`;
-    case "Doubt Solving":
-      return `${styles.categoryBadge} ${styles.catDoubt}`;
-    case "Study Resources":
-      return `${styles.categoryBadge} ${styles.catResources}`;
-    case "Mocks & Analysis":
-      return `${styles.categoryBadge} ${styles.catMocks}`;
-    case "College Discussions":
-      return `${styles.categoryBadge} ${styles.catCollege}`;
-    case "Motivation & Journey":
-      return `${styles.categoryBadge} ${styles.catMotivation}`;
-    case "Off-topic":
-      return `${styles.categoryBadge} ${styles.catOfftopic}`;
-    default:
-      return `${styles.categoryBadge} ${styles.catGeneral}`;
-  }
+/* Category colours come from the shared data palette (set as --cat by these classes). */
+const CATEGORY_TONE: Record<CommunityCategory, string> = {
+  "General Discussion": styles.catGeneral,
+  "CAT Strategy": styles.catStrategy,
+  "Doubt Solving": styles.catDoubt,
+  "Study Resources": styles.catResources,
+  "Mocks & Analysis": styles.catMocks,
+  "College Discussions": styles.catCollege,
+  "Motivation & Journey": styles.catMotivation,
+  "Off-topic": styles.catOfftopic,
+};
+
+function getCategoryToneClass(cat: CommunityCategory): string {
+  return CATEGORY_TONE[cat] || styles.catGeneral;
 }
 
+function getCategoryBadgeClass(cat: CommunityCategory): string {
+  return `${styles.categoryBadge} ${getCategoryToneClass(cat)}`;
+}
+
+const CATEGORY_ICONS: Record<CommunityCategory, LucideIcon> = {
+  "General Discussion": MessageSquare,
+  "CAT Strategy": Target,
+  "Doubt Solving": CircleQuestionMark,
+  "Study Resources": BookOpen,
+  "Mocks & Analysis": ChartColumn,
+  "College Discussions": GraduationCap,
+  "Motivation & Journey": Star,
+  "Off-topic": Coffee,
+};
+
 export function getCategoryOutlineIcon(category: CommunityCategory, className?: string) {
-  switch (category) {
-    case "General Discussion":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          <line x1="8" y1="9" x2="16" y2="9" />
-          <line x1="8" y1="13" x2="13" y2="13" />
-        </svg>
-      );
-    case "CAT Strategy":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
-        </svg>
-      );
-    case "Doubt Solving":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      );
-    case "Study Resources":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
-      );
-    case "Mocks & Analysis":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-      );
-    case "College Discussions":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-          <path d="M6 12v5c3 3 9 3 12 0v-5" />
-        </svg>
-      );
-    case "Motivation & Journey":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
-      );
-    case "Off-topic":
-      return (
-        <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-          <line x1="6" y1="1" x2="6" y2="4" />
-          <line x1="10" y1="1" x2="10" y2="4" />
-          <line x1="14" y1="1" x2="14" y2="4" />
-        </svg>
-      );
-    default:
-      return null;
-  }
+  const Icon = CATEGORY_ICONS[category];
+  if (!Icon) return null;
+  return <Icon className={className} size={18} strokeWidth={1.9} aria-hidden="true" />;
+}
+
+const FEED_TAB_LABELS: Record<FeedFilterTab, string> = {
+  Recent: "Recent",
+  "Most Helpful": "Most helpful",
+  Trending: "Trending",
+  Unanswered: "Unanswered",
+  "My Posts": "My posts",
+};
+
+/* Round avatar with a safe fallback image */
+function Avatar({ src, alt, size = 40 }: { src: string; alt: string; size?: number }) {
+  return (
+    <span className={styles.avatar} style={{ width: size, height: size }}>
+      <img
+        src={src}
+        alt={alt}
+        onError={(e) => {
+          e.currentTarget.src = "/profile_icon.png";
+        }}
+      />
+    </span>
+  );
+}
+
+/* Stat value in mono; plain numbers ("12", "2.4K", "92%") count up once in view */
+function StatFigure({ value, className }: { value: string | null | undefined; className?: string }) {
+  if (!value) return <span className={className}>&mdash;</span>;
+  const match = /^(\d+(?:\.\d+)?)([K%]?)$/.exec(value.trim());
+  if (!match) return <span className={className}>{value}</span>;
+  const decimals = match[1].includes(".") ? match[1].split(".")[1].length : 0;
+  return <CountUp to={parseFloat(match[1])} decimals={decimals} suffix={match[2]} className={className} />;
+}
+
+/* Leaderboard rank: mono numeral, metal ring for the top three */
+function RankBadge({ rank }: { rank: number }) {
+  const tone =
+    rank === 1 ? styles.rankGold : rank === 2 ? styles.rankSilver : rank === 3 ? styles.rankBronze : "";
+  return (
+    <span className={`${styles.rankBadge} ${tone}`} aria-label={`Rank ${rank}`}>
+      {rank}
+    </span>
+  );
 }
 
 export default function LearningCommunityPage() {
@@ -640,7 +597,7 @@ export default function LearningCommunityPage() {
       if (!target) return;
       // Allow internal scrolling ONLY inside active scrollable modal/panel containers
       const scrollable = target.closest(
-        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.drawerBody}, .${styles.statsDrawerBody}, .${styles.statsDrawerPanel}, .${styles.contributorDrawerBody}, .${styles.contributorDrawerPanel}, .${styles.statPopupContent}, .${styles.mobileDrawerBody}`
+        `.${styles.modalBody}, .${styles.floatingAddImagePopover}, .${styles.drawerBody}, .${styles.statsDrawerBody}, .${styles.statsDrawerPanel}, .${styles.contributorDrawerBody}, .${styles.contributorDrawerPanel}, .${styles.statPopupContent}`
       );
       if (!scrollable) {
         if (e.cancelable) {
@@ -1639,943 +1596,558 @@ export default function LearningCommunityPage() {
   const getRepliesForComment = (commentId: string) =>
     (activePost?.comments || []).filter((c) => c.parentCommentId === commentId);
 
+
+  // Presentation helpers (derived from existing state only)
+  const postCountByCategory = posts.reduce<Record<string, number>>((acc, p) => {
+    acc[p.category] = (acc[p.category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const sidebarNavItems: {
+    key: SidebarSection;
+    label: string;
+    icon: LucideIcon;
+    count: number;
+    active: boolean;
+    onClick: () => void;
+  }[] = [
+    {
+      key: "HOME",
+      label: "Community home",
+      icon: House,
+      count: 0,
+      active: sidebarView === "HOME" && !selectedCategory,
+      onClick: handleSelectHome,
+    },
+    {
+      key: "MY_POSTS",
+      label: "My posts",
+      icon: SquareCheck,
+      count: myPostsCount,
+      active: sidebarView === "MY_POSTS",
+      onClick: handleSelectMyPosts,
+    },
+    {
+      key: "SAVED_POSTS",
+      label: "Saved posts",
+      icon: Bookmark,
+      count: savedPostsCount,
+      active: sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS",
+      onClick: handleSelectSavedPosts,
+    },
+  ];
+
+  const statCells: {
+    key: "MEMBERS" | "DISCUSSIONS" | "SOLUTIONS" | "HELPFUL_RATE";
+    label: string;
+    value: string | undefined;
+    color: string;
+  }[] = [
+    { key: "MEMBERS", label: "Members", value: data?.stats.members, color: "var(--data-blue)" },
+    { key: "DISCUSSIONS", label: "Discussions", value: data?.stats.discussions, color: "var(--data-teal)" },
+    { key: "SOLUTIONS", label: "Solutions", value: data?.stats.solutions, color: "var(--data-violet)" },
+    { key: "HELPFUL_RATE", label: "Helpful rate", value: data?.stats.helpfulRate, color: "var(--data-amber)" },
+  ];
+
+  const activityPeriodLabel =
+    activityPeriod === "7D" ? "last 7 days" : activityPeriod === "90D" ? "last 90 days" : "last 30 days";
+
+  const helpfulPercentRaw = parseFloat(data?.stats.helpfulRate || "");
+  const helpfulPercent = Number.isFinite(helpfulPercentRaw)
+    ? Math.min(100, Math.max(0, helpfulPercentRaw))
+    : isDemo
+    ? 92
+    : 0;
+
+  const mostAnsweredPosts = [...posts]
+    .filter((p) => p.commentsCount > 0)
+    .sort((a, b) => b.commentsCount - a.commentsCount)
+    .slice(0, 3);
+
+  const canDeleteComment = (authorId: string, isOwnComment?: boolean) =>
+    Boolean(
+      isOwnComment ||
+        (user && user.id === authorId) ||
+        (data?.currentUser && data.currentUser.id === authorId)
+    );
+
+  const renderStatPopoverHeader = (
+    titleId: string,
+    title: string,
+    sub: string,
+    color: string,
+    closeLabel: string
+  ) => (
+    <div className={styles.statPopoverHeader}>
+      <div>
+        <span className={styles.statPopoverKicker}>
+          <span className={styles.dot} style={{ background: color }} aria-hidden="true" />
+          {sub}
+        </span>
+        <h3 id={titleId} className={styles.statPopoverTitle}>
+          {title}
+        </h3>
+      </div>
+      <button
+        type="button"
+        className={styles.iconBtn}
+        onClick={() => setActiveStatPopup(null)}
+        aria-label={closeLabel}
+      >
+        <X size={18} strokeWidth={2} aria-hidden="true" />
+      </button>
+    </div>
+  );
+
+  const renderStatPopoverFooter = (note: string, cta: string) => (
+    <div className={styles.statPopoverFooter}>
+      <span className={styles.footNote}>{note}</span>
+      <button
+        type="button"
+        className={styles.linkBtn}
+        onClick={() => {
+          setActiveStatPopup(null);
+          setIsStatsDrawerOpen(true);
+        }}
+      >
+        <span>{cta}</span>
+        <ArrowRight size={15} aria-hidden="true" />
+      </button>
+    </div>
+  );
+
   return (
     <div className={styles.pageWrapper}>
-      {/* Sticky App Header */}
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Learning Community Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+      <AppNav />
 
-            <div className={styles.navLinks}>
-              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-              <Link href="/browse" className={styles.navLink}>Browse</Link>
-              <Link href="/topics" className={styles.navLink}>My Topics</Link>
-              <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>
-                Intelligence Hub
-              </Link>
-              <Link href="/mock-viva-prep" className={styles.navLink}>
-                Speak & Assess
-              </Link>
-            </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* 1. Breadcrumb Navigation */}
-      <div className={styles.breadcrumb}>
-        <Link href="/intelligence" className={styles.breadcrumbLink}>
-          Intelligence Hub
-        </Link>{" "}
-        &gt; <span>Learning Community</span>
-      </div>
-
-      <div className={styles.outerContainer}>
-        {/* 2. Hero Section Matching Reference Image */}
-        <section className={styles.heroBannerCard}>
-          <div className={styles.heroLeftGroup}>
-            <div className={styles.heroIconSquare}>
-              <img
-                src="/community/hero-community-icon.png"
-                alt="Learning Community"
-                className={styles.heroIconImg}
-              />
-            </div>
-            <div className={styles.heroTextCol}>
-              <h1 className={styles.heroTitle}>
-                Learning <span>Community</span>
-              </h1>
-              <p className={styles.heroSubtitleTag}>
-                Connect &bull; Learn &bull; Discuss &bull; Grow Together
-              </p>
-              <p className={styles.heroDescription}>
-                A space for CAT aspirants to ask questions, share strategies, discuss doubts and learn
-                from each other&apos;s journey.
-              </p>
-            </div>
+      <div className={styles.container}>
+        {/* Page header */}
+        <Reveal className={styles.pageHeader}>
+          <div className={styles.pageHeaderText}>
+            <BackLink href="/intelligence" label="Back to Intelligence Hub" />
+            <h1 className={styles.pageTitle}>
+              Learning <GradientText>community</GradientText>
+            </h1>
+            <p className={styles.pageSubtitle}>
+              Ask doubts, share strategies and learn from other CAT aspirants&apos; preparation.
+            </p>
           </div>
+          <button type="button" className={styles.primaryBtn} onClick={() => handleOpenCreateModal()}>
+            <SquarePen size={18} strokeWidth={2} aria-hidden="true" />
+            <span>Start a discussion</span>
+          </button>
+        </Reveal>
 
-          <div className={styles.heroRightCallout}>
-            <img
-              src="/community/hero-target-badge.png"
-              alt="Good Discussions Lead to Better Preparation"
-              className={styles.heroBadgeImg}
-            />
-          </div>
-        </section>
-
-        {/* Mobile Drawers Toggle for Small Screens */}
-        <div className={styles.mobileDrawersBar}>
-          <div className={styles.mobileDrawerToggleRow}>
-            <button
-              type="button"
-              className={`${styles.mobileDrawerBtn} ${
-                mobileDrawer === "MENU" ? styles.mobileDrawerBtnActive : ""
-              }`}
-              onClick={() => setMobileDrawer(mobileDrawer === "MENU" ? null : "MENU")}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-                <polyline points="9 21 9 12 15 12 15 21" />
-              </svg>
-              <span>Menu</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.mobileDrawerBtn} ${
-                mobileDrawer === "CATEGORIES" ? styles.mobileDrawerBtnActive : ""
-              }`}
-              onClick={() => setMobileDrawer(mobileDrawer === "CATEGORIES" ? null : "CATEGORIES")}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
-              <span>Categories</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.mobileDrawerBtn} ${
-                mobileDrawer === "STATS" ? styles.mobileDrawerBtnActive : ""
-              }`}
-              onClick={() => setMobileDrawer(mobileDrawer === "STATS" ? null : "STATS")}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-              <span>Stats</span>
-            </button>
-          </div>
-
-          {mobileDrawer === "MENU" && (
-            <div className={styles.mobileDrawerPanel}>
-              <div className={styles.sidebarNavList}>
-                <button
-                  type="button"
-                  className={`${styles.sidebarNavItem} ${
-                    sidebarView === "HOME" && !selectedCategory ? styles.sidebarNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleSelectHome();
-                    setMobileDrawer(null);
-                  }}
-                >
-                  <span className={styles.sidebarNavItemLeft}>
-                    <span className={styles.sidebarNavIcon}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-                        <polyline points="9 21 9 12 15 12 15 21" />
-                      </svg>
-                    </span>
-                    <span className={styles.sidebarNavLabel}>Community Home</span>
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.sidebarNavItem} ${
-                    sidebarView === "MY_POSTS" ? styles.sidebarNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleSelectMyPosts();
-                    setMobileDrawer(null);
-                  }}
-                >
-                  <span className={styles.sidebarNavItemLeft}>
-                    <span className={styles.sidebarNavIcon}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="4" />
-                        <polyline points="8.5 12.5 11 15 16 9" />
-                      </svg>
-                    </span>
-                    <span className={styles.sidebarNavLabel}>My Posts</span>
-                  </span>
-                  {myPostsCount > 0 && (
-                    <span className={styles.sidebarCountBadge}>{myPostsCount}</span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.sidebarNavItem} ${
-                    sidebarView === "SAVED_POSTS" ? styles.sidebarNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleSelectSavedPosts();
-                    setMobileDrawer(null);
-                  }}
-                >
-                  <span className={styles.sidebarNavItemLeft}>
-                    <span className={styles.sidebarNavIcon}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                      </svg>
-                    </span>
-                    <span className={styles.sidebarNavLabel}>Saved Posts</span>
-                  </span>
-                  {savedPostsCount > 0 && (
-                    <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.sidebarNavItem} ${
-                    sidebarView === "BOOKMARKS" ? styles.sidebarNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleSelectBookmarks();
-                    setMobileDrawer(null);
-                  }}
-                >
-                  <span className={styles.sidebarNavItemLeft}>
-                    <span className={styles.sidebarNavIcon}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                      </svg>
-                    </span>
-                    <span className={styles.sidebarNavLabel}>Bookmarks</span>
-                  </span>
-                  {savedPostsCount > 0 && (
-                    <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
-                  )}
-                </button>
-              </div>
-
-              {/* Bottom profile card on mobile */}
-              <div
-                className={styles.sidebarUserProfileCard}
-                style={{ marginTop: "12px" }}
-                onClick={() => {
-                  setMobileDrawer(null);
-                  handleProfileCardClick();
-                }}
-                title={isGuest ? "Sign in to TechnoCAT" : "View Profile"}
+        {/* Mobile / tablet: views and categories as horizontal chips */}
+        <div className={styles.mobileChips} role="toolbar" aria-label="Browse discussions">
+          {sidebarNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                className={`${styles.chip} ${item.active ? styles.chipActive : ""}`}
+                onClick={item.onClick}
+                aria-pressed={item.active}
               >
-                <div className={styles.sidebarUserAvatarWrap}>
-                  {currentUserAvatarUrl ? (
-                    <img
-                      src={currentUserAvatarUrl}
-                      alt={currentUserName}
-                      className={styles.sidebarUserAvatarImg}
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile_icon.png";
-                      }}
-                    />
-                  ) : (
-                    <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
-                  )}
-                </div>
-                <div className={styles.sidebarUserInfoStack}>
-                  <span className={styles.sidebarUserName}>{currentUserName}</span>
-                  <span className={styles.sidebarUserRole}>{currentUserRole}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {mobileDrawer === "CATEGORIES" && (
-            <div className={styles.mobileDrawerPanel}>
-              <div className={styles.sidebarNavList}>
-                {CATEGORIES_CONFIG.map((cat) => {
-                  const count = posts.filter((p) => p.category === cat.name).length;
-                  const isSelected = selectedCategory === cat.name;
-                  return (
-                    <button
-                      key={cat.name}
-                      type="button"
-                      className={`${styles.sidebarCategoryItem} ${
-                        isSelected ? styles.sidebarCategoryItemActive : ""
-                      }`}
-                      onClick={() => {
-                        handleToggleCategory(cat.name);
-                        setMobileDrawer(null);
-                      }}
-                    >
-                      <span className={styles.sidebarCategoryLeft}>
-                        <span className={styles.sidebarCategoryIcon}>
-                          {getCategoryOutlineIcon(cat.name)}
-                        </span>
-                        <span className={styles.sidebarCategoryName}>{cat.name}</span>
-                      </span>
-                      {count > 0 && <span className={styles.sidebarCategoryCount}>{count}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {mobileDrawer === "STATS" && (
-            <div className={styles.mobileDrawerPanel}>
-              <div className={styles.statsGrid}>
-                <div
-                  className={`${styles.statBox} ${styles.statBoxBlue} ${styles.statBoxClickable}`}
-                  onClick={() => {
-                    setMobileDrawer(null);
-                    setActiveStatPopup("MEMBERS");
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setMobileDrawer(null);
-                      setActiveStatPopup("MEMBERS");
-                    }
-                  }}
-                  title="Click to view Members details"
-                >
-                  <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
-                  <span className={styles.statLabel}>Members</span>
-                </div>
-
-                <div
-                  className={`${styles.statBox} ${styles.statBoxCyan} ${styles.statBoxClickable}`}
-                  onClick={() => {
-                    setMobileDrawer(null);
-                    setActiveStatPopup("DISCUSSIONS");
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setMobileDrawer(null);
-                      setActiveStatPopup("DISCUSSIONS");
-                    }
-                  }}
-                  title="Click to view Discussions details"
-                >
-                  <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
-                  <span className={styles.statLabel}>Discussions</span>
-                </div>
-
-                <div
-                  className={`${styles.statBox} ${styles.statBoxPurple} ${styles.statBoxClickable}`}
-                  onClick={() => {
-                    setMobileDrawer(null);
-                    setActiveStatPopup("SOLUTIONS");
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setMobileDrawer(null);
-                      setActiveStatPopup("SOLUTIONS");
-                    }
-                  }}
-                  title="Click to view Solutions details"
-                >
-                  <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
-                  <span className={styles.statLabel}>Solutions</span>
-                </div>
-
-                <div
-                  className={`${styles.statBox} ${styles.statBoxAmber} ${styles.statBoxClickable}`}
-                  onClick={() => {
-                    setMobileDrawer(null);
-                    setActiveStatPopup("HELPFUL_RATE");
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setMobileDrawer(null);
-                      setActiveStatPopup("HELPFUL_RATE");
-                    }
-                  }}
-                  title="Click to view Helpful Rate details"
-                >
-                  <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
-                  <span className={styles.statLabel}>Helpful Rate</span>
-                </div>
-              </div>
-              <div style={{ marginTop: "12px", display: "flex", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  className={styles.viewAllCategoriesBtn}
-                  onClick={() => {
-                    setMobileDrawer(null);
-                    setIsStatsDrawerOpen(true);
-                  }}
-                >
-                  View All Stats &amp; Activity &rarr;
-                </button>
-              </div>
-            </div>
-          )}
+                <Icon size={16} strokeWidth={1.9} aria-hidden="true" />
+                <span>{item.key === "HOME" ? "All" : item.label}</span>
+                {item.count > 0 && <span className={styles.chipCount}>{item.count}</span>}
+              </button>
+            );
+          })}
+          <span className={styles.chipDivider} aria-hidden="true" />
+          {CATEGORIES_CONFIG.map((cat) => {
+            const isSelected = selectedCategory === cat.name;
+            const count = postCountByCategory[cat.name] || 0;
+            return (
+              <button
+                key={cat.name}
+                type="button"
+                className={`${styles.chip} ${getCategoryToneClass(cat.name)} ${
+                  isSelected ? styles.chipCatActive : ""
+                }`}
+                onClick={() => handleToggleCategory(cat.name)}
+                aria-pressed={isSelected}
+              >
+                {getCategoryOutlineIcon(cat.name, styles.catIcon)}
+                <span>{cat.name}</span>
+                {count > 0 && <span className={styles.chipCount}>{count}</span>}
+              </button>
+            );
+          })}
         </div>
 
-        {/* 3. Main 3-Column Layout (~20% Sidebar, ~55% Feed, ~25% Widgets) */}
-        <main className={styles.mainContainer}>
-          {/* Left Sidebar Navigation */}
-          <aside className={styles.leftSidebar} aria-label="Community Navigation">
-            <div className={styles.sidebarNavList}>
-              <button
-                type="button"
-                className={`${styles.sidebarNavItem} ${
-                  sidebarView === "HOME" && !selectedCategory ? styles.sidebarNavItemActive : ""
-                }`}
-                onClick={handleSelectHome}
-              >
-                <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-                      <polyline points="9 21 9 12 15 12 15 21" />
-                    </svg>
-                  </span>
-                  <span className={styles.sidebarNavLabel}>Community Home</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.sidebarNavItem} ${
-                  sidebarView === "MY_POSTS" ? styles.sidebarNavItemActive : ""
-                }`}
-                onClick={handleSelectMyPosts}
-              >
-                <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="4" />
-                      <polyline points="8.5 12.5 11 15 16 9" />
-                    </svg>
-                  </span>
-                  <span className={styles.sidebarNavLabel}>My Posts</span>
-                </span>
-                {myPostsCount > 0 && (
-                  <span className={styles.sidebarCountBadge}>{myPostsCount}</span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.sidebarNavItem} ${
-                  sidebarView === "SAVED_POSTS" ? styles.sidebarNavItemActive : ""
-                }`}
-                onClick={handleSelectSavedPosts}
-              >
-                <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </span>
-                  <span className={styles.sidebarNavLabel}>Saved Posts</span>
-                </span>
-                {savedPostsCount > 0 && (
-                  <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.sidebarNavItem} ${
-                  sidebarView === "BOOKMARKS" ? styles.sidebarNavItemActive : ""
-                }`}
-                onClick={handleSelectBookmarks}
-              >
-                <span className={styles.sidebarNavItemLeft}>
-                  <span className={styles.sidebarNavIcon}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </span>
-                  <span className={styles.sidebarNavLabel}>Bookmarks</span>
-                </span>
-                {savedPostsCount > 0 && (
-                  <span className={styles.sidebarCountBadge}>{savedPostsCount}</span>
-                )}
-              </button>
-            </div>
-
-            <div className={styles.sidebarDivider} />
-
-            <div className={styles.sidebarSectionTitle}>
-              <span>DISCUSS CATEGORIES</span>
-            </div>
-
-            <div className={styles.sidebarNavList}>
-              {CATEGORIES_CONFIG.map((cat) => {
-                const count = posts.filter((p) => p.category === cat.name).length;
-                const isSelected = selectedCategory === cat.name;
+        <main className={styles.layout}>
+          {/* Left: views + categories */}
+          <aside className={styles.leftCol} aria-label="Community navigation">
+            <div className={styles.navList}>
+              {sidebarNavItems.map((item) => {
+                const Icon = item.icon;
                 return (
                   <button
-                    key={cat.name}
+                    key={item.key}
                     type="button"
-                    className={`${styles.sidebarCategoryItem} ${
-                      isSelected ? styles.sidebarCategoryItemActive : ""
-                    }`}
-                    onClick={() => handleToggleCategory(cat.name)}
+                    className={`${styles.navItem} ${item.active ? styles.navItemActive : ""}`}
+                    onClick={item.onClick}
+                    aria-current={item.active ? "page" : undefined}
                   >
-                    <span className={styles.sidebarCategoryLeft}>
-                      <span className={styles.sidebarCategoryIcon}>
-                        {getCategoryOutlineIcon(cat.name)}
-                      </span>
-                      <span className={styles.sidebarCategoryName}>{cat.name}</span>
-                    </span>
-                    {count > 0 && <span className={styles.sidebarCategoryCount}>{count}</span>}
+                    <Icon size={18} strokeWidth={1.9} aria-hidden="true" />
+                    <span className={styles.navLabel}>{item.label}</span>
+                    {item.count > 0 && <span className={styles.navCount}>{item.count}</span>}
                   </button>
                 );
               })}
             </div>
 
-            {/* Bottom User Profile */}
-            <div
-              className={styles.sidebarUserProfileCard}
-              onClick={handleProfileCardClick}
-              title={isGuest ? "Sign in to TechnoCAT" : "View Profile"}
-            >
-              <div className={styles.sidebarUserAvatarWrap}>
-                {currentUserAvatarUrl ? (
-                  <img
-                    src={currentUserAvatarUrl}
-                    alt={currentUserName}
-                    className={styles.sidebarUserAvatarImg}
-                    onError={(e) => {
-                      e.currentTarget.src = "/profile_icon.png";
-                    }}
-                  />
-                ) : (
-                  <span className={styles.sidebarUserInitials}>{currentUserInitials}</span>
-                )}
-              </div>
-              <div className={styles.sidebarUserInfoStack}>
-                <span className={styles.sidebarUserName}>{currentUserName}</span>
-                <span className={styles.sidebarUserRole}>{currentUserRole}</span>
-              </div>
-              <span className={styles.sidebarUserArrow} aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </span>
+            <div className={styles.sideLabel}>Categories</div>
+
+            <div className={styles.navList}>
+              {CATEGORIES_CONFIG.map((cat) => {
+                const count = postCountByCategory[cat.name] || 0;
+                const isSelected = selectedCategory === cat.name;
+                return (
+                  <button
+                    key={cat.name}
+                    type="button"
+                    className={`${styles.navItem} ${styles.catItem} ${getCategoryToneClass(cat.name)} ${
+                      isSelected ? styles.catItemActive : ""
+                    }`}
+                    onClick={() => handleToggleCategory(cat.name)}
+                    aria-pressed={isSelected}
+                    title={cat.desc}
+                  >
+                    {getCategoryOutlineIcon(cat.name, styles.catIcon)}
+                    <span className={styles.navLabel}>{cat.name}</span>
+                    {count > 0 && <span className={styles.navCount}>{count}</span>}
+                  </button>
+                );
+              })}
             </div>
+
+            <button
+              type="button"
+              className={styles.profileCard}
+              onClick={handleProfileCardClick}
+              title={isGuest ? "Sign in to TechnoCAT" : "View profile"}
+            >
+              <Avatar src={currentUserAvatarUrl} alt={currentUserName} size={38} />
+              <span className={styles.profileText}>
+                <span className={styles.profileName}>{currentUserName}</span>
+                <span className={styles.profileRole}>{currentUserRole}</span>
+              </span>
+              <ChevronRight size={16} className={styles.profileArrow} aria-hidden="true" />
+            </button>
           </aside>
 
-          {/* Center Feed Column */}
-          <section className={styles.feedColumn} aria-label="Discussions">
-            {/* Inline Interactive Create Post Card with Floating Popovers */}
-            <div className={styles.createPostPromptCard}>
-              <div className={styles.composerTopRow}>
-                <div className={styles.userAvatarCircle}>
-                  {currentUserAvatarUrl ? (
-                    <img
-                      src={currentUserAvatarUrl}
-                      alt={currentUserName}
-                      className={styles.userAvatarImg}
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile_icon.png";
-                      }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#2563EB" }}>
-                      {currentUserInitials}
+          {/* Centre: composer, filters, feed */}
+          <section className={styles.feedCol} aria-label="Discussions">
+            <Reveal delay={0.05} className={styles.composerLayer}>
+              <div className={`glass-card ${styles.composer}`} data-tint="blue">
+                <div className={styles.composerTop}>
+                  <Avatar src={currentUserAvatarUrl} alt={currentUserName} size={42} />
+                  <input
+                    type="text"
+                    placeholder="Share your thoughts, ask a doubt, or start a discussion..."
+                    className={styles.composerInput}
+                    value={composerText}
+                    onChange={(e) => setComposerText(e.target.value)}
+                    onClick={() => handleOpenCreateModal()}
+                    readOnly
+                    aria-label="Share your thoughts, ask a doubt, or start a discussion"
+                  />
+                </div>
+
+                {composerImageUrl && (
+                  <div className={styles.attachChip}>
+                    <span className={styles.attachThumb}>
+                      <img src={composerImageUrl} alt="Attached thumbnail" />
                     </span>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  placeholder="Share your thoughts, ask a doubt, or start a discussion..."
-                  className={styles.createPostTriggerInput}
-                  value={composerText}
-                  onChange={(e) => setComposerText(e.target.value)}
-                  onClick={() => handleOpenCreateModal()}
-                  readOnly
-                  style={{ cursor: "pointer" }}
-                  aria-label="Share your thoughts, ask a doubt, or start a discussion"
-                />
-              </div>
-
-              {/* If image is attached, show compact preview chip inside composer */}
-              {composerImageUrl && (
-                <div className={styles.composerAttachmentBadge}>
-                  <div className={styles.composerAttachmentThumb}>
-                    <img src={composerImageUrl} alt="Attached thumbnail" />
-                  </div>
-                  <span className={styles.composerAttachmentName} title={composerImageMeta?.name || "Attached image"}>
-                    {composerImageMeta?.name || "Attached image"} ({composerImageMeta?.sizeFormatted || ""})
-                  </span>
-                  <button
-                    type="button"
-                    className={styles.composerAttachmentRemove}
-                    onClick={handleRemoveComposerImage}
-                    title="Remove attachment"
-                    aria-label="Remove attachment"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-
-              <div className={styles.composerBottomRow}>
-                <div className={styles.composerToolsLeft}>
-                  {/* Hidden inputs for feed file upload */}
-                  <input
-                    ref={feedFileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleComposerFileChange}
-                    style={{ display: "none" }}
-                  />
-                  <input
-                    ref={feedCameraInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    capture="environment"
-                    onChange={handleComposerFileChange}
-                    style={{ display: "none" }}
-                  />
-
-                  {/* 1. ADD IMAGE BUTTON & FLOATING POPOVER */}
-                  <div className={styles.popoverTriggerWrap} ref={addImagePopoverRef}>
+                    <span className={styles.attachName} title={composerImageMeta?.name || "Attached image"}>
+                      {composerImageMeta?.name || "Attached image"}
+                    </span>
+                    <span className={styles.attachSize}>{composerImageMeta?.sizeFormatted || ""}</span>
                     <button
                       type="button"
-                      className={`${styles.composerToolBtn} ${
-                        isAddImageOpen ? styles.composerToolBtnActive : ""
-                      }`}
-                      onClick={() => {
-                        setIsAddImageOpen((prev) => !prev);
-                        setIsCategoryOpen(false);
-                      }}
-                      aria-expanded={isAddImageOpen}
+                      className={styles.attachRemove}
+                      onClick={handleRemoveComposerImage}
+                      title="Remove attachment"
+                      aria-label="Remove attachment"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                        <circle cx="9" cy="9" r="2" />
-                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                      </svg>
-                      <span>Add Image</span>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{
-                          transform: isAddImageOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.18s ease",
-                        }}
-                        aria-hidden="true"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
+                      <X size={14} aria-hidden="true" />
                     </button>
+                  </div>
+                )}
 
-                    {/* Floating Add Image Popover */}
-                    {isAddImageOpen && (
-                      <div className={styles.floatingAddImagePopover} role="dialog" aria-label="Add Image">
-                        <div className={styles.popoverHeader}>
-                          <span className={styles.popoverTitleBlue}>Add Image</span>
-                          <button
-                            type="button"
-                            className={styles.popoverCloseBtn}
-                            onClick={closeAddImagePopover}
-                            aria-label="Close"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </div>
+                <div className={styles.composerBar}>
+                  <div className={styles.composerTools}>
+                    <input
+                      ref={feedFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleComposerFileChange}
+                      style={{ display: "none" }}
+                    />
+                    <input
+                      ref={feedCameraInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      capture="environment"
+                      onChange={handleComposerFileChange}
+                      style={{ display: "none" }}
+                    />
 
-                        {isFeedCameraActive ? (
-                          <div className={styles.popoverCameraWrap}>
-                            <div className={styles.popoverCameraViewport}>
-                              <video
-                                ref={feedVideoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className={styles.popoverCameraVideo}
-                              />
-                              {feedCameraError && (
-                                <div className={styles.popoverCameraErrorBox} role="alert">
-                                  <span>{feedCameraError}</span>
-                                  <button
-                                    type="button"
-                                    className={styles.popoverCameraRetryBtn}
-                                    onClick={startFeedCameraStream}
-                                  >
-                                    Try Again
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                            <div className={styles.popoverCameraControlsRow}>
-                              <button
-                                type="button"
-                                className={styles.popoverCameraCancelBtn}
-                                onClick={handleCancelFeedCamera}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.popoverCameraCaptureBtn}
-                                onClick={handleCaptureFeedPhoto}
-                                disabled={Boolean(feedCameraError)}
-                              >
-                                Capture Photo
-                              </button>
-                            </div>
+                    <div className={styles.popoverWrap} ref={addImagePopoverRef}>
+                      <button
+                        type="button"
+                        className={`${styles.toolBtn} ${isAddImageOpen ? styles.toolBtnActive : ""}`}
+                        onClick={() => {
+                          setIsAddImageOpen((prev) => !prev);
+                          setIsCategoryOpen(false);
+                        }}
+                        aria-expanded={isAddImageOpen}
+                      >
+                        <ImagePlus size={17} strokeWidth={1.9} aria-hidden="true" />
+                        <span>Add image</span>
+                        <ChevronDown
+                          size={14}
+                          className={`${styles.chev} ${isAddImageOpen ? styles.chevOpen : ""}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+
+                      {isAddImageOpen && (
+                        <div className={styles.floatingAddImagePopover} role="dialog" aria-label="Add image">
+                          <div className={styles.popoverHeader}>
+                            <span className={styles.popoverTitle}>Add image</span>
+                            <button
+                              type="button"
+                              className={styles.iconBtnSm}
+                              onClick={closeAddImagePopover}
+                              aria-label="Close"
+                            >
+                              <X size={16} aria-hidden="true" />
+                            </button>
                           </div>
-                        ) : composerImageUrl && composerImageMeta ? (
-                          <div className={styles.popoverSelectedWrap}>
-                            <div className={styles.popoverSelectedCard}>
-                              <div className={styles.popoverSelectedThumbWrap}>
-                                <img
-                                  src={composerImageUrl}
-                                  alt={composerImageMeta.name || "Attached preview"}
-                                  className={styles.popoverSelectedThumb}
-                                />
-                              </div>
-                              <div className={styles.popoverSelectedMeta}>
-                                <span className={styles.popoverSelectedName} title={composerImageMeta.name}>
-                                  {composerImageMeta.name}
-                                </span>
-                                <span className={styles.popoverSelectedSize}>
-                                  {composerImageMeta.sizeFormatted}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                className={styles.popoverSelectedRemoveBtn}
-                                onClick={handleRemoveComposerImage}
-                                title="Remove image"
-                                aria-label="Remove image"
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                              </button>
-                            </div>
 
-                            <div className={styles.popoverSelectedActionsRow}>
-                              {composerImageMeta.name === "camera-photo.jpg" ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    className={styles.popoverSelectedActionBtn}
-                                    onClick={handleRetakeFeedPhoto}
-                                  >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                      <circle cx="12" cy="13" r="4" />
-                                    </svg>
-                                    <span>Retake</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={styles.popoverSelectedActionBtn}
-                                    onClick={() => feedFileInputRef.current?.click()}
-                                  >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                                    </svg>
-                                    <span>Replace Image</span>
-                                  </button>
-                                </>
-                              ) : (
+                          {isFeedCameraActive ? (
+                            <div className={styles.cameraWrap}>
+                              <div className={styles.cameraViewport}>
+                                <video
+                                  ref={feedVideoRef}
+                                  autoPlay
+                                  playsInline
+                                  muted
+                                  className={styles.cameraVideo}
+                                />
+                                {feedCameraError && (
+                                  <div className={styles.cameraError} role="alert">
+                                    <span>{feedCameraError}</span>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostBtnSm}
+                                      onClick={startFeedCameraStream}
+                                    >
+                                      Try again
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                              <div className={styles.popoverActions}>
                                 <button
                                   type="button"
-                                  className={styles.popoverSelectedActionBtnFull}
+                                  className={styles.secondaryBtnSm}
+                                  onClick={handleCancelFeedCamera}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.primaryBtnSm}
+                                  onClick={handleCaptureFeedPhoto}
+                                  disabled={Boolean(feedCameraError)}
+                                >
+                                  <Camera size={15} aria-hidden="true" />
+                                  <span>Capture photo</span>
+                                </button>
+                              </div>
+                            </div>
+                          ) : composerImageUrl && composerImageMeta ? (
+                            <div className={styles.popoverSelected}>
+                              <div className={styles.fileRow}>
+                                <span className={styles.fileThumb}>
+                                  <img src={composerImageUrl} alt={composerImageMeta.name || "Attached preview"} />
+                                </span>
+                                <span className={styles.fileMeta}>
+                                  <span className={styles.fileName} title={composerImageMeta.name}>
+                                    {composerImageMeta.name}
+                                  </span>
+                                  <span className={styles.fileSize}>{composerImageMeta.sizeFormatted}</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  className={styles.iconBtnSm}
+                                  onClick={handleRemoveComposerImage}
+                                  title="Remove image"
+                                  aria-label="Remove image"
+                                >
+                                  <X size={15} aria-hidden="true" />
+                                </button>
+                              </div>
+
+                              <div className={styles.popoverActions}>
+                                {composerImageMeta.name === "camera-photo.jpg" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className={styles.secondaryBtnSm}
+                                      onClick={handleRetakeFeedPhoto}
+                                    >
+                                      <Camera size={15} aria-hidden="true" />
+                                      <span>Retake</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={styles.secondaryBtnSm}
+                                      onClick={() => feedFileInputRef.current?.click()}
+                                    >
+                                      <FolderOpen size={15} aria-hidden="true" />
+                                      <span>Replace image</span>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className={`${styles.secondaryBtnSm} ${styles.fullWidth}`}
+                                    onClick={() => feedFileInputRef.current?.click()}
+                                  >
+                                    <FolderOpen size={15} aria-hidden="true" />
+                                    <span>Choose a different image</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div
+                                className={`${styles.dropzone} ${isFeedDragging ? styles.dropzoneActive : ""}`}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  setIsFeedDragging(true);
+                                }}
+                                onDragLeave={(e) => {
+                                  e.preventDefault();
+                                  setIsFeedDragging(false);
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  setIsFeedDragging(false);
+                                  const files = e.dataTransfer?.files;
+                                  if (files && files.length > 0) {
+                                    processComposerImage(files[0]);
+                                  }
+                                }}
+                                onClick={() => feedFileInputRef.current?.click()}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <CloudUpload size={24} strokeWidth={1.8} className={styles.dropIcon} aria-hidden="true" />
+                                <span className={styles.dropPrimary}>Drag &amp; drop an image here</span>
+                                <span className={styles.dropSecondary}>or click to browse</span>
+                                <button
+                                  type="button"
+                                  className={styles.secondaryBtnSm}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    feedFileInputRef.current?.click();
+                                  }}
+                                >
+                                  Browse files
+                                </button>
+                                <span className={styles.dropHelper}>JPG, PNG, WEBP &middot; max 5 MB</span>
+                              </div>
+
+                              {composerImageError && (
+                                <div className={styles.fieldError} role="alert">
+                                  <CircleExclamationPoint size={15} aria-hidden="true" />
+                                  <span>{composerImageError}</span>
+                                </div>
+                              )}
+
+                              <div className={styles.quickLabel}>Quick options</div>
+                              <div className={styles.popoverActions}>
+                                <button
+                                  type="button"
+                                  className={styles.secondaryBtnSm}
+                                  onClick={startFeedCameraStream}
+                                >
+                                  <Camera size={15} aria-hidden="true" />
+                                  <span>Take photo</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.secondaryBtnSm}
                                   onClick={() => feedFileInputRef.current?.click()}
                                 >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                                  </svg>
-                                  <span>Choose Different Image</span>
+                                  <FolderOpen size={15} aria-hidden="true" />
+                                  <span>From device</span>
                                 </button>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div
-                              className={`${styles.popoverDropzone} ${
-                                isFeedDragging ? styles.popoverDropzoneActive : ""
-                              }`}
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                setIsFeedDragging(true);
-                              }}
-                              onDragLeave={(e) => {
-                                e.preventDefault();
-                                setIsFeedDragging(false);
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                setIsFeedDragging(false);
-                                const files = e.dataTransfer?.files;
-                                if (files && files.length > 0) {
-                                  processComposerImage(files[0]);
-                                }
-                              }}
-                              onClick={() => feedFileInputRef.current?.click()}
-                              role="button"
-                              tabIndex={0}
-                            >
-                              <div className={styles.popoverUploadIconWrap} aria-hidden="true">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                  <circle cx="9" cy="9" r="2" />
-                                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                                  <path d="M12 11v5" strokeWidth="2.5" />
-                                  <path d="m9.5 13.5 2.5-2.5 2.5 2.5" strokeWidth="2.5" />
-                                </svg>
                               </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
-                              <div className={styles.popoverDropPrimaryText}>Drag & drop image here</div>
-                              <div className={styles.popoverDropSecondaryText}>or click to browse</div>
-
-                              <button
-                                type="button"
-                                className={styles.popoverBrowseBtn}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  feedFileInputRef.current?.click();
-                                }}
-                              >
-                                Browse Files
-                              </button>
-
-                              <div className={styles.popoverDropHelperText}>JPG, PNG, WEBP • Max 5MB</div>
-                            </div>
-
-                            {composerImageError && (
-                              <div className={styles.popoverValidationMsg} role="alert">
-                                <span>{composerImageError}</span>
-                              </div>
-                            )}
-
-                            <div className={styles.quickOptionsTitle}>QUICK OPTIONS</div>
-                            <div className={styles.quickOptionsRow}>
-                              <button
-                                type="button"
-                                className={styles.quickOptionBtn}
-                                onClick={startFeedCameraStream}
-                              >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                  <circle cx="12" cy="13" r="4" />
-                                </svg>
-                                <span>Take Photo</span>
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.quickOptionBtn}
-                                onClick={() => feedFileInputRef.current?.click()}
-                              >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                                </svg>
-                                <span>From Device</span>
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 2. CHOOSE CATEGORY BUTTON */}
-                  <div className={styles.popoverTriggerWrap}>
                     <button
                       type="button"
-                      className={styles.composerToolBtn}
+                      className={`${styles.toolBtn} ${getCategoryToneClass(composerCategory)}`}
                       onClick={() => handleOpenCreateModal(composerCategory || "General Discussion")}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                        <line x1="7" y1="7" x2="7.01" y2="7" />
-                      </svg>
-                      <span>{composerCategory || "Choose Category"}</span>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
+                      <span className={styles.catDot} aria-hidden="true" />
+                      <span>{composerCategory || "Choose category"}</span>
+                      <ChevronDown size={14} className={styles.chev} aria-hidden="true" />
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    className={styles.postBtn}
+                    onClick={() => {
+                      if (!composerText.trim()) {
+                        handleOpenCreateModal(composerCategory || "General Discussion");
+                      } else {
+                        handleFeedPostSubmit();
+                      }
+                    }}
+                    disabled={isPostingFromFeed}
+                  >
+                    <span>{isPostingFromFeed ? "Posting..." : "Post"}</span>
+                    <Send size={15} strokeWidth={2} aria-hidden="true" />
+                  </button>
                 </div>
-
-                {/* 3. POST BUTTON */}
-                <button
-                  type="button"
-                  className={styles.createPostQuickBtn}
-                  onClick={() => {
-                    if (!composerText.trim()) {
-                      handleOpenCreateModal(composerCategory || "General Discussion");
-                    } else {
-                      handleFeedPostSubmit();
-                    }
-                  }}
-                  disabled={isPostingFromFeed}
-                >
-                  <span>{isPostingFromFeed ? "Posting..." : "Post"}</span>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                </button>
               </div>
-            </div>
+            </Reveal>
 
-            {/* Filter Tabs & Search Toolbar */}
-            <div className={styles.filtersToolbar}>
-              <div className={styles.filterTabsGroup} role="tablist" aria-label="Discussion Filters">
-                {(
-                  ["Recent", "Most Helpful", "Trending", "Unanswered", "My Posts"] as FeedFilterTab[]
-                ).map((tab) => (
+            {/* Sort tabs + search */}
+            <div className={styles.toolbar}>
+              <div className={styles.tabs} role="tablist" aria-label="Discussion filters">
+                {(["Recent", "Most Helpful", "Trending", "Unanswered", "My Posts"] as FeedFilterTab[]).map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     role="tab"
                     aria-selected={activeTab === tab}
-                    className={`${styles.filterTabBtn} ${
-                      activeTab === tab ? styles.filterTabBtnActive : ""
-                    }`}
+                    className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ""}`}
                     onClick={() => handleTabChange(tab)}
                   >
-                    {tab}
+                    {FEED_TAB_LABELS[tab]}
                   </button>
                 ))}
               </div>
 
-              <div className={styles.searchBoxWrap}>
-                <span className={styles.searchIcon} aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                </span>
+              <div className={styles.search}>
+                <Search size={16} className={styles.searchIcon} aria-hidden="true" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -2587,74 +2159,65 @@ export default function LearningCommunityPage() {
                 {searchQuery && (
                   <button
                     type="button"
-                    className={styles.clearSearchBtn}
+                    className={styles.searchClear}
                     onClick={() => setSearchQuery("")}
                     title="Clear search"
+                    aria-label="Clear search"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={14} aria-hidden="true" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Contextual Filter Banners */}
             {selectedCategory && (
-              <div className={styles.activeFilterBanner}>
-                <span>Filtered by Category: <strong>{selectedCategory}</strong></span>
-                <button
-                  type="button"
-                  className={styles.clearFilterBtn}
-                  onClick={() => setSelectedCategory(null)}
-                >
-                  Clear Filter
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+              <div className={`${styles.filterBanner} ${getCategoryToneClass(selectedCategory)}`}>
+                <span className={styles.filterBannerText}>
+                  {getCategoryOutlineIcon(selectedCategory, styles.catIcon)}
+                  <span>
+                    Showing <strong>{selectedCategory}</strong>
+                  </span>
+                </span>
+                <button type="button" className={styles.linkBtn} onClick={() => setSelectedCategory(null)}>
+                  <span>Clear filter</span>
+                  <X size={14} aria-hidden="true" />
                 </button>
               </div>
             )}
 
             {(sidebarView === "SAVED_POSTS" || sidebarView === "BOOKMARKS") && (
-              <div className={styles.activeFilterBanner}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                  </svg>
-                  Viewing your Saved Discussions ({savedPostsCount})
+              <div className={styles.filterBanner}>
+                <span className={styles.filterBannerText}>
+                  <Bookmark size={16} aria-hidden="true" />
+                  <span>
+                    Your saved discussions <span className={styles.mono}>({savedPostsCount})</span>
+                  </span>
                 </span>
-                <button
-                  type="button"
-                  className={styles.clearFilterBtn}
-                  onClick={handleSelectHome}
-                >
-                  Back to All Discussions
+                <button type="button" className={styles.linkBtn} onClick={handleSelectHome}>
+                  <span>Back to all discussions</span>
                 </button>
               </div>
             )}
 
-            {/* Discussion Feed Cards List */}
+            {/* Feed */}
             {loading ? (
-              <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                </div>
-                <p className={styles.emptyStateTitle}>Loading community discussions...</p>
+              <div className={styles.postList} aria-busy="true">
+                <p className={styles.srOnly}>Loading community discussions...</p>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className={styles.skeletonCard} aria-hidden="true">
+                    <span className={styles.skeletonAvatar} />
+                    <span className={styles.skeletonLines}>
+                      <span style={{ width: "38%" }} />
+                      <span style={{ width: "82%" }} />
+                      <span style={{ width: "64%" }} />
+                    </span>
+                  </div>
+                ))}
               </div>
             ) : visiblePosts.length === 0 ? (
-              <div className={styles.emptyStateCard}>
-                <div className={styles.emptyStateIcon}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                </div>
-                <p className={styles.emptyStateTitle}>
+              <div className={styles.emptyCard}>
+                <MessageSquare size={28} strokeWidth={1.6} className={styles.emptyIcon} aria-hidden="true" />
+                <p className={styles.emptyTitle}>
                   {searchQuery.trim().length > 0
                     ? "No discussions found for your search."
                     : selectedCategory
@@ -2665,410 +2228,295 @@ export default function LearningCommunityPage() {
                 </p>
                 <button
                   type="button"
-                  className={styles.emptyStateCtaBtn}
+                  className={styles.primaryBtnSm}
                   onClick={() => {
                     if (searchQuery) setSearchQuery("");
                     else if (selectedCategory) setSelectedCategory(null);
                     else handleOpenCreateModal();
                   }}
                 >
-                  {searchQuery
-                    ? "Reset Search"
-                    : selectedCategory
-                    ? "View All Discussions"
-                    : "Start a Discussion"}
+                  {searchQuery ? "Reset search" : selectedCategory ? "View all discussions" : "Start a discussion"}
                 </button>
               </div>
             ) : (
-              <div className={styles.postsList}>
+              <RevealGroup className={styles.postList}>
                 {visiblePosts.map((post) => {
                   const avatarSrc = getAuthorAvatar(post.authorName) || post.authorAvatar || "/profile_icon.png";
+                  const menuOpen = openMenuPostId === post.id;
                   return (
-                    <article
-                      key={post.id}
-                      className={styles.postCard}
-                      onClick={() => {
-                        setActivePostId(post.id);
-                        setReplyingToCommentId(null);
-                      }}
-                    >
-                      <div className={styles.postHeaderRow}>
-                        <div className={styles.postAuthorMeta}>
-                          <div className={styles.userAvatarCircle}>
-                            <img
-                              src={avatarSrc}
-                              alt={post.authorName}
-                              className={styles.userAvatarImg}
-                              onError={(e) => {
-                                e.currentTarget.src = "/profile_icon.png";
-                              }}
-                            />
-                          </div>
-                          <div className={styles.authorMetaStack}>
-                            <div className={styles.authorNameAndBadgeRow}>
-                              <span className={styles.authorName}>{post.authorName}</span>
-                              <span className={styles.postTime}>
-                                &bull; {formatRelativeTime(post.createdAt)}
-                              </span>
-                              <span className={getCategoryBadgeClass(post.category)}>
-                                {post.category}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Three-dot dropdown menu */}
-                        <div
-                          className={styles.menuWrap}
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                    <RevealItem key={post.id} className={`${styles.postItem} ${menuOpen ? styles.postItemRaised : ""}`}>
+                      <SpotlightCard
+                        as="article"
+                        className={`${styles.postCard} ${getCategoryToneClass(post.category)}`}
+                        onClick={() => {
+                          setActivePostId(post.id);
+                          setReplyingToCommentId(null);
+                        }}
+                      >
+                        <div className={styles.voteRail}>
                           <button
                             type="button"
-                            className={styles.threeDotBtn}
-                            aria-label="Discussion options"
-                            onClick={() =>
-                              setOpenMenuPostId((prev) => (prev === post.id ? null : post.id))
-                            }
+                            className={`${styles.voteBtn} ${post.isUpvoted ? styles.voteBtnOn : ""}`}
+                            onClick={(e) => handleToggleUpvote(post.id, e)}
+                            aria-label={`Upvote (${post.upvotesCount})`}
+                            aria-pressed={post.isUpvoted}
                           >
-                            ⋯
+                            <ArrowBigUp
+                              size={22}
+                              strokeWidth={1.7}
+                              fill={post.isUpvoted ? "currentColor" : "none"}
+                              aria-hidden="true"
+                            />
+                            <span className={styles.voteCount}>{post.upvotesCount}</span>
                           </button>
+                        </div>
 
-                          {openMenuPostId === post.id && (
-                            <div className={styles.dropdownMenu}>
+                        <div className={styles.postMain}>
+                          <div className={styles.postHead}>
+                            <Avatar src={avatarSrc} alt={post.authorName} size={34} />
+                            <div className={styles.byline}>
+                              <span className={styles.authorName}>{post.authorName}</span>
+                              <span className={styles.postTime}>{formatRelativeTime(post.createdAt)}</span>
+                            </div>
+                            <span className={getCategoryBadgeClass(post.category)}>{post.category}</span>
+
+                            <div className={styles.menuWrap} onClick={(e) => e.stopPropagation()}>
                               <button
                                 type="button"
-                                className={styles.dropdownItem}
-                                onClick={(e) => handleToggleSave(post.id, e)}
+                                className={styles.iconBtnSm}
+                                aria-label="Discussion options"
+                                aria-haspopup="menu"
+                                aria-expanded={menuOpen}
+                                onClick={() => setOpenMenuPostId((prev) => (prev === post.id ? null : post.id))}
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                </svg>
-                                <span>{post.isSaved ? "Unsave" : "Save"}</span>
+                                <Ellipsis size={18} aria-hidden="true" />
                               </button>
-                              {!post.isOwnPost && (
-                                <button
-                                  type="button"
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => handleReportPost(post.id, e)}
-                                >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                                    <line x1="4" y1="22" x2="4" y2="15" />
-                                  </svg>
-                                  <span>Report</span>
-                                </button>
-                              )}
-                              {post.isOwnPost && (
-                                <button
-                                  type="button"
-                                  className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                                  onClick={(e) => handleDeletePost(post.id, e)}
-                                >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                  </svg>
-                                  <span>Delete</span>
-                                </button>
+
+                              {menuOpen && (
+                                <div className={styles.menu} role="menu">
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    className={styles.menuItem}
+                                    onClick={(e) => handleToggleSave(post.id, e)}
+                                  >
+                                    <Bookmark size={15} aria-hidden="true" />
+                                    <span>{post.isSaved ? "Unsave" : "Save"}</span>
+                                  </button>
+                                  {!post.isOwnPost && (
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      className={styles.menuItem}
+                                      onClick={(e) => handleReportPost(post.id, e)}
+                                    >
+                                      <Flag size={15} aria-hidden="true" />
+                                      <span>Report</span>
+                                    </button>
+                                  )}
+                                  {post.isOwnPost && (
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                                      onClick={(e) => handleDeletePost(post.id, e)}
+                                    >
+                                      <Trash size={15} aria-hidden="true" />
+                                      <span>Delete</span>
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Post Body (Indented to align under username) */}
-                      <div className={styles.postContentIndented}>
-                        <h2 className={styles.postTitle}>{post.title}</h2>
-                        <p className={styles.postSnippet}>{post.content}</p>
-
-                        {post.imageUrl && (
-                          <div className={styles.postImageThumbWrap}>
-                            <img
-                              src={post.imageUrl}
-                              alt={post.title}
-                              className={styles.postImageThumb}
-                            />
                           </div>
-                        )}
 
-                        {/* Indented Post Action Metrics Bar */}
-                        <div className={styles.postActionsBar}>
-                          <div className={styles.postActionsLeft}>
+                          <h2 className={styles.postTitle}>{post.title}</h2>
+                          <p className={styles.postExcerpt}>{post.content}</p>
+
+                          {post.imageUrl && (
+                            <div className={styles.postImage}>
+                              <img src={post.imageUrl} alt={post.title} />
+                            </div>
+                          )}
+
+                          <div className={styles.postFoot}>
                             <button
                               type="button"
-                              className={`${styles.actionMetricBtn} ${
-                                post.isUpvoted ? styles.actionMetricUpvoted : ""
-                              }`}
-                              onClick={(e) => handleToggleUpvote(post.id, e)}
-                              aria-label={`Upvote (${post.upvotesCount})`}
-                            >
-                              <span className={styles.upvoteArrowIcon}>▲</span>
-                              <span>Upvote &bull; {post.upvotesCount}</span>
-                            </button>
-
-                            <div className={styles.actionMetricDivider} />
-
-                            <button
-                              type="button"
-                              className={styles.actionMetricBtn}
+                              className={styles.metaBtn}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setActivePostId(post.id);
                                 setReplyingToCommentId(null);
                               }}
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                              </svg>
-                              <span>
-                                {post.commentsCount}{" "}
-                                {post.commentsCount === 1 ? "Comment" : "Comments"}
-                              </span>
+                              <MessageCircle size={16} strokeWidth={1.9} aria-hidden="true" />
+                              <span className={styles.mono}>{post.commentsCount}</span>
+                              <span>{post.commentsCount === 1 ? "comment" : "comments"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`${styles.saveBtn} ${post.isSaved ? styles.saveBtnOn : ""}`}
+                              onClick={(e) => handleToggleSave(post.id, e)}
+                              title={post.isSaved ? "Saved" : "Save discussion"}
+                              aria-label={post.isSaved ? "Saved" : "Save discussion"}
+                              aria-pressed={post.isSaved}
+                            >
+                              <Bookmark
+                                size={18}
+                                strokeWidth={1.9}
+                                fill={post.isSaved ? "currentColor" : "none"}
+                                aria-hidden="true"
+                              />
                             </button>
                           </div>
-
-                          <button
-                            type="button"
-                            className={`${styles.bookmarkIconBtn} ${
-                              post.isSaved ? styles.bookmarkIconActive : ""
-                            }`}
-                            onClick={(e) => handleToggleSave(post.id, e)}
-                            title={post.isSaved ? "Saved" : "Save discussion"}
-                          >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill={post.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                            </svg>
-                          </button>
                         </div>
-                      </div>
-                    </article>
+                      </SpotlightCard>
+                    </RevealItem>
                   );
                 })}
-              </div>
+              </RevealGroup>
             )}
           </section>
 
-          {/* Right Sidebar Widgets */}
-          <aside className={styles.rightSidebar} aria-label="Community Insights">
-            {/* Widget 1: Community Stats */}
-            <div className={styles.widgetCard}>
-              <div className={styles.widgetTitleRow}>
-                <h3 className={styles.widgetTitle}>COMMUNITY STATS</h3>
-                <button
-                  type="button"
-                  className={styles.widgetViewAllBtn}
-                  onClick={() => setIsStatsDrawerOpen(true)}
-                >
-                  View All
-                </button>
-              </div>
-              <div className={styles.statsGrid}>
-                <div
-                  className={`${styles.statBox} ${styles.statBoxBlue} ${styles.statBoxClickable}`}
-                  onClick={() => setActiveStatPopup("MEMBERS")}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveStatPopup("MEMBERS");
-                    }
-                  }}
-                  title="Click to view Members details"
-                >
-                  <div className={styles.statIconCircle} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
+          {/* Right: stats, contributors, guidelines */}
+          <aside className={styles.rightCol} aria-label="Community insights">
+            <RevealGroup className={styles.rightStack}>
+              <RevealItem>
+                <section className={styles.pulseCard} aria-labelledby="community-stats-title">
+                  <div className={styles.cardHead}>
+                    <h3 id="community-stats-title" className={styles.pulseTitle}>
+                      Community stats
+                    </h3>
+                    <button type="button" className={styles.pulseLink} onClick={() => setIsStatsDrawerOpen(true)}>
+                      <span>View all</span>
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </button>
                   </div>
-                  <div>
-                    <span className={styles.statNumber}>{data ? data.stats.members : "2.4K"}</span>
-                    <span className={styles.statLabel}>Members</span>
-                  </div>
-                </div>
 
-                <div
-                  className={`${styles.statBox} ${styles.statBoxCyan} ${styles.statBoxClickable}`}
-                  onClick={() => setActiveStatPopup("DISCUSSIONS")}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveStatPopup("DISCUSSIONS");
-                    }
-                  }}
-                  title="Click to view Discussions details"
-                >
-                  <div className={styles.statIconCircle} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
+                  <div className={styles.pulseGrid}>
+                    {statCells.map((cell) => (
+                      <button
+                        key={cell.key}
+                        type="button"
+                        className={styles.pulseCell}
+                        onClick={() => setActiveStatPopup(cell.key)}
+                        title={`View ${cell.label.toLowerCase()} details`}
+                      >
+                        <span className={styles.pulseLabel}>
+                          <span className={styles.dot} style={{ background: cell.color }} aria-hidden="true" />
+                          {cell.label}
+                        </span>
+                        <StatFigure value={cell.value} className={styles.pulseValue} />
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <span className={styles.statNumber}>{data ? data.stats.discussions : "1.2K"}</span>
-                    <span className={styles.statLabel}>Discussions</span>
-                  </div>
-                </div>
 
-                <div
-                  className={`${styles.statBox} ${styles.statBoxPurple} ${styles.statBoxClickable}`}
-                  onClick={() => setActiveStatPopup("SOLUTIONS")}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveStatPopup("SOLUTIONS");
-                    }
-                  }}
-                  title="Click to view Solutions details"
-                >
-                  <div className={styles.statIconCircle} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className={styles.statNumber}>{data ? data.stats.solutions : "3.1K"}</span>
-                    <span className={styles.statLabel}>Solutions</span>
-                  </div>
-                </div>
-
-                <div
-                  className={`${styles.statBox} ${styles.statBoxAmber} ${styles.statBoxClickable}`}
-                  onClick={() => setActiveStatPopup("HELPFUL_RATE")}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveStatPopup("HELPFUL_RATE");
-                    }
-                  }}
-                  title="Click to view Helpful Rate details"
-                >
-                  <div className={styles.statIconCircle} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                      <polyline points="17 6 23 6 23 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className={styles.statNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
-                    <span className={styles.statLabel}>Helpful Rate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Widget 2: Top Contributors */}
-            <div className={styles.widgetCard}>
-              <div className={styles.widgetTitleRow}>
-                <div>
-                  <h3 className={styles.widgetTitle}>TOP CONTRIBUTORS</h3>
-                  <p className={styles.widgetSub}>This Month</p>
-                </div>
-                <button
-                  type="button"
-                  className={styles.widgetViewAllBtn}
-                  onClick={() => setIsContributorsDrawerOpen(true)}
-                  aria-label="View all top contributors"
-                >
-                  View All &rarr;
-                </button>
-              </div>
-
-              <div className={styles.contributorsList}>
-                {topContributorsList.length === 0 ? (
-                  <div style={{ padding: "24px 14px", textAlign: "center", color: "#64748B", fontSize: "13px" }}>
-                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px auto" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
+                  <div className={styles.pulseSpark}>
+                    <div className={styles.pulseSparkHead}>
+                      <span>Activity</span>
+                      <span className={styles.mono}>{activityPeriodLabel}</span>
                     </div>
-                    <p style={{ margin: "0 0 4px 0", fontWeight: 600, color: "#1E293B" }}>No Contributors Yet</p>
-                    <p style={{ margin: 0, fontSize: "12px", color: "#64748B", lineHeight: 1.4 }}>
-                      Start a discussion or share a solution to lead the leaderboard!
-                    </p>
+                    <svg viewBox="0 0 500 150" preserveAspectRatio="none" className={styles.pulseSvg} aria-hidden="true">
+                      <defs>
+                        <linearGradient id="communityPulseGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.35" />
+                          <stop offset="100%" stopColor="#67e8f9" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      {chartPaths.areaD && <path d={chartPaths.areaD} fill="url(#communityPulseGrad)" />}
+                      {chartPaths.lineD && (
+                        <path
+                          d={chartPaths.lineD}
+                          fill="none"
+                          stroke="#67e8f9"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      )}
+                    </svg>
                   </div>
-                ) : (
-                  topContributorsList.map((contributor) => {
-                    const avatarSrc = getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
-                    return (
-                      <div key={contributor.authorId} className={styles.contributorRow}>
-                        <div className={styles.contributorLeft}>
-                          {contributor.rank === 1 ? (
-                            <img src="/community/medal-gold.png" alt="1st" className={styles.rankMedalImg} />
-                          ) : contributor.rank === 2 ? (
-                            <img src="/community/medal-silver.png" alt="2nd" className={styles.rankMedalImg} />
-                          ) : contributor.rank === 3 ? (
-                            <img src="/community/medal-bronze.png" alt="3rd" className={styles.rankMedalImg} />
-                          ) : (
-                            <span className={styles.rankNumberCircle}>{contributor.rank}</span>
-                          )}
+                </section>
+              </RevealItem>
 
-                          <div className={styles.contributorAvatar}>
-                            <img
-                              src={avatarSrc}
-                              alt={contributor.authorName}
-                              className={styles.userAvatarImg}
-                              onError={(e) => {
-                                e.currentTarget.src = "/profile_icon.png";
-                              }}
-                            />
-                          </div>
+              <RevealItem>
+                <section className={`glass-card ${styles.sideCard}`} data-tint="violet" aria-labelledby="top-contributors-title">
+                  <div className={styles.cardHead}>
+                    <div>
+                      <h3 id="top-contributors-title" className={styles.cardTitle}>
+                        Top contributors
+                      </h3>
+                      <p className={styles.cardSub}>This month</p>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.linkBtn}
+                      onClick={() => setIsContributorsDrawerOpen(true)}
+                      aria-label="View all top contributors"
+                    >
+                      <span>View all</span>
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </button>
+                  </div>
 
-                          <div className={styles.contributorInfoStack}>
-                            <span className={styles.contributorName}>{contributor.authorName}</span>
-                            <span className={styles.contributorPostSub}>{contributor.postCount} posts</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+                  {topContributorsList.length === 0 ? (
+                    <div className={styles.miniEmpty}>
+                      <Trophy size={22} strokeWidth={1.7} className={styles.emptyIcon} aria-hidden="true" />
+                      <p className={styles.miniEmptyTitle}>No contributors yet</p>
+                      <p className={styles.miniEmptyText}>
+                        Start a discussion or share a solution to lead the leaderboard.
+                      </p>
+                    </div>
+                  ) : (
+                    <ol className={styles.contribList}>
+                      {topContributorsList.map((contributor) => {
+                        const avatarSrc =
+                          getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
+                        return (
+                          <li key={contributor.authorId} className={styles.contribRow}>
+                            <RankBadge rank={contributor.rank} />
+                            <Avatar src={avatarSrc} alt={contributor.authorName} size={32} />
+                            <span className={styles.contribName}>{contributor.authorName}</span>
+                            <span className={styles.contribCount}>
+                              <span className={styles.mono}>{contributor.postCount}</span> posts
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  )}
+                </section>
+              </RevealItem>
 
-            {/* Widget 3: Community Guidelines */}
-            <div className={styles.widgetCard}>
-              <div className={styles.guidelinesHeaderRow}>
-                <span className={styles.guidelinesShieldIcon}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    <path d="M9 12l2 2 4-4" />
-                  </svg>
-                </span>
-                <h3 className={styles.guidelinesTitle}>Community Guidelines</h3>
-              </div>
-              <ul className={styles.guidelinesList}>
-                <li>
-                  <span className={styles.guidelineBullet}>&bull;</span>
-                  <span>Be respectful and supportive</span>
-                </li>
-                <li>
-                  <span className={styles.guidelineBullet}>&bull;</span>
-                  <span>Keep discussions relevant to CAT preparation</span>
-                </li>
-                <li>
-                  <span className={styles.guidelineBullet}>&bull;</span>
-                  <span>No spam or promotional content</span>
-                </li>
-                <li>
-                  <span className={styles.guidelineBullet}>&bull;</span>
-                  <span>Help others and share genuine insights</span>
-                </li>
-              </ul>
-            </div>
+              <RevealItem>
+                <section className={`glass-card ${styles.sideCard}`} data-tint="teal" aria-labelledby="guidelines-title">
+                  <h3 id="guidelines-title" className={`${styles.cardTitle} ${styles.cardTitleIcon}`}>
+                    <ShieldCheck size={18} strokeWidth={1.9} className={styles.tealIcon} aria-hidden="true" />
+                    Community guidelines
+                  </h3>
+                  <ul className={styles.guideList}>
+                    {[
+                      "Be respectful and supportive",
+                      "Keep discussions relevant to CAT preparation",
+                      "No spam or promotional content",
+                      "Help others and share genuine insights",
+                    ].map((rule) => (
+                      <li key={rule}>
+                        <Check size={15} strokeWidth={2.2} className={styles.tealIcon} aria-hidden="true" />
+                        <span>{rule}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </RevealItem>
+            </RevealGroup>
           </aside>
         </main>
       </div>
 
-      {/* Create Post Modal */}
+      {/* Create discussion modal */}
       {isCreateModalOpen && (
         <div
           className={styles.modalOverlay}
@@ -3081,206 +2529,133 @@ export default function LearningCommunityPage() {
             <div className={styles.modalHeader}>
               <div>
                 <h2 id="create-post-modal-title" className={styles.modalTitle}>
-                  Start a New Discussion
+                  Start a new discussion
                 </h2>
                 <p className={styles.modalSubtitle}>
-                  Share your thoughts, ask a doubt, or start a meaningful discussion with the community.
+                  Ask a doubt, share a strategy or start a conversation with other aspirants.
                 </p>
               </div>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={closeCreateModal}
-                aria-label="Close modal"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+              <button type="button" className={styles.iconBtn} onClick={closeCreateModal} aria-label="Close modal">
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleCreatePostSubmit} className={styles.modalForm}>
               <div className={styles.modalBody}>
                 {createError && (
-                  <div
-                    style={{
-                      background: "#FEF2F2",
-                      border: "1px solid #FECACA",
-                      color: "#DC2626",
-                      padding: "10px 14px",
-                      borderRadius: "12px",
-                      fontSize: "12.5px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {createError}
+                  <div className={styles.formError} role="alert">
+                    <CircleExclamationPoint size={16} aria-hidden="true" />
+                    <span>{createError}</span>
                   </div>
                 )}
 
-                <div className={styles.formField}>
-                  <label className={styles.formLabel} htmlFor="post-title-input">
-                    Title
-                    <span className={styles.formLabelHint}>(max 50 characters)</span>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="post-title-input">
+                    Title <span className={styles.labelHint}>max 50 characters</span>
                   </label>
-                  <div className={styles.inputWrapper}>
+                  <div className={styles.inputWrap}>
                     <input
                       id="post-title-input"
                       type="text"
-                      className={styles.formInput}
+                      className={styles.input}
                       placeholder="e.g., How to approach DILR sets effectively?"
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       maxLength={50}
                       required
                     />
-                    <div className={styles.inputCounter}>
-                      {newTitle.length}/50
-                    </div>
+                    <span className={styles.counter}>{newTitle.length}/50</span>
                   </div>
                 </div>
 
-                <div className={styles.formField} ref={modalCategoryRef}>
-                  <label className={styles.formLabel} id="modal-category-label">
+                <div className={styles.field} ref={modalCategoryRef}>
+                  <label className={styles.label} id="modal-category-label">
                     Category
                   </label>
                   <button
                     id="modal-category-trigger"
                     type="button"
-                    className={`${styles.modalCategoryTrigger} ${
-                      isModalCategoryOpen ? styles.modalCategoryTriggerActive : ""
+                    className={`${styles.selectTrigger} ${getCategoryToneClass(newCategory)} ${
+                      isModalCategoryOpen ? styles.selectTriggerOpen : ""
                     }`}
                     onClick={() => setIsModalCategoryOpen((prev) => !prev)}
                     aria-expanded={isModalCategoryOpen}
                     aria-haspopup="listbox"
                     aria-labelledby="modal-category-label modal-category-trigger"
                   >
-                    <div className={styles.modalCategoryTriggerLeft}>
-                      <span
-                        className={styles.modalCategoryTriggerIcon}
-                        style={{
-                          color:
-                            MODAL_CATEGORIES_CONFIG.find((c) => c.name === newCategory)
-                              ?.iconColor || "#2563EB",
-                        }}
-                        aria-hidden="true"
-                      >
-                        {getCategoryOutlineIcon(newCategory, styles.modalCategoryTriggerSvg)}
-                      </span>
-                      <span className={styles.modalCategoryTriggerText}>{newCategory}</span>
-                    </div>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={styles.modalCategoryTriggerChevron}
-                      style={{
-                        transform: isModalCategoryOpen ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform 0.18s ease",
-                      }}
+                    <span className={styles.selectTriggerLeft}>
+                      {getCategoryOutlineIcon(newCategory, styles.catIcon)}
+                      <span>{newCategory}</span>
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={`${styles.chev} ${isModalCategoryOpen ? styles.chevOpen : ""}`}
                       aria-hidden="true"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
+                    />
                   </button>
 
-                  {/* Expanded Category Selection Panel */}
                   {isModalCategoryOpen && (
-                    <div
-                      className={styles.modalCategoryPanel}
-                      role="listbox"
-                      aria-label="Category Options"
-                    >
-                      <div className={styles.modalCategoryList}>
-                        {MODAL_CATEGORIES_CONFIG.map((cat) => {
-                          const isSelected = newCategory === cat.name;
-                          return (
-                            <div
-                              key={cat.name}
-                              ref={isSelected ? selectedCategoryRowRef : undefined}
-                              className={`${styles.modalCategoryRow} ${
-                                isSelected ? styles.modalCategoryRowSelected : ""
-                              }`}
-                              onClick={() => {
+                    <div className={styles.optionList} role="listbox" aria-label="Category options">
+                      {MODAL_CATEGORIES_CONFIG.map((cat) => {
+                        const isSelected = newCategory === cat.name;
+                        return (
+                          <div
+                            key={cat.name}
+                            ref={isSelected ? selectedCategoryRowRef : undefined}
+                            className={`${styles.option} ${getCategoryToneClass(cat.name)} ${
+                              isSelected ? styles.optionSelected : ""
+                            }`}
+                            onClick={() => {
+                              setNewCategory(cat.name);
+                              setIsModalCategoryOpen(false);
+                            }}
+                            role="option"
+                            aria-selected={isSelected}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
                                 setNewCategory(cat.name);
                                 setIsModalCategoryOpen(false);
-                              }}
-                              role="option"
-                              aria-selected={isSelected}
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  setNewCategory(cat.name);
-                                  setIsModalCategoryOpen(false);
-                                }
-                              }}
-                            >
-                              <div className={styles.modalCategoryRowLeft}>
-                                <div
-                                  className={styles.modalCategoryIconBox}
-                                  style={{
-                                    color: cat.iconColor,
-                                  }}
-                                  aria-hidden="true"
-                                >
-                                  {getCategoryOutlineIcon(cat.name, styles.modalCategoryRowSvg)}
-                                </div>
-                                <div className={styles.modalCategoryRowMeta}>
-                                  <span className={styles.modalCategoryRowName}>{cat.name}</span>
-                                  <span className={styles.modalCategoryRowDesc}>{cat.desc}</span>
-                                </div>
-                              </div>
-
-                              <div className={styles.modalCategoryRadioWrap} aria-hidden="true">
-                                {isSelected ? (
-                                  <div className={styles.modalCategoryRadioActive}>
-                                    <div className={styles.modalCategoryRadioDot} />
-                                  </div>
-                                ) : (
-                                  <div className={styles.modalCategoryRadioInactive} />
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                              }
+                            }}
+                          >
+                            {getCategoryOutlineIcon(cat.name, styles.catIcon)}
+                            <span className={styles.optionText}>
+                              <span className={styles.optionName}>{cat.name}</span>
+                              <span className={styles.optionDesc}>{cat.desc}</span>
+                            </span>
+                            <span className={`${styles.radio} ${isSelected ? styles.radioOn : ""}`} aria-hidden="true" />
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
 
-                <div className={styles.formField}>
-                  <label className={styles.formLabel} htmlFor="post-content-textarea">
-                    Content
-                    <span className={styles.formLabelHint}>(min 15 characters)</span>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="post-content-textarea">
+                    Content <span className={styles.labelHint}>min 15 characters</span>
                   </label>
-                  <div className={styles.textareaWrapper}>
+                  <div className={styles.inputWrap}>
                     <textarea
                       ref={contentTextareaRef}
                       id="post-content-textarea"
-                      className={styles.formTextarea}
+                      className={styles.textarea}
                       placeholder="Share your thoughts, ask a doubt, or start a discussion..."
                       value={newContent}
                       onChange={(e) => setNewContent(e.target.value)}
                       maxLength={2000}
                       required
                     />
-                    <div className={styles.textareaCounter}>
-                      {newContent.length}/2000
-                    </div>
+                    <span className={`${styles.counter} ${styles.counterBottom}`}>{newContent.length}/2000</span>
                   </div>
                 </div>
 
-                {/* Image Attachment Section */}
-                <div className={styles.formField}>
-                  <label className={styles.formLabel}>
-                    Image Attachment (Optional)
-                  </label>
+                <div className={styles.field}>
+                  <span className={styles.label}>
+                    Image <span className={styles.labelHint}>optional</span>
+                  </span>
 
                   <input
                     ref={fileInputRef}
@@ -3290,11 +2665,8 @@ export default function LearningCommunityPage() {
                     style={{ display: "none" }}
                   />
 
-                  {/* Horizontal Dropzone */}
                   <div
-                    className={`${styles.modalImageDropzone} ${
-                      isDraggingImage ? styles.modalImageDropzoneActive : ""
-                    }`}
+                    className={`${styles.dropzoneWide} ${isDraggingImage ? styles.dropzoneActive : ""}`}
                     onDragOver={handleImageDragOver}
                     onDragEnter={handleImageDragEnter}
                     onDragLeave={handleImageDragLeave}
@@ -3309,83 +2681,52 @@ export default function LearningCommunityPage() {
                       }
                     }}
                   >
-                    <div className={styles.modalDropzoneLeft}>
-                      <div className={styles.modalUploadIconWrap} aria-hidden="true">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-                          <path d="M12 12v9" />
-                          <path d="m16 16-4-4-4 4" />
-                        </svg>
-                      </div>
-                      <div className={styles.modalDropzoneTextCol}>
-                        <div className={styles.modalUploadPrimaryText}>Drag & drop an image here</div>
-                        <div className={styles.modalUploadSecondaryText}>
-                          or <span className={styles.modalUploadLinkText}>click to browse</span> from your device
-                        </div>
-                        <div className={styles.modalUploadHelperText}>Supports: JPG, PNG, WEBP (Max 5MB)</div>
-                      </div>
-                    </div>
-
+                    <CloudUpload size={26} strokeWidth={1.8} className={styles.dropIcon} aria-hidden="true" />
+                    <span className={styles.dropText}>
+                      <span className={styles.dropPrimary}>Drag &amp; drop an image here</span>
+                      <span className={styles.dropSecondary}>
+                        or <span className={styles.dropLink}>click to browse</span> &middot; JPG, PNG, WEBP up to 5 MB
+                      </span>
+                    </span>
                     <button
                       type="button"
-                      className={styles.modalBrowseFilesBtn}
+                      className={styles.secondaryBtnSm}
                       onClick={(e) => {
                         e.stopPropagation();
                         fileInputRef.current?.click();
                       }}
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                      </svg>
-                      <span>Browse Files</span>
+                      <FolderOpen size={15} aria-hidden="true" />
+                      <span>Browse files</span>
                     </button>
                   </div>
 
-                  {/* Attached Image Preview Card (if uploaded) */}
                   {newImageUrl && (
-                    <div className={styles.modalPreviewRow}>
-                      <div className={styles.modalPreviewLeft}>
-                        <div className={styles.modalPreviewThumbWrap}>
-                          <img
-                            src={newImageUrl}
-                            alt={newImageMeta?.name || "Attached file"}
-                            className={styles.modalPreviewThumbImg}
-                          />
-                        </div>
-                        <div className={styles.modalPreviewMeta}>
-                          <span
-                            className={styles.modalPreviewFileName}
-                            title={newImageMeta?.name || "cat_notes_diagram.png"}
-                          >
-                            {newImageMeta?.name || "cat_notes_diagram.png"}
-                          </span>
-                          <span className={styles.modalPreviewFileSize}>
-                            {newImageMeta?.sizeFormatted || "2.3 MB"}
-                          </span>
-                        </div>
-                      </div>
+                    <div className={styles.fileRow}>
+                      <span className={styles.fileThumb}>
+                        <img src={newImageUrl} alt={newImageMeta?.name || "Attached file"} />
+                      </span>
+                      <span className={styles.fileMeta}>
+                        <span className={styles.fileName} title={newImageMeta?.name || "cat_notes_diagram.png"}>
+                          {newImageMeta?.name || "cat_notes_diagram.png"}
+                        </span>
+                        <span className={styles.fileSize}>{newImageMeta?.sizeFormatted || "2.3 MB"}</span>
+                      </span>
                       <button
                         type="button"
-                        className={styles.modalPreviewRemoveBtn}
+                        className={styles.iconBtnSm}
                         onClick={handleRemoveImage}
                         title="Remove image"
                         aria-label="Remove image"
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
+                        <X size={15} aria-hidden="true" />
                       </button>
                     </div>
                   )}
 
                   {imageValidationError && (
-                    <div className={styles.imageValidationMsg} role="alert">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                      </svg>
+                    <div className={styles.fieldError} role="alert">
+                      <CircleExclamationPoint size={15} aria-hidden="true" />
                       <span>{imageValidationError}</span>
                     </div>
                   )}
@@ -3393,22 +2734,11 @@ export default function LearningCommunityPage() {
               </div>
 
               <div className={styles.modalFooter}>
-                <button
-                  type="button"
-                  className={styles.btnCancel}
-                  onClick={closeCreateModal}
-                >
+                <button type="button" className={styles.secondaryBtn} onClick={closeCreateModal}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className={styles.btnSubmit}
-                  disabled={isSubmittingPost}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
+                <button type="submit" className={styles.primaryBtn} disabled={isSubmittingPost}>
+                  <Send size={16} aria-hidden="true" />
                   <span>{isSubmittingPost ? "Posting..." : "Post"}</span>
                 </button>
               </div>
@@ -3417,7 +2747,7 @@ export default function LearningCommunityPage() {
         </div>
       )}
 
-      {/* Full Discussion View Modal */}
+      {/* Thread view */}
       {activePost && (
         <div
           className={styles.modalOverlay}
@@ -3426,94 +2756,78 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="discussion-modal-title"
         >
-          <div
-            className={`${styles.modalCard} ${styles.discussionModalCard}`}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className={`${styles.modalCard} ${styles.threadCard}`} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <div className={styles.postAuthorMeta}>
-                <div className={styles.userAvatarCircle}>
-                  <img
-                    src={getAuthorAvatar(activePost.authorName) || activePost.authorAvatar || "/profile_icon.png"}
-                    alt={activePost.authorName}
-                    className={styles.userAvatarImg}
-                    onError={(e) => {
-                      e.currentTarget.src = "/profile_icon.png";
-                    }}
-                  />
-                </div>
-                <div>
-                  <div className={styles.authorNameRow}>
-                    <span className={styles.authorName}>{activePost.authorName}</span>
-                    <span className={styles.postTime}>
-                      &bull; {formatRelativeTime(activePost.createdAt)}
-                    </span>
-                  </div>
-                  <div className={styles.authorSubRole}>{activePost.authorRole}</div>
+              <div className={styles.threadAuthor}>
+                <Avatar
+                  src={getAuthorAvatar(activePost.authorName) || activePost.authorAvatar || "/profile_icon.png"}
+                  alt={activePost.authorName}
+                  size={40}
+                />
+                <div className={styles.byline}>
+                  <span className={styles.authorName}>
+                    {activePost.authorName}
+                    <span className={styles.postTime}> &middot; {formatRelativeTime(activePost.createdAt)}</span>
+                  </span>
+                  <span className={styles.authorRole}>{activePost.authorRole}</span>
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span className={getCategoryBadgeClass(activePost.category)}>
-                  {activePost.category}
-                </span>
+              <div className={styles.threadHeadRight}>
+                <span className={getCategoryBadgeClass(activePost.category)}>{activePost.category}</span>
                 <button
                   type="button"
-                  className={styles.modalCloseBtn}
+                  className={styles.iconBtn}
                   onClick={() => setActivePostId(null)}
                   aria-label="Close discussion"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <X size={18} aria-hidden="true" />
                 </button>
               </div>
             </div>
 
             <div className={styles.modalBody}>
-              <h2 id="discussion-modal-title" className={styles.postTitle}>
+              <h2 id="discussion-modal-title" className={styles.threadTitle}>
                 {activePost.title}
               </h2>
-              <div className={styles.fullPostContent}>{activePost.content}</div>
+              <div className={styles.threadContent}>{activePost.content}</div>
 
               {activePost.imageUrl && (
-                <div className={styles.postImageThumbWrap} style={{ maxHeight: "360px" }}>
-                  <img
-                    src={activePost.imageUrl}
-                    alt={activePost.title}
-                    className={styles.postImageThumb}
-                    style={{ maxHeight: "360px", objectFit: "contain" }}
-                  />
+                <div className={styles.threadImage}>
+                  <img src={activePost.imageUrl} alt={activePost.title} />
                 </div>
               )}
 
-              {/* Upvote / Save / Delete bar */}
-              <div className={styles.postActionsBar}>
-                <div className={styles.postActionsLeft}>
+              <div className={styles.threadActions}>
+                <div className={styles.threadActionsLeft}>
                   <button
                     type="button"
-                    className={`${styles.actionMetricBtn} ${
-                      activePost.isUpvoted ? styles.actionMetricUpvoted : ""
-                    }`}
+                    className={`${styles.pillBtn} ${activePost.isUpvoted ? styles.pillBtnOn : ""}`}
                     onClick={() => handleToggleUpvote(activePost.id)}
+                    aria-pressed={activePost.isUpvoted}
                   >
-                    <span className={styles.upvoteArrowIcon}>▲</span>
-                    <span>Upvote &bull; {activePost.upvotesCount}</span>
+                    <ArrowBigUp
+                      size={18}
+                      strokeWidth={1.8}
+                      fill={activePost.isUpvoted ? "currentColor" : "none"}
+                      aria-hidden="true"
+                    />
+                    <span>Upvote</span>
+                    <span className={styles.mono}>{activePost.upvotesCount}</span>
                   </button>
 
-                  <div className={styles.actionMetricDivider} />
-
                   <button
                     type="button"
-                    className={`${styles.actionMetricBtn} ${
-                      activePost.isSaved ? styles.bookmarkIconActive : ""
-                    }`}
+                    className={`${styles.pillBtn} ${activePost.isSaved ? styles.pillBtnOn : ""}`}
                     onClick={() => handleToggleSave(activePost.id)}
+                    aria-pressed={activePost.isSaved}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill={activePost.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
+                    <Bookmark
+                      size={16}
+                      strokeWidth={1.9}
+                      fill={activePost.isSaved ? "currentColor" : "none"}
+                      aria-hidden="true"
+                    />
                     <span>{activePost.isSaved ? "Saved" : "Save"}</span>
                   </button>
                 </div>
@@ -3521,229 +2835,192 @@ export default function LearningCommunityPage() {
                 {activePost.isOwnPost ? (
                   <button
                     type="button"
-                    className={`${styles.actionMetricBtn} ${styles.dropdownItemDanger}`}
+                    className={`${styles.pillBtn} ${styles.pillBtnDanger}`}
                     onClick={() => handleDeletePost(activePost.id)}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                    <span>Delete Post</span>
+                    <Trash size={15} aria-hidden="true" />
+                    <span>Delete post</span>
                   </button>
                 ) : (
                   <button
                     type="button"
-                    className={styles.actionMetricBtn}
+                    className={styles.pillBtn}
                     onClick={(e) => handleReportPost(activePost.id, e)}
                     title="Report discussion"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                      <line x1="4" y1="22" x2="4" y2="15" />
-                    </svg>
+                    <Flag size={15} aria-hidden="true" />
                     <span>Report</span>
                   </button>
                 )}
               </div>
 
-              {/* Reply / Comment Box */}
-              <form className={styles.commentComposerBox} onSubmit={handleAddComment}>
+              <form className={styles.replyComposer} onSubmit={handleAddComment}>
                 <textarea
                   ref={commentTextareaRef}
-                  className={styles.formTextarea}
-                  style={{ minHeight: "82px", background: "#FFFFFF" }}
+                  className={styles.textarea}
                   placeholder="Write a helpful response, share your solution, or ask a follow-up..."
                   value={commentInput}
                   onChange={(e) => setCommentInput(e.target.value)}
+                  aria-label="Write a comment"
                 />
-                <div className={styles.commentComposerActions}>
+                <div className={styles.replyComposerBar}>
                   <button
                     type="submit"
-                    className={styles.btnSubmit}
+                    className={styles.primaryBtnSm}
                     disabled={isSubmittingComment || !commentInput.trim()}
                   >
-                    {isSubmittingComment ? "Posting..." : "Post Comment"}
+                    <Send size={15} aria-hidden="true" />
+                    <span>{isSubmittingComment ? "Posting..." : "Post comment"}</span>
                   </button>
                 </div>
               </form>
 
-              {/* Comments & Replies Thread */}
-              <div className={styles.commentsSectionHeader}>
-                <span>Comments ({activePost.commentsCount})</span>
+              <div className={styles.threadSectionHead}>
+                <span>Comments</span>
+                <span className={styles.mono}>{activePost.commentsCount}</span>
               </div>
 
               {rootComments.length === 0 ? (
-                <div className={styles.emptyStateCard} style={{ padding: "28px 20px" }}>
-                  <p className={styles.emptyStateTitle} style={{ fontSize: "14px" }}>
-                    {"No replies yet.\nStart the conversation."}
-                  </p>
+                <div className={styles.threadEmpty}>
+                  <MessageCircle size={22} strokeWidth={1.7} className={styles.emptyIcon} aria-hidden="true" />
+                  <p>{"No replies yet.\nStart the conversation."}</p>
                 </div>
               ) : (
-                <div className={styles.commentsThreadList}>
+                <div className={styles.thread}>
                   {rootComments.map((comment) => {
                     const replies = getRepliesForComment(comment.id);
-                    const commentAvatar = getAuthorAvatar(comment.authorName) || comment.authorAvatar || "/profile_icon.png";
+                    const commentAvatar =
+                      getAuthorAvatar(comment.authorName) || comment.authorAvatar || "/profile_icon.png";
                     return (
-                      <div key={comment.id} className={styles.commentCard}>
-                        <div className={styles.postAuthorMeta}>
-                          <div
-                            className={styles.userAvatarCircle}
-                            style={{ width: "32px", height: "32px", fontSize: "12px" }}
-                          >
-                            <img
-                              src={commentAvatar}
-                              alt={comment.authorName}
-                              className={styles.userAvatarImg}
-                              onError={(e) => {
-                                e.currentTarget.src = "/profile_icon.png";
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <div className={styles.authorNameRow}>
-                              <span className={styles.authorName} style={{ fontSize: "13px" }}>
-                                {comment.authorName}
-                              </span>
-                              <span className={styles.postTime}>
-                                &bull; {formatRelativeTime(comment.createdAt)}
-                              </span>
-                            </div>
-                            <div className={styles.authorSubRole}>{comment.authorRole}</div>
+                      <div key={comment.id} className={styles.comment}>
+                        <div className={styles.commentHead}>
+                          <Avatar src={commentAvatar} alt={comment.authorName} size={32} />
+                          <div className={styles.byline}>
+                            <span className={styles.authorName}>
+                              {comment.authorName}
+                              <span className={styles.postTime}> &middot; {formatRelativeTime(comment.createdAt)}</span>
+                            </span>
+                            <span className={styles.authorRole}>{comment.authorRole}</span>
                           </div>
                         </div>
 
-                        <p className={styles.commentText}>{comment.content}</p>
+                        <div className={styles.commentBody}>
+                          <p className={styles.commentText}>{comment.content}</p>
 
-                        <div className={styles.commentActionsRow}>
-                          <button
-                            type="button"
-                            className={`${styles.commentUpvoteTriggerBtn} ${comment.isUpvoted ? styles.commentUpvoted : ""}`}
-                            onClick={(e) => handleToggleCommentUpvote(comment.id, e)}
-                            aria-label={`Upvote comment (${comment.upvotesCount || 0})`}
-                          >
-                            <span className={styles.upvoteArrowIcon}>▲</span>
-                            <span>Upvote &bull; {comment.upvotesCount || 0}</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            className={styles.commentReplyTriggerBtn}
-                            onClick={() => {
-                              setReplyingToCommentId((prev) =>
-                                prev === comment.id ? null : comment.id
-                              );
-                              setReplyInput("");
-                            }}
-                          >
-                            ↩ Reply
-                          </button>
-
-                          {(comment.isOwnComment ||
-                            (user && user.id === comment.authorId) ||
-                            (data?.currentUser && data.currentUser.id === comment.authorId)) && (
+                          <div className={styles.commentActions}>
                             <button
                               type="button"
-                              className={styles.commentDeleteTriggerBtn}
-                              onClick={() => handleDeleteComment(comment.id)}
-                              title="Delete comment"
+                              className={`${styles.textBtn} ${comment.isUpvoted ? styles.textBtnOn : ""}`}
+                              onClick={(e) => handleToggleCommentUpvote(comment.id, e)}
+                              aria-label={`Upvote comment (${comment.upvotesCount || 0})`}
+                              aria-pressed={Boolean(comment.isUpvoted)}
                             >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                              </svg>
-                              <span>Delete</span>
+                              <ArrowBigUp
+                                size={17}
+                                strokeWidth={1.8}
+                                fill={comment.isUpvoted ? "currentColor" : "none"}
+                                aria-hidden="true"
+                              />
+                              <span className={styles.mono}>{comment.upvotesCount || 0}</span>
                             </button>
+
+                            <button
+                              type="button"
+                              className={`${styles.textBtn} ${replyingToCommentId === comment.id ? styles.textBtnOn : ""}`}
+                              onClick={() => {
+                                setReplyingToCommentId((prev) => (prev === comment.id ? null : comment.id));
+                                setReplyInput("");
+                              }}
+                            >
+                              <Reply size={15} aria-hidden="true" />
+                              <span>Reply</span>
+                            </button>
+
+                            {canDeleteComment(comment.authorId, comment.isOwnComment) && (
+                              <button
+                                type="button"
+                                className={`${styles.textBtn} ${styles.textBtnDanger}`}
+                                onClick={() => handleDeleteComment(comment.id)}
+                                title="Delete comment"
+                              >
+                                <Trash size={14} aria-hidden="true" />
+                                <span>Delete</span>
+                              </button>
+                            )}
+                          </div>
+
+                          {replyingToCommentId === comment.id && (
+                            <form className={styles.inlineReply} onSubmit={(e) => handleAddNestedReply(comment.id, e)}>
+                              <input
+                                type="text"
+                                className={styles.input}
+                                placeholder={`Reply to ${comment.authorName}...`}
+                                value={replyInput}
+                                onChange={(e) => setReplyInput(e.target.value)}
+                                autoFocus
+                              />
+                              <button
+                                type="submit"
+                                className={styles.primaryBtnSm}
+                                disabled={isSubmittingComment || !replyInput.trim()}
+                              >
+                                Reply
+                              </button>
+                            </form>
+                          )}
+
+                          {replies.length > 0 && (
+                            <div className={styles.replies}>
+                              {replies.map((rep) => {
+                                const repAvatar =
+                                  getAuthorAvatar(rep.authorName) || rep.authorAvatar || "/profile_icon.png";
+                                return (
+                                  <div key={rep.id} className={styles.reply}>
+                                    <div className={styles.commentHead}>
+                                      <Avatar src={repAvatar} alt={rep.authorName} size={26} />
+                                      <span className={styles.authorName}>
+                                        {rep.authorName}
+                                        <span className={styles.postTime}> &middot; {formatRelativeTime(rep.createdAt)}</span>
+                                      </span>
+                                    </div>
+                                    <div className={styles.replyBody}>
+                                      <p className={styles.commentText}>{rep.content}</p>
+                                      <div className={styles.commentActions}>
+                                        <button
+                                          type="button"
+                                          className={`${styles.textBtn} ${rep.isUpvoted ? styles.textBtnOn : ""}`}
+                                          onClick={(e) => handleToggleCommentUpvote(rep.id, e)}
+                                          aria-label={`Upvote reply (${rep.upvotesCount || 0})`}
+                                          aria-pressed={Boolean(rep.isUpvoted)}
+                                        >
+                                          <ArrowBigUp
+                                            size={16}
+                                            strokeWidth={1.8}
+                                            fill={rep.isUpvoted ? "currentColor" : "none"}
+                                            aria-hidden="true"
+                                          />
+                                          <span className={styles.mono}>{rep.upvotesCount || 0}</span>
+                                        </button>
+
+                                        {canDeleteComment(rep.authorId, rep.isOwnComment) && (
+                                          <button
+                                            type="button"
+                                            className={`${styles.textBtn} ${styles.textBtnDanger}`}
+                                            onClick={() => handleDeleteComment(rep.id)}
+                                            title="Delete reply"
+                                          >
+                                            <Trash size={13} aria-hidden="true" />
+                                            <span>Delete</span>
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
-
-                        {replyingToCommentId === comment.id && (
-                          <form
-                            className={styles.inlineReplyForm}
-                            onSubmit={(e) => handleAddNestedReply(comment.id, e)}
-                          >
-                            <input
-                              type="text"
-                              className={styles.formInput}
-                              placeholder={`Reply to ${comment.authorName}...`}
-                              value={replyInput}
-                              onChange={(e) => setReplyInput(e.target.value)}
-                              autoFocus
-                            />
-                            <button
-                              type="submit"
-                              className={styles.btnSubmit}
-                              disabled={isSubmittingComment || !replyInput.trim()}
-                            >
-                              Reply
-                            </button>
-                          </form>
-                        )}
-
-                        {replies.length > 0 && (
-                          <div className={styles.nestedRepliesList}>
-                            {replies.map((rep) => {
-                              const repAvatar = getAuthorAvatar(rep.authorName) || rep.authorAvatar || "/profile_icon.png";
-                              return (
-                                <div key={rep.id} className={styles.nestedReplyCard}>
-                                  <div className={styles.postAuthorMeta} style={{ marginBottom: "4px" }}>
-                                    <div
-                                      className={styles.userAvatarCircle}
-                                      style={{ width: "26px", height: "26px", fontSize: "10px" }}
-                                    >
-                                      <img
-                                        src={repAvatar}
-                                        alt={rep.authorName}
-                                        className={styles.userAvatarImg}
-                                        onError={(e) => {
-                                          e.currentTarget.src = "/profile_icon.png";
-                                        }}
-                                      />
-                                    </div>
-                                    <div className={styles.authorNameRow}>
-                                      <span className={styles.authorName} style={{ fontSize: "12.5px" }}>
-                                        {rep.authorName}
-                                      </span>
-                                      <span className={styles.postTime}>
-                                        &bull; {formatRelativeTime(rep.createdAt)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <p className={styles.commentText} style={{ margin: "2px 0 0" }}>
-                                    {rep.content}
-                                  </p>
-                                  <div className={styles.commentActionsRow} style={{ marginTop: "4px" }}>
-                                    <button
-                                      type="button"
-                                      className={`${styles.commentUpvoteTriggerBtn} ${rep.isUpvoted ? styles.commentUpvoted : ""}`}
-                                      onClick={(e) => handleToggleCommentUpvote(rep.id, e)}
-                                      aria-label={`Upvote reply (${rep.upvotesCount || 0})`}
-                                    >
-                                      <span className={styles.upvoteArrowIcon}>▲</span>
-                                      <span>Upvote &bull; {rep.upvotesCount || 0}</span>
-                                    </button>
-
-                                    {(rep.isOwnComment ||
-                                      (user && user.id === rep.authorId) ||
-                                      (data?.currentUser && data.currentUser.id === rep.authorId)) && (
-                                      <button
-                                        type="button"
-                                        className={styles.commentDeleteTriggerBtn}
-                                        onClick={() => handleDeleteComment(rep.id)}
-                                        title="Delete reply"
-                                      >
-                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                          <polyline points="3 6 5 6 21 6" />
-                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                        </svg>
-                                        <span>Delete</span>
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -3754,36 +3031,22 @@ export default function LearningCommunityPage() {
         </div>
       )}
 
-      {/* Top Contributors Right-Side Drawer */}
+      {/* Top contributors drawer */}
       {isContributorsDrawerOpen && (
         <div
-          className={styles.contributorDrawerOverlay}
+          className={styles.drawerOverlay}
           onClick={() => setIsContributorsDrawerOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="top-contributors-drawer-title"
         >
-          <div
-            className={styles.contributorDrawerPanel}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header */}
-            <div className={styles.contributorDrawerHeader}>
-              <div className={styles.contributorDrawerHeaderCol}>
-                <div className={styles.contributorDrawerHeaderTitleRow}>
-                  <span className={styles.contributorDrawerHeaderEmoji} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                      <path d="M4 22h16" />
-                      <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
-                    </svg>
-                  </span>
-                  <h2 id="top-contributors-drawer-title" className={styles.contributorDrawerHeaderTitle}>
-                    Top Contributors
-                  </h2>
-                </div>
-                <p className={styles.contributorDrawerHeaderSubtitle}>
+          <div className={`${styles.drawerPanel} ${styles.contributorDrawerPanel}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.drawerHeader}>
+              <div>
+                <h2 id="top-contributors-drawer-title" className={styles.drawerTitle}>
+                  Top <GradientText>contributors</GradientText>
+                </h2>
+                <p className={styles.drawerSubtitle}>
                   {contributorTab === "This Month"
                     ? "Community leaders this month"
                     : contributorTab === "This Week"
@@ -3791,204 +3054,103 @@ export default function LearningCommunityPage() {
                     : "Community leaders of all time"}
                 </p>
               </div>
-
               <button
                 type="button"
-                className={styles.contributorDrawerCloseBtn}
+                className={styles.iconBtn}
                 onClick={() => setIsContributorsDrawerOpen(false)}
                 aria-label="Close top contributors drawer"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
-            {/* Filter Tabs */}
-            <div className={styles.contributorDrawerFilterWrap}>
-              <div className={styles.contributorTabsWrap}>
-                {(["This Month", "This Week", "All Time"] as const).map((tab) => {
-                  const isSelected = contributorTab === tab;
-                  return (
-                    <button
-                      key={tab}
-                      type="button"
-                      className={`${styles.contributorPillTab} ${
-                        isSelected ? styles.contributorPillTabActive : ""
-                      }`}
-                      onClick={() => setContributorTab(tab)}
-                    >
-                      {tab}
-                    </button>
-                  );
-                })}
+            <div className={styles.drawerTabsWrap}>
+              <div className={styles.segmented}>
+                {(["This Month", "This Week", "All Time"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    className={`${styles.segment} ${contributorTab === tab ? styles.segmentActive : ""}`}
+                    onClick={() => setContributorTab(tab)}
+                    aria-pressed={contributorTab === tab}
+                  >
+                    {tab === "This Month" ? "This month" : tab === "This Week" ? "This week" : "All time"}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Drawer Body - Scrollable */}
-            <div className={styles.contributorDrawerBody}>
-              {/* Contributor Cards List */}
-              <div className={styles.contributorCardsList}>
-                {topContributorsList.length === 0 ? (
-                  <div style={{ padding: "48px 24px", textAlign: "center", color: "#64748B" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px auto" }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
-                    </div>
-                    <p style={{ margin: "0 0 6px 0", fontWeight: 700, color: "#1E293B", fontSize: "16px" }}>Leaderboard Reset</p>
-                    <p style={{ margin: 0, fontSize: "13px", color: "#64748B", maxWidth: "280px", marginInline: "auto" }}>
-                      Active contributions will appear here dynamically as students ask and answer CAT questions.
-                    </p>
-                  </div>
-                ) : (
-                  topContributorsList.map((contributor) => {
-                    const avatarSrc =
-                      getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
-                    const rankClass =
-                      contributor.rank === 1
-                        ? styles.contributorCardGold
-                        : contributor.rank === 2
-                        ? styles.contributorCardSilver
-                        : contributor.rank === 3
-                        ? styles.contributorCardBronze
-                        : styles.contributorCardDefault;
-
-                    return (
-                      <div
-                        key={contributor.authorId}
-                        className={`${styles.contributorDrawerCard} ${rankClass}`}
-                      >
-                        {/* Rank indicator */}
-                        <div className={styles.contributorDrawerRankWrap}>
-                          {contributor.rank === 1 ? (
-                            <img
-                              src="/community/medal-gold.png"
-                              alt="1st Place"
-                              className={styles.contributorDrawerMedal}
-                            />
-                          ) : contributor.rank === 2 ? (
-                            <img
-                              src="/community/medal-silver.png"
-                              alt="2nd Place"
-                              className={styles.contributorDrawerMedal}
-                            />
-                          ) : contributor.rank === 3 ? (
-                            <img
-                              src="/community/medal-bronze.png"
-                              alt="3rd Place"
-                              className={styles.contributorDrawerMedal}
-                            />
-                          ) : (
-                            <span className={styles.contributorDrawerRankCircle}>
-                              {contributor.rank}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Avatar */}
-                        <div className={styles.contributorDrawerAvatarWrap}>
-                          <img
-                            src={avatarSrc}
-                            alt={contributor.authorName}
-                            className={styles.contributorDrawerAvatarImg}
-                            onError={(e) => {
-                              e.currentTarget.src = "/profile_icon.png";
-                            }}
-                          />
-                        </div>
-
-                        {/* Info Stack */}
-                        <div className={styles.contributorDrawerContent}>
-                          <div className={styles.contributorDrawerTopRow}>
-                            <span className={styles.contributorDrawerUsername}>
-                              {contributor.authorName}
-                            </span>
-                            {contributor.rank === 1 && (
-                              <span
-                                className={styles.contributorDrawerTrophyIcon}
-                                aria-label="Top Contributor Trophy"
-                                title="Community Leader 1st Place"
-                                style={{ display: "inline-flex", alignItems: "center" }}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                                  <path d="M4 22h16" />
-                                  <path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34c3.24-.76 5-3.33 5-6.66V3H4v8c0 3.33 1.76 5.9 5 6.66z" />
-                                </svg>
-                              </span>
-                            )}
-                          </div>
-
-                          <div className={styles.contributorDrawerStatsRow}>
-                            <span>{contributor.postCount} posts</span>
-                          </div>
-
-                          <div className={styles.contributorDrawerBadgesRow}>
-                            <span className={styles.contributorDrawerActiveBadge}>
-                              <span className={styles.contributorActiveDot} /> Active
-                            </span>
-                            {contributor.rank <= 3 && (
-                              <span
-                                className={`${styles.contributorDrawerTopBadge} ${
-                                  contributor.rank === 1
-                                    ? styles.topBadgeGold
-                                    : contributor.rank === 2
-                                    ? styles.topBadgeSilver
-                                    : styles.topBadgeBronze
-                                }`}
-                              >
-                                Top Contributor
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Community Contribution Card */}
-              <div className={styles.communityContributionCard}>
-                <div className={styles.communityContributionHeader}>
-                  <h4 className={styles.communityContributionTitle}>
-                    Community Contribution
-                  </h4>
-                  <p className={styles.communityContributionSubtitle}>
-                    {contributorTab === "This Month"
-                      ? "Total impact this month"
-                      : contributorTab === "This Week"
-                      ? "Total impact this week"
-                      : "Total impact of all time"}
+            <div className={`${styles.drawerBody} ${styles.contributorDrawerBody}`}>
+              {topContributorsList.length === 0 ? (
+                <div className={styles.miniEmpty}>
+                  <Trophy size={26} strokeWidth={1.7} className={styles.emptyIcon} aria-hidden="true" />
+                  <p className={styles.miniEmptyTitle}>Leaderboard reset</p>
+                  <p className={styles.miniEmptyText}>
+                    Active contributions will appear here as students ask and answer CAT questions.
                   </p>
                 </div>
-                <div className={styles.contributionMetricsGrid}>
-                  <div className={styles.contributionMetricBox}>
-                    <span className={styles.contributionMetricValue}>
-                      {data ? data.stats.discussions : "1.2K"}
-                    </span>
-                    <span className={styles.contributionMetricLabel}>
-                      Discussions Started
-                    </span>
+              ) : (
+                <ol className={styles.leaderList}>
+                  {topContributorsList.map((contributor) => {
+                    const avatarSrc =
+                      getAuthorAvatar(contributor.authorName) || contributor.authorAvatar || "/profile_icon.png";
+                    return (
+                      <li
+                        key={contributor.authorId}
+                        className={`${styles.leaderRow} ${contributor.rank <= 3 ? styles.leaderRowTop : ""}`}
+                      >
+                        <RankBadge rank={contributor.rank} />
+                        <Avatar src={avatarSrc} alt={contributor.authorName} size={44} />
+                        <div className={styles.leaderInfo}>
+                          <span className={styles.leaderName}>
+                            {contributor.authorName}
+                            {contributor.rank === 1 && (
+                              <Trophy
+                                size={15}
+                                strokeWidth={2}
+                                className={styles.trophyIcon}
+                                aria-label="Community leader, first place"
+                              />
+                            )}
+                          </span>
+                          <span className={styles.leaderMeta}>
+                            <span className={styles.mono}>{contributor.postCount}</span> posts
+                          </span>
+                          <span className={styles.leaderBadges}>
+                            <span className={styles.activeBadge}>
+                              <span className={styles.liveDot} aria-hidden="true" />
+                              Active
+                            </span>
+                            {contributor.rank <= 3 && <span className={styles.topBadge}>Top contributor</span>}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+
+              <div className={styles.impactCard}>
+                <h4 className={styles.impactTitle}>Community contribution</h4>
+                <p className={styles.impactSub}>
+                  {contributorTab === "This Month"
+                    ? "Total impact this month"
+                    : contributorTab === "This Week"
+                    ? "Total impact this week"
+                    : "Total impact of all time"}
+                </p>
+                <div className={styles.impactGrid}>
+                  <div className={styles.impactCell}>
+                    <StatFigure value={data?.stats.discussions} className={styles.impactValue} />
+                    <span className={styles.impactLabel}>Discussions started</span>
                   </div>
-                  <div className={styles.contributionMetricBox}>
-                    <span className={styles.contributionMetricValue}>
-                      {data ? data.stats.helpfulRate : "92%"}
-                    </span>
-                    <span className={styles.contributionMetricLabel}>
-                      Helpful Answers
-                    </span>
+                  <div className={styles.impactCell}>
+                    <StatFigure value={data?.stats.helpfulRate} className={styles.impactValue} />
+                    <span className={styles.impactLabel}>Helpful answers</span>
                   </div>
-                  <div className={styles.contributionMetricBox}>
-                    <span className={styles.contributionMetricValue}>
-                      {data ? data.stats.solutions : "3.1K"}
-                    </span>
-                    <span className={styles.contributionMetricLabel}>
-                      Solutions Shared
-                    </span>
+                  <div className={styles.impactCell}>
+                    <StatFigure value={data?.stats.solutions} className={styles.impactValue} />
+                    <span className={styles.impactLabel}>Solutions shared</span>
                   </div>
                 </div>
               </div>
@@ -3997,195 +3159,125 @@ export default function LearningCommunityPage() {
         </div>
       )}
 
-      {/* Community Stats Right-Side Drawer */}
+      {/* Community stats drawer */}
       {isStatsDrawerOpen && (
         <div
-          className={styles.statsDrawerOverlay}
+          className={styles.drawerOverlay}
           onClick={() => setIsStatsDrawerOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="community-stats-drawer-title"
         >
           <div
-            className={styles.statsDrawerPanel}
+            className={`${styles.drawerPanel} ${styles.statsDrawerPanel}`}
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
-              if (
-                statsDrawerBodyRef.current &&
-                !statsDrawerBodyRef.current.contains(e.target as Node)
-              ) {
+              if (statsDrawerBodyRef.current && !statsDrawerBodyRef.current.contains(e.target as Node)) {
                 statsDrawerBodyRef.current.scrollTop += e.deltaY;
               }
             }}
           >
-            {/* Drawer Header */}
             <div className={styles.drawerHeader}>
-              <div className={styles.drawerTitleCol}>
+              <div>
                 <h2 id="community-stats-drawer-title" className={styles.drawerTitle}>
-                  COMMUNITY <span className={styles.drawerTitleHighlight}>STATS</span>
+                  Community <GradientText>stats</GradientText>
                 </h2>
-                <p className={styles.drawerSubtitle}>
-                  A quick overview of our community activity and impact.
-                </p>
+                <p className={styles.drawerSubtitle}>A quick overview of community activity and impact.</p>
               </div>
-
               <button
                 type="button"
-                className={styles.drawerCloseBtn}
+                className={styles.iconBtn}
                 onClick={() => setIsStatsDrawerOpen(false)}
                 aria-label="Close community stats drawer"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
-            {/* Drawer Body */}
-            <div
-              ref={statsDrawerBodyRef}
-              className={`${styles.drawerBody} ${styles.statsDrawerBody || ""}`}
-            >
-              {/* 3. Stat Summary Cards 2x2 */}
+            <div ref={statsDrawerBodyRef} className={`${styles.drawerBody} ${styles.statsDrawerBody}`}>
               <div className={styles.drawerStatsGrid}>
-                {/* Card 1: Members */}
-                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardLavender}`}>
-                  <div className={styles.drawerStatIconWrap}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
+                {[
+                  { label: "Members", value: data?.stats.members, desc: "CAT aspirants in the community", tint: "blue" },
+                  { label: "Discussions", value: data?.stats.discussions, desc: "Questions and discussions started", tint: "teal" },
+                  { label: "Solutions", value: data?.stats.solutions, desc: "Replies shared by the community", tint: "violet" },
+                  { label: "Helpful rate", value: data?.stats.helpfulRate, desc: "Questions getting helpful responses", tint: "amber" },
+                ].map((s) => (
+                  <div key={s.label} className={`glass-card ${styles.drawerStat}`} data-tint={s.tint}>
+                    <span className={styles.drawerStatLabel}>{s.label}</span>
+                    <StatFigure value={s.value} className={styles.drawerStatValue} />
+                    <span className={styles.drawerStatDesc}>{s.desc}</span>
                   </div>
-                  <span className={styles.drawerStatNumber}>{data ? data.stats.members : "2.4K"}</span>
-                  <span className={styles.drawerStatLabel}>Members</span>
-                  <span className={styles.drawerStatDesc}>Active CAT aspirants in our community</span>
-                </div>
-
-                {/* Card 2: Discussions */}
-                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardPink}`}>
-                  <div className={styles.drawerStatIconWrap}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DB2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <span className={styles.drawerStatNumber}>{data ? data.stats.discussions : "1.2K"}</span>
-                  <span className={styles.drawerStatLabel}>Discussions</span>
-                  <span className={styles.drawerStatDesc}>Questions &amp; discussions started</span>
-                </div>
-
-                {/* Card 3: Solutions */}
-                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardMint}`}>
-                  <div className={styles.drawerStatIconWrap}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <span className={styles.drawerStatNumber}>{data ? data.stats.solutions : "3.1K"}</span>
-                  <span className={styles.drawerStatLabel}>Solutions</span>
-                  <span className={styles.drawerStatDesc}>Doubts solved by the community</span>
-                </div>
-
-                {/* Card 4: Helpful Rate */}
-                <div className={`${styles.drawerStatCard} ${styles.drawerStatCardYellow}`}>
-                  <div className={styles.drawerStatIconWrap}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <line x1="18" y1="20" x2="18" y2="10" />
-                      <line x1="12" y1="20" x2="12" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="14" />
-                    </svg>
-                  </div>
-                  <span className={styles.drawerStatNumber}>{data ? data.stats.helpfulRate : "92%"}</span>
-                  <span className={styles.drawerStatLabel}>Helpful Rate</span>
-                  <span className={styles.drawerStatDesc}>Questions getting helpful responses</span>
-                </div>
+                ))}
               </div>
 
-              {/* 4. Community Activity Chart Card */}
-              <div className={styles.drawerSectionCard}>
-                <div className={styles.drawerSectionHeaderRow}>
+              <div className={styles.drawerSection}>
+                <div className={styles.drawerSectionHead}>
                   <div>
-                    <h3 className={styles.drawerSectionTitle}>Community Activity</h3>
-                    <p className={styles.drawerSectionSubtitle}>Community engagement over time.</p>
+                    <h3 className={styles.cardTitle}>Community activity</h3>
+                    <p className={styles.cardSub}>Posts and comments over time.</p>
                   </div>
-
                   <select
-                    className={styles.periodSelect}
+                    className={styles.select}
                     value={activityPeriod}
                     onChange={(e) => setActivityPeriod(e.target.value as "7D" | "30D" | "90D")}
                     aria-label="Select activity timeframe"
                   >
-                    <option value="7D">Last 7 Days</option>
-                    <option value="30D">Last 30 Days</option>
-                    <option value="90D">Last 90 Days</option>
+                    <option value="7D">Last 7 days</option>
+                    <option value="30D">Last 30 days</option>
+                    <option value="90D">Last 90 days</option>
                   </select>
                 </div>
 
-                <div className={styles.chartContainer}>
+                <div className={styles.chart}>
                   {hoveredPoint && (
-                    <div className={styles.chartTooltipFloating}>
-                      <span>{hoveredPoint.date}:</span>
-                      <strong>{hoveredPoint.value} activities</strong>
+                    <div className={styles.chartTooltip}>
+                      <span>{hoveredPoint.date}</span>
+                      <strong className={styles.mono}>{hoveredPoint.value} activities</strong>
                     </div>
                   )}
 
-                  <svg viewBox="0 0 500 150" className={styles.chartSvg}>
+                  <svg viewBox="0 0 500 150" className={styles.chartSvg} role="img" aria-label="Community activity chart">
                     <defs>
                       <linearGradient id="communityActivityGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.32" />
-                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.02" />
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.28" />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.02" />
                       </linearGradient>
                     </defs>
-
-                    {/* Dotted horizontal grid lines */}
-                    <line x1="20" y1="28" x2="480" y2="28" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
-                    <line x1="20" y1="70" x2="480" y2="70" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
-                    <line x1="20" y1="112" x2="480" y2="112" stroke="#F1F5F9" strokeWidth="1.2" strokeDasharray="3 3" />
-
-                    {/* Filled Area */}
+                    <line x1="20" y1="28" x2="480" y2="28" stroke="#e4e9f2" strokeWidth="1" strokeDasharray="3 4" />
+                    <line x1="20" y1="70" x2="480" y2="70" stroke="#e4e9f2" strokeWidth="1" strokeDasharray="3 4" />
+                    <line x1="20" y1="112" x2="480" y2="112" stroke="#e4e9f2" strokeWidth="1" strokeDasharray="3 4" />
                     <path d={chartPaths.areaD} fill="url(#communityActivityGrad)" />
-
-                    {/* Trend Line */}
                     <path
                       d={chartPaths.lineD}
                       fill="none"
-                      stroke="#2563EB"
-                      strokeWidth="2.8"
+                      stroke="#3b82f6"
+                      strokeWidth="2.4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-
-                    {/* Data Points */}
                     {chartPaths.points.map((pt, idx) => (
                       <g
                         key={idx}
                         onMouseEnter={() =>
-                          setHoveredPoint({
-                            date: pt.item.fullDate,
-                            value: pt.item.value,
-                            x: pt.x,
-                            y: pt.y,
-                          })
+                          setHoveredPoint({ date: pt.item.fullDate, value: pt.item.value, x: pt.x, y: pt.y })
                         }
                         onMouseLeave={() => setHoveredPoint(null)}
                         style={{ cursor: "pointer" }}
                       >
-                        <circle cx={pt.x} cy={pt.y} r="8" fill="transparent" />
+                        <circle cx={pt.x} cy={pt.y} r="9" fill="transparent" />
                         <circle
                           cx={pt.x}
                           cy={pt.y}
                           r={hoveredPoint?.date === pt.item.fullDate ? "5.5" : "3.5"}
-                          fill="#FFFFFF"
-                          stroke="#2563EB"
-                          strokeWidth="2.5"
+                          fill="#ffffff"
+                          stroke="#3b82f6"
+                          strokeWidth="2.2"
                         />
                       </g>
                     ))}
                   </svg>
 
-                  <div className={styles.chartXAxisLabels}>
+                  <div className={styles.chartAxis}>
                     {activityData.map((item, idx) => (
                       <span key={idx}>{item.label}</span>
                     ))}
@@ -4193,52 +3285,43 @@ export default function LearningCommunityPage() {
                 </div>
               </div>
 
-              {/* 5. Most Active Categories Card */}
-              <div className={styles.drawerSectionCard}>
-                <div className={styles.drawerSectionHeaderRow}>
+              <div className={styles.drawerSection}>
+                <div className={styles.drawerSectionHead}>
                   <div>
-                    <h3 className={styles.drawerSectionTitle}>Most Active Categories</h3>
-                    <p className={styles.drawerSectionSubtitle}>
-                      Breakdown of discussions by preparation topic.
-                    </p>
+                    <h3 className={styles.cardTitle}>Most active categories</h3>
+                    <p className={styles.cardSub}>Discussions by preparation topic.</p>
                   </div>
-
                   <button
                     type="button"
-                    className={styles.viewAllCategoriesBtn}
+                    className={styles.linkBtn}
                     onClick={() => setShowAllCategoriesInDrawer((prev) => !prev)}
                   >
-                    {showAllCategoriesInDrawer ? "Show Less ↑" : "View All"}
+                    {showAllCategoriesInDrawer ? "Show less" : "View all"}
                   </button>
                 </div>
 
-                <div className={styles.categoryProgressList}>
-                  {(showAllCategoriesInDrawer
-                    ? categoryActivityCounts
-                    : categoryActivityCounts.slice(0, 5)
-                  ).map((cat) => {
-                    const maxCount = categoryActivityCounts[0]?.count || 300;
-                    const percent = Math.min(100, Math.max(12, Math.round((cat.count / maxCount) * 100)));
-                    return (
-                      <div key={cat.name} className={styles.categoryProgressRow}>
-                        <span className={styles.categoryRowName} title={cat.name}>
-                          <span style={{ display: "inline-flex", alignItems: "center" }}>
-                            {getCategoryOutlineIcon(cat.name as CommunityCategory)}
+                <div className={styles.barList}>
+                  {(showAllCategoriesInDrawer ? categoryActivityCounts : categoryActivityCounts.slice(0, 5)).map(
+                    (cat) => {
+                      const maxCount = categoryActivityCounts[0]?.count || 300;
+                      const percent = Math.min(100, Math.max(12, Math.round((cat.count / maxCount) * 100)));
+                      return (
+                        <div
+                          key={cat.name}
+                          className={`${styles.barRow} ${getCategoryToneClass(cat.name as CommunityCategory)}`}
+                        >
+                          <span className={styles.barName} title={cat.name}>
+                            {getCategoryOutlineIcon(cat.name as CommunityCategory, styles.catIcon)}
+                            <span>{cat.name}</span>
                           </span>
-                          <span>{cat.name}</span>
-                        </span>
-
-                        <div className={styles.categoryProgressBarBg}>
-                          <div
-                            className={styles.categoryProgressBarFill}
-                            style={{ width: `${percent}%` }}
-                          />
+                          <span className={styles.barTrack}>
+                            <span className={styles.barFill} style={{ width: `${percent}%` }} />
+                          </span>
+                          <span className={styles.barCount}>{cat.count}</span>
                         </div>
-
-                        <span className={styles.categoryRowCount}>{cat.count} posts</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </div>
             </div>
@@ -4246,7 +3329,7 @@ export default function LearningCommunityPage() {
         </div>
       )}
 
-      {/* 6. Interactive Community Stats Detail Popovers */}
+      {/* Stat detail popovers */}
       {activeStatPopup === "MEMBERS" && (
         <div
           className={styles.statPopoverOverlay}
@@ -4255,47 +3338,32 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="stat-members-title"
         >
-          <div
-            className={styles.statPopoverCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.statPopoverHeader}>
-              <div className={styles.statPopoverHeaderLeft}>
-                <div className={styles.statPopoverIcon} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 id="stat-members-title" className={styles.statPopoverTitle}>Community Members</h3>
-                  <p className={styles.statPopoverSub}>TechnoCAT Aspirant Network</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className={styles.statPopoverCloseBtn}
-                onClick={() => setActiveStatPopup(null)}
-                aria-label="Close members detail"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+          <div className={styles.statPopoverCard} onClick={(e) => e.stopPropagation()}>
+            {renderStatPopoverHeader(
+              "stat-members-title",
+              "Community members",
+              "TechnoCAT aspirant network",
+              "var(--data-blue)",
+              "Close members detail"
+            )}
 
-            <div className={styles.statPopoverBody}>
-              <div className={styles.statHighlightBox}>
-                <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.members : (isDemo ? "2.4K" : "0")}</span>
-                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`}>
-                    {isDemo ? "▲ +14.2% this month" : "Live Registered"}
+            <div className={`${styles.statPopoverBody} ${styles.statPopupContent}`}>
+              <div className={styles.highlight}>
+                <div className={styles.highlightRow}>
+                  <span className={styles.highlightNumber}>
+                    {data ? data.stats.members : isDemo ? "2.4K" : "0"}
+                  </span>
+                  <span className={`${styles.trendBadge} ${styles.trendGreen}`}>
+                    {isDemo ? (
+                      <>
+                        <TrendingUp size={13} aria-hidden="true" /> +14.2% this month
+                      </>
+                    ) : (
+                      "Registered"
+                    )}
                   </span>
                 </div>
-                <p className={styles.statHighlightDesc}>
+                <p className={styles.highlightDesc}>
                   {isDemo
                     ? "Community members across TechnoCAT actively preparing for CAT & OMETs."
                     : "Verified student accounts currently registered in the TechnoCAT community."}
@@ -4303,18 +3371,18 @@ export default function LearningCommunityPage() {
               </div>
 
               {isDemo ? (
-                <div className={styles.statSectionBlock}>
-                  <h4 className={styles.statSectionHeading}>30-Day Growth Trend</h4>
-                  <div className={styles.miniTrendChartWrap}>
-                    <svg viewBox="0 0 320 80" className={styles.miniTrendChartSvg} aria-label="30-day membership growth chart">
+                <div className={styles.statBlock}>
+                  <h4 className={styles.statBlockTitle}>30-day growth trend</h4>
+                  <div className={styles.miniChart}>
+                    <svg viewBox="0 0 320 80" className={styles.miniChartSvg} aria-label="30-day membership growth chart">
                       <defs>
                         <linearGradient id="membersTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <line x1="10" y1="20" x2="310" y2="20" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                      <line x1="10" y1="50" x2="310" y2="50" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                      <line x1="10" y1="20" x2="310" y2="20" stroke="#e4e9f2" strokeWidth="1" strokeDasharray="3 4" />
+                      <line x1="10" y1="50" x2="310" y2="50" stroke="#e4e9f2" strokeWidth="1" strokeDasharray="3 4" />
                       <path
                         d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14 L 305 75 L 15 75 Z"
                         fill="url(#membersTrendGrad)"
@@ -4322,78 +3390,62 @@ export default function LearningCommunityPage() {
                       <path
                         d="M 15 65 L 55 58 L 105 52 L 155 45 L 205 38 L 255 24 L 305 14"
                         fill="none"
-                        stroke="#2563EB"
-                        strokeWidth="2.6"
+                        stroke="#3b82f6"
+                        strokeWidth="2.4"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
-                      <circle cx="15" cy="65" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                      <circle cx="155" cy="45" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                      <circle cx="305" cy="14" r="4" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2.5" />
+                      <circle cx="15" cy="65" r="3" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                      <circle cx="155" cy="45" r="3" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                      <circle cx="305" cy="14" r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2.5" />
                     </svg>
-                    <div className={styles.miniTrendLabels}>
+                    <div className={styles.miniChartLabels}>
                       <span>Sep 01 (1,840)</span>
                       <span>Mid-Sep (2.1K)</span>
-                      <span style={{ color: "#2563EB", fontWeight: 700 }}>Today ({data ? data.stats.members : "2.4K"})</span>
+                      <span className={styles.miniChartNow}>Today ({data ? data.stats.members : "2.4K"})</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className={styles.statSectionBlock}>
-                  <h4 className={styles.statSectionHeading}>Membership Status</h4>
-                  <div style={{ padding: "14px 16px", background: "#F8FAFC", borderRadius: "10px", border: "1px solid #E2E8F0" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E293B" }}>Active Accounts</span>
-                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#2563EB" }}>{data ? data.stats.members : "0"} Aspirants</span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: "12px", color: "#64748B", lineHeight: 1.4 }}>
-                      Verified in real-time from the database profile directory.
-                    </p>
+                <div className={styles.statBlock}>
+                  <h4 className={styles.statBlockTitle}>Membership status</h4>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoRowLabel}>Active accounts</span>
+                    <span className={styles.infoRowValue}>
+                      <span className={styles.mono}>{data ? data.stats.members : "0"}</span> aspirants
+                    </span>
                   </div>
                 </div>
               )}
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Engagement Highlights</h4>
-                <div className={styles.statChipsRow}>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" />
-                    </svg>
-                    <span><strong>{isDemo ? "480+" : (data ? data.stats.members : "1")}</strong> {isDemo ? "active this week" : "enrolled"}</span>
-                  </div>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    <span><strong>{isDemo ? "85%" : "100%"}</strong> CAT 2026 Target</span>
-                  </div>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                    </svg>
-                    <span><strong>99+</strong> %ile mentors</span>
-                  </div>
+              <div className={styles.statBlock}>
+                <h4 className={styles.statBlockTitle}>Engagement highlights</h4>
+                <div className={styles.factChips}>
+                  <span className={styles.factChip}>
+                    <Users size={14} className={styles.iconBlue} aria-hidden="true" />
+                    <strong className={styles.mono}>{isDemo ? "480+" : data ? data.stats.members : "0"}</strong>
+                    {isDemo ? "active this week" : "enrolled"}
+                  </span>
+                  {isDemo && (
+                    <>
+                      <span className={styles.factChip}>
+                        <Target size={14} className={styles.iconViolet} aria-hidden="true" />
+                        <strong className={styles.mono}>85%</strong> CAT 2026 target
+                      </span>
+                      <span className={styles.factChip}>
+                        <GraduationCap size={14} className={styles.iconTeal} aria-hidden="true" />
+                        <strong className={styles.mono}>99+</strong> %ile mentors
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Updated live every 15 minutes" : "Synchronized live with database"}</span>
-              <button
-                type="button"
-                className={styles.statPopoverFooterBtn}
-                onClick={() => {
-                  setActiveStatPopup(null);
-                  setIsStatsDrawerOpen(true);
-                }}
-              >
-                Full Community Overview &rarr;
-              </button>
-            </div>
+            {renderStatPopoverFooter(
+              isDemo ? "Updated every 15 minutes" : "Synchronised with the database",
+              "Full community overview"
+            )}
           </div>
         </div>
       )}
@@ -4406,51 +3458,39 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="stat-discussions-title"
         >
-          <div
-            className={styles.statPopoverCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.statPopoverHeader}>
-              <div className={styles.statPopoverHeaderLeft}>
-                <div className={styles.statPopoverIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 id="stat-discussions-title" className={styles.statPopoverTitle}>Total Discussions</h3>
-                  <p className={styles.statPopoverSub}>Threads, Doubts &amp; Debates</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className={styles.statPopoverCloseBtn}
-                onClick={() => setActiveStatPopup(null)}
-                aria-label="Close discussions detail"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+          <div className={styles.statPopoverCard} onClick={(e) => e.stopPropagation()}>
+            {renderStatPopoverHeader(
+              "stat-discussions-title",
+              "Total discussions",
+              "Threads, doubts & debates",
+              "var(--data-teal)",
+              "Close discussions detail"
+            )}
 
-            <div className={styles.statPopoverBody}>
-              <div className={styles.statHighlightBox}>
-                <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.discussions : (isDemo ? "1.2K" : "0")}</span>
-                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeBlue}`}>
-                    {isDemo ? "▲ +18 this week" : "Live Discussions"}
+            <div className={`${styles.statPopoverBody} ${styles.statPopupContent}`}>
+              <div className={styles.highlight}>
+                <div className={styles.highlightRow}>
+                  <span className={styles.highlightNumber}>
+                    {data ? data.stats.discussions : isDemo ? "1.2K" : "0"}
+                  </span>
+                  <span className={`${styles.trendBadge} ${styles.trendBlue}`}>
+                    {isDemo ? (
+                      <>
+                        <TrendingUp size={13} aria-hidden="true" /> +18 this week
+                      </>
+                    ) : (
+                      "Live discussions"
+                    )}
                   </span>
                 </div>
-                <p className={styles.statHighlightDesc}>
-                  Peer discussions, strategy blueprints, and mock test analysis across categories.
+                <p className={styles.highlightDesc}>
+                  Peer discussions, strategy plans and mock analysis across categories.
                 </p>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Top Discussion Topics</h4>
-                <div className={styles.topicDistList}>
+              <div className={styles.statBlock}>
+                <h4 className={styles.statBlockTitle}>Top discussion topics</h4>
+                <div className={styles.barList}>
                   {(isDemo
                     ? [
                         { name: "CAT Strategy", count: 410, percent: 35 },
@@ -4465,82 +3505,48 @@ export default function LearningCommunityPage() {
                         percent: posts.length > 0 ? Math.round((cat.count / posts.length) * 100) : 0,
                       }))
                   ).map((topic) => (
-                    <div key={topic.name} className={styles.topicDistRow}>
-                      <span className={styles.topicDistName} title={topic.name} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                        {topic.name === "CAT Strategy" ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                          </svg>
-                        ) : topic.name === "Doubt Solving" ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                          </svg>
-                        ) : topic.name === "Study Resources" ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                          </svg>
-                        ) : topic.name === "Mocks & Analysis" ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <line x1="18" y1="20" x2="18" y2="10" />
-                            <line x1="12" y1="20" x2="12" y2="4" />
-                            <line x1="6" y1="20" x2="6" y2="14" />
-                          </svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
-                        )}
+                    <div
+                      key={topic.name}
+                      className={`${styles.barRow} ${getCategoryToneClass(topic.name as CommunityCategory)}`}
+                    >
+                      <span className={styles.barName} title={topic.name}>
+                        {getCategoryOutlineIcon(topic.name as CommunityCategory, styles.catIcon)}
                         <span>{topic.name}</span>
                       </span>
-                      <div className={styles.topicDistBarBg}>
-                        <div
-                          className={styles.topicDistBarFill}
-                          style={{ width: `${Math.max(4, topic.percent * 2.8)}%` }}
+                      <span className={styles.barTrack}>
+                        <span
+                          className={styles.barFill}
+                          style={{ width: `${Math.min(100, Math.max(4, topic.percent * 2.8))}%` }}
                         />
-                      </div>
-                      <span className={styles.topicDistCount}>{topic.count} posts</span>
+                      </span>
+                      <span className={styles.barCount}>{topic.count}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Response Velocity</h4>
-                <div className={styles.statChipsRow}>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                    </svg>
-                    <span><strong>{isDemo ? "95%" : "Active"}</strong> {isDemo ? "answered in < 4 hours" : "Question Response Rate"}</span>
-                  </div>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span><strong>{isDemo ? "4.2" : (data?.stats.solutions || "0")}</strong> {isDemo ? "replies per thread" : "Total Community Replies"}</span>
-                  </div>
+              <div className={styles.statBlock}>
+                <h4 className={styles.statBlockTitle}>Response activity</h4>
+                <div className={styles.factChips}>
+                  {isDemo && (
+                    <span className={styles.factChip}>
+                      <Zap size={14} className={styles.iconAmber} aria-hidden="true" />
+                      <strong className={styles.mono}>95%</strong> answered in under 4 hours
+                    </span>
+                  )}
+                  <span className={styles.factChip}>
+                    <MessageCircle size={14} className={styles.iconTeal} aria-hidden="true" />
+                    <strong className={styles.mono}>{isDemo ? "4.2" : data?.stats.solutions || "0"}</strong>
+                    {isDemo ? "replies per thread" : "total community replies"}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Sorted by overall community volume" : "Aggregated from real discussions"}</span>
-              <button
-                type="button"
-                className={styles.statPopoverFooterBtn}
-                onClick={() => {
-                  setActiveStatPopup(null);
-                  setIsStatsDrawerOpen(true);
-                }}
-              >
-                Full Breakdown &rarr;
-              </button>
-            </div>
+            {renderStatPopoverFooter(
+              isDemo ? "Sorted by overall community volume" : "Aggregated from real discussions",
+              "Full breakdown"
+            )}
           </div>
         </div>
       )}
@@ -4553,122 +3559,120 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="stat-solutions-title"
         >
-          <div
-            className={styles.statPopoverCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.statPopoverHeader}>
-              <div className={styles.statPopoverHeaderLeft}>
-                <div className={styles.statPopoverIcon} style={{ background: "#F5F3FF", color: "#7C3AED" }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 id="stat-solutions-title" className={styles.statPopoverTitle}>Solutions Provided</h3>
-                  <p className={styles.statPopoverSub}>Peer &amp; Mentor Problem Solving</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className={styles.statPopoverCloseBtn}
-                onClick={() => setActiveStatPopup(null)}
-                aria-label="Close solutions detail"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+          <div className={styles.statPopoverCard} onClick={(e) => e.stopPropagation()}>
+            {renderStatPopoverHeader(
+              "stat-solutions-title",
+              "Solutions provided",
+              "Peer & mentor problem solving",
+              "var(--data-violet)",
+              "Close solutions detail"
+            )}
 
-            <div className={styles.statPopoverBody}>
-              <div className={styles.statHighlightBox}>
-                <div className={styles.statHighlightNumberRow}>
-                  <span className={styles.statHighlightNumber}>{data ? data.stats.solutions : (isDemo ? "3.1K" : "0")}</span>
-                  <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <span>{isDemo ? "2,820 Verified" : "Peer Verified"}</span>
+            <div className={`${styles.statPopoverBody} ${styles.statPopupContent}`}>
+              <div className={styles.highlight}>
+                <div className={styles.highlightRow}>
+                  <span className={styles.highlightNumber}>
+                    {data ? data.stats.solutions : isDemo ? "3.1K" : "0"}
+                  </span>
+                  <span className={`${styles.trendBadge} ${styles.trendGreen}`}>
+                    <CircleCheck size={13} aria-hidden="true" />
+                    {isDemo ? "2,820 verified" : "Peer replies"}
                   </span>
                 </div>
-                <p className={styles.statHighlightDesc}>
-                  Accepted and peer-validated step-by-step solutions for QA, DILR, and VARC questions.
+                <p className={styles.highlightDesc}>
+                  Step-by-step answers shared by peers for QA, DILR and VARC questions.
                 </p>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Resolution Speed</h4>
-                <div className={styles.speedBarWrap}>
-                  <div className={styles.speedBarTitleRow}>
-                    <span>88% solved in under 2 hours</span>
-                    <span style={{ color: "#10B981" }}>Fast Response</span>
+              {isDemo ? (
+                <>
+                  <div className={styles.statBlock}>
+                    <h4 className={styles.statBlockTitle}>Resolution speed</h4>
+                    <div className={styles.speedHead}>
+                      <span>
+                        <strong className={styles.mono}>88%</strong> solved in under 2 hours
+                      </span>
+                      <span className={styles.speedTag}>Fast response</span>
+                    </div>
+                    <div className={styles.speedBar}>
+                      <span className={styles.speed1} style={{ width: "54%" }} title="< 30 mins (54%)" />
+                      <span className={styles.speed2} style={{ width: "34%" }} title="< 2 hrs (34%)" />
+                      <span className={styles.speed3} style={{ width: "12%" }} title="< 6 hrs (12%)" />
+                    </div>
+                    <div className={styles.speedLegend}>
+                      <span>
+                        <span className={`${styles.dot} ${styles.speed1}`} aria-hidden="true" /> &lt; 30m{" "}
+                        <strong className={styles.mono}>54%</strong>
+                      </span>
+                      <span>
+                        <span className={`${styles.dot} ${styles.speed2}`} aria-hidden="true" /> &lt; 2h{" "}
+                        <strong className={styles.mono}>34%</strong>
+                      </span>
+                      <span>
+                        <span className={`${styles.dot} ${styles.speed3}`} aria-hidden="true" /> &lt; 6h{" "}
+                        <strong className={styles.mono}>12%</strong>
+                      </span>
+                    </div>
                   </div>
-                  <div className={styles.speedBarFillRow}>
-                    <div className={styles.speedSegment1} title="< 30 mins (54%)" />
-                    <div className={styles.speedSegment2} title="< 2 hrs (34%)" />
-                    <div className={styles.speedSegment3} title="< 6 hrs (12%)" />
-                  </div>
-                  <div className={styles.speedLegendRow}>
-                    <span>• &lt; 30m: <strong>54%</strong></span>
-                    <span>• &lt; 2h: <strong>34%</strong></span>
-                    <span>• &lt; 6h: <strong>12%</strong></span>
-                  </div>
-                </div>
-              </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Recent Solved Doubts</h4>
-                <div className={styles.recentSolvedList}>
-                  <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
-                      <span>P&amp;C circular seating with restricted pairs</span>
-                    </span>
-                    <span className={styles.recentSolvedTime}>Solved in 18m</span>
+                  <div className={styles.statBlock}>
+                    <h4 className={styles.statBlockTitle}>Recently solved doubts</h4>
+                    <div className={styles.solvedList}>
+                      {[
+                        { title: "P&C circular seating with restricted pairs", time: "18m", cat: "Doubt Solving" },
+                        { title: "RC inference tone vs author attitude nuance", time: "35m", cat: "Study Resources" },
+                        { title: "DILR matrix missing distribution clue", time: "52m", cat: "Mocks & Analysis" },
+                      ].map((item) => (
+                        <div key={item.title} className={`${styles.solvedItem} ${getCategoryToneClass(item.cat as CommunityCategory)}`}>
+                          <span className={styles.solvedTitle}>
+                            {getCategoryOutlineIcon(item.cat as CommunityCategory, styles.catIcon)}
+                            <span>{item.title}</span>
+                          </span>
+                          <span className={styles.solvedTime}>
+                            <Clock size={12} aria-hidden="true" /> {item.time}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                      </svg>
-                      <span>RC inference tone vs author attitude nuance</span>
-                    </span>
-                    <span className={styles.recentSolvedTime}>Solved in 35m</span>
-                  </div>
-                  <div className={styles.recentSolvedItem}>
-                    <span className={styles.recentSolvedTitle} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <line x1="18" y1="20" x2="18" y2="10" />
-                        <line x1="12" y1="20" x2="12" y2="4" />
-                        <line x1="6" y1="20" x2="6" y2="14" />
-                      </svg>
-                      <span>DILR matrix missing distribution clue</span>
-                    </span>
-                    <span className={styles.recentSolvedTime}>Solved in 52m</span>
-                  </div>
+                </>
+              ) : (
+                <div className={styles.statBlock}>
+                  <h4 className={styles.statBlockTitle}>Most answered discussions</h4>
+                  {mostAnsweredPosts.length === 0 ? (
+                    <p className={styles.footNote}>No answered discussions yet. Reply to a doubt to get things going.</p>
+                  ) : (
+                    <div className={styles.solvedList}>
+                      {mostAnsweredPosts.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={`${styles.solvedItem} ${getCategoryToneClass(p.category)}`}
+                          onClick={() => {
+                            setActiveStatPopup(null);
+                            setActivePostId(p.id);
+                            setReplyingToCommentId(null);
+                          }}
+                        >
+                          <span className={styles.solvedTitle}>
+                            {getCategoryOutlineIcon(p.category, styles.catIcon)}
+                            <span>{p.title}</span>
+                          </span>
+                          <span className={styles.solvedTime}>
+                            <MessageCircle size={12} aria-hidden="true" /> {p.commentsCount}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Verified by top scorers & mentors" : "Peer validated step-by-step solutions"}</span>
-              <button
-                type="button"
-                className={styles.statPopoverFooterBtn}
-                onClick={() => {
-                  setActiveStatPopup(null);
-                  setIsStatsDrawerOpen(true);
-                }}
-              >
-                View Activity History &rarr;
-              </button>
-            </div>
+            {renderStatPopoverFooter(
+              isDemo ? "Verified by top scorers & mentors" : "Counted from community replies",
+              "View activity history"
+            )}
           </div>
         </div>
       )}
@@ -4681,142 +3685,103 @@ export default function LearningCommunityPage() {
           aria-modal="true"
           aria-labelledby="stat-helpful-title"
         >
-          <div
-            className={styles.statPopoverCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.statPopoverHeader}>
-              <div className={styles.statPopoverHeaderLeft}>
-                <div className={styles.statPopoverIcon} style={{ background: "#FFFBEB", color: "#D97706" }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                    <polyline points="17 6 23 6 23 12" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 id="stat-helpful-title" className={styles.statPopoverTitle}>Helpful Rate</h3>
-                  <p className={styles.statPopoverSub}>Quality &amp; Satisfaction Benchmark</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className={styles.statPopoverCloseBtn}
-                onClick={() => setActiveStatPopup(null)}
-                aria-label="Close helpful rate detail"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+          <div className={styles.statPopoverCard} onClick={(e) => e.stopPropagation()}>
+            {renderStatPopoverHeader(
+              "stat-helpful-title",
+              "Helpful rate",
+              "Quality benchmark",
+              "var(--data-amber)",
+              "Close helpful rate detail"
+            )}
 
-            <div className={styles.statPopoverBody}>
-              <div className={styles.helpfulRateDonutCard}>
-                <div className={styles.donutSvgWrap}>
-                  <svg viewBox="0 0 100 100" className={styles.donutSvg} aria-label="Helpful rate donut ring 92%">
+            <div className={`${styles.statPopoverBody} ${styles.statPopupContent}`}>
+              <div className={styles.donutCard}>
+                <div className={styles.donutWrap}>
+                  <svg viewBox="0 0 100 100" className={styles.donutSvg} aria-label={`Helpful rate ${helpfulPercent}%`}>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#eef2f8" strokeWidth="10" />
                     <circle
                       cx="50"
                       cy="50"
                       r="40"
                       fill="none"
-                      stroke="#F1F5F9"
-                      strokeWidth="10"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke="url(#donutGrad)"
+                      stroke="var(--data-emerald)"
                       strokeWidth="10"
                       strokeLinecap="round"
                       strokeDasharray="251.3"
-                      strokeDashoffset="20.1"
+                      strokeDashoffset={251.3 * (1 - helpfulPercent / 100)}
                     />
-                    <defs>
-                      <linearGradient id="donutGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#10B981" />
-                        <stop offset="100%" stopColor="#059669" />
-                      </linearGradient>
-                    </defs>
                   </svg>
-                  <div className={styles.donutCenterText}>
-                    <span className={styles.donutPercent}>{data ? data.stats.helpfulRate : (isDemo ? "92%" : "100%")}</span>
+                  <div className={styles.donutCenter}>
+                    <span className={styles.donutValue}>
+                      {data ? data.stats.helpfulRate : isDemo ? "92%" : "100%"}
+                    </span>
                     <span className={styles.donutLabel}>Helpful</span>
                   </div>
                 </div>
 
-                <div className={styles.helpfulRateInfoSide}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span className={styles.helpfulRateScore}>Rating Score</span>
-                    <span className={`${styles.statGrowthBadge} ${styles.statGrowthBadgeGreen}`} style={{ padding: "2px 8px", fontSize: "11px" }}>
-                      {isDemo ? "▲ +3.4%" : "Live Verified"}
-                    </span>
-                  </div>
-                  <p className={styles.helpfulRateDesc}>
+                <div className={styles.donutInfo}>
+                  <span className={`${styles.trendBadge} ${styles.trendGreen}`}>
+                    {isDemo ? (
+                      <>
+                        <TrendingUp size={13} aria-hidden="true" /> +3.4%
+                      </>
+                    ) : (
+                      "Live"
+                    )}
+                  </span>
+                  <p className={styles.highlightDesc}>
                     {isDemo
-                      ? "Positive feedback indicator compared to last month's baseline."
-                      : "Ratio of helpful responses and upvoted doubt solutions across questions."}
+                      ? "Positive feedback compared with last month's baseline."
+                      : "Ratio of helpful responses and upvoted solutions across questions."}
                   </p>
                 </div>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>What This Metric Means</h4>
-                <div className={styles.statHighlightBox} style={{ background: "#F0FDF4", borderColor: "#DCFCE7" }}>
-                  <p className={styles.statHighlightDesc} style={{ color: "#166534" }}>
-                    The <strong>Helpful Rate</strong> measures the percentage of CAT questions that receive verified answers, peer upvotes, or explicit thank-you confirmations from the student who asked.
-                  </p>
-                </div>
+              <div className={styles.statBlock}>
+                <h4 className={styles.statBlockTitle}>What this metric means</h4>
+                <p className={styles.noteBox}>
+                  The <strong>helpful rate</strong> measures the percentage of CAT questions that receive answers,
+                  peer upvotes, or a thank-you from the student who asked.
+                </p>
               </div>
 
-              <div className={styles.statSectionBlock}>
-                <h4 className={styles.statSectionHeading}>Satisfaction Metrics</h4>
-                <div className={styles.statChipsRow}>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    <span><strong>{isDemo ? "4.8 / 5.0" : "5.0 / 5.0"}</strong> community rating</span>
-                  </div>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                    </svg>
-                    <span><strong>{data ? data.stats.helpfulRate : "100%"}</strong> positive response</span>
-                  </div>
-                  <div className={styles.statChip}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    <span><strong>0</strong> flagged answers</span>
-                  </div>
+              <div className={styles.statBlock}>
+                <h4 className={styles.statBlockTitle}>Satisfaction</h4>
+                <div className={styles.factChips}>
+                  {isDemo && (
+                    <span className={styles.factChip}>
+                      <Star size={14} className={styles.iconAmber} aria-hidden="true" />
+                      <strong className={styles.mono}>4.8 / 5.0</strong> community rating
+                    </span>
+                  )}
+                  <span className={styles.factChip}>
+                    <ThumbsUp size={14} className={styles.iconTeal} aria-hidden="true" />
+                    <strong className={styles.mono}>{data ? data.stats.helpfulRate : "100%"}</strong> positive response
+                  </span>
+                  {isDemo && (
+                    <span className={styles.factChip}>
+                      <ShieldCheck size={14} className={styles.iconBlue} aria-hidden="true" />
+                      <strong className={styles.mono}>0</strong> flagged answers
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className={styles.statPopoverFooter}>
-              <span style={{ fontSize: "12px", color: "#64748B" }}>{isDemo ? "Based on 3,400+ peer ratings" : "Calculated from peer votes & responses"}</span>
-              <button
-                type="button"
-                className={styles.statPopoverFooterBtn}
-                onClick={() => {
-                  setActiveStatPopup(null);
-                  setIsStatsDrawerOpen(true);
-                }}
-              >
-                View Full Report &rarr;
-              </button>
-            </div>
+            {renderStatPopoverFooter(
+              isDemo ? "Based on 3,400+ peer ratings" : "Calculated from peer votes & responses",
+              "View full report"
+            )}
           </div>
         </div>
       )}
 
-      {/* Toast Notification */}
-      {toastMessage && <div className={styles.toastBanner}>{toastMessage}</div>}
+      {toastMessage && (
+        <div className={styles.toast} role="status" aria-live="polite">
+          <CircleCheck size={17} aria-hidden="true" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

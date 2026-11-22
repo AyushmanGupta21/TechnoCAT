@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { Check, CircleHelp, Clock, Eraser, Expand, Lightbulb, Lock, RotateCcw, Send, Target, X } from "lucide-react";
 import { QuizQuestion } from "@/data/videoPortions";
 import { MathText } from "@/components/pyq/PYQMarkdownViewer";
 import styles from "./VideoAskPanel.module.css";
@@ -128,17 +129,7 @@ function FormattedText({
                 : `Click to jump video to ${firstTime}`
             }
           >
-            {locked ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="4" y="11" width="16" height="10" rx="2" />
-                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-              </svg>
-            ) : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            )}
+            {locked ? <Lock size={11} strokeWidth={2.5} aria-hidden="true" /> : <Clock size={11} strokeWidth={2.5} aria-hidden="true" />}
             {match[0].replace(/[[\]⏱️]/g, "").trim()}
           </button>
         );
@@ -202,13 +193,13 @@ function FormattedText({
     }
 
     if (!trimmed) {
-      blocks.push(<div key={key} style={{ height: "6px" }} />);
+      blocks.push(<div key={key} className={styles.spacer} />);
       return;
     }
 
     // Horizontal rule: ---, ***, ___
     if (/^([-*_])(\s*\1){2,}$/.test(trimmed)) {
-      blocks.push(<hr key={key} style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />);
+      blocks.push(<hr key={key} className={styles.rule} />);
       return;
     }
 
@@ -217,15 +208,7 @@ function FormattedText({
       const level = heading[1].length;
       const Tag = level <= 2 ? "h3" : level === 3 ? "h4" : "h5";
       blocks.push(
-        <Tag
-          key={key}
-          style={{
-            fontSize: level <= 2 ? "15px" : level === 3 ? "14px" : "13.5px",
-            fontWeight: "700",
-            color: "#111827",
-            margin: "10px 0 4px",
-          }}
-        >
+        <Tag key={key} className={level <= 2 ? styles.mdH2 : level === 3 ? styles.mdH3 : styles.mdH4}>
           {renderLine(heading[2], key)}
         </Tag>
       );
@@ -240,11 +223,11 @@ function FormattedText({
       const indentWidth = (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, "    ").length;
       const depth = Math.min(3, Math.floor(indentWidth / 2));
       blocks.push(
-        <div key={key} style={{ display: "flex", gap: "8px", marginBottom: "5px", marginLeft: depth * 14 }}>
-          <span style={{ color: "#ED1C24", fontWeight: "700", flexShrink: 0 }}>
+        <div key={key} className={styles.listRow} style={{ marginLeft: depth * 14 }}>
+          <span className={numbered ? styles.listNum : styles.listBullet}>
             {numbered ? `${numbered[1]}.` : depth > 0 ? "◦" : "•"}
           </span>
-          <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>
+          <span className={styles.listText}>
             {renderLine(numbered ? numbered[2] : bullet![1], key)}
           </span>
         </div>
@@ -253,13 +236,13 @@ function FormattedText({
     }
 
     blocks.push(
-      <p key={key} style={{ margin: "0 0 6px 0", overflowWrap: "anywhere" }}>
+      <p key={key} className={styles.para}>
         {renderLine(body, key)}
       </p>
     );
   });
 
-  return <div style={{ lineHeight: "1.6", fontSize: "13.5px" }}>{blocks}</div>;
+  return <div className={styles.markdown}>{blocks}</div>;
 }
 
 // Interactive Multiple-Choice Quiz Block (TechnoEEE pattern)
@@ -295,39 +278,23 @@ function InteractiveQuizBlock({
     <div className={styles.quizContainer}>
       <div className={styles.quizHeader}>
         <div className={styles.quizTitle}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ED1C24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
+          <CircleHelp size={15} aria-hidden="true" />
           <span>{quiz.title}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className={styles.quizHeaderRight}>
           {onLaunchFullQuiz && (
             <button
               type="button"
               onClick={onLaunchFullQuiz}
-              title="Launch full-screen TechnoEEE Quiz Viewer"
-              style={{
-                padding: "3px 8px",
-                background: "linear-gradient(135deg, #0D9488, #059669)",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "11px",
-                fontWeight: "700",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "3px",
-              }}
+              title="Open this quiz full screen"
+              className={styles.fullScreenBtn}
             >
-              <span>Full Screen</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              <span>Full screen</span>
+              <Expand size={12} aria-hidden="true" />
             </button>
           )}
           <span className={styles.quizQuestionCount}>
-            {answeredCount}/{quiz.questions.length} Answered
+            {answeredCount}/{quiz.questions.length} answered
           </span>
         </div>
       </div>
@@ -372,14 +339,9 @@ function InteractiveQuizBlock({
                     >
                       <span className={badgeClass}>
                         {hasAnswered && isCorrect ? (
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                          <Check size={11} strokeWidth={3} aria-hidden="true" />
                         ) : hasAnswered && isSelected && !isCorrect ? (
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
+                          <X size={11} strokeWidth={3} aria-hidden="true" />
                         ) : (
                           optionLetters[oIdx]
                         )}
@@ -403,16 +365,16 @@ function InteractiveQuizBlock({
       {isComplete && (
         <div className={styles.scoreBanner}>
           <div className={styles.scoreText}>
-            Quiz Completed! You scored <strong>{score}</strong> / {quiz.questions.length} ({Math.round((score / quiz.questions.length) * 100)}%)
+            Quiz complete. You scored <strong>{score}</strong>/{quiz.questions.length} (
+            <strong>{Math.round((score / quiz.questions.length) * 100)}%</strong>)
           </div>
           <button
             type="button"
             className={styles.retakeBtn}
             onClick={handleReset}
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>Retake Quiz</span>
+            <RotateCcw size={13} aria-hidden="true" />
+            <span>Retake quiz</span>
           </button>
         </div>
       )}
@@ -519,20 +481,12 @@ export default function VideoAskPanel({
       {/* Header */}
       <div className={styles.panelHeader}>
         <div className={styles.headerLeft}>
-          <div className={styles.aiIconBadge}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-              <rect width="16" height="12" x="4" y="8" rx="2" />
-              <line x1="2" y1="14" x2="4" y2="14" />
-              <line x1="20" y1="14" x2="22" y2="14" />
-              <line x1="15" y1="13" x2="15" y2="13" />
-              <line x1="9" y1="13" x2="9" y2="13" />
-            </svg>
-          </div>
-          <div>
-            <h3 className={styles.headerTitle}>Ask AI Tutor (Video RAG & Quiz)</h3>
+          <span className={styles.aiIconBadge} aria-hidden="true" />
+          <div className={styles.headerText}>
+            <h3 className={styles.headerTitle}>Ask the AI tutor</h3>
             <p className={styles.headerSubtitle}>
-              Grounded in {lessonCode ? `${lessonCode}: ` : ""}{lessonTitle}
+              Answers grounded in{" "}
+              {lessonCode && <span className={styles.headerCode}>{lessonCode}</span>} {lessonTitle}
             </p>
           </div>
         </div>
@@ -550,7 +504,8 @@ export default function VideoAskPanel({
           }
           className={styles.clearChatBtn}
         >
-          Clear Chat
+          <Eraser size={14} aria-hidden="true" />
+          Clear chat
         </button>
       </div>
 
@@ -565,11 +520,11 @@ export default function VideoAskPanel({
             disabled={loading}
           >
             {chip.includes("quiz") ? (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              <Target size={14} aria-hidden="true" />
             ) : chip.includes("timestamp") ? (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <Clock size={14} aria-hidden="true" />
             ) : (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+              <Lightbulb size={14} aria-hidden="true" />
             )}
             <span>{chip}</span>
           </button>
@@ -639,20 +594,19 @@ export default function VideoAskPanel({
           type="text"
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
-          placeholder={`Ask AI about ${lessonTitle}, request timestamps, or ask for a quiz...`}
+          placeholder={`Ask about ${lessonTitle}, request timestamps or a quiz...`}
           className={styles.chatInput}
           disabled={loading}
+          aria-label="Ask the AI tutor"
         />
         <button
           type="submit"
           disabled={!inputQuery.trim() || loading}
           className={styles.sendBtn}
           title="Send message"
+          aria-label="Send message"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
+          <Send size={17} aria-hidden="true" />
         </button>
       </form>
     </div>

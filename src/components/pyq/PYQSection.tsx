@@ -4,7 +4,11 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { PYQ_YEARS } from "@/data/pyqData";
 import { useAuth } from "@/context/AuthContext";
 import PYQYearModal from "./PYQYearModal";
+import { ArrowRight, Lock } from "lucide-react";
+import { RevealGroup, RevealItem } from "@/components/landing/motion";
 import styles from "./PYQSection.module.css";
+
+const YEAR_TINTS = ["blue", "teal", "violet", "amber", "coral"] as const;
 
 interface PYQSectionProps {
   onSelectTopicCategory?: (cat: string) => void;
@@ -108,116 +112,112 @@ export default function PYQSection({ onSelectTopicCategory }: PYQSectionProps) {
       <div className={styles.sectionHeaderRow}>
         <div>
           <div className={styles.headerBadgesRow}>
-            <div className={styles.pillBadge}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-              Official CAT Full Mocks &amp; Archives
-            </div>
+            <span className={styles.pillBadge}>Full mocks &amp; past papers</span>
             {unvisitedNewCount > 0 && (
               <span className={styles.headerNewPill}>
                 <span className={styles.newDot} aria-hidden="true" />
-                {unvisitedNewCount} New {unvisitedNewCount === 1 ? "Paper" : "Papers"} Added (2017–2023)
+                <span className={styles.mono}>{unvisitedNewCount}</span> new {unvisitedNewCount === 1 ? "paper" : "papers"} added (2017–2023)
               </span>
             )}
           </div>
-          <h2 className={styles.sectionTitle}>TechnoCAT Full Mocks &amp; Previous Year Papers</h2>
+          <h2 className={styles.sectionTitle}>
+            TechnoCAT full mocks &amp; <span className="text-gradient">previous year papers</span>
+          </h2>
           <p className={styles.sectionSubtitle}>
-            Practice with authentic CAT question papers from 2017 to 2024. Read step-by-step solutions or test your percentile in timed exam simulations.
+            Authentic CAT papers from 2017 to 2024 — read step-by-step solutions or sit a timed, proctored attempt.
           </p>
         </div>
       </div>
 
-      <div className={styles.pyqGrid}>
-        {PYQ_YEARS.map((y) => {
+      <RevealGroup className={styles.pyqGrid}>
+        {PYQ_YEARS.map((y, idx) => {
           const isAvailable = y.available;
           const showNewBanner = hydrated && isAvailable && Boolean(y.isNew) && !visitedYearSet.has(y.year);
           const totalSections = y.slots.length * y.sections.length;
+          const tint = isAvailable ? YEAR_TINTS[idx % YEAR_TINTS.length] : "blue";
+          const taglineLead = y.tagline.split("•")[0].trim();
 
           return (
-            <div
-              key={y.year}
-              className={`${styles.pyqCard} ${!isAvailable ? styles.pyqCardDisabled : ""} ${showNewBanner ? styles.pyqCardNew : ""}`}
-              onClick={() => {
-                if (isAvailable) openYearModal(y.year);
-              }}
-            >
-              {/* Card Banner */}
-              <div
-                className={styles.cardBanner}
-                style={{
-                  background: isAvailable
-                    ? "linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)"
-                    : "linear-gradient(135deg, #334155 0%, #475569 100%)",
+            <RevealItem key={y.year} className={styles.gridItem}>
+              <article
+                className={`${styles.pyqCard} ${!isAvailable ? styles.pyqCardDisabled : ""} ${showNewBanner ? styles.pyqCardNew : ""}`}
+                data-tint={tint}
+                onClick={() => {
+                  if (isAvailable) openYearModal(y.year);
                 }}
               >
-                <div className={styles.cardBannerOverlay} />
-                <div className={styles.yearWatermark}>{y.year}</div>
-
-                <div className={styles.bannerTopRow}>
-                  <div className={styles.bannerTopLeft}>
+                <div className={styles.cardBanner}>
+                  <span className={styles.yearWatermark} aria-hidden="true">{y.year}</span>
+                  <div className={styles.bannerTopRow}>
                     <span className={`${styles.statusPill} ${isAvailable ? styles.pillActive : styles.pillDisabled}`}>
                       {y.badge}
                     </span>
                     {showNewBanner && (
                       <span className={styles.newBanner}>
                         <span className={styles.newDot} aria-hidden="true" />
-                        NEW
+                        New
+                      </span>
+                    )}
+                    {isAvailable && (
+                      <span className={styles.slotsPill}>
+                        <strong>{y.slots.length}</strong> slots
+                        <span className={styles.sep} aria-hidden="true" />
+                        <strong>{totalSections}</strong> sections
                       </span>
                     )}
                   </div>
-                  {isAvailable && (
-                    <span className={styles.slotsPill}>
-                      {y.slots.length} Slots • {totalSections} Sections
+
+                  <div className={styles.bannerBottom}>
+                    <h3 className={styles.pyqCardYearTitle}>{y.label}</h3>
+                    <span className={styles.questionCountText}>
+                      {isAvailable ? (
+                        <>
+                          <strong>{y.totalQuestions}</strong> questions available
+                        </>
+                      ) : (
+                        "Archival pool"
+                      )}
                     </span>
-                  )}
+                  </div>
                 </div>
 
-                <div className={styles.bannerBottom}>
-                  <h3 className={styles.pyqCardYearTitle}>{y.label}</h3>
-                  <span className={styles.questionCountText}>
-                    {isAvailable ? `${y.totalQuestions} Questions Available` : "Archival Pool"}
-                  </span>
-                </div>
-              </div>
+                <div className={styles.cardBody}>
+                  <p className={styles.cardDesc}>
+                    {taglineLead}. VARC, DILR and QA with step-by-step solutions.
+                  </p>
 
-              {/* Card Body */}
-              <div className={styles.cardBody}>
-                <p className={styles.cardDesc}>
-                  {y.tagline}. Includes VARC, DILR, and Quantitative Ability with step-by-step video aligned explanations.
-                </p>
+                  <div className={styles.sectionPillsRow}>
+                    <span className={styles.subPill} data-sec="VARC">VARC</span>
+                    <span className={styles.subPill} data-sec="DILR">DILR</span>
+                    <span className={styles.subPill} data-sec="QUANT">QA</span>
+                  </div>
 
-                <div className={styles.sectionPillsRow}>
-                  <span className={styles.subPill}>VARC</span>
-                  <span className={styles.subPill}>DILR</span>
-                  <span className={styles.subPill}>QUANT</span>
+                  <div className={styles.cardFooter}>
+                    {isAvailable ? (
+                      <button
+                        type="button"
+                        className={styles.exploreBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openYearModal(y.year);
+                        }}
+                      >
+                        <span>Explore {y.year} papers</span>
+                        <ArrowRight size={16} aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button type="button" className={styles.comingSoonBtn} disabled>
+                        <Lock size={14} aria-hidden="true" />
+                        <span>Coming soon</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                <div className={styles.cardFooter}>
-                  {isAvailable ? (
-                    <button
-                      type="button"
-                      className={styles.exploreBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openYearModal(y.year);
-                      }}
-                    >
-                      <span>Explore {y.year} PYQs</span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
-                    </button>
-                  ) : (
-                    <button type="button" className={styles.comingSoonBtn} disabled>
-                      <span>Coming Soon</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+              </article>
+            </RevealItem>
           );
         })}
-      </div>
+      </RevealGroup>
 
       {/* Year Modal */}
       {selectedYear && (

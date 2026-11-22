@@ -12,6 +12,20 @@ import {
   SECTION_METADATA,
 } from "@/data/pyqData";
 import PYQMarkdownViewer, { MathText } from "./PYQMarkdownViewer";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileX,
+  Lightbulb,
+  Play,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import styles from "./PYQStudyModal.module.css";
 
 const OPTION_LETTERS = ["A", "B", "C", "D", "E"];
@@ -147,31 +161,17 @@ export default function PYQStudyModal({
     return createPortal(
       <div className={styles.overlay} onClick={onClose}>
         <div
-          className={styles.modalBox}
-          style={{ maxWidth: 440, margin: "auto", textAlign: "center", padding: "32px 24px" }}
+          className={`${styles.modalBox} ${styles.emptyBox}`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div style={{ fontSize: 36, marginBottom: 16 }}>📋</div>
-          <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--foreground, #0f172a)", marginBottom: 8 }}>
-            No Questions Available
-          </h3>
-          <p style={{ color: "#64748b", fontSize: "0.88rem", lineHeight: 1.5, marginBottom: 24 }}>
-            CAT {year} ({slot} &bull; {section}) does not have archived questions. CAT exams prior to 2020 were conducted in 2 slots only.
+          <span className={styles.emptyIcon} aria-hidden="true">
+            <FileX size={22} />
+          </span>
+          <h3 className={styles.emptyTitle}>No questions available</h3>
+          <p className={styles.emptyText}>
+            CAT {year} ({slot} · {section}) has no archived questions. CAT exams before 2020 ran in 2 slots only.
           </p>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              padding: "10px 24px",
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              cursor: "pointer",
-            }}
-          >
+          <button type="button" onClick={onClose} className={styles.emptyBtn}>
             Close
           </button>
         </div>
@@ -207,26 +207,24 @@ export default function PYQStudyModal({
       onCopy={(e) => e.preventDefault()}
       onCut={(e) => e.preventDefault()}
     >
-      <div className={styles.modalBox}>
+      <div className={styles.modalBox} data-sec={section}>
         {/* Anti-screenshot & Tab Switching Blur Overlay */}
         {isBlurred && (
           <div className={styles.blurredContainer}>
             <div className={styles.blurShieldIcon}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
+              <ShieldCheck size={28} aria-hidden="true" />
             </div>
-            <h3 className={styles.blurTitle}>Content Hidden for Security</h3>
+            <h3 className={styles.blurTitle}>Content hidden</h3>
             <p className={styles.blurSubtitle}>
-              Official CAT exam materials are strictly protected. Content is masked during window focus loss or screen capture attempts.
+              Official CAT material is protected. It&rsquo;s masked whenever the window loses focus or a screen capture is attempted.
             </p>
             <button
               type="button"
               className={styles.resumeBtn}
               onClick={() => setIsBlurred(false)}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span>Resume Reading</span>
+              <Eye size={16} aria-hidden="true" />
+              <span>Resume reading</span>
             </button>
           </div>
         )}
@@ -238,39 +236,43 @@ export default function PYQStudyModal({
               type="button"
               className={styles.backBtn}
               onClick={onClose}
-              title="Back to Papers List"
+              title="Back to papers"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
+              <ArrowLeft size={16} aria-hidden="true" />
               <span>Back</span>
             </button>
-            <div className={styles.studyBadge}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
-              <span>Study Mode</span>
+            <div className={styles.headerText}>
+              <div className={styles.studyBadge}>
+                <span className={styles.secMarker} aria-hidden="true" />
+                <span>Study mode</span>
+              </div>
+              <h2 className={styles.headerTitle}>
+                CAT {year} · {slot} · {sectionMeta?.title || section}
+              </h2>
             </div>
-            <h2 className={styles.headerTitle}>
-              CAT {year} • {slot} • {sectionMeta?.title || section}
-            </h2>
           </div>
 
           <div className={styles.headerRight}>
             <span className={styles.progressInfo}>
-              Question <strong>{currentIdx + 1}</strong> of <strong>{questions.length}</strong>
+              <strong>{String(currentIdx + 1).padStart(2, "0")}</strong>
+              <span>/ {questions.length}</span>
             </span>
             <button
               type="button"
               className={styles.closeBtn}
               onClick={onClose}
-              title="Close Study Mode (Progress is automatically saved)"
+              title="Close study mode (progress is saved automatically)"
+              aria-label="Close study mode"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              <span>Close Study</span>
+              <X size={16} aria-hidden="true" />
+              <span>Close</span>
             </button>
           </div>
+        </div>
+
+        {/* Progress hairline */}
+        <div className={styles.progressTrack} aria-hidden="true">
+          <span style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }} />
         </div>
 
         {/* Main Split Layout */}
@@ -278,7 +280,9 @@ export default function PYQStudyModal({
           {/* Left Sidebar Navigator */}
           <aside className={styles.sidebar}>
             <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarTitle}>Questions ({questions.length})</div>
+              <div className={styles.sidebarTitle}>
+                Questions <span>{questions.length}</span>
+              </div>
               <div className={styles.filterChips}>
                 <button
                   type="button"
@@ -309,20 +313,26 @@ export default function PYQStudyModal({
                 const origIdx = questions.findIndex((item) => item.id === q.id);
                 const isActive = origIdx === currentIdx;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={q.id}
                     className={`${styles.qListItem} ${isActive ? styles.qListItemActive : ""}`}
                     onClick={() => setCurrentIdx(origIdx)}
+                    aria-current={isActive ? "true" : undefined}
+                    title={`Question ${q.question_number} · ${q.type}`}
                   >
-                    <div className={styles.qListLeft}>
-                      <span className={styles.qListNumber}>Q{q.question_number}</span>
-                    </div>
+                    <span className={styles.qListNumber}>{q.question_number}</span>
                     <span className={`${styles.qListType} ${q.type === "MCQ" ? styles.typeMCQ : styles.typeTITA}`}>
                       {q.type}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
+            </div>
+
+            <div className={styles.legend}>
+              <span><i className={styles.legendMcq} /> MCQ</span>
+              <span><i className={styles.legendTita} /> TITA</span>
             </div>
           </aside>
 
@@ -332,11 +342,8 @@ export default function PYQStudyModal({
             {currentQ.context && (
               <div className={styles.passageBlock}>
                 <div className={styles.passageHeader}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                  </svg>
-                  <span>Reading Passage / Data Context</span>
+                  <BookOpen size={15} aria-hidden="true" />
+                  <span>Passage / data set</span>
                 </div>
                 <div className={styles.passageBody}>
                   <PYQMarkdownViewer content={currentQ.context} />
@@ -347,21 +354,13 @@ export default function PYQStudyModal({
             {/* Question Meta */}
             <div className={styles.qMetaRow}>
               <div className={styles.qTagGroup}>
-                <span className={styles.qNumBadge}>Question {currentQ.question_number}</span>
-                <span className={`${styles.qListType} ${isTITA ? styles.typeTITA : styles.typeMCQ}`} style={{ fontSize: "12px", padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                  {isTITA ? (
-                    <>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
-                      <span>TITA (Type In The Answer)</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
-                      <span>Multiple Choice (MCQ)</span>
-                    </>
-                  )}
+                <span className={styles.qNumBadge}>Q{currentQ.question_number}</span>
+                <span className={`${styles.qTypeTag} ${isTITA ? styles.typeTITA : styles.typeMCQ}`}>
+                  {isTITA ? "TITA · type in the answer" : "MCQ · multiple choice"}
                 </span>
-                <span className={styles.qConceptBadge}>Concept: {recommendation?.concept}</span>
+                {recommendation?.concept && (
+                  <span className={styles.qConceptBadge}>{recommendation.concept}</span>
+                )}
               </div>
             </div>
 
@@ -386,8 +385,8 @@ export default function PYQStudyModal({
                       </div>
                       {isCorrect && (
                         <span className={styles.correctTag}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12"/></svg>
-                          <span>Correct Option</span>
+                          <Check size={13} strokeWidth={3} aria-hidden="true" />
+                          <span>Correct</span>
                         </span>
                       )}
                     </div>
@@ -397,29 +396,29 @@ export default function PYQStudyModal({
             ) : (
               <div className={styles.titaAnswerBox}>
                 <div className={styles.titaAnswerLeft}>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#166534", display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Official Correct Answer:</span>
+                  <span className={styles.titaAnswerLabel}>
+                    <Check size={14} strokeWidth={3} aria-hidden="true" />
+                    <span>Official answer</span>
                   </span>
-                  <span className={styles.titaAnswerVal}><MathText text={titaCleanAnswer || "Key-in Answer"} /></span>
+                  <span className={styles.titaAnswerVal}><MathText text={titaCleanAnswer || "Key-in answer"} /></span>
                 </div>
-                <span style={{ fontSize: "12px", color: "#15803d", fontWeight: 600 }}>
-                  (No Negative Marks in CAT for TITA)
+                <span className={styles.titaAnswerNote}>
+                  No negative marking for TITA
                 </span>
               </div>
             )}
 
             {/* Curriculum Lesson Recommendation */}
             {recommendation && (
-              <div className={styles.recBanner}>
+              <div className={`glass-card ${styles.recBanner}`} data-tint="teal">
                 <div className={styles.recLeft}>
                   <span className={styles.recHeading}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                    <span>TechnoCAT Curriculum Alignment:</span>
+                    <Play size={13} aria-hidden="true" />
+                    <span>Related lesson</span>
                   </span>
                   <span className={styles.recTitle}>{recommendation.lessonTitle}</span>
                   <span className={styles.recSubtitle}>
-                    Topic: {recommendation.topicTitle} • Master the core theory and shortcuts
+                    {recommendation.topicTitle} · core theory and shortcuts
                   </span>
                 </div>
                 <button
@@ -427,7 +426,8 @@ export default function PYQStudyModal({
                   className={styles.recActionBtn}
                   onClick={handleGoToLesson}
                 >
-                  Watch Lesson Video →
+                  Watch lesson
+                  <ArrowRight size={15} aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -435,12 +435,8 @@ export default function PYQStudyModal({
             {/* Step-by-Step Explanation */}
             <div className={styles.explanationBox}>
               <div className={styles.explanationTitle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
-                </svg>
-                <span>Comprehensive Step-by-Step Solution:</span>
+                <Lightbulb size={16} aria-hidden="true" />
+                <span>Step-by-step solution</span>
               </div>
               <div className={styles.explanationText}>
                 <PYQMarkdownViewer content={currentQ.explanation} />
@@ -457,7 +453,8 @@ export default function PYQStudyModal({
             onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
             disabled={currentIdx === 0}
           >
-            ← Previous Question
+            <ChevronLeft size={16} aria-hidden="true" />
+            Previous
           </button>
 
           <button
@@ -466,7 +463,8 @@ export default function PYQStudyModal({
             onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
             disabled={currentIdx === questions.length - 1}
           >
-            Next Question →
+            Next
+            <ChevronRight size={16} aria-hidden="true" />
           </button>
         </div>
       </div>

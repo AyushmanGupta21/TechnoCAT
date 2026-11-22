@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Compass, PlayCircle } from "lucide-react";
 import type { StudentMetrics, TopicProgressMetrics } from "@/lib/metrics/types";
 import { getTopicById, type Lesson, type Topic } from "@/data/topicsData";
 import styles from "./ContinueLearningWidget.module.css";
@@ -56,12 +57,7 @@ function pickActiveTopic(topics: TopicProgressMetrics[]): TopicProgressMetrics |
   return [...pool].sort((a, b) => b.studySeconds - a.studySeconds || b.progressPercent - a.progressPercent)[0];
 }
 
-const ArrowIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12"></line>
-    <polyline points="12 5 19 12 12 19"></polyline>
-  </svg>
-);
+const ArrowIcon = () => <ArrowRight size={18} strokeWidth={2.25} aria-hidden="true" data-arrow />;
 
 export default function ContinueLearningWidget({ metrics, isLoading = false }: ContinueLearningProps) {
   const router = useRouter();
@@ -102,14 +98,12 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
 
   if (isLoading || (!metrics && progressRows === null)) {
     return (
-      <div className={styles.widgetBox}>
+      <section className={`glass-card ${styles.widgetBox}`} data-tint="blue">
         <div className={styles.widgetHeader}>
-          <div className={styles.titleArea}>
-            <h2 className={styles.title}>Continue Learning</h2>
-          </div>
+          <h2 className={styles.title}>Continue learning</h2>
         </div>
         <p className={styles.courseMeta}>Loading your courses…</p>
-      </div>
+      </section>
     );
   }
 
@@ -122,20 +116,14 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
     if (active.studySeconds > 0) metaParts.push(`${formatStudy(active.studySeconds)} studied`);
 
     return (
-      <div className={styles.widgetBox}>
+      <section className={`glass-card ${styles.widgetBox}`} data-tint="blue">
         <div className={styles.widgetHeader}>
-          <div className={styles.titleArea}>
-            <div className={styles.titleIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            </div>
-            <h2 className={styles.title}>
-              {started ? "Continue Where You Left Off" : "Start Your Enrolled Course"}
-            </h2>
-          </div>
-          <span className={styles.activeBadge}>
-            {finished ? "Completed" : started ? "In Progress" : "Enrolled"}
+          <h2 className={styles.title}>
+            <PlayCircle size={18} strokeWidth={2} aria-hidden="true" className={styles.titleIcon} />
+            {started ? "Continue where you left off" : "Start your enrolled course"}
+          </h2>
+          <span className={`${styles.activeBadge} ${finished ? styles.badgeDone : ""}`}>
+            {finished ? "Completed" : started ? "In progress" : "Enrolled"}
           </span>
         </div>
 
@@ -147,10 +135,10 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
             )}
             <div className={styles.courseInfo}>
               <p className={styles.courseCategory}>
-                {topic ? `${topic.category} • ${topic.codePrefix}` : active.section ?? "Course"}
+                {topic ? `${topic.category} · ${topic.codePrefix}` : active.section ?? "Course"}
               </p>
               <h3 className={styles.courseTitle}>{topic?.shortTitle ?? active.title}</h3>
-              <p className={styles.courseMeta}>{metaParts.join(" • ")}</p>
+              <p className={styles.courseMeta}>{metaParts.join(" · ")}</p>
               <div className={styles.progressContainer}>
                 <div className={styles.progressTrack}>
                   <div className={styles.progressFill} style={{ width: `${percent}%` }} />
@@ -159,14 +147,12 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
               </div>
               {otherTopics.length > 0 && (
                 <p className={styles.otherTopics}>
-                  Also enrolled:{" "}
-                  {otherTopics.map((t, i) => (
-                    <React.Fragment key={t.topicId}>
-                      {i > 0 && ", "}
-                      <button type="button" className={styles.otherTopicLink} onClick={() => router.push(`/topics/${t.topicId}`)}>
-                        {getTopicById(t.topicId)?.shortTitle ?? t.title} ({Math.round(t.progressPercent)}%)
-                      </button>
-                    </React.Fragment>
+                  <span className={styles.otherLabel}>Also enrolled</span>
+                  {otherTopics.map((t) => (
+                    <button key={t.topicId} type="button" className={styles.otherTopicLink} onClick={() => router.push(`/topics/${t.topicId}`)}>
+                      {getTopicById(t.topicId)?.shortTitle ?? t.title}
+                      <span className={styles.otherPct}>{Math.round(t.progressPercent)}%</span>
+                    </button>
                   ))}
                 </p>
               )}
@@ -175,7 +161,7 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
 
           <div className={styles.rightSection}>
             <div className={styles.nextUpBox}>
-              <span className={styles.nextUpLabel}>{finished ? "All lessons done" : "Up Next"}</span>
+              <span className={styles.nextUpLabel}>{finished ? "All lessons done" : "Up next"}</span>
               <span className={styles.nextUpTitle}>
                 {finished
                   ? "Take the Grand Quiz for this topic"
@@ -187,35 +173,30 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
               </span>
             </div>
             <button className={styles.resumeBtn} onClick={() => router.push(url)}>
-              <span>{finished ? "Open Course" : started ? "Resume Course" : "Start Course"}</span>
+              <span>{finished ? "Open course" : started ? "Resume course" : "Start course"}</span>
               <ArrowIcon />
             </button>
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   // No enrolled topics yet (or metrics unavailable): onboarding state
   return (
-    <div className={styles.widgetBox}>
+    <section className={`glass-card ${styles.widgetBox}`} data-tint="blue">
       <div className={styles.widgetHeader}>
-        <div className={styles.titleArea}>
-          <div className={styles.titleIcon}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="12 8 8 12 12 16 16 12 12 8" />
-            </svg>
-          </div>
-          <h2 className={styles.title}>{metrics ? "Start Your CAT Preparation" : "Continue Learning"}</h2>
-        </div>
-        {metrics && <span className={styles.starterBadge}>Ready to Begin</span>}
+        <h2 className={styles.title}>
+          <Compass size={18} strokeWidth={2} aria-hidden="true" className={styles.titleIcon} />
+          {metrics ? "Start your CAT preparation" : "Continue learning"}
+        </h2>
+        {metrics && <span className={styles.activeBadge}>Ready to begin</span>}
       </div>
 
       <div className={styles.courseCard}>
         <div className={styles.leftSection}>
           <div className={styles.courseInfo}>
-            <p className={styles.courseCategory}>CAT Syllabus: QA, DILR &amp; VARC</p>
+            <p className={styles.courseCategory}>CAT syllabus: QA, DILR &amp; VARC</p>
             <h3 className={styles.courseTitle}>
               {metrics ? "You haven't enrolled in any CAT topic yet" : "Your courses could not be loaded right now"}
             </h3>
@@ -230,14 +211,14 @@ export default function ContinueLearningWidget({ metrics, isLoading = false }: C
         <div className={styles.rightSection}>
           <div className={styles.nextUpBox}>
             <span className={styles.nextUpLabel}>Step 1</span>
-            <span className={styles.nextUpTitle}>{metrics ? "Explore Courses & Modules" : "Open My Topics"}</span>
+            <span className={styles.nextUpTitle}>{metrics ? "Explore courses and modules" : "Open My Topics"}</span>
           </div>
           <button className={styles.resumeBtn} onClick={() => router.push(metrics ? "/browse" : "/topics")}>
-            <span>{metrics ? "Browse Courses" : "My Topics"}</span>
+            <span>{metrics ? "Browse courses" : "My topics"}</span>
             <ArrowIcon />
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

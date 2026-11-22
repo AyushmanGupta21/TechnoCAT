@@ -364,7 +364,7 @@ export default function AiFeedbackLoop() {
               className={styles.bubbleAi}
               initial={{ opacity: 0, y: reduce ? 0 : 10 }}
               animate={rv ? { opacity: 1, y: 0 } : { opacity: 0, y: reduce ? 0 : 10 }}
-              transition={{ duration: 0.5, ease: EASE_OUT, delay: reduce ? 0.2 : 1.9 }}
+              transition={{ duration: 0.5, ease: EASE_OUT, delay: reduce ? 0.8 : 1.9 }}
             >
               <span className={styles.bubbleName}>Chat tutor</span>
               Notice that (x+2) and (x−3) are inversely proportional. Set their product to a constant k, then…

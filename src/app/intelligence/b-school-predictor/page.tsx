@@ -2,9 +2,31 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BookOpen,
+  Briefcase,
+  ChevronRight,
+  Crosshair,
+  Gauge,
+  GraduationCap,
+  Info,
+  Layers,
+  Lightbulb,
+  Save,
+  ShieldCheck,
+  Star,
+  Target,
+  TrendingUp,
+  Trophy,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 import styles from "./b-school-predictor.module.css";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
-import BrandLogo from "@/components/BrandLogo";
+import AppNav from "@/components/app/AppNav";
+import BackLink from "@/components/app/BackLink";
+import { Reveal, RevealGroup, RevealItem, GradientText } from "@/components/landing/motion";
 import {
   CandidateProfile,
   evaluateBSchoolChances,
@@ -505,12 +527,6 @@ export default function BSchoolPredictorPage() {
     return true;
   });
 
-  const getChancePillClass = (tier: string) => {
-    if (tier === "Safe") return `${styles.chancePill} ${styles.chanceSafe}`;
-    if (tier === "Target") return `${styles.chancePill} ${styles.chanceTarget}`;
-    return `${styles.chancePill} ${styles.chanceDream}`;
-  };
-
   const schoolAdvice = (item: PredictionResult): string => {
     if (!profile || !projections) return "";
     if (item.chanceTier === "Safe") return "The model places this school in your Safe zone at your current inputs.";
@@ -521,163 +537,90 @@ export default function BSchoolPredictorPage() {
     return `The model doesn't reach the Safe zone below ${MAX_PERCENTILE_SWEEP} %ile with your current academics and work experience.`;
   };
 
+  const tierClass = (tier: Tier) => (tier === "Safe" ? styles.tierSafe : tier === "Target" ? styles.tierTarget : styles.tierDream);
+  const tierIcon = (tier: Tier) =>
+    tier === "Safe" ? <ShieldCheck size={13} aria-hidden="true" /> : tier === "Target" ? <Crosshair size={13} aria-hidden="true" /> : <Star size={13} aria-hidden="true" />;
+  const rankOf = (item: PredictionResult) => results.indexOf(item) + 1;
+
   return (
-    <div className={styles.pageWrapper}>
-      {/* Sticky App Header */}
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="B-School Predictor Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+    <div className={styles.page}>
+      <AppNav />
 
-            <div className={styles.navLinks}>
-              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-              <Link href="/browse" className={styles.navLink}>Browse</Link>
-              <Link href="/topics" className={styles.navLink}>My Topics</Link>
-              <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
-              <Link href="/mock-viva-prep" className={styles.navLink}>Speak & Assess</Link>
+      <main className={styles.main}>
+        {/* Page header */}
+        <Reveal className={styles.head}>
+          <BackLink href="/intelligence" label="Back to Intelligence Hub" />
+          <div className={styles.headRow}>
+            <div className={styles.headText}>
+              <h1 className={styles.title}>
+                Your target B-schools, <GradientText>projected</GradientText>
+              </h1>
+              <p className={styles.lede}>
+                You don&apos;t have an official CAT score yet, and that&apos;s okay. Enter your academics and a CAT percentile
+                (estimated from your PYQ section scores when available, or your own target) and the predictor applies each
+                institute&apos;s published cutoffs and shortlisting weights to estimate your call chances. These are model
+                estimates, not guarantees.
+              </p>
             </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* Breadcrumb */}
-      <div className={styles.breadcrumb}>
-        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>B-School Predictor &amp; Admission Engine</span>
-      </div>
-
-      {/* Hero Section */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroBadge}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
-            <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
-          </svg>
-          COMPOSITE SCORE &amp; ADMISSION ENGINE
-        </div>
-        <h1 className={styles.heroTitle}>
-          Your Target B-Schools, <span>Projected from Your Journey.</span>
-        </h1>
-        <p className={styles.heroSubtitle}>
-          You don&apos;t have an official CAT score yet — and that&apos;s okay. Enter your academics and a CAT percentile
-          (estimated from your PYQ section scores when available, or your own target) and the predictor applies each
-          institute&apos;s published cutoffs and shortlisting weights to estimate your call chances. These are model
-          estimates, not guarantees.
-        </p>
-
-        {/* Estimated percentile banner (from /api/me/metrics) */}
-        <div className={styles.projectionBanner}>
-          <div className={styles.bannerText}>
-            <span className={styles.bannerSparkle}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
-            </span>
-            {metricsStatus === "loading" ? (
-              <span>Loading your estimated percentile…</span>
-            ) : estimate !== null ? (
-              <span>
-                From your latest PYQ section scores
-                {metrics?.percentile?.overallScore !== null && metrics?.percentile?.overallScore !== undefined
-                  ? ` (${metrics.percentile.overallScore} marks overall)`
-                  : ""}
-                , your <strong>Estimated</strong> CAT percentile is{" "}
-                <span className={styles.bannerHighlight}>{fmtPct(estimate)} %ile</span>
-                <span className={styles.bannerDisclaimer}>{percentileDisclaimer}</span>
-              </span>
-            ) : metricsStatus === "ok" ? (
-              <span>
-                No estimated percentile yet — attempt a PYQ in all three sections (VARC, DILR, QA) to get one.
-                Until then, enter a target or expected percentile below.
-              </span>
-            ) : metricsStatus === "unauthorized" ? (
-              <span>Sign in to see a percentile estimated from your PYQ scores. Meanwhile, enter a target percentile below.</span>
-            ) : (
-              <span>We couldn&apos;t load your estimated percentile right now. Enter a target percentile below.</span>
-            )}
           </div>
-          <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>
-            Edit the percentile below to test &apos;What-If&apos; score goals.
-          </span>
-        </div>
-      </section>
 
-      {/* Main Container */}
-      <main className={styles.container}>
-        {/* Split Grid: Inputs vs Dynamic Gauge */}
+          {/* Estimated percentile banner (from /api/me/metrics) */}
+          <div className={`glass-card ${styles.banner}`} data-tint="blue">
+            <Target size={18} className={styles.bannerIcon} aria-hidden="true" />
+            <div className={styles.bannerText}>
+              {metricsStatus === "loading" ? (
+                <span>Loading your estimated percentile…</span>
+              ) : estimate !== null ? (
+                <span>
+                  From your latest PYQ section scores
+                  {metrics?.percentile?.overallScore !== null && metrics?.percentile?.overallScore !== undefined
+                    ? ` (${metrics.percentile.overallScore} marks overall)`
+                    : ""}
+                  , your <strong>estimated</strong> CAT percentile is{" "}
+                  <span className={styles.bannerHighlight}>{fmtPct(estimate)} %ile</span>
+                  <span className={styles.bannerDisclaimer}>{percentileDisclaimer}</span>
+                </span>
+              ) : metricsStatus === "ok" ? (
+                <span>
+                  No estimated percentile yet. Attempt a PYQ in all three sections (VARC, DILR, QA) to get one.
+                  Until then, enter a target or expected percentile below.
+                </span>
+              ) : metricsStatus === "unauthorized" ? (
+                <span>Sign in to see a percentile estimated from your PYQ scores. Meanwhile, enter a target percentile below.</span>
+              ) : (
+                <span>We couldn&apos;t load your estimated percentile right now. Enter a target percentile below.</span>
+              )}
+            </div>
+            <span className={styles.bannerHint}>Edit the percentile below to test what-if score goals.</span>
+          </div>
+        </Reveal>
+
+        {/* Split grid: inputs vs summary */}
         <div className={styles.splitGrid}>
-          {/* Left Panel: Candidate Credentials & CAT Target */}
-          <div className={`${styles.card} ${styles.credentialsCard}`}>
-            {/* Decorative Top Header */}
-            <div className={styles.leftCardHeader}>
-              <div className={styles.leftHeaderMain}>
-                <div className={styles.headerIconBox} aria-hidden="true">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 3L1 8.5L12 14L21 9.5V16H23V8.5L12 3Z"
-                      fill="#2563EB"
-                    />
-                    <path
-                      d="M5 12.2V16.8C5 18.8 8.1 20.5 12 20.5C15.9 20.5 19 18.8 19 16.8V12.2L12 15.7L5 12.2Z"
-                      fill="#38BDF8"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className={styles.cardTitle}>
-                    Candidate Credentials <span className={styles.titleAccent}>&amp; CAT Target</span>
-                  </h2>
-                  <p className={styles.cardSubtitle}>
-                    {!loaded
-                      ? "Loading your saved profile…"
-                      : profileStatus === "unauthorized"
-                      ? "Fill in your academics and category. Sign in to save them to your profile."
-                      : "Fill in your academics and category once — we save them to your profile."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Decorative Corner Illustration & Floating Callout */}
-              <div className={styles.cornerDecor} aria-hidden="true">
-                <div className={styles.cornerTargetGraphic}>
-                  <svg width="54" height="54" viewBox="0 0 64 64" fill="none">
-                    <circle cx="34" cy="30" r="22" fill="#DBEAFE" />
-                    <circle cx="34" cy="30" r="16" fill="#3B82F6" />
-                    <circle cx="34" cy="30" r="10" fill="#FFFFFF" />
-                    <circle cx="34" cy="30" r="5" fill="#1D4ED8" />
-                    <path
-                      d="M46 18L58 6M58 6H50M58 6V14"
-                      stroke="#1D4ED8"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className={styles.cornerFloatingTag}>
-                  <span>Set your profile</span>
-                  <small>Get personalized predictions</small>
-                </div>
-              </div>
+          {/* Left: candidate credentials & CAT target */}
+          <Reveal className={`glass-card ${styles.formCard}`} data-tint="blue">
+            <div className={styles.cardHead}>
+              <h2 className={styles.cardTitle}>Candidate credentials <span className={styles.titleMuted}>&amp; CAT target</span></h2>
+              <p className={styles.cardSub}>
+                {!loaded
+                  ? "Loading your saved profile…"
+                  : profileStatus === "unauthorized"
+                  ? "Fill in your academics and category. Sign in to save them to your profile."
+                  : "Fill in your academics and category once; we save them to your profile."}
+              </p>
             </div>
 
-            {/* Percentile Box */}
-            <div className={styles.percentileSectionBox}>
+            {/* Percentile */}
+            <div className={styles.rangeBox}>
               <div className={styles.labelRow}>
                 <span className={styles.labelWithInfo}>
-                  {showingEstimate ? "Estimated CAT Percentile" : "Target / Expected CAT Percentile"}
-                  <span
-                    className={styles.infoIconCircle}
-                    title="Change the percentile to test how different CAT outcomes affect the model's estimates"
-                  >
-                    i
+                  <Gauge size={16} aria-hidden="true" style={{ color: "#3B82F6" }} />
+                  {showingEstimate ? "Estimated CAT percentile" : "Target / expected CAT percentile"}
+                  <span className={styles.infoIcon} title="Change the percentile to test how different CAT outcomes affect the model's estimates">
+                    <Info size={14} aria-hidden="true" />
                   </span>
                 </span>
-                <span className={styles.valueInputPill}>
+                <span className={styles.valuePill}>
                   <input
                     type="number"
                     min="0"
@@ -694,7 +637,7 @@ export default function BSchoolPredictorPage() {
                 </span>
               </div>
 
-              <div className={styles.sliderTrackWrapper}>
+              <div className={styles.sliderWrap}>
                 <input
                   type="range"
                   min="50"
@@ -705,11 +648,11 @@ export default function BSchoolPredictorPage() {
                   aria-label="CAT percentile slider"
                   className={styles.slider}
                   style={{
-                    background: `linear-gradient(90deg, #2563EB 0%, #0EA5E9 ${percentileSliderFill}%, #E2E8F0 ${percentileSliderFill}%, #E2E8F0 100%)`,
+                    background: `linear-gradient(90deg, #2556E0 0%, #06B6D4 ${percentileSliderFill}%, #E4E9F2 ${percentileSliderFill}%, #E4E9F2 100%)`,
                   }}
                   onChange={(e) => updateField("percentile", e.target.value)}
                 />
-                <div className={styles.sliderScaleRow}>
+                <div className={styles.sliderScale}>
                   <span>50</span>
                   <span>60</span>
                   <span>70</span>
@@ -728,7 +671,7 @@ export default function BSchoolPredictorPage() {
                     </>
                   ) : estimate !== null ? (
                     <>
-                      Testing a what-if percentile. Your Estimated percentile from PYQs is {fmtPct(estimate)}.{" "}
+                      Testing a what-if percentile. Your estimated percentile from PYQs is {fmtPct(estimate)}.{" "}
                       <button
                         type="button"
                         className={styles.linkBtn}
@@ -747,197 +690,126 @@ export default function BSchoolPredictorPage() {
                   ) : percentileSource === "saved" && savedTarget !== null ? (
                     <>Your saved target percentile. Edit it any time.</>
                   ) : (
-                    <>Your target percentile — this is your input, not an estimate.</>
+                    <>Your target percentile. This is your input, not an estimate.</>
                   )}
                 </div>
               )}
             </div>
 
-            {/* 2-Column Profile Inputs Grid */}
-            <div className={styles.credentialsFieldsGrid}>
-              {/* 1. Reservation Category */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Reservation Category</span>
-                  <select
-                    className={styles.selectField}
-                    value={form.category}
+            {/* Profile inputs */}
+            <div className={styles.fieldsGrid}>
+              <label className={styles.field}>
+                <span className={styles.label}><Users size={15} aria-hidden="true" />Reservation category</span>
+                <select
+                  className={styles.control}
+                  value={form.category}
+                  disabled={!loaded}
+                  onChange={(e) => updateField("category", e.target.value as Category | "")}
+                >
+                  <option value="">Select category</option>
+                  <option value="GENERAL">General (Open)</option>
+                  <option value="NC_OBC">NC-OBC</option>
+                  <option value="EWS">EWS</option>
+                  <option value="SC">SC</option>
+                  <option value="ST">ST</option>
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.label}><UserRound size={15} aria-hidden="true" />Gender diversity</span>
+                <select
+                  className={styles.control}
+                  value={form.gender}
+                  disabled={!loaded}
+                  onChange={(e) => updateField("gender", e.target.value as Gender | "")}
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female (+Gender Diversity Points)</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.label}><BookOpen size={15} aria-hidden="true" />Class 10th score (%)</span>
+                <span className={styles.controlWrap}>
+                  <input
+                    type="number"
+                    min="30"
+                    max="100"
+                    step="any"
+                    placeholder="Enter %"
+                    className={styles.controlInput}
+                    value={form.tenth}
                     disabled={!loaded}
-                    onChange={(e) => updateField("category", e.target.value as Category | "")}
-                  >
-                    <option value="">Select category</option>
-                    <option value="GENERAL">General (Open)</option>
-                    <option value="NC_OBC">NC-OBC</option>
-                    <option value="EWS">EWS</option>
-                    <option value="SC">SC</option>
-                    <option value="ST">ST</option>
-                  </select>
-                </div>
-              </div>
+                    onChange={(e) => updateField("tenth", e.target.value)}
+                  />
+                  <span className={styles.suffix}>/ 100</span>
+                </span>
+              </label>
 
-              {/* 2. Gender Diversity */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="10" cy="11" r="5" />
-                    <path d="M13.5 7.5L19 2" />
-                    <path d="M15 2h4v4" />
-                    <path d="M10 16v6" />
-                    <path d="M7 19h6" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Gender Diversity</span>
-                  <select
-                    className={styles.selectField}
-                    value={form.gender}
+              <label className={styles.field}>
+                <span className={styles.label}><BookOpen size={15} aria-hidden="true" />Class 12th score (%)</span>
+                <span className={styles.controlWrap}>
+                  <input
+                    type="number"
+                    min="30"
+                    max="100"
+                    step="any"
+                    placeholder="Enter %"
+                    className={styles.controlInput}
+                    value={form.twelfth}
                     disabled={!loaded}
-                    onChange={(e) => updateField("gender", e.target.value as Gender | "")}
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female (+Gender Diversity Points)</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
+                    onChange={(e) => updateField("twelfth", e.target.value)}
+                  />
+                  <span className={styles.suffix}>/ 100</span>
+                </span>
+              </label>
 
-              {/* 3. Class 10th Score (%) */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    <path d="M9 7h6" />
-                    <path d="M9 11h4" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Class 10th Score (%)</span>
-                  <div className={styles.percentInputBox}>
-                    <input
-                      type="number"
-                      min="30"
-                      max="100"
-                      step="any"
-                      placeholder="Enter %"
-                      className={styles.inputFieldClean}
-                      value={form.tenth}
-                      disabled={!loaded}
-                      onChange={(e) => updateField("tenth", e.target.value)}
-                    />
-                    <span className={styles.percentSuffix}>/ 100</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Class 12th Score (%) */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Class 12th Score (%)</span>
-                  <div className={styles.percentInputBox}>
-                    <input
-                      type="number"
-                      min="30"
-                      max="100"
-                      step="any"
-                      placeholder="Enter %"
-                      className={styles.inputFieldClean}
-                      value={form.twelfth}
-                      disabled={!loaded}
-                      onChange={(e) => updateField("twelfth", e.target.value)}
-                    />
-                    <span className={styles.percentSuffix}>/ 100</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. Graduation Score (%) */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 10L12 5 2 10l10 5 10-5z" />
-                    <path d="M6 12v5c0 2 3 3.5 6 3.5s6-1.5 6-3.5v-5" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Graduation Score (%)</span>
-                  <div className={styles.percentInputBox}>
-                    <input
-                      type="number"
-                      min="30"
-                      max="100"
-                      step="any"
-                      placeholder="Enter %"
-                      className={styles.inputFieldClean}
-                      value={form.grad}
-                      disabled={!loaded}
-                      onChange={(e) => updateField("grad", e.target.value)}
-                    />
-                    <span className={styles.percentSuffix}>/ 100</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 6. Academic Stream */}
-              <div className={styles.fieldCard}>
-                <div className={styles.fieldCardIcon} aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="5" r="2.5" />
-                    <circle cx="6" cy="19" r="2.5" />
-                    <circle cx="18" cy="19" r="2.5" />
-                    <path d="M12 7.5v4.5M12 12L6 16.5M12 12l6 4.5" />
-                  </svg>
-                </div>
-                <div className={styles.fieldCardBody}>
-                  <span className={styles.label}>Academic Stream</span>
-                  <select
-                    className={styles.selectField}
-                    value={form.gradDiscipline}
+              <label className={styles.field}>
+                <span className={styles.label}><GraduationCap size={15} aria-hidden="true" />Graduation score (%)</span>
+                <span className={styles.controlWrap}>
+                  <input
+                    type="number"
+                    min="30"
+                    max="100"
+                    step="any"
+                    placeholder="Enter %"
+                    className={styles.controlInput}
+                    value={form.grad}
                     disabled={!loaded}
-                    onChange={(e) => updateField("gradDiscipline", e.target.value as Discipline | "")}
-                  >
-                    <option value="">Select stream</option>
-                    <option value="Engineering">Engineering (B.Tech / B.E)</option>
-                    <option value="Non-Engineering">Non-Engineering (B.Com/B.Sc/BBA/BA)</option>
-                  </select>
-                </div>
-              </div>
+                    onChange={(e) => updateField("grad", e.target.value)}
+                  />
+                  <span className={styles.suffix}>/ 100</span>
+                </span>
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.label}><Layers size={15} aria-hidden="true" />Academic stream</span>
+                <select
+                  className={styles.control}
+                  value={form.gradDiscipline}
+                  disabled={!loaded}
+                  onChange={(e) => updateField("gradDiscipline", e.target.value as Discipline | "")}
+                >
+                  <option value="">Select stream</option>
+                  <option value="Engineering">Engineering (B.Tech / B.E)</option>
+                  <option value="Non-Engineering">Non-Engineering (B.Com/B.Sc/BBA/BA)</option>
+                </select>
+              </label>
             </div>
 
-            {/* Work Experience Box */}
-            <div className={styles.workExSectionBox}>
+            {/* Work experience */}
+            <div className={styles.rangeBox}>
               <div className={styles.labelRow}>
                 <span className={styles.labelWithInfo}>
-                  <span className={styles.workExIconBadge} aria-hidden="true">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                    </svg>
-                  </span>
-                  Full-Time Work Experience
-                  <span
-                    className={styles.infoIconCircle}
-                    title="Full-time paid work experience after graduation. Enter 0 if you are a fresher."
-                  >
-                    i
+                  <Briefcase size={16} aria-hidden="true" style={{ color: "#3B82F6" }} />
+                  Full-time work experience
+                  <span className={styles.infoIcon} title="Full-time paid work experience after graduation. Enter 0 if you are a fresher.">
+                    <Info size={14} aria-hidden="true" />
                   </span>
                 </span>
-                <span className={styles.valueInputPill}>
+                <span className={styles.valuePill}>
                   <input
                     type="number"
                     min="0"
@@ -950,11 +822,11 @@ export default function BSchoolPredictorPage() {
                     disabled={!loaded}
                     onChange={(e) => updateField("workEx", e.target.value)}
                   />
-                  Months
+                  months
                 </span>
               </div>
 
-              <div className={styles.sliderTrackWrapper}>
+              <div className={styles.sliderWrap}>
                 <input
                   type="range"
                   min="0"
@@ -965,11 +837,11 @@ export default function BSchoolPredictorPage() {
                   aria-label="Work experience slider"
                   className={styles.slider}
                   style={{
-                    background: `linear-gradient(90deg, #2563EB 0%, #0EA5E9 ${workExSliderFill}%, #DBEAFE ${workExSliderFill}%, #E2E8F0 100%)`,
+                    background: `linear-gradient(90deg, #2556E0 0%, #06B6D4 ${workExSliderFill}%, #E4E9F2 ${workExSliderFill}%, #E4E9F2 100%)`,
                   }}
                   onChange={(e) => updateField("workEx", e.target.value)}
                 />
-                <div className={styles.sliderScaleRow}>
+                <div className={styles.sliderScale}>
                   <span>0</span>
                   <span>12</span>
                   <span>24</span>
@@ -983,108 +855,69 @@ export default function BSchoolPredictorPage() {
               )}
             </div>
 
-            {/* Primary Action Button */}
             <button
               type="button"
-              className={styles.recalcBtn}
+              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnBlock}`}
               onClick={handleSave}
               disabled={!loaded || saveState.kind === "saving"}
             >
-              <span className={styles.recalcBtnIcon} aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="4" y="2" width="16" height="20" rx="2" />
-                  <line x1="8" y1="6" x2="16" y2="6" />
-                  <line x1="8" y1="11" x2="8.01" y2="11" />
-                  <line x1="12" y1="11" x2="12.01" y2="11" />
-                  <line x1="16" y1="11" x2="16.01" y2="11" />
-                  <line x1="8" y1="15" x2="8.01" y2="15" />
-                  <line x1="12" y1="15" x2="12.01" y2="15" />
-                  <line x1="16" y1="15" x2="16.01" y2="15" />
-                </svg>
-              </span>
+              <Save size={17} aria-hidden="true" />
               <span>
                 {saveState.kind === "saving"
                   ? "Saving…"
                   : saveState.kind === "saved"
-                  ? "Profile Saved & Recalculated"
-                  : "Save Profile & Recalculate"}
+                  ? "Profile saved & recalculated"
+                  : "Save profile & recalculate"}
               </span>
-              <span className={styles.recalcBtnArrow} aria-hidden="true">›</span>
             </button>
             {saveState.kind === "error" && (
               <div className={`${styles.saveStatus} ${styles.saveStatusError}`} role="alert">{saveState.message}</div>
             )}
             {saveState.kind === "saved" && (
-              <div className={styles.saveStatus}>Saved to your profile — it will be pre-filled next time.</div>
+              <div className={styles.saveStatus}>Saved to your profile. It will be pre-filled next time.</div>
             )}
-          </div>
+          </Reveal>
 
-          {/* Right Panel: Admission Strength Meter */}
-          <div className={`${styles.card} ${styles.strengthMeterCard} ${recalcPulse ? styles.strengthPulse : ""}`}>
-            <div>
-              {/* Header Row */}
-              <div className={styles.rightCardHeader}>
-                <div className={styles.leftHeaderMain}>
-                  <div className={styles.headerIconBox} aria-hidden="true">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                      <rect x="3" y="13" width="4" height="8" rx="1.2" fill="#3B82F6" />
-                      <rect x="10" y="6" width="4" height="15" rx="1.2" fill="#2563EB" />
-                      <rect x="17" y="10" width="4" height="11" rx="1.2" fill="#0EA5E9" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className={styles.cardTitle}>
-                      Admission <span className={styles.titleAccent}>Strength Meter</span>
-                    </h2>
-                    <p className={styles.cardSubtitle}>
-                      Model estimate across published IIM shortlisting criteria.
-                    </p>
-                  </div>
-                </div>
-
-                <div className={styles.liveAnalysisBadge}>
-                  <span className={styles.liveDot} />
-                  Model Estimate
-                </div>
+          {/* Right: admission strength (featured summary) */}
+          <Reveal delay={0.08} className={`${styles.summaryCard} ${recalcPulse ? styles.summaryPulse : ""}`}>
+            <div className={styles.summaryHead}>
+              <div>
+                <h2 className={styles.summaryTitle}>Admission strength</h2>
+                <p className={styles.summarySub}>Model estimate across published IIM shortlisting criteria.</p>
               </div>
-
-              {!loaded ? (
-                <div className={styles.emptyState}>Loading your profile…</div>
-              ) : !profile || !evaluation ? (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyStateTitle}>Complete your profile to see your admission strength</div>
-                  <p>Still needed:</p>
-                  <ul className={styles.emptyStateList}>
-                    {missing.map((m) => (
-                      <li key={m}>{m}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <StrengthMeter
-                  profile={profile}
-                  evaluation={evaluation}
-                  showingEstimate={showingEstimate}
-                  readinessScore={readinessScore}
-                  metricsStatus={metricsStatus}
-                  counts={counts}
-                  cutoffsCleared={cutoffsCleared}
-                  total={results.length}
-                  projections={projections}
-                />
-              )}
+              <span className={styles.modelBadge}><span className={styles.liveDot} aria-hidden="true" />Model estimate</span>
             </div>
 
-            {/* What-if Box (computed by re-running the engine) */}
+            {!loaded ? (
+              <div className={styles.summaryEmpty}>Loading your profile…</div>
+            ) : !profile || !evaluation ? (
+              <div className={styles.summaryEmpty}>
+                <div className={styles.summaryEmptyTitle}>Complete your profile to see your admission strength</div>
+                <p>Still needed:</p>
+                <ul className={styles.missingList}>
+                  {missing.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <StrengthMeter
+                profile={profile}
+                evaluation={evaluation}
+                showingEstimate={showingEstimate}
+                readinessScore={readinessScore}
+                metricsStatus={metricsStatus}
+                counts={counts}
+                cutoffsCleared={cutoffsCleared}
+                total={results.length}
+                projections={projections}
+              />
+            )}
+
+            {/* What-if (computed by re-running the engine) */}
             {profile && projections?.whatIf && (
-              <div className={styles.whatIfBox}>
-                <div className={styles.whatIfBulb} aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18h6" />
-                    <path d="M10 22h4" />
-                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                  </svg>
-                </div>
+              <div className={styles.whatIf}>
+                <Lightbulb size={18} className={styles.whatIfIcon} aria-hidden="true" />
                 <div className={styles.whatIfText}>
                   <strong>What-if:</strong> at{" "}
                   <strong className={styles.whatIfAccent}>{fmtPct(projections.whatIf.percentile)} %ile</strong> (+
@@ -1102,384 +935,251 @@ export default function BSchoolPredictorPage() {
                       .
                     </>
                   ) : (
-                    <>no school changes tier in the model — your academics and work experience set the limit here.</>
+                    <>no school changes tier in the model; your academics and work experience set the limit here.</>
                   )}
                   {projections.whatIf.marksDelta !== null && (
                     <span className={styles.whatIfSmall}>
                       On the estimated CAT 2024 overall score curve, that is roughly +{projections.whatIf.marksDelta} marks.
-                      Estimated — not an official score-percentile mapping.
+                      Estimated, not an official score-percentile mapping.
                     </span>
                   )}
                 </div>
-                <div className={styles.whatIfChartGraphic} aria-hidden="true">
-                  <svg width="46" height="42" viewBox="0 0 48 44" fill="none">
-                    <path
-                      d="M6 26C16 24 26 17 38 6M38 6H30M38 6V14"
-                      stroke="#F59E0B"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <rect x="6" y="30" width="6" height="10" rx="1.5" fill="#FBBF24" />
-                    <rect x="16" y="25" width="6" height="15" rx="1.5" fill="#F59E0B" />
-                    <rect x="26" y="19" width="6" height="21" rx="1.5" fill="#F59E0B" />
-                    <rect x="36" y="12" width="6" height="28" rx="1.5" fill="#D97706" />
-                  </svg>
-                </div>
               </div>
             )}
-          </div>
+          </Reveal>
         </div>
 
-        {/* Results Section */}
-        <div>
-          <div className={styles.resultsHeader}>
+        {/* Results */}
+        <section className={styles.results} aria-labelledby="shortlist-title">
+          <Reveal className={styles.resultsHead}>
             <div>
-              <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#0F172A", marginBottom: "4px" }}>
-                Predicted B-School Shortlist
+              <h2 id="shortlist-title" className={styles.sectionTitle}>
+                Predicted B-school <GradientText>shortlist</GradientText>
               </h2>
-              <p style={{ color: "#64748B", fontSize: "14px" }}>
+              <p className={styles.sectionSub}>
                 {profile
                   ? `Model estimates for ${CATEGORY_LABEL[profile.category]} candidates, using published cutoffs and shortlisting weights.`
                   : "Complete your profile above to see model estimates for each institute."}
               </p>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+            <div className={styles.resultsTools}>
               <button
-                className={styles.infoToggleBtn}
+                type="button"
+                className={styles.guideBtn}
                 onClick={() => setShowInfoCard(!showInfoCard)}
-                title="Click to view guide on Dream, Target, and Safe tiers"
+                aria-expanded={showInfoCard}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}>
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
-                </svg>
-                {showInfoCard ? "Hide Tier Guide" : "What are Dream, Target & Safe?"}
+                <Info size={15} aria-hidden="true" />
+                {showInfoCard ? "Hide tier guide" : "What are Dream, Target & Safe?"}
               </button>
 
               {evaluation && (
-                <div className={styles.tierTabs}>
+                <div className={styles.segment} role="group" aria-label="Filter by tier">
                   {(["ALL", "DREAM", "TARGET", "SAFE"] as const).map((tier) => (
                     <button
                       key={tier}
-                      className={`${styles.tierBtn} ${activeTier === tier ? styles.tierBtnActive : ""}`}
+                      type="button"
+                      aria-pressed={activeTier === tier}
+                      className={`${styles.segBtn} ${activeTier === tier ? styles.segBtnActive : ""}`}
                       onClick={() => setActiveTier(tier)}
                     >
-                      {tier === "ALL" && `All Schools (${results.length})`}
-                      {tier === "DREAM" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                          </svg>
-                          Dream ({counts.Dream})
-                        </span>
-                      )}
-                      {tier === "TARGET" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                          </svg>
-                          Target ({counts.Target})
-                        </span>
-                      )}
-                      {tier === "SAFE" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          </svg>
-                          Safe ({counts.Safe})
-                        </span>
-                      )}
+                      {tier === "ALL" && <>All <span className={styles.segCount}>{results.length}</span></>}
+                      {tier === "DREAM" && <><i className={styles.dotDream} aria-hidden="true" />Dream <span className={styles.segCount}>{counts.Dream}</span></>}
+                      {tier === "TARGET" && <><i className={styles.dotTarget} aria-hidden="true" />Target <span className={styles.segCount}>{counts.Target}</span></>}
+                      {tier === "SAFE" && <><i className={styles.dotSafe} aria-hidden="true" />Safe <span className={styles.segCount}>{counts.Safe}</span></>}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-          </div>
+          </Reveal>
 
-          <div className={styles.modelNote} role="note">
+          <p className={styles.modelNote} role="note">
             <strong>How to read this:</strong> chances are estimates from TechnoCAT&apos;s model, which applies each
             institute&apos;s published past cutoffs and shortlisting weights to the numbers you entered. They are not
-            guarantees of a call — real cutoffs change every year and depend on the applicant pool, sectional
+            guarantees of a call; real cutoffs change every year and depend on the applicant pool, sectional
             cutoffs and institute-specific rules.
-          </div>
+          </p>
 
-          {/* i-Card (Admission Tier & Composite Score Explanation Guide) */}
+          {/* Tier guide */}
           {showInfoCard && (
-            <div className={styles.infoCard}>
-              <div className={styles.infoCardTop}>
-                <div className={styles.infoCardTitle}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "text-bottom", marginRight: "6px" }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="16" x2="12" y2="12" />
-                    <line x1="12" y1="8" x2="12.01" y2="8" />
-                  </svg>
-                  Understanding Admission Call Tiers &amp; Composite Scores
-                  <span className={styles.infoCardBadge}>Quick Student Guide</span>
-                </div>
-                <button
-                  onClick={() => setShowInfoCard(false)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#94A3B8",
-                    padding: "4px 8px",
-                    display: "inline-flex",
-                    alignItems: "center"
-                  }}
-                  title="Close Guide"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+            <Reveal className={styles.guide}>
+              <div className={styles.guideTop}>
+                <h3 className={styles.guideTitle}>Understanding admission call tiers &amp; composite scores</h3>
+                <button type="button" className={styles.iconBtn} onClick={() => setShowInfoCard(false)} aria-label="Close guide">
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
 
-              <div className={styles.infoTiersGrid}>
-                <div className={`${styles.infoTierBox} ${styles.infoTierDream}`}>
-                  <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#6B21A8", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
-                      Dream (Ambitious)
-                    </span>
-                    <span className={styles.infoTierOdds} style={{ background: "#F3E8FF", color: "#7E22CE" }}>Model score &lt; 60</span>
+              <RevealGroup className={styles.guideGrid}>
+                <RevealItem className={`glass-card ${styles.guideTier}`} data-tint="violet">
+                  <div className={styles.guideTierHead}>
+                    <span className={`${styles.tierName} ${styles.tierDream}`}><Star size={15} aria-hidden="true" />Dream (ambitious)</span>
+                    <span className={styles.guideOdds}>Model score &lt; 60</span>
                   </div>
-                  <p className={styles.infoTierDesc}>
+                  <p className={styles.guideDesc}>
                     Aspirational reach schools. With your current percentile and profile, the model sees the call as unlikely.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#7E22CE", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    <span><strong>Strategy:</strong> Use the what-if box above to see the percentile at which a school moves into your Target zone.</span>
-                  </div>
-                </div>
+                  <p className={styles.guideStrategy}><strong>Strategy:</strong> Use the what-if box above to see the percentile at which a school moves into your Target zone.</p>
+                </RevealItem>
 
-                <div className={`${styles.infoTierBox} ${styles.infoTierTarget}`}>
-                  <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#1E40AF", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                      Target (Competitive)
-                    </span>
-                    <span className={styles.infoTierOdds} style={{ background: "#DBEAFE", color: "#1D4ED8" }}>Model score 60 – 84</span>
+                <RevealItem className={`glass-card ${styles.guideTier}`} data-tint="blue">
+                  <div className={styles.guideTierHead}>
+                    <span className={`${styles.tierName} ${styles.tierTarget}`}><Crosshair size={15} aria-hidden="true" />Target (competitive)</span>
+                    <span className={styles.guideOdds}>Model score 60 – 84</span>
                   </div>
-                  <p className={styles.infoTierDesc}>
+                  <p className={styles.guideDesc}>
                     Your realistic sweet spot: your inputs sit close to or above the school&apos;s past cutoff and composite profile.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#1D4ED8", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    <span><strong>Strategy:</strong> Maintain consistency, clear sectional cutoffs, and prepare for interviews.</span>
-                  </div>
-                </div>
+                  <p className={styles.guideStrategy}><strong>Strategy:</strong> Maintain consistency, clear sectional cutoffs, and prepare for interviews.</p>
+                </RevealItem>
 
-                <div className={`${styles.infoTierBox} ${styles.infoTierSafe}`}>
-                  <div className={styles.infoTierHeader}>
-                    <span className={styles.infoTierName} style={{ color: "#065F46", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      </svg>
-                      Safe (Solid Bet)
-                    </span>
-                    <span className={styles.infoTierOdds} style={{ background: "#DCFCE7", color: "#15803D" }}>Model score 85+</span>
+                <RevealItem className={`glass-card ${styles.guideTier}`} data-tint="teal">
+                  <div className={styles.guideTierHead}>
+                    <span className={`${styles.tierName} ${styles.tierSafe}`}><ShieldCheck size={15} aria-hidden="true" />Safe (solid bet)</span>
+                    <span className={styles.guideOdds}>Model score 85+</span>
                   </div>
-                  <p className={styles.infoTierDesc}>
+                  <p className={styles.guideDesc}>
                     Your inputs clear the school&apos;s past cutoff with a comfortable buffer in the model.
                   </p>
-                  <div className={styles.infoTierStrategy} style={{ color: "#15803D", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: "2px", flexShrink: 0 }}>
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    <span><strong>Strategy:</strong> Good backups — still apply on time and meet every sectional cutoff.</span>
-                  </div>
-                </div>
-              </div>
+                  <p className={styles.guideStrategy}><strong>Strategy:</strong> Good backups. Still apply on time and meet every sectional cutoff.</p>
+                </RevealItem>
+              </RevealGroup>
 
-              <div className={styles.infoFormulaNote}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px", flexShrink: 0 }}>
-                  <path d="M9 18h6" />
-                  <path d="M10 22h4" />
-                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                </svg>
+              <div className={styles.formulaNote}>
+                <Lightbulb size={16} aria-hidden="true" />
                 <span>
                   <strong>Why not just CAT percentile?</strong> Top B-schools shortlist on a <em>Composite Score (0–100)</em>.
                   In this model the CAT component carries {CAT_WEIGHT_MIN}–{CAT_WEIGHT_MAX}% of the weight depending on the
                   institute, alongside 10th &amp; 12th boards, graduation, work experience, and gender/academic diversity points.
                 </span>
               </div>
-            </div>
+            </Reveal>
           )}
 
           {!evaluation ? (
-            <div className={styles.emptyState} style={{ marginTop: "24px" }}>
-              <div className={styles.emptyStateTitle}>
+            <div className={`glass-card ${styles.emptyCard}`} data-tint="blue">
+              <div className={styles.emptyTitle}>
                 {loaded ? "Your shortlist appears once your profile is complete" : "Loading…"}
               </div>
-              {loaded && <p>Fill in every field in Candidate Credentials &amp; CAT Target above.</p>}
+              {loaded && <p>Fill in every field in candidate credentials &amp; CAT target above.</p>}
             </div>
           ) : (
-            <div className={styles.collegeGrid} style={{ marginTop: "24px" }}>
-              {filteredResults.map((item) => (
-                <div key={item.school.id} className={styles.collegeCard}>
-                  <div>
-                    <div className={styles.colTop}>
-                      <div className={styles.colAvatar} style={{ background: item.school.logoBg }}>
-                        {item.school.shortName.charAt(0)}
+            <div className={`glass-card ${styles.table}`} data-tint="blue">
+              <div className={styles.tableHead} aria-hidden="true">
+                <span>#</span>
+                <span>Institute</span>
+                <span>Model chance</span>
+                <span>Past {CATEGORY_LABEL[profile!.category]} cutoff</span>
+                <span>Composite</span>
+                <span>Avg CTC</span>
+                <span>Fees</span>
+                <span />
+              </div>
+              <RevealGroup className={styles.tableBody}>
+                {filteredResults.map((item) => (
+                  <RevealItem key={item.school.id}>
+                    <div className={`${styles.row} ${tierClass(item.chanceTier)}`}>
+                      <span className={styles.rank}>{String(rankOf(item)).padStart(2, "0")}</span>
+
+                      <div className={styles.school}>
+                        <span className={styles.avatar} style={{ background: item.school.logoBg }} aria-hidden="true">
+                          {item.school.shortName.charAt(0)}
+                        </span>
+                        <div className={styles.schoolText}>
+                          <h3 className={styles.schoolName}>{item.school.shortName}</h3>
+                          <span className={styles.schoolLoc}>{item.school.location}</span>
+                        </div>
                       </div>
-                      <span className={getChancePillClass(item.chanceTier)}>
-                        {item.chanceTier === "Safe" && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
-                            Safe · model {item.callProbability}
-                          </span>
-                        )}
-                        {item.chanceTier === "Target" && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <circle cx="12" cy="12" r="10" />
-                              <circle cx="12" cy="12" r="6" />
-                              <circle cx="12" cy="12" r="2" />
-                            </svg>
-                            Target · model {item.callProbability}
-                          </span>
-                        )}
-                        {item.chanceTier === "Dream" && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                            </svg>
-                            Dream · model {item.callProbability}
-                          </span>
-                        )}
-                      </span>
-                    </div>
 
-                    <h3 className={styles.colName}>{item.school.shortName}</h3>
-                    <div className={styles.colLocation}>{item.school.location}</div>
+                      <div className={styles.chance}>
+                        <div className={styles.chanceTop}>
+                          <span className={styles.tierChip}>{tierIcon(item.chanceTier)}{item.chanceTier}</span>
+                          <span className={styles.chanceVal}>{item.callProbability}</span>
+                        </div>
+                        <div className={styles.meter} aria-label={`Model score ${item.callProbability} of 100`}>
+                          <span className={styles.meterFill} style={{ width: `${item.callProbability}%` }} />
+                          <span className={styles.meterTick} style={{ left: "60%" }} />
+                          <span className={styles.meterTick} style={{ left: "85%" }} />
+                        </div>
+                      </div>
 
-                    <div className={styles.colStatsRow}>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLbl}>Past {CATEGORY_LABEL[profile!.category]} Cutoff</span>
-                        <span className={styles.statValue}>
+                      <div className={styles.cell}>
+                        <span className={styles.cellLbl}>Past {CATEGORY_LABEL[profile!.category]} cutoff</span>
+                        <span className={`${styles.cellVal} ${item.isCutoffCleared ? styles.cleared : ""}`}>
                           {item.school.overallCutoff[profile!.category]} %ile
                         </span>
                       </div>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLbl}>Composite Call Index</span>
-                        <span className={styles.statValue} style={{ color: "#2563EB" }}>
-                          {item.compositeScore} / 100
-                        </span>
+                      <div className={styles.cell}>
+                        <span className={styles.cellLbl}>Composite call index</span>
+                        <span className={`${styles.cellVal} ${styles.cellAccent}`}>{item.compositeScore}<small>/100</small></span>
                       </div>
-                      <div className={styles.statItem} style={{ marginTop: "8px" }}>
-                        <span className={styles.statLbl}>Avg CTC Package</span>
-                        <span className={styles.statValue}>₹{item.school.avgPackageLpa} LPA</span>
+                      <div className={styles.cell}>
+                        <span className={styles.cellLbl}>Avg CTC package</span>
+                        <span className={styles.cellVal}>₹{item.school.avgPackageLpa} LPA</span>
                       </div>
-                      <div className={styles.statItem} style={{ marginTop: "8px" }}>
-                        <span className={styles.statLbl}>Tuition Fee</span>
-                        <span className={styles.statValue}>₹{item.school.feesLakhs}L</span>
+                      <div className={styles.cell}>
+                        <span className={styles.cellLbl}>Tuition fee</span>
+                        <span className={styles.cellVal}>₹{item.school.feesLakhs}L</span>
                       </div>
+
+                      <button type="button" className={styles.criteriaBtn} onClick={() => setSelectedSchool(item.school)}>
+                        Criteria <ArrowRight size={14} aria-hidden="true" />
+                      </button>
+
+                      <p className={styles.advice}>{schoolAdvice(item)}</p>
                     </div>
+                  </RevealItem>
+                ))}
+              </RevealGroup>
+            </div>
+          )}
+        </section>
+      </main>
 
-                    <p className={styles.colAdvice}>{schoolAdvice(item)}</p>
+      {/* College criteria modal */}
+      {selectedSchool && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedSchool(null)}>
+          <div className={styles.modalBox} role="dialog" aria-modal="true" aria-labelledby="criteria-title" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className={`${styles.iconBtn} ${styles.modalClose}`} onClick={() => setSelectedSchool(null)} aria-label="Close modal">
+              <X size={16} aria-hidden="true" />
+            </button>
+            <div className={styles.modalHead}>
+              <span className={styles.avatar} style={{ background: selectedSchool.logoBg, width: 44, height: 44, fontSize: 17 }} aria-hidden="true">
+                {selectedSchool.shortName.charAt(0)}
+              </span>
+              <div>
+                <h3 id="criteria-title" className={styles.modalTitle}>{selectedSchool.name}</h3>
+                <span className={styles.modalBadge}>{selectedSchool.badge}</span>
+              </div>
+            </div>
+
+            <p className={styles.modalSummary}>{selectedSchool.criteriaSummary}</p>
+
+            <h4 className={styles.modalSubhead}>Shortlisting weightage used by the model</h4>
+            <div className={styles.weightsGrid}>
+              {[
+                { label: "CAT score", value: selectedSchool.weights.catPercentile, color: "#3B82F6" },
+                { label: "Class 10th marks", value: selectedSchool.weights.tenthMarks, color: "#06B6D4" },
+                { label: "Class 12th marks", value: selectedSchool.weights.twelfthMarks, color: "#14B8A6" },
+                { label: "Graduation marks", value: selectedSchool.weights.graduationMarks, color: "#8B5CF6" },
+                { label: "Work experience", value: selectedSchool.weights.workExperience, color: "#F59E0B" },
+                { label: "Diversity points", value: selectedSchool.weights.genderDiversity + selectedSchool.weights.academicDiversity, color: "#10B981" },
+              ].map((w) => (
+                <div key={w.label} className={styles.weightItem}>
+                  <div className={styles.weightTop}>
+                    <span>{w.label}</span>
+                    <strong>{w.value}%</strong>
                   </div>
-
-                  <button className={styles.btnCriteria} onClick={() => setSelectedSchool(item.school)}>
-                    View Selection Criteria &rarr;
-                  </button>
+                  <span className={styles.weightTrack}><span style={{ width: `${Math.min(100, w.value)}%`, background: w.color }} /></span>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      </main>
 
-      {/* College Criteria Modal */}
-      {selectedSchool && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedSchool(null)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setSelectedSchool(null)} aria-label="Close modal">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-              <div
-                className={styles.colAvatar}
-                style={{ background: selectedSchool.logoBg, width: "40px", height: "40px", fontSize: "16px" }}
-              >
-                {selectedSchool.shortName.charAt(0)}
-              </div>
-              <div>
-                <h3 style={{ fontSize: "18px", fontWeight: "800", color: "#0F172A", margin: 0 }}>
-                  {selectedSchool.name}
-                </h3>
-                <span style={{ fontSize: "12px", color: "#64748B" }}>{selectedSchool.badge}</span>
-              </div>
-            </div>
-
-            <p style={{ fontSize: "13px", color: "#475569", lineHeight: 1.5, marginTop: "12px" }}>
-              {selectedSchool.criteriaSummary}
-            </p>
-
-            <h4 style={{ fontSize: "14px", fontWeight: "800", color: "#0F172A", marginTop: "20px" }}>
-              Shortlisting Weightage Used by the Model
-            </h4>
-            <div className={styles.weightsGrid}>
-              <div className={styles.weightItem}>
-                <span>CAT Score</span>
-                <span style={{ color: "#2563EB" }}>{selectedSchool.weights.catPercentile}%</span>
-              </div>
-              <div className={styles.weightItem}>
-                <span>Class 10th Marks</span>
-                <span>{selectedSchool.weights.tenthMarks}%</span>
-              </div>
-              <div className={styles.weightItem}>
-                <span>Class 12th Marks</span>
-                <span>{selectedSchool.weights.twelfthMarks}%</span>
-              </div>
-              <div className={styles.weightItem}>
-                <span>Graduation Marks</span>
-                <span>{selectedSchool.weights.graduationMarks}%</span>
-              </div>
-              <div className={styles.weightItem}>
-                <span>Work Experience</span>
-                <span>{selectedSchool.weights.workExperience}%</span>
-              </div>
-              <div className={styles.weightItem}>
-                <span>Diversity Points</span>
-                <span style={{ color: "#059669" }}>
-                  {selectedSchool.weights.genderDiversity + selectedSchool.weights.academicDiversity}%
-                </span>
-              </div>
-            </div>
-
-            <div style={{ background: "#F0F9FF", padding: "14px 18px", borderRadius: "12px", border: "1px solid #BAE6FD" }}>
-              <div style={{ fontSize: "12px", fontWeight: "700", color: "#0369A1", marginBottom: "4px" }}>
-                Campus Highlight:
-              </div>
-              <div style={{ fontSize: "13px", color: "#1E293B" }}>{selectedSchool.keyHighlight}</div>
+            <div className={styles.highlight}>
+              <span className={styles.highlightLbl}>Campus highlight</span>
+              <span>{selectedSchool.keyHighlight}</span>
             </div>
           </div>
         </div>
@@ -1542,74 +1242,92 @@ function StrengthMeter({
   const categoryBarPercent = (catBonus / MAX_CATEGORY_BONUS) * 100;
 
   const next = projections?.nextTierUp ?? null;
+  const zoneTotal = Math.max(1, counts.Safe + counts.Target + counts.Dream);
 
   return (
     <>
-      {/* Center Row: Circular Gauge + 4 Profile Insights Cards */}
-      <div className={styles.meterAndInsightsGrid}>
-        {/* Circular Gauge */}
-        <div className={styles.gaugeWrapper}>
-          <div className={styles.gaugeOuterRing}>
-            <svg className={styles.gaugeSvg} viewBox="0 0 210 210" aria-hidden="true">
-              <defs>
-                <linearGradient id="strengthMeterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366F1" />
-                  <stop offset="45%" stopColor="#2563EB" />
-                  <stop offset="100%" stopColor="#06B6D4" />
-                </linearGradient>
-              </defs>
-              <circle cx="105" cy="105" r={gaugeRadius} fill="none" stroke="#E2E8F0" strokeWidth="14" />
-              <circle
-                cx="105"
-                cy="105"
-                r={gaugeRadius}
-                fill="none"
-                stroke="url(#strengthMeterGrad)"
-                strokeWidth="14"
-                strokeLinecap="round"
-                strokeDasharray={gaugeCircumference}
-                strokeDashoffset={gaugeDashOffset}
-                transform="rotate(-95 105 105)"
-                style={{ transition: "stroke-dashoffset 0.45s ease" }}
-              />
-            </svg>
-
-            {/* Medal Badge on Top-Right of Ring */}
-            <div className={styles.gaugeMedalBadge} aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M8.5 14.5L7 22L12 19.5L17 22L15.5 14.5" fill="#EA580C" />
-                <circle cx="12" cy="10" r="6.5" fill="#F59E0B" />
-                <path
-                  d="M12 6.5L13.09 8.7L15.5 9.05L13.75 10.75L14.18 13.15L12 12L9.82 13.15L10.25 10.75L8.5 9.05L10.91 8.7L12 6.5Z"
-                  fill="#FEF3C7"
-                />
-              </svg>
-            </div>
-
-            {/* Inner Gauge Content */}
-            <div className={styles.gaugeInnerContent}>
-              <div className={styles.percentileNumber}>{fmtPct(profile.projectedPercentile)}</div>
-              <div className={styles.percentileLabel}>{showingEstimate ? "ESTIMATED %ILE" : "TARGET %ILE"}</div>
-              <div className={styles.profileRatingBadge}>
-                <span className={styles.ratingPrimaryText}>{ratingPrimary}</span>
-                <span className={styles.ratingSecondaryText}>{ratingSecondary}</span>
-              </div>
-            </div>
+      <div className={styles.meterGrid}>
+        {/* Circular gauge */}
+        <div className={styles.gauge}>
+          <svg className={styles.gaugeSvg} viewBox="0 0 210 210" aria-hidden="true">
+            <defs>
+              <linearGradient id="strengthMeterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#93C5FD" />
+                <stop offset="100%" stopColor="#67E8F9" />
+              </linearGradient>
+            </defs>
+            <circle cx="105" cy="105" r={gaugeRadius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="12" />
+            <circle
+              cx="105"
+              cy="105"
+              r={gaugeRadius}
+              fill="none"
+              stroke="url(#strengthMeterGrad)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={gaugeCircumference}
+              strokeDashoffset={gaugeDashOffset}
+              transform="rotate(-90 105 105)"
+              style={{ transition: "stroke-dashoffset 0.45s ease" }}
+            />
+          </svg>
+          <div className={styles.gaugeInner}>
+            <span className={styles.gaugeLabel}>{showingEstimate ? "Estimated %ile" : "Target %ile"}</span>
+            <span className={styles.gaugeValue}>{fmtPct(profile.projectedPercentile)}</span>
+            <span className={styles.rating}>
+              <strong>{ratingPrimary}</strong>
+              <small>{ratingSecondary}</small>
+            </span>
           </div>
         </div>
 
-        {/* Right Stack: 4 data-derived insight cards */}
-        <div className={styles.insightsStack}>
-          <div className={`${styles.insightItem} ${styles.insightPurple}`}>
-            <div className={styles.insightIconBox} aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <circle cx="12" cy="12" r="4" />
-                <path d="M16 8l4-4" />
-              </svg>
+        {/* Data-derived insights */}
+        <div className={styles.insights}>
+          <div className={styles.zones}>
+            <div className={styles.zonesTop}>
+              <span className={styles.insightTitle}>Model call zones</span>
+              <span className={styles.zonesLegend}>
+                <span><i className={styles.dotSafe} />{counts.Safe} Safe</span>
+                <span><i className={styles.dotTarget} />{counts.Target} Target</span>
+                <span><i className={styles.dotDream} />{counts.Dream} Dream</span>
+              </span>
             </div>
+            <div className={styles.zoneBar} aria-label={`${counts.Safe} Safe, ${counts.Target} Target, ${counts.Dream} Dream`}>
+              {counts.Safe > 0 && <span className={styles.zoneSafe} style={{ flexGrow: counts.Safe / zoneTotal }} />}
+              {counts.Target > 0 && <span className={styles.zoneTarget} style={{ flexGrow: counts.Target / zoneTotal }} />}
+              {counts.Dream > 0 && <span className={styles.zoneDream} style={{ flexGrow: counts.Dream / zoneTotal }} />}
+            </div>
+          </div>
+
+          <div className={styles.insight}>
+            <Trophy size={16} aria-hidden="true" style={{ color: "#67E8F9" }} />
             <div>
-              <div className={styles.insightTitle}>CAT Readiness</div>
+              <div className={styles.insightTitle}>Cutoffs cleared</div>
+              <div className={styles.insightDesc}>
+                <strong>{cutoffsCleared} of {total}</strong> past {CATEGORY_LABEL[profile.category]} overall cutoffs at{" "}
+                {fmtPct(profile.projectedPercentile)} %ile
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.insight}>
+            <TrendingUp size={16} aria-hidden="true" style={{ color: "#FCD34D" }} />
+            <div>
+              <div className={styles.insightTitle}>Next tier-up</div>
+              <div className={styles.insightDesc}>
+                {next
+                  ? `${next.school.shortName} moves to ${next.tier} at ~${fmtPct(next.percentile)} %ile (+${round1(next.percentile - profile.projectedPercentile)}).`
+                  : counts.Safe === total
+                  ? "Every school is already in your Safe zone."
+                  : `No tier changes below ${MAX_PERCENTILE_SWEEP} %ile with your current academics.`}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.insight}>
+            <Gauge size={16} aria-hidden="true" style={{ color: "#C4B5FD" }} />
+            <div>
+              <div className={styles.insightTitle}>CAT readiness</div>
               <div className={styles.insightDesc}>
                 {readinessScore !== null
                   ? `${readinessScore}/100 from your concepts, accuracy, speed and consistency.`
@@ -1621,120 +1339,34 @@ function StrengthMeter({
               </div>
             </div>
           </div>
-
-          <div className={`${styles.insightItem} ${styles.insightBlue}`}>
-            <div className={styles.insightIconBox} aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 3h12l4 6-10 12L2 9z" />
-                <path d="M2 9h20" />
-              </svg>
-            </div>
-            <div>
-              <div className={styles.insightTitle}>Cutoffs Cleared</div>
-              <div className={styles.insightDesc}>
-                {cutoffsCleared} of {total} past {CATEGORY_LABEL[profile.category]} overall cutoffs at{" "}
-                {fmtPct(profile.projectedPercentile)} %ile
-              </div>
-            </div>
-          </div>
-
-          <div className={`${styles.insightItem} ${styles.insightGreen}`}>
-            <div className={styles.insightIconBox} aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 20V10" />
-                <path d="M12 20V14" />
-                <path d="M6 20v-4" />
-                <path d="M4 11l6-5 4 3 6-5" />
-              </svg>
-            </div>
-            <div>
-              <div className={styles.insightTitle}>Model Call Zones</div>
-              <div className={styles.insightDesc}>
-                {counts.Safe} Safe · {counts.Target} Target · {counts.Dream} Dream
-              </div>
-            </div>
-          </div>
-
-          <div className={`${styles.insightItem} ${styles.insightOrange}`}>
-            <div className={styles.insightIconBox} aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <circle cx="12" cy="12" r="4" />
-                <path d="M15 9l4-4" />
-              </svg>
-            </div>
-            <div>
-              <div className={styles.insightTitle}>Next Tier-Up</div>
-              <div className={styles.insightDesc}>
-                {next
-                  ? `${next.school.shortName} moves to ${next.tier} at ~${fmtPct(next.percentile)} %ile (+${round1(next.percentile - profile.projectedPercentile)}).`
-                  : counts.Safe === total
-                  ? "Every school is already in your Safe zone."
-                  : `No tier changes below ${MAX_PERCENTILE_SWEEP} %ile with your current academics.`}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Key Evaluation Factors */}
-      <div className={styles.evaluationFactorsCard}>
-        <div className={styles.evalFactorsHeader}>
-          <span className={styles.evalFactorsTitle}>Key Evaluation Factors</span>
-          <span className={styles.evalFactorsSub}>As scored by the model</span>
+      {/* Key evaluation factors */}
+      <div className={styles.factors}>
+        <div className={styles.factorsHead}>
+          <span className={styles.factorsTitle}>Key evaluation factors</span>
+          <span className={styles.factorsSub}>As scored by the model</span>
         </div>
 
-        <div className={styles.metricsList}>
-          <div className={styles.metricRow}>
-            <div className={styles.metricLeft}>
-              <span className={styles.metricIconBlue} aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </span>
-              <span>Diversity Bonus Points</span>
-            </div>
-            <div className={styles.metricBarTrack}>
-              <div className={styles.metricBarFill} style={{ width: `${diversityBarPercent}%` }} />
-            </div>
-            <span className={styles.metricVal}>+{diversityScore} of 10 Pts</span>
-          </div>
+        <div className={styles.factorRow}>
+          <span className={styles.factorName}><Users size={15} aria-hidden="true" />Diversity bonus points</span>
+          <span className={styles.factorTrack}><span style={{ width: `${diversityBarPercent}%`, background: "#2DD4BF" }} /></span>
+          <span className={styles.factorVal}>+{diversityScore} of 10 pts</span>
+        </div>
 
-          <div className={styles.metricRow}>
-            <div className={styles.metricLeft}>
-              <span className={styles.metricIconBlue} aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                </svg>
-              </span>
-              <span>Work Experience Rating</span>
-            </div>
-            <div className={styles.metricBarTrack}>
-              <div className={styles.metricBarFill} style={{ width: `${workExBarPercent}%` }} />
-            </div>
-            <span className={styles.metricVal}>{workExLabel}</span>
-          </div>
+        <div className={styles.factorRow}>
+          <span className={styles.factorName}><Briefcase size={15} aria-hidden="true" />Work experience rating</span>
+          <span className={styles.factorTrack}><span style={{ width: `${workExBarPercent}%`, background: "#60A5FA" }} /></span>
+          <span className={styles.factorVal}>{workExLabel}</span>
+        </div>
 
-          <div className={styles.metricRow}>
-            <div className={styles.metricLeft}>
-              <span className={styles.metricIconOrange} aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-              </span>
-              <span>Category Adjustment</span>
-            </div>
-            <div className={styles.metricBarTrack}>
-              <div className={styles.metricBarFill} style={{ width: `${categoryBarPercent}%` }} />
-            </div>
-            <span className={styles.metricVal}>
-              {catBonus > 0 ? `+${catBonus} composite pts (${CATEGORY_LABEL[profile.category]})` : "No adjustment (General)"}
-            </span>
-          </div>
+        <div className={styles.factorRow}>
+          <span className={styles.factorName}><Star size={15} aria-hidden="true" />Category adjustment</span>
+          <span className={styles.factorTrack}><span style={{ width: `${categoryBarPercent}%`, background: "#FBBF24" }} /></span>
+          <span className={styles.factorVal}>
+            {catBonus > 0 ? `+${catBonus} composite pts (${CATEGORY_LABEL[profile.category]})` : "No adjustment (General)"}
+          </span>
         </div>
       </div>
     </>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { ArrowRight, Calculator, CalendarDays, CircleMinus, Clock, Flame, Lightbulb, Table2, Target, TrendingUp, X, Zap, type LucideIcon } from "lucide-react";
 import type { StudentMetrics, SectionKey, TestRecord, DailyStudy } from "@/lib/metrics/types";
 import styles from "./MetricInspectorModal.module.css";
 
@@ -443,68 +444,17 @@ function buildView(id: MetricId, m: StudentMetrics, windowDays: 7 | 30): MetricV
   }
 }
 
-function renderMetricIcon(iconName: string) {
-  switch (iconName) {
-    case "target":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
-        </svg>
-      );
-    case "trend":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-          <polyline points="17 6 23 6 23 12" />
-        </svg>
-      );
-    case "bolt":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-      );
-    case "alert":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      );
-    case "clock":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      );
-    case "calendar":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-      );
-    case "flame":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA580C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c3.5 0 5-2.5 5-5.5 0-3-2-5.5-4-7.5C11 7 9 9 9 11c0 1.5.5 2.5-.5 3.5z" />
-          <path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-7 5-9 1 2 2 3 3 0z" />
-        </svg>
-      );
-    default:
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-      );
-  }
-}
+type IconTint = "blue" | "teal" | "violet" | "amber" | "coral";
+
+const METRIC_ICONS: Record<string, { Icon: LucideIcon; tint: IconTint }> = {
+  target: { Icon: Target, tint: "blue" },
+  trend: { Icon: TrendingUp, tint: "teal" },
+  bolt: { Icon: Zap, tint: "violet" },
+  alert: { Icon: CircleMinus, tint: "coral" },
+  clock: { Icon: Clock, tint: "blue" },
+  calendar: { Icon: CalendarDays, tint: "teal" },
+  flame: { Icon: Flame, tint: "amber" },
+};
 
 function renderCell(cell: Cell) {
   if (typeof cell === "string") return cell;
@@ -533,6 +483,7 @@ export default function MetricInspectorModal({ metricId, metrics, windowDays, on
   if (!mounted || !metricId) return null;
 
   const view = buildView(metricId, metrics, windowDays);
+  const { Icon, tint } = METRIC_ICONS[view.icon] ?? { Icon: Target, tint: "blue" as IconTint };
 
   const statusBadgeClass =
     view.statusType === "success"
@@ -544,66 +495,62 @@ export default function MetricInspectorModal({ metricId, metrics, windowDays, on
       : styles.statusBadgeInfo;
 
   return createPortal(
-    <div className={styles.modalBackdrop} onClick={onClose} role="dialog" aria-modal="true">
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalBackdrop} onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="metric-inspector-title">
+      <div className={styles.modalContent} data-tint={tint} onClick={(e) => e.stopPropagation()}>
         {/* ===== HEADER ===== */}
         <div className={styles.modalHeader}>
           <div className={styles.headerLeft}>
-            <div className={styles.metricIconBadge}>{renderMetricIcon(view.icon)}</div>
+            <span className={styles.metricIcon} aria-hidden="true">
+              <Icon size={20} strokeWidth={2.2} />
+            </span>
             <div className={styles.titleArea}>
-              <h2 className={styles.modalTitle}>{view.name}</h2>
+              <h2 id="metric-inspector-title" className={styles.modalTitle}>
+                {view.name}
+              </h2>
               <div className={styles.statusRow}>
                 <span className={`${styles.statusBadge} ${statusBadgeClass}`}>{view.statusText}</span>
-                <span className={styles.benchmarkText}>• {view.benchmark}</span>
+                <span className={styles.benchmarkText}>{view.benchmark}</span>
               </div>
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close metric details">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <X size={18} strokeWidth={2.2} />
           </button>
         </div>
 
         {/* ===== BODY ===== */}
         <div className={styles.modalBody}>
-          {/* Metric Value Display */}
+          {/* Metric value */}
           <div className={styles.metricDisplayCard}>
-            <div>
-              <div className={styles.displayLabel}>Current Value</div>
-              <div className={styles.displayValue}>{view.value}</div>
-              <div className={styles.displaySubtitle}>{view.valueNote}</div>
-            </div>
+            <div className={styles.displayLabel}>Current value</div>
+            <div className={styles.displayValue}>{view.value}</div>
+            <div className={styles.displaySubtitle}>{view.valueNote}</div>
           </div>
 
-          {/* How It Is Calculated */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M21.3 8.7 8.7 21.3c-1 1-2.5 1-3.4 0l-2.6-2.6c-1-1-1-2.5 0-3.4L15.3 2.7c1-1 2.5-1 3.4 0l2.6 2.6c1 1 1 2.5 0 3.4Z"/><path d="m7.5 10.5 2 2"/><path d="m10.5 7.5 2 2"/><path d="m13.5 4.5 2 2"/></svg>
-                <span>How It Is Calculated</span>
-              </h3>
-            </div>
+          {/* How it is calculated */}
+          <section className={styles.sectionCard}>
+            <h3 className={styles.sectionTitle}>
+              <Calculator size={16} strokeWidth={2.2} aria-hidden="true" />
+              <span>How it is calculated</span>
+            </h3>
             <div className={styles.formulaBox}>{view.formula}</div>
             <p className={styles.sectionExplanation}>{view.explanation}</p>
             <div className={styles.calcStepBox}>
-              <span className={styles.calcStepHighlight}>Your numbers: </span>
-              {view.calc}
+              <span className={styles.calcStepHighlight}>Your numbers</span>
+              <span className={styles.calcStepText}>{view.calc}</span>
             </div>
-          </div>
+          </section>
 
-          {/* Underlying Data */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span>Underlying Data</span>
-              </h3>
-            </div>
+          {/* Underlying data */}
+          <section className={styles.sectionCard}>
+            <h3 className={styles.sectionTitle}>
+              <Table2 size={16} strokeWidth={2.2} aria-hidden="true" />
+              <span>Underlying data</span>
+            </h3>
             <p className={styles.sectionExplanation}>{view.tableIntro}</p>
             <div className={styles.tableContainer}>
               {view.rows.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "36px 16px", background: "#F8FAFC", borderRadius: "12px", border: "1px dashed #CBD5E1", color: "#64748B", fontSize: "13.5px" }}>
-                  {view.emptyTable || "No records yet."}
-                </div>
+                <div className={styles.emptyTable}>{view.emptyTable || "No records yet."}</div>
               ) : (
                 <table className={styles.dataTable}>
                   <thead>
@@ -632,28 +579,24 @@ export default function MetricInspectorModal({ metricId, metrics, windowDays, on
                 </table>
               )}
             </div>
-          </div>
+          </section>
 
           {/* Data-derived recommendations */}
           {view.advice.length > 0 && (
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <h3 className={styles.sectionTitle}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-                  <span>What Your Numbers Suggest</span>
-                </h3>
-              </div>
-              <ul className={styles.aiTipsList}>
+            <section className={styles.sectionCard}>
+              <h3 className={styles.sectionTitle}>
+                <Lightbulb size={16} strokeWidth={2.2} aria-hidden="true" />
+                <span>What your numbers suggest</span>
+              </h3>
+              <ol className={styles.tipsList}>
                 {view.advice.map((tip, idx) => (
-                  <li key={idx} className={styles.aiTipItem}>
-                    <span className={styles.aiTipIcon}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    </span>
+                  <li key={idx} className={styles.tipItem}>
+                    <span className={styles.tipIndex}>{String(idx + 1).padStart(2, "0")}</span>
                     <span>{tip}</span>
                   </li>
                 ))}
-              </ul>
-            </div>
+              </ol>
+            </section>
           )}
         </div>
 
@@ -672,10 +615,7 @@ export default function MetricInspectorModal({ metricId, metrics, windowDays, on
               }}
             >
               <span>{view.action.label}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
+              <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
             </button>
           )}
         </div>

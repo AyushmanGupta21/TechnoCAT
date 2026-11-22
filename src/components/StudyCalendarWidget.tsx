@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./StudyCalendarWidget.module.css";
 
 interface StudyCalendarWidgetProps {
@@ -141,56 +142,44 @@ export default function StudyCalendarWidget({
     });
   }
 
+  const legend: { key: "QA" | "DILR" | "VARC" | "Mock"; label: string }[] = [
+    { key: "QA", label: "QA" },
+    { key: "DILR", label: "DILR" },
+    { key: "VARC", label: "VARC" },
+    { key: "Mock", label: "Mock test" },
+  ];
+
   return (
-    <div className={styles.calendarBox}>
+    <section className={`glass-card ${styles.calendarBox}`} data-tint="teal">
       <div className={styles.calendarHeader}>
+        <h2 className={styles.monthTitle}>
+          {months[selectedMonthIndex]} <span className={styles.yearText}>2026</span>
+        </h2>
         <div className={styles.monthNav}>
-          <button
-            type="button"
-            className={styles.navBtn}
-            onClick={handlePrevMonth}
-            aria-label="Previous Month"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+          <button type="button" className={styles.navBtn} onClick={handlePrevMonth} aria-label="Previous Month">
+            <ChevronLeft size={16} strokeWidth={2.25} />
           </button>
-          <span className={styles.monthTitle}>
-            {months[selectedMonthIndex]} 2026
-          </span>
           <button
             type="button"
-            className={styles.navBtn}
-            onClick={handleNextMonth}
-            aria-label="Next Month"
+            className={styles.todayBtn}
+            onClick={() => {
+              const now = new Date();
+              onSelectMonthIndex(now.getMonth());
+              onSelectDay(now.getDate());
+            }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            Today
+          </button>
+          <button type="button" className={styles.navBtn} onClick={handleNextMonth} aria-label="Next Month">
+            <ChevronRight size={16} strokeWidth={2.25} />
           </button>
         </div>
-
-        <button
-          type="button"
-          className={styles.todayBtn}
-          onClick={() => {
-            const now = new Date();
-            onSelectMonthIndex(now.getMonth());
-            onSelectDay(now.getDate());
-          }}
-        >
-          Today
-        </button>
       </div>
 
       <div className={styles.calendarGrid}>
-        <div className={styles.dayHeader}>Sun</div>
-        <div className={styles.dayHeader}>Mon</div>
-        <div className={styles.dayHeader}>Tue</div>
-        <div className={styles.dayHeader}>Wed</div>
-        <div className={styles.dayHeader}>Thu</div>
-        <div className={styles.dayHeader}>Fri</div>
-        <div className={styles.dayHeader}>Sat</div>
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div key={d} className={styles.dayHeader}>{d}</div>
+        ))}
 
         {calendarDays.map((item, idx) => {
           const isActive = item.isCurrentMonth && item.day === selectedDay;
@@ -201,9 +190,12 @@ export default function StudyCalendarWidget({
             : undefined;
 
           return (
-            <div
+            <button
+              type="button"
               key={idx}
               className={`${styles.dayCell} ${!item.isCurrentMonth ? styles.dayMuted : ""} ${isActive ? styles.dayActive : ""}`}
+              tabIndex={item.isCurrentMonth ? 0 : -1}
+              aria-pressed={isActive}
               onClick={() => {
                 if (item.isCurrentMonth) {
                   onSelectDay(item.day);
@@ -211,39 +203,25 @@ export default function StudyCalendarWidget({
               }}
             >
               <span className={styles.dayNumber}>{item.day}</span>
-              {dots && dots.length > 0 && (
-                <div className={styles.dotsContainer}>
-                  {dots.map((dot, dIdx) => (
-                    <span
-                      key={dIdx}
-                      className={`${styles.dot} ${styles[`dot${dot}`]}`}
-                    />
+              <span className={styles.dotsContainer}>
+                {dots && dots.length > 0 &&
+                  dots.map((dot, dIdx) => (
+                    <span key={dIdx} className={`${styles.dot} ${styles[`dot${dot}`]}`} />
                   ))}
-                </div>
-              )}
-            </div>
+              </span>
+            </button>
           );
         })}
       </div>
 
       <div className={styles.legendRow}>
-        <div className={styles.legendItem}>
-          <span className={`${styles.legendDot} ${styles.dotQA}`} />
-          <span>QA</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={`${styles.legendDot} ${styles.dotDILR}`} />
-          <span>DILR</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={`${styles.legendDot} ${styles.dotVARC}`} />
-          <span>VARC</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={`${styles.legendDot} ${styles.dotMock}`} />
-          <span>Mock Test</span>
-        </div>
+        {legend.map((l) => (
+          <span key={l.key} className={styles.legendItem}>
+            <span className={`${styles.legendDot} ${styles[`dot${l.key}`]}`} />
+            {l.label}
+          </span>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }

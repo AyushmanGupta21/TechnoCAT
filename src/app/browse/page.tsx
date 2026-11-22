@@ -1,9 +1,17 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronDown,
+  FileText,
+  Search,
+} from "lucide-react";
+import AppNav from "@/components/app/AppNav";
+import { Reveal, RevealGroup, RevealItem, GradientText, SpotlightCard, type Tint } from "@/components/landing/motion";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_ENROLLED_TOPIC_IDS } from "@/lib/demo";
@@ -11,7 +19,95 @@ import { pushNotification } from "@/services/notificationService";
 import PYQSection from "@/components/pyq/PYQSection";
 import PYQYearModal from "@/components/pyq/PYQYearModal";
 import styles from "./browse.module.css";
-import BrandLogo from "@/components/BrandLogo";
+
+type SectionKey = "qa" | "dilr" | "varc" | "other";
+
+/** Visual grouping only (marker colour + card tint); filtering logic lives in filteredTopics. */
+function sectionOf(t: { id: string; category: string }): SectionKey {
+  const id = t.id.toLowerCase();
+  const cat = t.category.toLowerCase();
+  if (id.startsWith("qa-") || cat.includes("quant")) return "qa";
+  if (id.startsWith("dilr-") || cat.includes("data") || cat.includes("dilr")) return "dilr";
+  if (id.startsWith("varc-") || cat.includes("verbal") || cat.includes("varc")) return "varc";
+  return "other";
+}
+
+const SECTION_TINT: Record<SectionKey, Tint> = { qa: "violet", dilr: "teal", varc: "blue", other: "amber" };
+
+const CATEGORY_CARDS = [
+  {
+    key: "qa" as const,
+    query: "Quantitative",
+    label: "Quantitative Ability",
+    lessons: 51,
+    topics: 12,
+    subtopics: "Algebra, Arithmetic, Modern Math and more",
+    aria: "Browse Quantitative Ability topics",
+  },
+  {
+    key: "dilr" as const,
+    query: "Data",
+    label: "DILR",
+    lessons: 20,
+    topics: 8,
+    subtopics: "Data Interpretation, Logical Reasoning, Set Theory and more",
+    aria: "Browse DILR topics",
+  },
+  {
+    key: "varc" as const,
+    query: "Verbal",
+    label: "VARC",
+    lessons: 18,
+    topics: 9,
+    subtopics: "Reading Comprehension, Para Jumbles, Para Summary and more",
+    aria: "Browse VARC topics",
+  },
+];
+
+/** Small coded data vignette for each section card (decorative). */
+function SectionVignette({ k }: { k: SectionKey }) {
+  if (k === "qa") {
+    return (
+      <svg className={styles.vignette} viewBox="0 0 96 56" fill="none" aria-hidden="true">
+        <line x1="4" y1="50" x2="92" y2="50" stroke="currentColor" strokeOpacity="0.25" strokeDasharray="3 3" />
+        <rect x="12" y="34" width="8" height="16" rx="2" fill="currentColor" opacity="0.22" />
+        <rect x="34" y="24" width="8" height="26" rx="2" fill="currentColor" opacity="0.32" />
+        <rect x="56" y="16" width="8" height="34" rx="2" fill="currentColor" opacity="0.42" />
+        <path d="M8 40 L30 28 L52 32 L80 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="80" cy="10" r="3.5" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (k === "dilr") {
+    return (
+      <svg className={styles.vignette} viewBox="0 0 96 56" fill="none" aria-hidden="true">
+        {[0, 1, 2, 3].map((r) =>
+          [0, 1, 2, 3, 4].map((c) => (
+            <rect
+              key={`${r}-${c}`}
+              x={14 + c * 15}
+              y={6 + r * 12}
+              width="11"
+              height="8"
+              rx="2"
+              fill="currentColor"
+              opacity={(r * 5 + c) % 3 === 0 ? 0.65 : (r + c) % 2 === 0 ? 0.3 : 0.14}
+            />
+          ))
+        )}
+      </svg>
+    );
+  }
+  return (
+    <svg className={styles.vignette} viewBox="0 0 96 56" fill="none" aria-hidden="true">
+      <rect x="24" y="4" width="54" height="48" rx="6" stroke="currentColor" strokeOpacity="0.35" />
+      <line x1="32" y1="15" x2="66" y2="15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+      <line x1="32" y1="24" x2="70" y2="24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.45" />
+      <line x1="32" y1="33" x2="60" y2="33" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.45" />
+      <line x1="32" y1="42" x2="50" y2="42" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.3" />
+    </svg>
+  );
+}
 
 export default function BrowsePage() {
   const { user } = useAuth();
@@ -22,7 +118,8 @@ export default function BrowsePage() {
   });
 
   const [enrollingTopicId, setEnrollingTopicId] = useState<string | null>(null);
-  const [activeNav, setActiveNav] = useState("Browse");
+  // Per-topic progress (read from the same progress response as enrolment) for the card meters.
+  const [progressById, setProgressById] = useState<Record<string, { percent: number; done: number }>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<"All" | "Quantitative" | "DILR" | "VARC">("All");
   const [sortBy, setSortBy] = useState<"Recommended" | "Recently Added" | "Most Popular" | "A–Z">("Recommended");
@@ -63,6 +160,14 @@ export default function BrowsePage() {
           if (data?.progress && Array.isArray(data.progress)) {
             const active = data.progress.map((p: any) => p.topic_id);
             setEnrolledTopics(active);
+            const map: Record<string, { percent: number; done: number }> = {};
+            data.progress.forEach((p: any) => {
+              map[p.topic_id] = {
+                percent: Number(p.progress_percent) || 0,
+                done: Array.isArray(p.completed_lessons) ? p.completed_lessons.length : 0,
+              };
+            });
+            setProgressById(map);
           }
         })
         .catch(() => {});
@@ -237,77 +342,67 @@ export default function BrowsePage() {
   }, [selectedCategoryTab, searchQuery, sortBy]);
 
 
+  const totalLessons = TOPICS_DATA.reduce((acc, t) => acc + (t.totalLessons || 0), 0);
+
   return (
     <div className={styles.browseWrapper}>
-      {/* ===== HEADER ===== */}
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav}>
-            {/* Brand Logo */}
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+      <AppNav />
 
-            {/* Nav Menu */}
-            <div className={styles.navLinks}>
-              {[
-                { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/browse" },
-                { name: "My Topics", href: "/topics" },
-                { name: "Intelligence Hub", href: "/intelligence" },
-                { name: "Speak & Assess", href: "/mock-viva-prep" },
-              ].map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.href === "#") e.preventDefault();
-                    setActiveNav(item.name);
-                  }}
-                  className={`${styles.navLink} ${activeNav === item.name ? styles.navLinkActive : ""}`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+      {/* ===== PAGE HEADER + SEARCH ===== */}
+      <section className={styles.heroSection}>
+        <div className={styles.container}>
+          <Reveal className={styles.heroInner}>
+            <div className={styles.heroCopy}>
+              <span className={styles.kicker}>
+                <span className={styles.kickerLine} aria-hidden="true" />
+                Course library
+              </span>
+              <h1 className={styles.heroTitle}>
+                What do you want to <GradientText>learn today?</GradientText>
+              </h1>
+              <p className={styles.heroSubtitle}>
+                The complete CAT curriculum, from Quant to VARC, with past papers and full mocks below.
+              </p>
             </div>
 
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== HERO SEARCH ===== */}
-      <section className={styles.heroSection}>
-        <div className={styles.pillBadge}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-          Explore CAT Syllabus
-        </div>
-        <h1 className={styles.heroTitle}>
-          What do you want to <span className={styles.headingHighlight}>learn today?</span>
-        </h1>
-        <p className={styles.heroSubtitle}>Explore the complete CAT curriculum, from Quant to VARC.</p>
-        <div className={styles.searchBox}>
-          <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input 
-            type="text" 
-            className={styles.searchInput} 
-            placeholder="Search for 'Algebra', 'Reading Comprehension', etc..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+            <div className={styles.heroSide}>
+              <label className={styles.searchBox}>
+                <Search className={styles.searchIcon} size={18} aria-hidden="true" />
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Search 'Algebra', 'Reading Comprehension'..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search courses"
+                />
+              </label>
+              <dl className={styles.heroStats}>
+                <div>
+                  <dt>Courses</dt>
+                  <dd>{TOPICS_DATA.length}</dd>
+                </div>
+                <div>
+                  <dt>Lessons</dt>
+                  <dd>{totalLessons}</dd>
+                </div>
+                <div>
+                  <dt>Enrolled</dt>
+                  <dd>{enrolledTopics.length}</dd>
+                </div>
+              </dl>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className={styles.mainContent}>
+      <main className={`${styles.mainContent} ${styles.container}`}>
         {/* Categories (only show if not searching) */}
         {!searchQuery && (
-          <section className={styles.categorySection} aria-label="Browse by Category">
-            <div className={styles.categoryHeaderRow}>
-              <h2 className={styles.sectionTitle}>Browse by Category</h2>
+          <section className={styles.categorySection} aria-label="Browse by category">
+            <div className={styles.sectionHeadRow}>
+              <h2 className={styles.sectionTitle}>Browse by section</h2>
               <button
                 type="button"
                 className={styles.viewAllBtn}
@@ -321,276 +416,59 @@ export default function BrowsePage() {
                 }}
                 aria-label="View all topics"
               >
-                View All <span className={styles.viewAllArrow}>&rarr;</span>
+                View all <ArrowRight size={16} aria-hidden="true" />
               </button>
             </div>
 
-            <div className={styles.categoryGrid}>
-              {/* Card 1: Quantitative Ability */}
-              <div
-                className={styles.categoryCard}
-                onClick={() => setSearchQuery("Quantitative")}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSearchQuery("Quantitative");
-                  }
-                }}
-                aria-label="Browse Quantitative Ability topics"
-              >
-                <div className={styles.categoryCardTopRow}>
-                  <div className={styles.categoryCardLeft}>
-                    <div className={`${styles.categoryIconBox} ${styles.quantIconBox}`}>
-                      {/* Mathematical Sigma / Math icon */}
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M19 4H6l7 8-7 8h13" />
-                      </svg>
+            <RevealGroup className={styles.categoryGrid}>
+              {CATEGORY_CARDS.map((c) => (
+                <RevealItem key={c.key} className={styles.categoryItem}>
+                  <SpotlightCard
+                    tint={SECTION_TINT[c.key]}
+                    className={styles.categoryCard}
+                    data-section={c.key}
+                    onClick={() => setSearchQuery(c.query)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSearchQuery(c.query);
+                      }
+                    }}
+                    aria-label={c.aria}
+                  >
+                    <div className={styles.categoryTop}>
+                      <span className={styles.sectionMarker} aria-hidden="true" />
+                      <h3 className={styles.categoryCardTitle}>{c.label}</h3>
+                      <span className={styles.categoryArrow} aria-hidden="true">
+                        <ArrowRight size={16} />
+                      </span>
                     </div>
-                    <div className={styles.categoryMetaStack}>
-                      <h3 className={styles.categoryCardTitle}>Quantitative Ability</h3>
-                      <p className={styles.categoryCardStats}>51 Lessons • 12 Topics</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.categoryArrowBtn} aria-hidden="true">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className={styles.categoryCardBottom}>
-                  <p className={styles.categorySubtopicsText}>
-                    Algebra, Arithmetic, Modern Math and more
-                  </p>
-                </div>
-
-                {/* Subtle mathematical decorative visual */}
-                <svg
-                  className={`${styles.cardBgDeco} ${styles.quantDeco}`}
-                  width="96"
-                  height="68"
-                  viewBox="0 0 96 68"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M12 52 L36 36 L58 44 L80 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="80" cy="18" r="3" fill="currentColor" />
-                  <line
-                    x1="10"
-                    y1="58"
-                    x2="88"
-                    y2="58"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeDasharray="3 3"
-                    opacity="0.6"
-                  />
-                  <rect x="18" y="44" width="6" height="14" rx="2" fill="currentColor" opacity="0.3" />
-                  <rect x="40" y="32" width="6" height="26" rx="2" fill="currentColor" opacity="0.3" />
-                  <rect x="62" y="24" width="6" height="34" rx="2" fill="currentColor" opacity="0.3" />
-                </svg>
-              </div>
-
-              {/* Card 2: DILR */}
-              <div
-                className={styles.categoryCard}
-                onClick={() => setSearchQuery("Data")}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSearchQuery("Data");
-                  }
-                }}
-                aria-label="Browse DILR topics"
-              >
-                <div className={styles.categoryCardTopRow}>
-                  <div className={styles.categoryCardLeft}>
-                    <div className={`${styles.categoryIconBox} ${styles.dilrIconBox}`}>
-                      {/* Analytics / chart icon */}
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 3v18h18" />
-                        <rect x="7" y="13" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.4" />
-                        <rect x="12" y="9" width="3" height="9" rx="0.8" fill="currentColor" opacity="0.6" />
-                        <rect x="17" y="5" width="3" height="13" rx="0.8" fill="currentColor" />
-                      </svg>
-                    </div>
-                    <div className={styles.categoryMetaStack}>
-                      <h3 className={styles.categoryCardTitle}>DILR</h3>
-                      <p className={styles.categoryCardStats}>20 Lessons • 8 Topics</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.categoryArrowBtn} aria-hidden="true">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className={styles.categoryCardBottom}>
-                  <p className={styles.categorySubtopicsText}>
-                    Data Interpretation, Logical Reasoning, Set Theory and more
-                  </p>
-                </div>
-
-                {/* Subtle geometric / analytics chart shapes */}
-                <svg
-                  className={`${styles.cardBgDeco} ${styles.dilrDeco}`}
-                  width="96"
-                  height="68"
-                  viewBox="0 0 96 68"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <rect x="16" y="36" width="16" height="24" rx="3" fill="currentColor" opacity="0.25" />
-                  <rect x="38" y="22" width="16" height="38" rx="3" fill="currentColor" opacity="0.4" />
-                  <rect x="60" y="12" width="16" height="48" rx="3" fill="currentColor" opacity="0.6" />
-                  <line x1="10" y1="62" x2="84" y2="62" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </div>
-
-              {/* Card 3: VARC */}
-              <div
-                className={styles.categoryCard}
-                onClick={() => setSearchQuery("Verbal")}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSearchQuery("Verbal");
-                  }
-                }}
-                aria-label="Browse VARC topics"
-              >
-                <div className={styles.categoryCardTopRow}>
-                  <div className={styles.categoryCardLeft}>
-                    <div className={`${styles.categoryIconBox} ${styles.varcIconBox}`}>
-                      {/* Book / reading icon */}
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                      </svg>
-                    </div>
-                    <div className={styles.categoryMetaStack}>
-                      <h3 className={styles.categoryCardTitle}>VARC</h3>
-                      <p className={styles.categoryCardStats}>18 Lessons • 9 Topics</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.categoryArrowBtn} aria-hidden="true">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className={styles.categoryCardBottom}>
-                  <p className={styles.categorySubtopicsText}>
-                    Reading Comprehension, Para Jumbles, Para Summary and more
-                  </p>
-                </div>
-
-                {/* Subtle document / reading lines */}
-                <svg
-                  className={`${styles.cardBgDeco} ${styles.varcDeco}`}
-                  width="96"
-                  height="68"
-                  viewBox="0 0 96 68"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <rect x="28" y="12" width="46" height="48" rx="6" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.35" />
-                  <line x1="36" y1="22" x2="62" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-                  <line x1="36" y1="30" x2="66" y2="30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-                  <line x1="36" y1="38" x2="58" y2="38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-                  <line x1="36" y1="46" x2="50" y2="46" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-                </svg>
-              </div>
-            </div>
+                    <p className={styles.categoryStats}>
+                      <span>{c.lessons}</span> lessons <span className={styles.statSep}>/</span>{" "}
+                      <span>{c.topics}</span> topics
+                    </p>
+                    <p className={styles.categorySubtopics}>{c.subtopics}</p>
+                    <SectionVignette k={c.key} />
+                  </SpotlightCard>
+                </RevealItem>
+              ))}
+            </RevealGroup>
           </section>
         )}
 
-
         {/* PYQ Search Match Banner */}
         {matchesPYQ && (
-          <div className={styles.pyqSearchResultBanner}>
+          <Reveal className={`glass-card ${styles.pyqSearchResultBanner}`} data-tint="amber">
             <div className={styles.pyqSearchLeft}>
-              <span className={styles.pyqSearchBadge}>PYQ Question Paper Found</span>
-              <h3 className={styles.pyqSearchTitle}>CAT 2024 Official Question Papers</h3>
+              <span className={styles.pyqSearchBadge}>
+                <FileText size={14} aria-hidden="true" /> Past paper found
+              </span>
+              <h3 className={styles.pyqSearchTitle}>CAT 2024 official question papers</h3>
               <p className={styles.pyqSearchDesc}>
-                Access authentic questions across Slot 1, Slot 2 &amp; Slot 3. Covers VARC, DILR, and Quantitative Ability with step-by-step verified solutions and timed CAT exam proctoring.
+                Authentic questions across Slot 1, Slot 2 &amp; Slot 3. Covers VARC, DILR and Quantitative Ability with
+                step-by-step verified solutions and timed, proctored attempts.
               </p>
             </div>
             <button
@@ -598,32 +476,34 @@ export default function BrowsePage() {
               className={styles.pyqSearchBtn}
               onClick={() => setSearchPYQModalOpen(true)}
             >
-              <span>Explore CAT 2024 PYQs</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
+              <span>Explore CAT 2024 papers</span>
+              <ArrowRight size={16} aria-hidden="true" />
             </button>
-          </div>
+          </Reveal>
         )}
 
         {/* Course Grid */}
         <div id="all-topics-section" className={styles.topicsHeaderRow}>
-          <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
-            {searchQuery ? `Search Results for "${searchQuery}"` : "All Topics"}
+          <h2 className={styles.sectionTitle}>
+            {searchQuery ? (
+              <>
+                Results for <span className={styles.queryEcho}>&ldquo;{searchQuery}&rdquo;</span>
+              </>
+            ) : (
+              "All courses"
+            )}
           </h2>
           {searchQuery ? (
-            <button 
+            <button
+              type="button"
+              className={styles.backBtn}
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategoryTab("All");
               }}
-              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", background: "#f1f5f9", color: "#475569", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#f1f5f9")}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-              Back to Categories
+              <ArrowLeft size={16} aria-hidden="true" />
+              Back to sections
             </button>
           ) : (
             <div className={styles.topicsControls}>
@@ -654,22 +534,13 @@ export default function BrowsePage() {
                   aria-expanded={sortDropdownOpen}
                   aria-label={`Sort topics, currently sorted by ${sortBy}`}
                 >
-                  <span className={styles.sortLabelPrefix}>Sort by:</span>
+                  <span className={styles.sortLabelPrefix}>Sort</span>
                   <span className={styles.sortLabelValue}>{sortBy}</span>
-                  <svg
+                  <ChevronDown
                     className={`${styles.sortChevron} ${sortDropdownOpen ? styles.sortChevronOpen : ""}`}
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    size={15}
                     aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                  />
                 </button>
 
                 {sortDropdownOpen && (
@@ -687,20 +558,7 @@ export default function BrowsePage() {
                         }}
                       >
                         <span>{opt}</span>
-                        {sortBy === opt && (
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#2563EB"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
+                        {sortBy === opt && <Check size={15} aria-hidden="true" />}
                       </button>
                     ))}
                   </div>
@@ -710,78 +568,110 @@ export default function BrowsePage() {
           )}
         </div>
 
-        
         {filteredTopics.length === 0 ? (
-          <div className={styles.noResults}>No topics found matching your search.</div>
+          <div className={styles.noResults}>No courses match your search.</div>
         ) : (
-          <div className={styles.topicsGrid}>
-            {filteredTopics.map(topic => {
+          <RevealGroup className={styles.topicsGrid}>
+            {filteredTopics.map((topic) => {
               const isEnrolled = enrolledTopics.includes(topic.id);
+              const section = sectionOf(topic);
+              const prog = isDemo
+                ? { percent: topic.progressPercent || 0, done: topic.completedLessonsCount || 0 }
+                : progressById[topic.id] || { percent: 0, done: 0 };
+              const percent = Math.max(0, Math.min(100, Math.round(prog.percent)));
 
               return (
-                <div key={topic.id} className={styles.topicCard}>
-                  {/* Banner */}
-                  <div className={styles.cardBanner} style={{ background: topic.bannerGradient || "#1F2937" }}>
-                    {topic.bannerImage && (
-                      <img 
-                        src={topic.bannerImage} 
-                        alt={topic.title}
-                        className={styles.cardBannerBg}
-                      />
-                    )}
-                    <div className={styles.topicBadge}>{topic.category}</div>
-                  </div>
+                <RevealItem key={topic.id} className={styles.topicItem}>
+                  <SpotlightCard as="article" tint={SECTION_TINT[section]} className={styles.topicCard} data-section={section}>
+                    {/* Banner */}
+                    <div className={styles.cardBanner} style={{ background: topic.bannerGradient || "#1F2937" }}>
+                      {topic.bannerImage && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={topic.bannerImage} alt={topic.title} className={styles.cardBannerBg} />
+                      )}
+                      <span className={styles.bannerShade} aria-hidden="true" />
+                      <span className={styles.topicBadge}>
+                        <span className={styles.badgeDot} aria-hidden="true" />
+                        {topic.category}
+                      </span>
+                      {isEnrolled && <span className={styles.enrolledFlag}>Enrolled</span>}
+                    </div>
 
-                  {/* Body */}
-                  <div className={styles.cardBody}>
-                    <h3 className={styles.cardTitle}>{topic.title}</h3>
-                    <p className={styles.cardDesc}>{topic.description}</p>
-                    
-                    <div className={styles.instructorRow}>
-                      <img src={topic.instructor.avatar} alt={topic.instructor.name} className={styles.instructorAvatar} />
-                      <div className={styles.instructorInfo}>
-                        <span className={styles.instructorName}>{topic.instructor.name}</span>
-                        <span className={styles.instructorRole}>{topic.instructor.role}</span>
+                    {/* Body */}
+                    <div className={styles.cardBody}>
+                      <h3 className={styles.cardTitle}>{topic.title}</h3>
+                      <p className={styles.cardDesc}>{topic.description}</p>
+
+                      <div className={styles.instructorRow}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={topic.instructor.avatar} alt={topic.instructor.name} className={styles.instructorAvatar} />
+                        <div className={styles.instructorInfo}>
+                          <span className={styles.instructorName}>{topic.instructor.name}</span>
+                          <span className={styles.instructorRole}>{topic.instructor.role}</span>
+                        </div>
+                      </div>
+
+                      {isEnrolled ? (
+                        <div className={styles.progressBlock}>
+                          <div className={styles.progressHead}>
+                            <span>
+                              <b>{prog.done}</b>/{topic.totalLessons} lessons
+                            </span>
+                            <span className={styles.progressPct}>{percent}%</span>
+                          </div>
+                          <div className={styles.progressTrack}>
+                            <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={styles.progressBlock}>
+                          <div className={styles.progressHead}>
+                            <span>
+                              <b>{topic.totalLessons}</b> lessons
+                            </span>
+                            <span className={styles.progressMuted}>Not started</span>
+                          </div>
+                          <div className={styles.progressTrack} />
+                        </div>
+                      )}
+
+                      <div className={styles.cardFooter}>
+                        {isEnrolled ? (
+                          <button
+                            type="button"
+                            className={`${styles.enrollBtn} ${styles.btnSecondary}`}
+                            onClick={() => router.push(`/topics/${topic.id}`)}
+                          >
+                            {percent > 0 ? "Resume course" : "Go to course"}
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`${styles.enrollBtn} ${styles.btnPrimary}`}
+                            disabled={enrollingTopicId === topic.id}
+                            onClick={() => handleEnroll(topic.id, topic.title)}
+                          >
+                            {enrollingTopicId === topic.id ? "Enrolling..." : "Enroll now"}
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </button>
+                        )}
                       </div>
                     </div>
-
-                    <div className={styles.cardFooter}>
-                      {isEnrolled ? (
-                        <button 
-                          className={`${styles.enrollBtn} ${styles.btnSecondary}`}
-                          onClick={() => router.push(`/topics/${topic.id}`)}
-                        >
-                          Go to Course
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </button>
-                      ) : (
-                        <button 
-                          className={`${styles.enrollBtn} ${styles.btnPrimary}`}
-                          disabled={enrollingTopicId === topic.id}
-                          onClick={() => handleEnroll(topic.id, topic.title)}
-                        >
-                          {enrollingTopicId === topic.id ? "Enrolling..." : "Enroll Now"}
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  </SpotlightCard>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         )}
 
-        {/* Previous Year Questions (PYQs) Section (Listed below all topics) */}
-        {!searchQuery && <PYQSection />}
+        {/* Past papers & full mocks (rendered by PYQSection) */}
+        {!searchQuery && (
+          <div className={styles.pyqWrap}>
+            <PYQSection />
+          </div>
+        )}
       </main>
-
 
       {/* PYQ Year Modal from Search Banner */}
       {searchPYQModalOpen && (

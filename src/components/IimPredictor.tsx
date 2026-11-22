@@ -98,7 +98,7 @@ export default function IimPredictor() {
     initial: { opacity: 0, y: reduce ? 0 : 12 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: reduce ? 0 : -8 },
-    transition: { duration: reduce ? 0.15 : 0.4, ease: EASE_OUT },
+    transition: { duration: reduce ? 0.6 : 0.4, ease: EASE_OUT },
   };
 
   const teaser = cutoffTeaser(percentile);

@@ -22,7 +22,8 @@ import {
 } from "motion/react";
 import styles from "./motion.module.css";
 
-export const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+// Gentle ease-out (cubic): starts softly instead of snapping in.
+export const EASE_OUT = [0.33, 1, 0.68, 1] as const;
 
 /* ------------------------------------------------------------------ */
 /* Reveal-once: each element animates the first time it scrolls into view */
@@ -93,7 +94,7 @@ export function Reveal({ delay = 0, y = 24, once: _once, children, ...rest }: Re
       ref={ref}
       initial={hidden}
       animate={inView ? { opacity: 1, y: 0 } : hidden}
-      transition={{ duration: reduce ? 0.2 : 0.65, delay: reduce || !inView ? 0 : delay, ease: EASE_OUT }}
+      transition={{ duration: reduce ? 0.8 : 0.9, delay: reduce || !inView ? 0 : delay, ease: EASE_OUT }}
       {...rest}
     >
       {children}
@@ -110,12 +111,12 @@ const groupVariants: Variants = {
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE_OUT } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE_OUT } },
 };
 
 const itemVariantsReduced: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.2 } },
+  show: { opacity: 1, transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] } },
 };
 
 type GroupProps = HTMLMotionProps<"div"> & { stagger?: number };
@@ -137,10 +138,30 @@ export function RevealGroup({ stagger = 0.05, children, ...rest }: GroupProps) {
   );
 }
 
+/**
+ * Each item reveals itself the first time it scrolls into view (so items added later, e.g. a
+ * feed that loads after mount, still appear). Siblings entering together stagger by position.
+ */
 export function RevealItem({ children, ...rest }: HTMLMotionProps<"div">) {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useReplayInView(ref);
+  const [delay, setDelay] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el?.parentElement) return;
+    const index = Array.prototype.indexOf.call(el.parentElement.children, el);
+    setDelay(Math.min(Math.max(index, 0), 6) * 0.06);
+  }, []);
+  const v = reduce ? itemVariantsReduced : itemVariants;
   return (
-    <motion.div variants={reduce ? itemVariantsReduced : itemVariants} {...rest}>
+    <motion.div
+      ref={ref}
+      initial={v.hidden as never}
+      animate={inView ? (v.show as never) : (v.hidden as never)}
+      transition={{ duration: reduce ? 0.8 : 0.9, ease: EASE_OUT, delay: reduce || !inView ? 0 : delay }}
+      {...rest}
+    >
       {children}
     </motion.div>
   );

@@ -2,7 +2,38 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  Bookmark,
+  BookOpen,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CircleCheck,
+  Clock,
+  FileText,
+  Lock,
+  Maximize,
+  Minimize,
+  Pause,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  Send,
+  Share2,
+  ShieldCheck,
+  Target,
+  TriangleAlert,
+  Volume1,
+  Volume2,
+  VolumeX,
+  X,
+  Zap,
+} from "lucide-react";
+import AppNav from "@/components/app/AppNav";
+import { Reveal } from "@/components/landing/motion";
 import TopicQuizModal from "@/components/TopicQuizModal";
 import ModuleQuizModal from "@/components/ModuleQuizModal";
 import AiAdvisorCard, { ModuleProgressItem, QuizReportCardData } from "@/components/AiAdvisorCard";
@@ -29,7 +60,6 @@ import {
   clearModuleQuizHistory,
 } from "@/services/quizCacheService";
 import styles from "./topicDetail.module.css";
-import BrandLogo from "@/components/BrandLogo";
 import { submitQuizAttempt } from "@/services/quizAttemptService";
 import { useStudyHeartbeat } from "@/hooks/useStudyHeartbeat";
 
@@ -63,13 +93,37 @@ function formatTime(seconds: number): string {
 }
 
 function formatDurationReadable(seconds: number): string {
-  if (seconds <= 0) return "0 min";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
+  // Display only: never show a negative or NaN duration.
+  const safe = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  if (safe <= 0) return "0m";
+  const h = Math.floor(safe / 3600);
+  const m = Math.floor((safe % 3600) / 60);
   if (h > 0) {
-    return `${h}h ${m > 0 ? `${m}m` : ""}`;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
   }
+  if (m === 0) return `${safe}s`;
   return `${m}m`;
+}
+
+/** Compact, never-negative label for a lesson's duration string ("1 hour 12 min" -> "1h 12m"). */
+function formatLessonDuration(durationStr?: string): string {
+  if (!durationStr) return "";
+  const secs = parseLessonDuration(durationStr);
+  if (secs > 0) return formatDurationReadable(secs);
+  // Unparseable: show the raw text without a leading "~" / "-" that reads like a minus sign.
+  return durationStr.replace(/^[\s~\-\u2212\u2013]+/, "");
+}
+
+type SectionKey = "qa" | "dilr" | "varc" | "other";
+
+/** Visual accent only (section marker colour). */
+function sectionOf(t: { id: string; category?: string }): SectionKey {
+  const id = t.id.toLowerCase();
+  const cat = (t.category || "").toLowerCase();
+  if (id.startsWith("qa-") || cat.includes("quant")) return "qa";
+  if (id.startsWith("dilr-") || cat.includes("data") || cat.includes("dilr")) return "dilr";
+  if (id.startsWith("varc-") || cat.includes("verbal") || cat.includes("varc")) return "varc";
+  return "other";
 }
 
 /** Row shape of GET /api/quiz/attempts (only the fields this page reads). */
@@ -189,8 +243,6 @@ export default function TopicDetailPage() {
       lessons,
     }));
   }, [topic]);
-
-  const [activeNav, setActiveNav] = useState("My Topics");
 
   const isDemo = Boolean(user && user.email === "student@technocat.edu");
 
@@ -1958,88 +2010,41 @@ export default function TopicDetailPage() {
       : null;
 
   return (
-    <div className={styles.pageWrapper}>
-      {/* ===== DARK UPPER HEADER ===== */}
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Topic Detail Navigation">
-            {/* Brand Logo */}
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
+    <div className={styles.pageWrapper} data-section={sectionOf(topic)}>
+      <AppNav />
 
-            <div className={styles.navLinks}>
-              {[
-                { name: "Dashboard", href: "/dashboard" },
-                { name: "Browse", href: "/browse" },
-                { name: "My Topics", href: "/topics" },
-                { name: "Intelligence Hub", href: "/intelligence" },
-                { name: "Speak & Assess", href: "/mock-viva-prep" },
-              ].map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.href === "#") e.preventDefault();
-                    setActiveNav(item.name);
-                  }}
-                  className={`${styles.navLink} ${activeNav === item.name ? styles.navLinkActive : ""}`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== SUBHEADER: BREADCRUMBS & MAIN TOPIC TITLE ===== */}
+      {/* ===== SUBHEADER: BREADCRUMBS & COURSE TITLE ===== */}
       <section className={styles.subHeader}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "8px" }}>
-          <div className={styles.pillBadge} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            {topic.category || "CAT Preparation"} • Curriculum
+        <Reveal className={styles.subHeaderInner}>
+          <div className={styles.subHeaderCopy}>
+            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+              <Link href="/topics" className={styles.breadcrumbLink}>
+                My topics
+              </Link>
+              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+              <span className={styles.breadcrumbLink}>{topic.shortTitle || topic.title}</span>
+              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+              <span className={styles.breadcrumbCurrent}>{activeLesson.code || "Video lesson"}</span>
+            </nav>
+            <h1 className={styles.topicMainTitle}>{topic.title}</h1>
+            <p className={styles.subHeaderMeta}>
+              <span className={styles.sectionDot} aria-hidden="true" />
+              <span>{topic.category || "CAT Preparation"}</span>
+              <span className={styles.metaSep}>/</span>
+              <span>
+                <b>{modulesList.length}</b> modules
+              </span>
+              <span className={styles.metaSep}>/</span>
+              <span>
+                <b>{overallProgressPercent}%</b> complete
+              </span>
+            </p>
           </div>
-          <Link
-            href="/topics"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              color: "#2563EB",
-              textDecoration: "none",
-              fontSize: "13px",
-              fontWeight: 600,
-              padding: "6px 14px",
-              background: "#F0F9FF",
-              border: "1px solid #BAE6FD",
-              borderRadius: "8px",
-              transition: "all 0.2s",
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back to My Topics
+          <Link href="/topics" className={styles.backLink}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            Back to my topics
           </Link>
-        </div>
-        <div className={styles.breadcrumb}>
-          <Link href="/topics" className={styles.breadcrumbLink}>
-            My Topics
-          </Link>
-          <span className={styles.breadcrumbSep}>›</span>
-          <span className={styles.breadcrumbLink}>{topic.shortTitle || topic.title}</span>
-          <span className={styles.breadcrumbSep}>›</span>
-          <span className={styles.breadcrumbCurrent}>{activeLesson.code || "Video Lesson"}</span>
-        </div>
-        <h1 className={styles.topicMainTitle}>
-          <span className={styles.headingHighlight}>{topic.title}</span>
-        </h1>
+        </Reveal>
       </section>
 
       {/* ===== MAIN 2-COLUMN CONTAINER ===== */}
@@ -2085,16 +2090,14 @@ export default function TopicDetailPage() {
 
                 {/* Centered Play Button */}
                 <div className={styles.facadePlayBtn}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="6 3 20 12 6 21 6 3" />
-                  </svg>
+                  <Play size={32} fill="currentColor" aria-hidden="true" />
                 </div>
 
                 {/* Bottom Row */}
                 <div className={styles.facadeBottomRow}>
                   <span className={styles.facadeTitle}>{activeLesson.title}</span>
                   {activeLesson.duration && (
-                    <span className={styles.facadeDuration}>{activeLesson.duration}</span>
+                    <span className={styles.facadeDuration}>{formatLessonDuration(activeLesson.duration)}</span>
                   )}
                 </div>
               </div>
@@ -2126,24 +2129,19 @@ export default function TopicDetailPage() {
                   <div className={styles.pauseOverlay} onClick={playVideo} role="button" tabIndex={0}>
                     <span className={styles.pauseBadge}>{activeLesson.code || "Lecture"} • Paused</span>
                     <div className={styles.pausePlayBtn}>
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="6 3 20 12 6 21 6 3" />
-                      </svg>
+                      <Play size={30} fill="currentColor" aria-hidden="true" />
                     </div>
                     <div className={styles.pauseTitle}>{activeLesson.title}</div>
-                    <span className={styles.pauseHint}>Click anywhere to resume lecture</span>
+                    <span className={styles.pauseHint}>Click anywhere to resume</span>
                   </div>
                 )}
 
                 {/* Lesson Completed Screen */}
                 {playerState === "ended" && (
                   <div className={styles.endedOverlay}>
-                    <span className={styles.endedBadge} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                        <polyline points="22 4 12 14.01 9 11.01" />
-                      </svg>
-                      Lecture Completed (+10 XP)
+                    <span className={styles.endedBadge}>
+                      <CircleCheck size={14} aria-hidden="true" />
+                      Lecture complete · +10 XP
                     </span>
                     <h3 className={styles.endedTitle}>{activeLesson.title}</h3>
                     <p className={styles.endedSubtitle}>
@@ -2167,7 +2165,8 @@ export default function TopicDetailPage() {
                             className={styles.nextLessonBtn}
                             onClick={() => handleLessonSelect(nextLesson)}
                           >
-                            Next Lecture ({nextLesson.code}) →
+                            Next lecture ({nextLesson.code})
+                            <ArrowRight size={16} aria-hidden="true" />
                           </button>
                         ) : null;
                       })()}
@@ -2231,14 +2230,9 @@ export default function TopicDetailPage() {
                         title={playerState === "playing" ? "Pause (k/space)" : "Play (k/space)"}
                       >
                         {playerState === "playing" ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
-                          </svg>
+                          <Pause size={18} fill="currentColor" aria-hidden="true" />
                         ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="6 3 20 12 6 21 6 3" />
-                          </svg>
+                          <Play size={18} fill="currentColor" aria-hidden="true" />
                         )}
                       </button>
 
@@ -2250,16 +2244,13 @@ export default function TopicDetailPage() {
                         }}
                         title="Rewind 10 seconds (←)"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M1 4v6h6" />
-                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                        </svg>
+                        <RotateCcw size={14} aria-hidden="true" />
                         <span>10s</span>
                       </button>
 
                       <div className={styles.timeDisplay}>
                         <span>{formatTime(currentTime)}</span>
-                        <span style={{ opacity: 0.5 }}>/</span>
+                        <span className={styles.timeSep}>/</span>
                         <span>{formatTime(duration)}</span>
                       </div>
                     </div>
@@ -2274,21 +2265,11 @@ export default function TopicDetailPage() {
                           aria-label={isMuted || volume === 0 ? "Unmute" : "Mute"}
                         >
                           {isMuted || volume === 0 ? (
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                              <line x1="23" y1="9" x2="17" y2="15" />
-                              <line x1="17" y1="9" x2="23" y2="15" />
-                            </svg>
+                            <VolumeX size={19} aria-hidden="true" />
                           ) : volume < 50 ? (
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                            </svg>
+                            <Volume1 size={19} aria-hidden="true" />
                           ) : (
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-                            </svg>
+                            <Volume2 size={19} aria-hidden="true" />
                           )}
                         </button>
                         <input
@@ -2320,13 +2301,9 @@ export default function TopicDetailPage() {
                         aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
                       >
                         {isFullscreen ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-                          </svg>
+                          <Minimize size={20} aria-hidden="true" />
                         ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                          </svg>
+                          <Maximize size={20} aria-hidden="true" />
                         )}
                       </button>
                     </div>
@@ -2342,12 +2319,9 @@ export default function TopicDetailPage() {
               {activeLesson.code && <span className={styles.codeBadge}>{activeLesson.code}</span>}
               {activeLesson.moduleTitle && <span className={styles.moduleTag}>{activeLesson.moduleTitle}</span>}
               {activeLesson.duration && (
-                <span className={styles.moduleTag} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span>{activeLesson.duration}</span>
+                <span className={styles.moduleTag}>
+                  <Clock size={12} aria-hidden="true" />
+                  <span className={styles.mono}>{formatLessonDuration(activeLesson.duration)}</span>
                 </span>
               )}
 
@@ -2358,14 +2332,12 @@ export default function TopicDetailPage() {
                 }`}
               >
                 {completedLessonIds.includes(activeLesson.id) ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    +10 XP Earned
+                  <span className={styles.iconLabel}>
+                    <Check size={12} aria-hidden="true" />
+                    +10 XP earned
                   </span>
                 ) : (
-                  "+10 XP on Complete"
+                  "+10 XP on completion"
                 )}
               </span>
 
@@ -2383,31 +2355,18 @@ export default function TopicDetailPage() {
                   <button
                     type="button"
                     onClick={() => markLessonAsReviewed(activeLesson.id)}
-                    className={`${styles.lessonXpPill} ${isAlreadyReviewed ? styles.lessonXpPillDone : ""}`}
-                    style={{
-                      background: isAlreadyReviewed ? "#ECFDF5" : "#FEF3C7",
-                      color: isAlreadyReviewed ? "#065F46" : "#92400E",
-                      border: isAlreadyReviewed ? "1px solid #A7F3D0" : "1px solid #FCD34D",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                    title="Click to mark this review as completed and update the AI Advisor"
+                    className={`${styles.reviewPill} ${isAlreadyReviewed ? styles.reviewPillDone : ""}`}
+                    title="Mark this review as completed and update the study advisor"
                   >
                     {isAlreadyReviewed ? (
                       <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Recommended Review Done
+                        <Check size={12} aria-hidden="true" />
+                        Review done
                       </>
                     ) : (
                       <>
-                        Mark Review Done
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        Mark review done
+                        <Check size={12} aria-hidden="true" />
                       </>
                     )}
                   </button>
@@ -2417,7 +2376,6 @@ export default function TopicDetailPage() {
               <button
                 type="button"
                 className={styles.quizTriggerPill}
-                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                 onClick={() => {
                   const knowledge = getLessonKnowledge(
                     activeLesson.code,
@@ -2431,12 +2389,8 @@ export default function TopicDetailPage() {
                   });
                 }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" />
-                </svg>
-                Practice Quiz
+                <Target size={13} aria-hidden="true" />
+                Practice quiz
               </button>
             </div>
 
@@ -2447,17 +2401,12 @@ export default function TopicDetailPage() {
           <div className={styles.aboutLessonBox}>
             <div className={styles.aboutLessonHeader}>
               <h3 className={styles.aboutLessonHeading}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                  </svg>
-                  About This Topic & Lecture Overview
+                <span className={styles.iconLabel}>
+                  <BookOpen size={15} aria-hidden="true" />
+                  About this course
                 </span>
               </h3>
-              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>
-                Read Before Watching
-              </span>
+              <span className={styles.aboutHint}>Read before watching</span>
             </div>
 
             <p className={styles.aboutLessonDesc}>
@@ -2477,10 +2426,8 @@ export default function TopicDetailPage() {
             )}
 
             {/* Full Topic Overview & Suits For */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "14px" }}>
-              <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#1E293B", margin: "0 0 6px 0" }}>
-                Who This Course Suits For:
-              </h4>
+            <div className={styles.suitsBlock}>
+              <h4 className={styles.suitsHeading}>Who this course suits</h4>
               <ul className={styles.suitsList}>
                 {topic.suitsFor.map((item, idx) => (
                   <li key={idx} className={styles.suitItem}>
@@ -2510,7 +2457,8 @@ export default function TopicDetailPage() {
             <div className={styles.instructorActions}>
               <button
                 className={styles.actionCircleBtn}
-                title="Share Topic"
+                title="Share course"
+                aria-label="Share course"
                 onClick={() => {
                   if (typeof navigator !== "undefined" && navigator.clipboard) {
                     navigator.clipboard.writeText(window.location.href);
@@ -2518,29 +2466,23 @@ export default function TopicDetailPage() {
                   }
                 }}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
+                <Share2 size={18} aria-hidden="true" />
               </button>
 
               <button
                 className={`${styles.actionCircleBtn} ${isBookmarked ? styles.actionCircleBtnActive : ""}`}
                 onClick={() => setIsBookmarked(!isBookmarked)}
                 title={isBookmarked ? "Saved" : "Bookmark"}
+                aria-label={isBookmarked ? "Remove bookmark" : "Bookmark course"}
+                aria-pressed={isBookmarked}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={isBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
+                <Bookmark size={18} fill={isBookmarked ? "currentColor" : "none"} aria-hidden="true" />
               </button>
             </div>
           </div>
 
           {/* 5. Ask AI Tutor Panel (Video RAG & Chat) */}
-          <div id="aiTutorSection" style={{ scrollMarginTop: "24px" }}>
+          <div id="aiTutorSection" className={styles.tutorAnchor}>
             <VideoAskPanel
               topicId={topic.id}
               topicTitle={topic.title}
@@ -2560,11 +2502,11 @@ export default function TopicDetailPage() {
         </div>
 
         {/* ===== RIGHT COLUMN: STUDY PROGRESS, MODULE CURRICULUM, AI ADVISOR ===== */}
-        <div className={styles.rightColumn}>
+        <Reveal className={styles.rightColumn} delay={0.08}>
           {/* 1. Study Progress Card */}
           <div className={styles.progressCard}>
             <div className={styles.progressCardHeader}>
-              <h2 className={styles.progressCardTitle}>Your Study Progress</h2>
+              <h2 className={styles.progressCardTitle}>Your progress</h2>
               <span className={styles.progressPercentBadge}>{overallProgressPercent}%</span>
             </div>
 
@@ -2580,28 +2522,23 @@ export default function TopicDetailPage() {
             <div className={styles.progressMetricsRow}>
               <div className={styles.metricBox}>
                 <div className={styles.metricBoxValue}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                    </svg>
+                  <span className={styles.iconLabel}>
+                    <Zap size={15} aria-hidden="true" />
                     {totalPoints} / {totalCourseXP} XP
                   </span>
                 </div>
-                <span className={styles.metricBoxLabel}>Course Points Earned</span>
+                <span className={styles.metricBoxLabel}>Course points earned</span>
               </div>
 
               <div className={styles.metricBox}>
                 <div className={styles.metricBoxValue}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
+                  <span className={styles.iconLabel}>
+                    <Clock size={14} aria-hidden="true" />
                     <span>{formatDurationReadable(completedTimeSeconds)}</span>
                   </span>
                 </div>
                 <span className={styles.metricBoxLabel}>
-                  of ~{formatDurationReadable(totalExpectedSeconds)} Est.
+                  of {formatDurationReadable(totalExpectedSeconds)} est.
                 </span>
               </div>
             </div>
@@ -2637,13 +2574,13 @@ export default function TopicDetailPage() {
           {/* 2. Module Curriculum Card (With Accordion & Dedicated Quiz Row inside each module) */}
           <div className={styles.curriculumCard}>
             <div className={styles.curriculumHeader}>
-              <h2 className={styles.curriculumTitle}>Course Curriculum</h2>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563EB" }}>
-                {Object.values(modulesProgress).filter((m) => m.quizPassed).length} / {modulesList.length} Passed
+              <h2 className={styles.curriculumTitle}>Curriculum</h2>
+              <span className={styles.curriculumCount}>
+                <b>{Object.values(modulesProgress).filter((m) => m.quizPassed).length}</b>/{modulesList.length} passed
               </span>
             </div>
             <p className={styles.curriculumMeta}>
-              Pass each compulsory quiz (≥70%) to unlock the next module.
+              Pass each module quiz (70% or more) to unlock the next module.
             </p>
 
             <div className={styles.moduleAccordionList}>
@@ -2691,18 +2628,11 @@ export default function TopicDetailPage() {
                           }`}
                         >
                           {isPassed ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                            <Check size={14} aria-hidden="true" />
                           ) : isUnlocked ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                              <polygon points="5 3 19 12 5 21 5 3" />
-                            </svg>
+                            <Play size={12} fill="currentColor" aria-hidden="true" />
                           ) : (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
+                            <Lock size={12} aria-hidden="true" />
                           )}
                         </div>
 
@@ -2711,7 +2641,9 @@ export default function TopicDetailPage() {
                             {mod.title}
                           </span>
                           <span className={styles.moduleSubtitle}>
-                            {completedInMod}/{mod.lessons.length} lessons • ~{formatDurationReadable(modDurationSec)}
+                            <b>{completedInMod}</b>/{mod.lessons.length} lessons
+                            <span className={styles.metaSep}>/</span>
+                            <span className={styles.mono}>{formatDurationReadable(modDurationSec)}</span>
                           </span>
                         </div>
                       </div>
@@ -2729,7 +2661,7 @@ export default function TopicDetailPage() {
                               </span>
                             ) : (
                               <span className={`${styles.moduleBadgePill} ${styles.badgeQuizReady}`}>
-                                Quiz Ready!
+                                Quiz ready
                               </span>
                             )
                           ) : (
@@ -2743,19 +2675,13 @@ export default function TopicDetailPage() {
                           </span>
                         )}
 
-                        <svg
+                        <ChevronDown
                           className={`${styles.chevronIcon} ${
                             isExpanded ? styles.chevronIconExpanded : ""
                           }`}
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        >
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                          size={16}
+                          aria-hidden="true"
+                        />
                       </div>
                     </div>
 
@@ -2776,37 +2702,29 @@ export default function TopicDetailPage() {
                               }`}
                             >
                               <div className={styles.lessonRowLeft}>
-                                <div className={styles.lessonPlayIcon}>
+                                <div
+                                  className={`${styles.lessonPlayIcon} ${
+                                    isDone ? styles.lessonIconDone : isUnlocked ? "" : styles.lessonIconLocked
+                                  }`}
+                                >
                                   {isDone ? (
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3">
-                                      <polyline points="20 6 9 17 4 12" />
-                                    </svg>
+                                    <Check size={12} aria-hidden="true" />
                                   ) : isUnlocked ? (
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                      <polygon points="5 3 19 12 5 21 5 3" />
-                                    </svg>
+                                    <Play size={12} fill="currentColor" aria-hidden="true" />
                                   ) : (
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                    </svg>
+                                    <Lock size={12} aria-hidden="true" />
                                   )}
                                 </div>
 
                                 <div className={styles.lessonTextCol}>
                                   <span className={styles.lessonRowTitle} title={lesson.title}>
-                                    {lesson.code ? `${lesson.code} ` : ""}
+                                    {lesson.code && <span className={styles.lessonCode}>{lesson.code}</span>}
                                     {lesson.title}
                                   </span>
                                   <div className={styles.lessonRowMeta}>
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <polyline points="12 6 12 12 16 14" />
-                                      </svg>
-                                      <span>{lesson.duration}</span>
-                                    </span>
-                                    {isDone && <span>• Watched</span>}
+                                    <span className={styles.lessonDuration}>{formatLessonDuration(lesson.duration)}</span>
+                                    {isDone && <span className={styles.watchedTag}>Watched</span>}
+                                    {isActive && !isDone && <span className={styles.nowTag}>Now playing</span>}
                                   </div>
                                 </div>
                               </div>
@@ -2818,11 +2736,9 @@ export default function TopicDetailPage() {
                                   }`}
                                 >
                                   {isDone ? (
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                    <span className={styles.iconLabel}>
                                       +10 XP
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
+                                      <Check size={11} aria-hidden="true" />
                                     </span>
                                   ) : (
                                     "+10 XP"
@@ -2850,22 +2766,16 @@ export default function TopicDetailPage() {
                                     }`}
                                   >
                                     {isPassed ? (
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
+                                      <Check size={14} aria-hidden="true" />
                                     ) : (
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                                        <line x1="12" y1="9" x2="12" y2="13" />
-                                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                                      </svg>
+                                      <TriangleAlert size={14} aria-hidden="true" />
                                     )}
                                   </div>
                                   <div>
                                     <h4 className={styles.quizCardHeading}>
-                                      {mod.title.split(":")[0]} Compulsory Quiz
+                                      {mod.title.split(":")[0]} module quiz
                                     </h4>
-                                    <span style={{ fontSize: "11px", color: "#64748b", display: "block", marginTop: "2px" }}>
+                                    <span className={styles.quizScoreLine}>
                                       Best: <strong>{modProgress.highestScore || modProgress.quizScore}%</strong> • Latest: <strong>{modProgress.lastReportCard?.percentage ?? modProgress.quizScore}%</strong>
                                     </span>
                                   </div>
@@ -2876,11 +2786,9 @@ export default function TopicDetailPage() {
                                   }`}
                                 >
                                   {isPassed ? (
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                    <span className={styles.iconLabel}>
                                       +50 XP
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
+                                      <Check size={11} aria-hidden="true" />
                                     </span>
                                   ) : (
                                     "+50 XP"
@@ -2890,10 +2798,10 @@ export default function TopicDetailPage() {
 
                               <div className={styles.quizCardStatusRow}>
                                 <span className={styles.attemptsUsedBadge}>
-                                  Attempt {modProgress.attemptsUsed} of 3 Used
+                                  Attempt {modProgress.attemptsUsed} of 3 used
                                   {modProgress.consecutiveFailures && modProgress.consecutiveFailures > 0 ? (
-                                    <span style={{ color: "#ef4444", fontWeight: 700, marginLeft: "6px" }}>
-                                      • {modProgress.consecutiveFailures}/5 Weak Streak
+                                    <span className={styles.weakStreak}>
+                                      · {modProgress.consecutiveFailures}/5 weak streak
                                     </span>
                                   ) : null}
                                 </span>
@@ -2901,75 +2809,57 @@ export default function TopicDetailPage() {
                                   {isPassed
                                     ? `Passed (${modProgress.highestScore || modProgress.quizScore}%)`
                                     : (modProgress.consecutiveFailures || 0) >= 5
-                                    ? `Locked (5 Weak Scores) • Rewatch Needed`
+                                    ? `Locked (5 weak scores) · rewatch needed`
                                     : modProgress.attemptsUsed >= 3
-                                    ? `Locked (3 Attempts Used) • Rewatch Needed`
-                                    : `Cutoff Not Met (${modProgress.lastReportCard?.percentage ?? modProgress.quizScore}% • Cutoff 70%)`}
+                                    ? `Locked (3 attempts used) · rewatch needed`
+                                    : `Below cutoff (${modProgress.lastReportCard?.percentage ?? modProgress.quizScore}% · cutoff 70%)`}
                                 </span>
                               </div>
                             </div>
 
                             {/* Compact Action Buttons & View All Attempts Trigger */}
-                            <div className={styles.reportCardActionsRow} style={{ marginTop: "10px", gap: "8px", flexWrap: "wrap" }}>
+                            <div className={styles.reportCardActionsRow}>
                               <button
                                 type="button"
                                 className={styles.viewSolutionsBtn}
-                                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                 onClick={() => handleOpenAttemptsHistoryModal(mod.title)}
                                 title="Open history popup to inspect all past attempts & detailed solutions"
                               >
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                  <polyline points="14 2 14 8 20 8" />
-                                  <line x1="16" y1="13" x2="8" y2="13" />
-                                  <line x1="16" y1="17" x2="8" y2="17" />
-                                </svg>
-                                View All Attempts ({(modProgress.attemptsHistory?.length || modProgress.attemptsUsed || 1)}) →
+                                <FileText size={13} aria-hidden="true" />
+                                All attempts ({(modProgress.attemptsHistory?.length || modProgress.attemptsUsed || 1)})
+                                <ArrowRight size={13} aria-hidden="true" />
                               </button>
 
                               {isPassed ? (
                                 <button
                                   type="button"
                                   className={styles.retakeImproveBtn}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <polyline points="23 4 23 10 17 10" />
-                                    <polyline points="1 20 1 14 7 14" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                  </svg>
-                                  Retake Quiz
+                                  <RefreshCw size={12} aria-hidden="true" />
+                                  Retake quiz
                                 </button>
                               ) : modProgress.attemptsUsed < 3 && (modProgress.consecutiveFailures || 0) < 5 ? (
                                 <button
                                   type="button"
                                   className={styles.retakeFromReportBtn}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <polyline points="23 4 23 10 17 10" />
-                                    <polyline points="1 20 1 14 7 14" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                  </svg>
-                                  Retake Quiz (Attempt {modProgress.attemptsUsed + 1}/3)
+                                  <RefreshCw size={12} aria-hidden="true" />
+                                  Retake quiz (attempt {modProgress.attemptsUsed + 1}/3)
                                 </button>
                               ) : (
                                 <button
                                   type="button"
                                   className={styles.rewatchRequiredBtn}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                                   onClick={() =>
                                     handleAdvisorSelectRewatch(
                                       modProgress.recommendedLessonId || mod.lessons[0]?.id
                                     )
                                   }
                                 >
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <polygon points="5 3 19 12 5 21 5 3" />
-                                  </svg>
-                                  Rewatch Lectures to Unlock
+                                  <Play size={13} fill="currentColor" aria-hidden="true" />
+                                  Rewatch lectures to unlock
                                 </button>
                               )}
                             </div>
@@ -2988,29 +2878,21 @@ export default function TopicDetailPage() {
                                 }`}
                               >
                                 {allModLessonsWatched ? (
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                    <polyline points="14 2 14 8 20 8" />
-                                    <line x1="16" y1="13" x2="8" y2="13" />
-                                    <line x1="16" y1="17" x2="8" y2="17" />
-                                  </svg>
+                                  <FileText size={13} aria-hidden="true" />
                                 ) : (
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                  </svg>
+                                  <Lock size={12} aria-hidden="true" />
                                 )}
                               </div>
                               <div className={styles.quizInfoCol}>
                                 <div className={styles.quizTitleRow}>
                                   <span className={styles.quizRowTitle}>
-                                    {mod.title.split(":")[0]} Compulsory Quiz
+                                    {mod.title.split(":")[0]} module quiz
                                   </span>
                                   <span className={styles.quizXpBadge}>+50 XP</span>
                                 </div>
                                 <span className={styles.quizMetaText}>
                                   {allModLessonsWatched
-                                    ? "10 Questions • 70% Cutoff required to unlock next module"
+                                    ? "10 questions · 70% cutoff unlocks the next module"
                                     : `Watch all ${mod.lessons.length} lectures to unlock quiz (${completedInMod}/${mod.lessons.length} watched)`}
                                 </span>
                               </div>
@@ -3023,14 +2905,12 @@ export default function TopicDetailPage() {
                                   className={styles.quizStartBtn}
                                   onClick={() => handleOpenModuleQuiz(mod.title)}
                                 >
-                                  Start Quiz (10 Qs) →
+                                  Start quiz
+                                  <ArrowRight size={14} aria-hidden="true" />
                                 </button>
                               ) : (
-                                <span className={styles.quizLockedPill} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                  </svg>
+                                <span className={styles.quizLockedPill}>
+                                  <Lock size={11} aria-hidden="true" />
                                   Locked
                                 </span>
                               )}
@@ -3056,27 +2936,17 @@ export default function TopicDetailPage() {
                 <div className={styles.grandQuizHeaderRow}>
                   <div className={styles.grandQuizTrophyBox}>
                     {grandQuizPassed ? (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="8" r="7" />
-                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                      </svg>
+                      <Award size={22} aria-hidden="true" />
                     ) : isAllModulesPassed ? (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
+                      <Target size={22} aria-hidden="true" />
                     ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
+                      <Lock size={20} aria-hidden="true" />
                     )}
                   </div>
                   <div className={styles.grandQuizHeaderInfo}>
                     <div className={styles.grandQuizTitleBadgeRow}>
                       <h3 className={styles.grandQuizSectionTitle}>
-                        Final Milestone: CAT Grand Comprehensive Assessment
+                        Final milestone: grand assessment
                       </h3>
                       <span
                         className={`${styles.grandQuizXpBadge} ${
@@ -3084,11 +2954,9 @@ export default function TopicDetailPage() {
                         }`}
                       >
                         {grandQuizPassed ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                          <span className={styles.iconLabel}>
                             +100 XP
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                            <Check size={11} aria-hidden="true" />
                           </span>
                         ) : (
                           "+100 XP"
@@ -3112,36 +2980,25 @@ export default function TopicDetailPage() {
                     <button
                       type="button"
                       className={styles.grandQuizPassBtn}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                       onClick={handleOpenGrandQuiz}
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="8" r="7" />
-                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                      </svg>
-                      Review Grand Assessment (Passed)
+                      <Award size={15} aria-hidden="true" />
+                      Review grand assessment
                     </button>
                   ) : isAllModulesPassed ? (
                     <button
                       type="button"
                       className={styles.grandQuizActiveBtn}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                       onClick={handleOpenGrandQuiz}
                     >
-                      Start Grand Quiz (30 Questions)
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
+                      Start grand quiz (30 questions)
+                      <Send size={14} aria-hidden="true" />
                     </button>
                   ) : (
                     <div className={styles.grandQuizLockedHint}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                        Pass all {modulesList.length} module quizzes to unlock Grand Quiz
+                      <span className={styles.iconLabel}>
+                        <Lock size={13} aria-hidden="true" />
+                        Pass all {modulesList.length} module quizzes to unlock
                       </span>
                     </div>
                   )}
@@ -3169,7 +3026,7 @@ export default function TopicDetailPage() {
             onStartGrandQuiz={handleOpenGrandQuiz}
             onAskAiPrompt={handleAdvisorAskAi}
           />
-        </div>
+        </Reveal>
       </main>
 
       {/* ===== MODALS ===== */}
@@ -3248,15 +3105,12 @@ export default function TopicDetailPage() {
         <div className={styles.lockedAlertModal}>
           <div className={styles.lockedAlertBox}>
             <div className={styles.lockedAlertIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+              <Lock size={24} aria-hidden="true" />
             </div>
-            <h3 className={styles.lockedAlertTitle}>Module Locked</h3>
+            <h3 className={styles.lockedAlertTitle}>Module locked</h3>
             <p className={styles.lockedAlertDesc}>
               To ensure solid conceptual retention, you must first complete all lectures in active module{" "}
-              <strong>&ldquo;{activeModuleTitle}&rdquo;</strong> and pass its compulsory quiz with at least{" "}
+              <strong>&ldquo;{activeModuleTitle}&rdquo;</strong> and pass its module quiz with at least{" "}
               <strong>70%</strong> before unlocking this module.
             </p>
             <button
@@ -3264,7 +3118,7 @@ export default function TopicDetailPage() {
               className={styles.lockedAlertBtn}
               onClick={() => setLockedAlert(null)}
             >
-              Back to Active Module
+              Back to active module
             </button>
           </div>
         </div>
@@ -3292,19 +3146,16 @@ export default function TopicDetailPage() {
             <div className={styles.historyModalBox} onClick={(e) => e.stopPropagation()}>
               <div className={styles.historyModalHeader}>
                 <div className={styles.historyModalHeaderLeft}>
-                  <span className={styles.historyModalBadge}>Attempt History Log</span>
-                  <h3 className={styles.historyModalTitle}>{shortName} Compulsory Quiz</h3>
+                  <span className={styles.historyModalBadge}>Attempt history</span>
+                  <h3 className={styles.historyModalTitle}>{shortName} module quiz</h3>
                 </div>
                 <button
                   type="button"
                   className={styles.historyModalCloseBtn}
                   onClick={() => setHistoryModal(null)}
-                  title="Close History"
+                  title="Close history" aria-label="Close history"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <X size={14} aria-hidden="true" />
                 </button>
               </div>
 
@@ -3327,7 +3178,6 @@ export default function TopicDetailPage() {
                         </div>
                         <span
                           className={isAttPass ? styles.metricChipPass : styles.metricChipFail}
-                          style={{ fontWeight: 700, fontSize: "12px", padding: "3px 8px", borderRadius: "6px" }}
                         >
                           {isAttPass ? `Passed (${att.percentage}%)` : `Failed (${att.percentage}%)`}
                         </span>
@@ -3340,40 +3190,30 @@ export default function TopicDetailPage() {
                         <span className={styles.metricChip}>
                           Accuracy: <strong>{att.percentage}%</strong>
                         </span>
-                        <span className={styles.metricChip} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                          </svg>
-                          {att.timeTakenSeconds ? `${Math.floor(att.timeTakenSeconds / 60)}m ${att.timeTakenSeconds % 60}s` : "Normal Pace"}
+                        <span className={styles.metricChip}>
+                          <Clock size={12} aria-hidden="true" />
+                          {att.timeTakenSeconds ? `${Math.floor(att.timeTakenSeconds / 60)}m ${att.timeTakenSeconds % 60}s` : "Normal pace"}
                         </span>
                         <span
                           className={`${styles.metricChip} ${
                             att.strikes && att.strikes > 0 ? styles.metricChipStrike : ""
                           }`}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                         >
                           {att.strikes && att.strikes > 0 ? (
                             <>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                                <line x1="12" y1="9" x2="12" y2="13" />
-                                <line x1="12" y1="17" x2="12.01" y2="17" />
-                              </svg>
-                              {`-${att.strikes} Mark Penalty`}
+                              <TriangleAlert size={12} aria-hidden="true" />
+                              {`${att.strikes} mark penalty`}
                             </>
                           ) : (
                             <>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                              </svg>
-                              Clean Attempt
+                              <ShieldCheck size={12} aria-hidden="true" />
+                              Clean attempt
                             </>
                           )}
                         </span>
                         {att.missedConcepts && att.missedConcepts.length > 0 && (
-                          <span className={styles.metricChip} style={{ color: "#b91c1c" }}>
-                            {att.missedConcepts.length} Missed Concept{att.missedConcepts.length > 1 ? "s" : ""}
+                          <span className={`${styles.metricChip} ${styles.metricChipMissed}`}>
+                            {att.missedConcepts.length} missed concept{att.missedConcepts.length > 1 ? "s" : ""}
                           </span>
                         )}
                       </div>
@@ -3381,16 +3221,11 @@ export default function TopicDetailPage() {
                       <button
                         type="button"
                         className={styles.attemptInspectBtn}
-                        style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                         onClick={() => handleInspectAttempt(historyModal.moduleTitle, att)}
                       >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                          <line x1="16" y1="13" x2="8" y2="13" />
-                          <line x1="16" y1="17" x2="8" y2="17" />
-                        </svg>
-                        Inspect Detailed Results & Solutions (10 Qs) →
+                        <FileText size={13} aria-hidden="true" />
+                        Inspect results and solutions
+                        <ArrowRight size={14} aria-hidden="true" />
                       </button>
                     </div>
                   );
@@ -3404,45 +3239,32 @@ export default function TopicDetailPage() {
                   onClick={() => setHistoryModal(null)}
                 >
                   Close
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <X size={12} aria-hidden="true" />
                 </button>
 
                 {isPassed ? (
                   <button
                     type="button"
                     className={styles.retakeImproveBtn}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                     onClick={() => {
                       setHistoryModal(null);
                       handleOpenModuleQuiz(historyModal.moduleTitle);
                     }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="23 4 23 10 17 10" />
-                      <polyline points="1 20 1 14 7 14" />
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                    Retake Quiz (Improve Score)
+                    <RefreshCw size={12} aria-hidden="true" />
+                    Retake quiz to improve
                   </button>
                 ) : (modProgress?.attemptsUsed || 0) < 3 && (modProgress?.consecutiveFailures || 0) < 5 ? (
                   <button
                     type="button"
                     className={styles.retakeFromReportBtn}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                     onClick={() => {
                       setHistoryModal(null);
                       handleOpenModuleQuiz(historyModal.moduleTitle);
                     }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="23 4 23 10 17 10" />
-                      <polyline points="1 20 1 14 7 14" />
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                    Retake Quiz (Attempt {(modProgress?.attemptsUsed || 0) + 1}/3)
+                    <RefreshCw size={12} aria-hidden="true" />
+                    Retake quiz (attempt {(modProgress?.attemptsUsed || 0) + 1}/3)
                   </button>
                 ) : null}
               </div>

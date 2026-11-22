@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { QuizQuestion } from "@/data/videoPortions";
 import { MathText } from "@/components/pyq/PYQMarkdownViewer";
+import { ArrowLeft, ArrowRight, Check, Lightbulb, Lock, RotateCcw, Send, Timer, TriangleAlert, Trophy, X } from "lucide-react";
+import styles from "./QuizViewer.module.css";
 
 export interface TechnoEEEQuestion {
   question: string;
@@ -156,14 +158,11 @@ export default function QuizViewer({
 
   if (!questions || questions.length === 0) {
     return (
-      <div style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(15, 23, 42, 0.8)",
-        display: "flex", alignItems: "center", justifyContent: "center"
-      }}>
-        <div style={{ background: "#fff", padding: "30px", borderRadius: "16px", textAlign: "center" }}>
-          <h3>No quiz questions available for this lesson.</h3>
-          <button onClick={onClose} style={{ marginTop: "15px", padding: "10px 20px", background: "#ED1C24", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer" }}>
+      <div className={styles.emptyOverlay}>
+        <div className={styles.emptyCard}>
+          <h3 className={styles.emptyTitle}>No quiz questions for this lesson yet</h3>
+          <p className={styles.emptyText}>Check back after the next content update.</p>
+          <button type="button" onClick={onClose} className={`${styles.btn} ${styles.btnPrimary}`}>
             Close
           </button>
         </div>
@@ -175,479 +174,269 @@ export default function QuizViewer({
   const userAns = selectedAnswers[currentIdx];
   const isCurrentQuestionCorrect = userAns === q.correctAnswer;
 
+  // Display-only result breakdown (derived from the same answers used for scoring)
+  const total = questions.length;
+  const answeredTotal = Object.keys(selectedAnswers).length;
+  const wrongCount = isSubmitted
+    ? questions.filter((qq, idx) => selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== qq.correctAnswer).length
+    : 0;
+  const skippedCount = isSubmitted ? Math.max(0, total - score - wrongCount) : 0;
+  const ratio = score / total;
+  const pct = (n: number) => `${(n / total) * 100}%`;
+  const timeLow = timeLeft < 60;
+
   return (
-    <>
-      <style>{`
-        @keyframes slideUpFade {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulseAlert {
-          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-          70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .quiz-animate-question {
-          animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .quiz-opt-card {
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .quiz-opt-card:hover:not(.submitted) {
-          border-color: #ED1C24 !important;
-          background-color: #fff9f9 !important;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 18px rgba(237, 28, 36, 0.08);
-        }
-        .quiz-nav-btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-        }
-        .quiz-nav-btn:active:not(:disabled) {
-          transform: translateY(0);
-        }
-        @media (max-width: 820px) {
-          .quiz-top-header {
-            padding: 12px 16px !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 12px !important;
-          }
-          .quiz-main-layout {
-            flex-direction: column !important;
-          }
-          .quiz-sidebar {
-            width: 100% !important;
-            max-height: 180px !important;
-            border-right: none !important;
-            border-bottom: 1px solid #e2e8f0 !important;
-            padding: 14px 16px !important;
-          }
-          .quiz-question-area {
-            padding: 20px 16px !important;
-          }
-        }
-      `}</style>
-
-      <div style={{
-        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: "rgba(248, 250, 252, 0.98)",
-        zIndex: 99999, display: "flex", flexDirection: "column",
-        backdropFilter: "blur(12px)",
-        fontFamily: "'Outfit', 'Inter', system-ui, -apple-system, sans-serif",
-      }}>
-        {/* Top Header */}
-        <div className="quiz-top-header" style={{
-          padding: "16px 36px", backgroundColor: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)", flexShrink: 0
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            {!isSubmitted ? (
-              <div
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#fef2f2",
-                  color: "#dc2626",
-                  borderRadius: "10px",
-                  fontWeight: "700",
-                  fontSize: "13px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  border: "1px solid #fecaca",
-                  userSelect: "none"
-                }}
-                title="Practice in progress. You must submit your quiz to exit."
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <span>Active Quiz • Locked</span>
-              </div>
-            ) : (
-              <button
-                onClick={onClose}
-                style={{
-                  padding: "9px 20px",
-                  backgroundColor: "#1e293b",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  fontWeight: "700",
-                  fontSize: "14px",
-                  transition: "all 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px"
-                }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-                Close Results
-              </button>
-            )}
-
-            <div>
-              <h2 style={{ color: "#0f172a", fontSize: "1.2rem", fontWeight: "800", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                <span>{title}</span>
-              </h2>
-              <p style={{ color: "#64748b", fontSize: "0.85rem", margin: "2px 0 0 0", fontWeight: "500" }}>
-                Interactive TechnoEEE Practice • {questions.length} High-Yield CAT Questions
-              </p>
+    <div className={styles.screen}>
+      {/* Top header */}
+      <header className={styles.topBar}>
+        <div className={styles.topLeft}>
+          {!isSubmitted ? (
+            <div className={styles.lockChip} title="Practice in progress. You must submit your quiz to exit.">
+              <Lock size={14} aria-hidden="true" />
+              <span>Quiz in progress</span>
             </div>
-          </div>
+          ) : (
+            <button type="button" onClick={onClose} className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`}>
+              <X size={16} aria-hidden="true" />
+              Close results
+            </button>
+          )}
 
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            {!isSubmitted && (
-              <div style={{
-                color: timeLeft < 60 ? "#ef4444" : "#0f172a",
-                fontSize: "1.15rem", fontWeight: "700",
-                backgroundColor: timeLeft < 60 ? "#fef2f2" : "#f1f5f9",
-                padding: "8px 18px", borderRadius: "10px",
-                display: "flex", alignItems: "center", gap: "8px",
-                animation: timeLeft < 60 ? "pulseAlert 1.5s infinite" : "none",
-                border: timeLeft < 60 ? "1px solid #fca5a5" : "1px solid #e2e8f0"
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={timeLeft < 60 ? "#ef4444" : "#64748b"} strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                {formatTime(timeLeft)}
-              </div>
-            )}
-
-            {!isSubmitted && (
-              <button
-                onClick={handleSubmit}
-                style={{
-                  padding: "10px 28px",
-                  background: "linear-gradient(135deg, #0D9488 0%, #059669 100%)",
-                  color: "white", border: "none", borderRadius: "10px",
-                  cursor: "pointer", fontWeight: "700", fontSize: "0.95rem",
-                  boxShadow: "0 4px 14px rgba(16, 185, 129, 0.35)",
-                  transition: "transform 0.15s"
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-                onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                <span>Submit Quiz</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "6px" }}><polyline points="20 6 9 17 4 12" /></svg>
-              </button>
-            )}
+          <div className={styles.titleBlock}>
+            <h2 className={styles.title}>{title}</h2>
+            <p className={styles.subtitle}>
+              Lesson practice · <span className={styles.mono}>{total}</span> questions
+            </p>
           </div>
         </div>
 
-        {/* Main Body */}
-        <div className="quiz-main-layout" style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          {/* Sidebar */}
-          <div className="quiz-sidebar" style={{
-            width: "310px", backgroundColor: "#ffffff",
-            borderRight: "1px solid #e2e8f0", overflowY: "auto", padding: "26px",
-            boxShadow: "4px 0 20px rgba(0,0,0,0.02)",
-            display: "flex", flexDirection: "column"
-          }}>
-            <h3 style={{
-              color: "#475569", fontSize: "0.8rem", fontWeight: "800",
-              textTransform: "uppercase", letterSpacing: "1px", marginBottom: "18px",
-              display: "flex", alignItems: "center", gap: "8px"
-            }}>
-              <span>Question Palette ({Object.keys(selectedAnswers).length}/{questions.length})</span>
-            </h3>
+        <div className={styles.topRight}>
+          {!isSubmitted && (
+            <div className={`${styles.timerChip} ${timeLow ? styles.timerLow : ""}`} aria-label="Time remaining">
+              <Timer size={16} aria-hidden="true" />
+              <span>{formatTime(timeLeft)}</span>
+            </div>
+          )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
-              {questions.map((_, idx) => {
-                const isAnswered = selectedAnswers[idx] !== undefined;
-                const isCurrent = currentIdx === idx;
+          {!isSubmitted && (
+            <button type="button" onClick={handleSubmit} className={`${styles.btn} ${styles.btnPrimary}`}>
+              Submit quiz
+              <Send size={15} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </header>
 
-                let bg = "#ffffff";
-                let border = "1px solid #cbd5e1";
-                let color = "#64748b";
+      {/* Main body */}
+      <div className={styles.layout}>
+        {/* Sidebar */}
+        <aside className={styles.sidebar}>
+          <div className={styles.sideHead}>
+            <h3 className={styles.sideTitle}>Question palette</h3>
+            <span className={styles.sideCount}>
+              {answeredTotal}/{total}
+            </span>
+          </div>
+
+          <div className={styles.palette}>
+            {questions.map((_, idx) => {
+              const isAnswered = selectedAnswers[idx] !== undefined;
+              const isCurrent = currentIdx === idx;
+              let stateClass = styles.palNotVisited;
+              if (isSubmitted) {
+                const ans = selectedAnswers[idx];
+                const isCorrect = ans === questions[idx].correctAnswer;
+                stateClass = isCorrect ? styles.palCorrect : ans === undefined ? styles.palSkipped : styles.palWrong;
+              } else if (isAnswered) {
+                stateClass = styles.palAnswered;
+              }
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCurrentIdx(idx)}
+                  className={`${styles.palBtn} ${stateClass} ${isCurrent ? styles.palCurrent : ""}`}
+                  aria-current={isCurrent ? "true" : undefined}
+                  aria-label={`Question ${idx + 1}`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
+
+          <ul className={styles.legend}>
+            {isSubmitted ? (
+              <>
+                <li><span className={`${styles.legendDot} ${styles.dotCorrect}`} />Correct</li>
+                <li><span className={`${styles.legendDot} ${styles.dotWrong}`} />Wrong</li>
+                <li><span className={`${styles.legendDot} ${styles.dotSkipped}`} />Skipped</li>
+              </>
+            ) : (
+              <>
+                <li><span className={`${styles.legendDot} ${styles.dotCorrect}`} />Answered</li>
+                <li><span className={`${styles.legendDot} ${styles.dotSkipped}`} />Not answered</li>
+                <li><span className={`${styles.legendDot} ${styles.dotCurrent}`} />Current</li>
+              </>
+            )}
+          </ul>
+
+          {isSubmitted && (
+            <div className={styles.scoreCard}>
+              <div className={styles.scoreLabel}>Your score</div>
+              <div className={styles.scoreValue}>
+                {score}
+                <span className={styles.scoreTotal}>/ {total}</span>
+              </div>
+
+              <div className={styles.accBar} role="img" aria-label={`${score} correct, ${wrongCount} wrong, ${skippedCount} skipped`}>
+                <span className={styles.accCorrect} style={{ width: pct(score) }} />
+                <span className={styles.accWrong} style={{ width: pct(wrongCount) }} />
+                <span className={styles.accSkipped} style={{ width: pct(skippedCount) }} />
+              </div>
+              <div className={styles.accKey}>
+                <span><i className={styles.dotCorrect} />{score} correct</span>
+                <span><i className={styles.dotWrong} />{wrongCount} wrong</span>
+                <span><i className={styles.dotSkippedLight} />{skippedCount} skipped</span>
+              </div>
+
+              <div className={styles.verdict}>
+                {ratio >= 0.8 ? (
+                  <>
+                    <Trophy size={15} aria-hidden="true" />
+                    <span>Strong result — ready to move on</span>
+                  </>
+                ) : ratio >= 0.5 ? (
+                  <>
+                    <Check size={15} aria-hidden="true" />
+                    <span>Good effort — revise the traps</span>
+                  </>
+                ) : (
+                  <>
+                    <TriangleAlert size={15} aria-hidden="true" />
+                    <span>Needs revision</span>
+                  </>
+                )}
+              </div>
+
+              <button type="button" onClick={handleRetake} className={`${styles.btn} ${styles.btnLight}`}>
+                <RotateCcw size={15} aria-hidden="true" />
+                Retake quiz
+              </button>
+            </div>
+          )}
+        </aside>
+
+        {/* Question area */}
+        <main className={styles.questionArea}>
+          <div className={`${styles.questionInner} ${isAnimating ? styles.animateQuestion : ""}`}>
+            <div className={styles.qMeta}>
+              <span className={styles.qNumber}>
+                Question <span className={styles.mono}>{currentIdx + 1}</span> of <span className={styles.mono}>{total}</span>
+              </span>
+              <span className={styles.qKind}>Multiple choice</span>
+            </div>
+
+            <div className={styles.questionText}>
+              <MathText text={q.question} />
+            </div>
+
+            {/* Options */}
+            <div className={styles.options}>
+              {q.options.map((opt) => {
+                const isSelected = userAns === opt.id;
+                let optClass = "";
+                let icon: React.ReactNode = null;
+
+                if (!isSubmitted && isSelected) optClass = styles.optSelected;
 
                 if (isSubmitted) {
-                  const ans = selectedAnswers[idx];
-                  const isCorrect = ans === questions[idx].correctAnswer;
-                  bg = isCorrect ? "#ecfdf5" : "#fef2f2";
-                  border = isCorrect ? "2px solid #0D9488" : "2px solid #ef4444";
-                  color = isCorrect ? "#059669" : "#dc2626";
-                } else if (isCurrent) {
-                  bg = "#ED1C24"; color = "white"; border = "2px solid #ED1C24";
-                } else if (isAnswered) {
-                  bg = "#fee2e2"; color = "#b91c1c"; border = "2px solid #fca5a5";
+                  const isCorrect = opt.id === q.correctAnswer;
+                  if (isCorrect) {
+                    optClass = styles.optCorrect;
+                    icon = <Check size={18} className={styles.optIcon} aria-label="Correct answer" />;
+                  } else if (isSelected) {
+                    optClass = styles.optWrong;
+                    icon = <X size={18} className={styles.optIcon} aria-label="Your answer" />;
+                  } else {
+                    optClass = styles.optMuted;
+                  }
                 }
 
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIdx(idx)}
-                    style={{
-                      aspectRatio: "1", borderRadius: "10px", border, backgroundColor: bg, color,
-                      fontWeight: "800", cursor: "pointer", transition: "all 0.15s",
-                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.95rem",
-                      boxShadow: isCurrent ? "0 4px 12px rgba(237, 28, 36, 0.3)" : "none"
-                    }}
+                  <div
+                    key={opt.id}
+                    className={`${styles.option} ${isSubmitted ? styles.optSubmitted : ""} ${optClass}`}
+                    onClick={() => handleOptionSelect(opt.id)}
                   >
-                    {idx + 1}
-                  </button>
+                    <div className={styles.optKey}>{opt.id}</div>
+                    <div className={styles.optText}>
+                      <MathText text={opt.text} />
+                    </div>
+                    {icon}
+                  </div>
                 );
               })}
             </div>
 
+            {/* Review & explanations */}
             {isSubmitted && (
-              <div style={{
-                marginTop: "30px", padding: "24px", backgroundColor: "#f8fafc",
-                borderRadius: "16px", textAlign: "center", border: "1px solid #e2e8f0",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.03)"
-              }}>
-                <div style={{ color: "#64748b", fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  Your CAT Score
-                </div>
-                <div style={{ fontSize: "3rem", fontWeight: "900", color: "#0f172a", margin: "10px 0" }}>
-                  {score} <span style={{ fontSize: "1.3rem", color: "#94a3b8" }}>/ {questions.length}</span>
-                </div>
+              <div className={`glass-card ${styles.explain}`} data-tint="amber">
+                <h4 className={styles.explainTitle}>
+                  <Lightbulb size={17} aria-hidden="true" />
+                  <span>Explanation</span>
+                </h4>
 
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: "6px",
-                  padding: "6px 14px", borderRadius: "20px",
-                  backgroundColor: score / questions.length >= 0.8 ? "#ecfdf5" : score / questions.length >= 0.5 ? "#eff6ff" : "#fef2f2",
-                  color: score / questions.length >= 0.8 ? "#059669" : score / questions.length >= 0.5 ? "#2563eb" : "#dc2626",
-                  fontWeight: "700", fontSize: "0.85rem", marginBottom: "16px"
-                }}>
-                  {score / questions.length >= 0.8 ? (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                      <span>99+ Percentile Ready!</span>
-                    </>
-                  ) : score / questions.length >= 0.5 ? (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                      <span>Good Effort! Revise Traps</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                      <span>Needs Revision</span>
-                    </>
+                <div className={styles.explainList}>
+                  {!isCurrentQuestionCorrect && userAns && q.explanations[userAns] && (
+                    <div className={styles.explainRow}>
+                      <span className={`${styles.explainTag} ${styles.tagWrong}`}>Option {userAns}</span>
+                      <div className={styles.explainBody}>
+                        <strong>Why your answer was wrong: </strong>
+                        {q.explanations[userAns]}
+                      </div>
+                    </div>
+                  )}
+
+                  {q.explanations[q.correctAnswer] && (
+                    <div className={styles.explainRow}>
+                      <span className={`${styles.explainTag} ${styles.tagCorrect}`}>Option {q.correctAnswer}</span>
+                      <div className={styles.explainBody}>
+                        <strong>Correct answer: </strong>
+                        {q.explanations[q.correctAnswer]}
+                      </div>
+                    </div>
                   )}
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleRetake}
-                  style={{
-                    width: "100%", padding: "10px",
-                    backgroundColor: "#1e293b", color: "#fff",
-                    border: "none", borderRadius: "10px",
-                    fontWeight: "700", fontSize: "0.9rem",
-                    cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
-                  }}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                  <span>Retake Quiz</span>
-                </button>
               </div>
             )}
-          </div>
 
-          {/* Question Area */}
-          <div className="quiz-question-area" style={{ flex: 1, overflowY: "auto", padding: "36px 50px", position: "relative" }}>
-            <div className={isAnimating ? "quiz-animate-question" : ""} style={{ maxWidth: "800px", margin: "0 auto" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-                <span style={{
-                  backgroundColor: "#fee2e2", color: "#b91c1c", padding: "5px 12px",
-                  borderRadius: "16px", fontWeight: "800", fontSize: "0.85rem"
-                }}>
-                  Question {currentIdx + 1} of {questions.length}
-                </span>
-                <span style={{ color: "#64748b", fontSize: "0.85rem", fontWeight: "600" }}>
-                  CAT Quantitative Practice
-                </span>
-              </div>
+            {/* Navigation footer */}
+            <div className={styles.navRow}>
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.btnSecondary}`}
+                onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
+                disabled={currentIdx === 0}
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+                Previous
+              </button>
 
-              <h1 style={{ color: "#0f172a", fontSize: "1.6rem", fontWeight: "800", lineHeight: "1.4", marginBottom: "32px" }}>
-                <MathText text={q.question} />
-              </h1>
-
-              {/* Options */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                {q.options.map((opt) => {
-                  const isSelected = userAns === opt.id;
-                  let bg = "#ffffff";
-                  let border = "2px solid #e2e8f0";
-                  let textColor = "#334155";
-                  let shadow = "0 2px 6px rgba(0,0,0,0.02)";
-                  let icon: React.ReactNode = null;
-
-                  if (!isSubmitted && isSelected) {
-                    bg = "#fff1f2";
-                    border = "2px solid #ED1C24";
-                    textColor = "#991b1b";
-                    shadow = "0 4px 14px rgba(237, 28, 36, 0.12)";
-                  }
-
-                  if (isSubmitted) {
-                    const isCorrect = opt.id === q.correctAnswer;
-                    if (isCorrect) {
-                      bg = "#ecfdf5";
-                      border = "2px solid #0D9488";
-                      textColor = "#064e3b";
-                      icon = (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D9488" strokeWidth="3" style={{ marginLeft: "auto" }}>
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      );
-                    } else if (isSelected && !isCorrect) {
-                      bg = "#fef2f2";
-                      border = "2px solid #ef4444";
-                      textColor = "#7f1d1d";
-                      icon = (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" style={{ marginLeft: "auto" }}>
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      );
-                    } else {
-                      bg = "#f8fafc";
-                      border = "2px solid #e2e8f0";
-                      textColor = "#94a3b8";
-                    }
-                  }
-
-                  return (
-                    <div
-                      key={opt.id}
-                      className={`quiz-opt-card ${isSubmitted ? "submitted" : ""}`}
-                      onClick={() => handleOptionSelect(opt.id)}
-                      style={{
-                        padding: "20px 24px", borderRadius: "14px", border, backgroundColor: bg,
-                        cursor: isSubmitted ? "default" : "pointer",
-                        display: "flex", gap: "18px", alignItems: "center",
-                        boxShadow: shadow
-                      }}
-                    >
-                      <div style={{
-                        width: "34px", height: "34px", borderRadius: "8px",
-                        backgroundColor: isSelected
-                          ? isSubmitted && opt.id !== q.correctAnswer
-                            ? "#ef4444"
-                            : "#ED1C24"
-                          : "#f1f5f9",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                        fontWeight: "800", color: isSelected ? "white" : "#64748b", fontSize: "0.95rem",
-                        transition: "all 0.15s"
-                      }}>
-                        {opt.id}
-                      </div>
-
-                      <div style={{ color: textColor, fontSize: "1.1rem", lineHeight: "1.5", fontWeight: "500" }}>
-                        <MathText text={opt.text} />
-                      </div>
-
-                      {icon}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Review & Explanations */}
-              {isSubmitted && (
-                <div style={{
-                  marginTop: "40px", padding: "28px", backgroundColor: "#fffbeb",
-                  borderRadius: "16px", border: "1px solid #fde68a",
-                  boxShadow: "0 6px 20px rgba(245, 158, 11, 0.06)",
-                  animation: "slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
-                }}>
-                  <h4 style={{
-                    color: "#b45309", margin: "0 0 18px 0", fontSize: "1.05rem",
-                    fontWeight: "800", display: "flex", alignItems: "center", gap: "8px"
-                  }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-                    <span>Concept Review & Explanations</span>
-                  </h4>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                    {!isCurrentQuestionCorrect && userAns && q.explanations[userAns] && (
-                      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                        <div style={{
-                          backgroundColor: "#fef2f2", color: "#dc2626", padding: "4px 10px",
-                          borderRadius: "6px", fontSize: "0.85rem", fontWeight: "700",
-                          flexShrink: 0, border: "1px solid #fca5a5"
-                        }}>
-                          Option {userAns}
-                        </div>
-                        <div style={{ color: "#7f1d1d", lineHeight: "1.6", fontSize: "0.95rem" }}>
-                          <strong style={{ color: "#991b1b" }}>Why your answer was incorrect: </strong>
-                          {q.explanations[userAns]}
-                        </div>
-                      </div>
-                    )}
-
-                    {q.explanations[q.correctAnswer] && (
-                      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                        <div style={{
-                          backgroundColor: "#ecfdf5", color: "#059669", padding: "4px 10px",
-                          borderRadius: "6px", fontSize: "0.85rem", fontWeight: "700",
-                          flexShrink: 0, border: "1px solid #6ee7b7"
-                        }}>
-                          Option {q.correctAnswer}
-                        </div>
-                        <div style={{ color: "#064e3b", lineHeight: "1.6", fontSize: "0.95rem" }}>
-                          <strong style={{ color: "#065f46" }}>Correct Answer Explanation: </strong>
-                          {q.explanations[q.correctAnswer]}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Footer */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "48px", paddingBottom: "30px" }}>
-                <button
-                  className="quiz-nav-btn"
-                  onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-                  disabled={currentIdx === 0}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "8px",
-                    padding: "14px 28px", backgroundColor: "#e2e8f0", color: "#475569",
-                    border: "none", borderRadius: "12px",
-                    cursor: currentIdx === 0 ? "not-allowed" : "pointer",
-                    opacity: currentIdx === 0 ? 0.4 : 1, fontWeight: "700", fontSize: "0.95rem",
-                    transition: "all 0.15s"
-                  }}
-                >
-                  ← Previous
-                </button>
-
-                <button
-                  className="quiz-nav-btn"
-                  onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-                  disabled={currentIdx === questions.length - 1}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "8px",
-                    padding: "14px 28px", backgroundColor: "#ED1C24", color: "white",
-                    border: "none", borderRadius: "12px",
-                    cursor: currentIdx === questions.length - 1 ? "not-allowed" : "pointer",
-                    opacity: currentIdx === questions.length - 1 ? 0.4 : 1, fontWeight: "700", fontSize: "0.95rem",
-                    boxShadow: currentIdx === questions.length - 1 ? "none" : "0 6px 18px rgba(237, 28, 36, 0.3)",
-                    transition: "all 0.15s"
-                  }}
-                >
-                  Next →
-                </button>
-              </div>
-
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
+                disabled={currentIdx === questions.length - 1}
+              >
+                Next
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
             </div>
           </div>
-        </div>
+        </main>
       </div>
-    </>
+    </div>
   );
 }

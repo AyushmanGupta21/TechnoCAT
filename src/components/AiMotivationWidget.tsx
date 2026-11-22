@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Flame, Target } from "lucide-react";
 import type { StudentMetrics } from "@/lib/metrics/types";
 import styles from "./AiMotivationWidget.module.css";
 
@@ -11,6 +12,8 @@ interface TodayFocusWidgetProps {
   firstName: string;
   metrics: StudentMetrics | null;
   isLoading?: boolean;
+  /** Optional deterministic "next step" line shown under the focus line. */
+  nextStep?: string;
 }
 
 function formatMinutes(seconds: number): string {
@@ -63,35 +66,63 @@ export function buildFocusLine(firstName: string, m: StudentMetrics): string {
   return parts.join(" ");
 }
 
-export default function AiMotivationWidget({ firstName, metrics, isLoading = false }: TodayFocusWidgetProps) {
+export default function AiMotivationWidget({ firstName, metrics, isLoading = false, nextStep }: TodayFocusWidgetProps) {
   const message = metrics
     ? buildFocusLine(firstName, metrics)
     : isLoading
       ? "Loading today's plan…"
       : "Today's plan could not be loaded right now. Refresh the page to try again.";
 
-  return (
-    <div className={styles.widgetContainer}>
-      <div className={styles.avatarBox}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
-        </svg>
-      </div>
+  // Last 7 days as active / inactive cells (a day counts at 2+ minutes of study).
+  const week = metrics ? metrics.studyTime.daily.slice(-7) : [];
+  const todayTasksDone = metrics ? metrics.tasks.todayDone : 0;
+  const todayTasksTotal = metrics ? metrics.tasks.todayTotal : 0;
 
+  return (
+    <section className={`glass-card ${styles.widgetContainer}`} data-tint="blue" aria-label="Today's focus">
       <div className={styles.messageBox}>
-        <div className={styles.aiHeader}>Today&apos;s Focus</div>
+        <p className={styles.focusLabel}>
+          <Target size={16} strokeWidth={2} aria-hidden="true" />
+          Today&apos;s focus
+          {metrics && todayTasksTotal > 0 && (
+            <span className={styles.taskCount}>
+              {todayTasksDone}/{todayTasksTotal} tasks done
+            </span>
+          )}
+        </p>
         <p className={styles.messageContent}>{message}</p>
+        {nextStep && (
+          <p className={styles.nextStep}>
+            <span className={styles.nextStepLabel}>Next step</span>
+            <span>{nextStep}</span>
+          </p>
+        )}
       </div>
 
       {metrics && (
         <div className={styles.streakBox} title="A day counts when you study for at least 2 minutes">
-          <span className={styles.streakValue}>{metrics.streak.current}</span>
-          <span className={styles.streakLabel}>day streak</span>
+          <div className={styles.streakTop}>
+            <Flame size={18} strokeWidth={2} aria-hidden="true" className={styles.streakIcon} />
+            <span className={styles.streakValue}>{metrics.streak.current}</span>
+            <span className={styles.streakLabel}>day streak</span>
+          </div>
+          {week.length > 0 && (
+            <div className={styles.weekCells} aria-hidden="true">
+              {week.map((d, i) => {
+                const active = d.learningSeconds + d.practiceSeconds >= 120;
+                const isToday = i === week.length - 1;
+                return (
+                  <span
+                    key={d.date}
+                    className={`${styles.weekCell} ${active ? styles.weekCellActive : ""} ${isToday ? styles.weekCellToday : ""}`}
+                  />
+                );
+              })}
+            </div>
+          )}
           <span className={styles.streakBest}>Best: {plural(metrics.streak.best, "day")}</span>
         </div>
       )}
-    </div>
+    </section>
   );
 }

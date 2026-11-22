@@ -2,9 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ArrowDown, ArrowRight, Check, ChevronRight, Clock, Lightbulb, Search, X } from "lucide-react";
 import styles from "./error-tracking.module.css";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
-import BrandLogo from "@/components/BrandLogo";
+import AppNav from "@/components/app/AppNav";
+import BackLink from "@/components/app/BackLink";
+import { Reveal, RevealGroup, RevealItem, SpotlightCard, GradientText, CountUp, type Tint } from "@/components/landing/motion";
 import PYQMarkdownViewer, { MathText } from "@/components/pyq/PYQMarkdownViewer";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { StudentMetrics, SectionKey, MistakeRecord } from "@/lib/metrics/types";
@@ -28,7 +30,9 @@ interface QuestionDetail {
 type SectionFilter = "ALL" | SectionKey;
 
 const SECTIONS: SectionKey[] = ["QA", "DILR", "VARC"];
-const SECTION_COLOR: Record<SectionKey, string> = { QA: "#2563EB", DILR: "#9333EA", VARC: "#EF4444" };
+const SECTION_COLOR: Record<SectionKey, string> = { QA: "#8B5CF6", DILR: "#14B8A6", VARC: "#3B82F6" };
+const SECTION_TINT: Record<SectionKey, Tint> = { QA: "violet", DILR: "teal", VARC: "blue" };
+const SECTION_NAME: Record<SectionKey, string> = { QA: "QA (Quant)", DILR: "DILR", VARC: "VARC" };
 const KIND_LABEL: Record<MistakeRecord["kind"], string> = {
   pyq: "CAT PYQ",
   module_quiz: "Module quiz",
@@ -156,10 +160,12 @@ export default function ErrorTrackingPage() {
 
   const pieData = [
     ...stats.bySection.filter((b) => b.count > 0).map((b) => ({ name: b.section, count: b.count, color: SECTION_COLOR[b.section] })),
-    ...(stats.unsectioned > 0 ? [{ name: "Other", count: stats.unsectioned, color: "#94A3B8" }] : []),
+    ...(stats.unsectioned > 0 ? [{ name: "Other", count: stats.unsectioned, color: "#98A1B5" }] : []),
   ];
   const total = mistakes.length;
   const topConcept = stats.byConcept.find((c) => c.concept !== "Unlabelled") ?? null;
+  const conceptsInvolved = stats.byConcept.filter((c) => c.concept !== "Unlabelled").length;
+  const maxConceptCount = Math.max(1, ...stats.byConcept.slice(0, 5).map((c) => c.count));
 
   const jumpToList = (sec: SectionFilter) => {
     setActiveSection(sec);
@@ -169,371 +175,361 @@ export default function ErrorTrackingPage() {
   };
 
   const renderSectionBadge = (sec: SectionKey | null) => {
-    if (sec === "QA") return <span className={`${styles.sectionBadge} ${styles.badgeQA}`}>QA (Quant)</span>;
-    if (sec === "DILR") return <span className={`${styles.sectionBadge} ${styles.badgeDILR}`}>DILR</span>;
-    if (sec === "VARC") return <span className={`${styles.sectionBadge} ${styles.badgeVARC}`}>VARC</span>;
-    return null;
+    if (!sec) return null;
+    return (
+      <span className={styles.sectionTag} style={{ ["--sec" as string]: SECTION_COLOR[sec] }}>
+        <i aria-hidden="true" />
+        {SECTION_NAME[sec]}
+      </span>
+    );
   };
 
   return (
-    <div className={styles.pageWrapper}>
-      <header className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Error Tracking Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
-            <div className={styles.navLinks}>
-              <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-              <Link href="/browse" className={styles.navLink}>Browse</Link>
-              <Link href="/topics" className={styles.navLink}>My Topics</Link>
-              <Link href="/intelligence" className={`${styles.navLink} ${styles.navLinkActive}`}>Intelligence Hub</Link>
-              <Link href="/mock-viva-prep" className={styles.navLink}>Speak & Assess</Link>
+    <div className={styles.page}>
+      <AppNav />
+
+      <main className={styles.main}>
+        {/* Page header */}
+        <Reveal className={styles.head}>
+          <BackLink href="/intelligence" label="Back to Intelligence Hub" />
+          <div className={styles.headRow}>
+            <div className={styles.headText}>
+              <h1 className={styles.title}>
+                Stop repeating the <GradientText>same mistakes</GradientText>
+              </h1>
+              <p className={styles.lede}>
+                Every wrong answer from your tests and CAT PYQs, with the correct answer and explanation, grouped by section and concept.
+              </p>
             </div>
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      <div className={styles.breadcrumb}>
-        <Link href="/intelligence" className={styles.breadcrumbLink}>Intelligence Hub</Link> &gt; <span>Error Tracking</span>
-      </div>
-
-      {/* Hero */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroContainer}>
-          <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>ERROR LOG</div>
-            <h1 className={styles.heroTitle}>
-              Stop Repeating the <span>Same Mistakes.</span>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Every wrong answer from your tests and CAT PYQs, with the correct answer and explanation, grouped by section and concept.
-            </p>
-            <div className={styles.statRow}>
-              <div className={styles.statPill}>
-                <div className={styles.statPillVal}>{loading ? "..." : total}</div>
-                <div className={styles.statPillLabel}>Wrong Answers Recorded</div>
-              </div>
-              <div className={styles.statPill} title="CAT marking: -1 for each wrong MCQ; wrong TITA answers carry no negative mark.">
-                <div className={styles.statPillVal} style={{ color: "#DC2626" }}>
-                  {loading ? "..." : stats.marksLost > 0 ? `−${stats.marksLost}` : "0"}
-                </div>
-                <div className={styles.statPillLabel}>Marks Lost (negative marking)</div>
-              </div>
-              <div className={styles.statPill}>
-                <div className={styles.statPillVal} style={{ color: "#D97706" }}>
-                  {loading ? "..." : stats.byConcept.filter((c) => c.concept !== "Unlabelled").length}
-                </div>
-                <div className={styles.statPillLabel}>Concepts Involved</div>
-              </div>
+            <div className={styles.headActions}>
+              <a href="#mistakes-review-list" onClick={(e) => { e.preventDefault(); jumpToList("ALL"); }} className={`${styles.btn} ${styles.btnPrimary}`}>
+                Review detailed log <ArrowDown size={16} aria-hidden="true" />
+              </a>
+              <Link href="/browse#pyq-section" className={`${styles.btn} ${styles.btnSecondary}`}>
+                Practise PYQs
+              </Link>
             </div>
           </div>
+        </Reveal>
 
-          <div className={styles.heroRight}>
-            <div className={styles.radarCard}>
-              <div className={styles.radarCardTop}>
-                <div className={styles.radarStatusWrapper}>
-                  <span className={styles.radarTitle}>Mistakes by Section</span>
-                </div>
-                <span className={styles.radarMetaBadge}>
-                  {loading ? "Loading..." : total > 0 ? `${plural(total, "wrong answer")}` : "Nothing recorded yet"}
-                </span>
-              </div>
+        {/* Stat row */}
+        <RevealGroup className={styles.statRow}>
+          <RevealItem>
+            <SpotlightCard tint="blue" className={styles.stat}>
+              <span className={styles.statLabel}>Wrong answers recorded</span>
+              <span className={styles.statValue}>{loading ? "…" : <CountUp to={total} />}</span>
+              <span className={styles.statNote}>{loading ? "Loading…" : total > 0 ? "From tests, quizzes and PYQs" : "Nothing recorded yet"}</span>
+            </SpotlightCard>
+          </RevealItem>
+          <RevealItem>
+            <SpotlightCard tint="coral" className={styles.stat} title="CAT marking: -1 for each wrong MCQ; wrong TITA answers carry no negative mark.">
+              <span className={styles.statLabel}>Marks lost (negative marking)</span>
+              <span className={styles.statValue} style={{ color: stats.marksLost > 0 ? "#E11D48" : undefined }}>
+                {loading ? "…" : stats.marksLost > 0 ? `−${stats.marksLost}` : "0"}
+              </span>
+              <span className={styles.statNote}>Each wrong MCQ costs 1 mark under CAT marking</span>
+            </SpotlightCard>
+          </RevealItem>
+          <RevealItem>
+            <SpotlightCard tint="amber" className={styles.stat}>
+              <span className={styles.statLabel}>Concepts involved</span>
+              <span className={styles.statValue}>{loading ? "…" : <CountUp to={conceptsInvolved} />}</span>
+              <span className={styles.statNote}>Distinct concepts behind your errors</span>
+            </SpotlightCard>
+          </RevealItem>
+          <RevealItem>
+            <SpotlightCard tint="violet" className={styles.stat}>
+              <span className={styles.statLabel}>Most repeated</span>
+              {topConcept ? (
+                <>
+                  <span className={styles.statText}>{topConcept.concept}</span>
+                  <span className={styles.statNote}>{plural(topConcept.count, "wrong answer")}. Start your review there.</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.statText}>{loading ? "…" : "–"}</span>
+                  <span className={styles.statNote}>Attempt a PYQ section or module quiz; your wrong answers will appear here for review.</span>
+                </>
+              )}
+            </SpotlightCard>
+          </RevealItem>
+        </RevealGroup>
 
-              <div className={styles.recoveryBanner}>
-                <div className={styles.recoveryBannerLeft}>
-                  <span className={styles.recoveryScoreBig}>{loading ? "..." : stats.marksLost > 0 ? `−${stats.marksLost}` : "0"}</span>
-                  <div className={styles.recoveryLabelGroup}>
-                    <span className={styles.recoveryScoreHeading}>Marks lost in these answers</span>
-                    <span className={styles.recoveryScoreSub}>Each wrong MCQ costs 1 mark under CAT marking</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.radarSectionsGrid}>
-                {stats.bySection.map((b) => (
-                  <div
-                    key={b.section}
-                    className={`${styles.radarSectionBox} ${styles.radarSectionClickable} ${activeSection === b.section ? styles.radarSectionActive : ""}`}
-                    onClick={() => jumpToList(b.section)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jumpToList(b.section); } }}
-                    role="button"
-                    tabIndex={0}
-                    title={`Show ${b.section} mistakes`}
-                  >
-                    <div className={styles.radarSecHead}>
-                      <span className={`${styles.radarSecName} ${b.section === "QA" ? styles.radarSecNameQA : b.section === "DILR" ? styles.radarSecNameDILR : styles.radarSecNameVARC}`}>{b.section}</span>
-                      <span className={`${styles.radarSecLoss} ${b.marksLost > 0 ? styles.lossRed : styles.lossGreen}`}>
-                        {loading ? "..." : b.marksLost > 0 ? `-${b.marksLost} marks` : "0 marks"}
-                      </span>
-                    </div>
-                    <div className={styles.radarProgressBar}>
-                      <div className={styles.radarProgressFill} style={{ width: `${(b.count / stats.maxSectionCount) * 100}%`, background: SECTION_COLOR[b.section] }} />
-                    </div>
-                    <span className={styles.radarSecDesc}>
-                      {b.count === 0 ? "No mistakes" : `${plural(b.count, "mistake")}${b.topConcept ? ` · most in ${b.topConcept}` : ""}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className={styles.radarInsightCallout}>
-                <div className={styles.radarInsightText}>
-                  {topConcept ? (
-                    <>
-                      <strong>Most repeated:</strong> {topConcept.concept} with {plural(topConcept.count, "wrong answer")}. Start your review there.
-                    </>
-                  ) : (
-                    <>Attempt a PYQ section or module quiz; your wrong answers will appear here for review.</>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.radarFooterActions}>
-                <a href="#mistakes-review-list" onClick={(e) => { e.preventDefault(); jumpToList("ALL"); }} className={styles.radarActionBtnPrimary}>
-                  <span>Review Detailed Log</span>
-                  <span aria-hidden="true">&darr;</span>
-                </a>
-                <Link href="/browse#pyq-section" className={styles.radarActionBtnSecondary}>
-                  Practise PYQs &rarr;
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <main className={styles.container}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "48px 24px", color: "#64748B" }}>Loading your mistakes...</div>
+          <div className={styles.emptyCard} aria-busy="true">Loading your mistakes…</div>
         ) : error ? (
-          <div style={{ textAlign: "center", padding: "48px 24px", background: "#FFF", borderRadius: "18px", border: "1px dashed #CBD5E1", margin: "24px 0", color: "#0F172A" }}>
-            {error}
-          </div>
+          <Reveal className={`glass-card ${styles.emptyCard}`} data-tint="coral">{error}</Reveal>
         ) : total === 0 ? (
-          <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFF", borderRadius: "18px", border: "1px dashed #CBD5E1", margin: "24px 0" }}>
-            <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0F172A", margin: "0 0 10px 0" }}>No Wrong Answers Recorded Yet</h2>
-            <p style={{ fontSize: "14px", color: "#64748B", maxWidth: "540px", margin: "0 auto 24px auto", lineHeight: "1.6" }}>
+          <Reveal className={`glass-card ${styles.emptyCard}`} data-tint="blue">
+            <h2 className={styles.emptyTitle}>No wrong answers recorded yet</h2>
+            <p className={styles.emptyBody}>
               Attempt a CAT PYQ section or a module quiz. Every question you get wrong will be listed here with the correct answer, the explanation and a link to the lesson that covers it.
             </p>
-            <Link href="/browse#pyq-section" style={{ display: "inline-flex", textDecoration: "none", padding: "12px 24px", borderRadius: "8px", fontWeight: 700, color: "#fff", background: "#2563EB" }}>
-              Attempt a CAT PYQ Section &rarr;
+            <Link href="/browse#pyq-section" className={`${styles.btn} ${styles.btnPrimary}`}>
+              Attempt a CAT PYQ section <ArrowRight size={16} aria-hidden="true" />
             </Link>
-          </div>
+          </Reveal>
         ) : (
           <>
-            <div className={styles.analyticsGrid}>
-              <div className={styles.analyticsCard}>
-                <div className={styles.cardHeader}>
-                  <h2 className={styles.cardTitle}>Where Your Mistakes Are</h2>
-                  <span className={styles.cardBadge}>By Section</span>
+            <RevealGroup className={styles.analyticsGrid}>
+              {/* Where the mistakes are */}
+              <RevealItem className={`glass-card ${styles.card}`} data-tint="blue">
+                <div className={styles.cardHead}>
+                  <h2 className={styles.cardTitle}>Where your mistakes are</h2>
+                  <span className={styles.cardMeta}>By section</span>
                 </div>
-                <div className={styles.chartContainer}>
-                  <div className={styles.donutWrapper}>
-                    <div style={{ width: "230px", height: "230px" }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={68} outerRadius={98} paddingAngle={3} dataKey="count" nameKey="name">
-                            {pieData.map((entry) => <Cell key={entry.name} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />)}
-                          </Pie>
-                          <Tooltip formatter={(value) => [`${value} mistakes`, ""]} contentStyle={{ borderRadius: "8px", fontSize: "12px", border: "1px solid #E2E8F0" }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className={styles.donutCenterLabel}>
-                      <span className={styles.donutCenterVal}>{total}</span>
-                      <span className={styles.donutCenterText}>Mistakes</span>
+                <div className={styles.whereBody}>
+                  <div className={styles.donutWrap}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={56} outerRadius={80} paddingAngle={3} dataKey="count" nameKey="name">
+                          {pieData.map((entry) => <Cell key={entry.name} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />)}
+                        </Pie>
+                        <Tooltip formatter={(value) => [`${value} mistakes`, ""]} contentStyle={{ borderRadius: "10px", fontSize: "12px", border: "1px solid #E4E9F2", fontFamily: "var(--ff-sans)" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.donutCenter}>
+                      <span className={styles.donutVal}>{total}</span>
+                      <span className={styles.donutLbl}>Mistakes</span>
                     </div>
                   </div>
-                  <div className={styles.legendList}>
-                    {pieData.map((item) => (
-                      <div key={item.name} className={styles.legendItem}>
-                        <div className={styles.legendItemLeft}>
-                          <span className={styles.legendColor} style={{ background: item.color }} />
-                          <span className={styles.legendName}>{item.name}</span>
-                        </div>
-                        <div className={styles.legendItemRight}>
-                          <span className={styles.legendCountBadge}>{plural(item.count, "error")}</span>
-                          <span className={styles.legendPercentVal}>{Math.round((item.count / total) * 100)}%</span>
-                        </div>
-                      </div>
+                  <div className={styles.secRows}>
+                    {stats.bySection.map((b) => (
+                      <button
+                        key={b.section}
+                        type="button"
+                        className={`${styles.secRow} ${activeSection === b.section ? styles.secRowActive : ""}`}
+                        onClick={() => jumpToList(b.section)}
+                        title={`Show ${b.section} mistakes`}
+                        style={{ ["--sec" as string]: SECTION_COLOR[b.section] }}
+                      >
+                        <span className={styles.secRowTop}>
+                          <span className={styles.secRowName}><i aria-hidden="true" />{b.section}</span>
+                          <span className={styles.secRowCount}>{b.count}<small> · {total ? Math.round((b.count / total) * 100) : 0}%</small></span>
+                        </span>
+                        <span className={styles.secRowTrack}><span style={{ width: `${(b.count / stats.maxSectionCount) * 100}%` }} /></span>
+                        <span className={styles.secRowDesc}>
+                          {b.count === 0 ? "No mistakes" : `${b.topConcept ? `Most in ${b.topConcept}` : plural(b.count, "mistake")}`}
+                          <span className={b.marksLost > 0 ? styles.lossRed : styles.lossNone}>{b.marksLost > 0 ? `−${b.marksLost} marks` : "0 marks"}</span>
+                        </span>
+                      </button>
                     ))}
+                    {stats.unsectioned > 0 && (
+                      <span className={styles.otherNote}>Plus {plural(stats.unsectioned, "mistake")} without a section.</span>
+                    )}
                   </div>
                 </div>
-              </div>
+              </RevealItem>
 
-              <div className={styles.analyticsCard}>
-                <div className={styles.cardHeader}>
-                  <h2 className={styles.cardTitle}>Concepts With the Most Mistakes</h2>
-                  <span className={styles.cardBadge}>By Concept</span>
+              {/* Concepts */}
+              <RevealItem className={`glass-card ${styles.card}`} data-tint="amber">
+                <div className={styles.cardHead}>
+                  <h2 className={styles.cardTitle}>Concepts with the most mistakes</h2>
+                  <span className={styles.cardMeta}>By concept</span>
                 </div>
-                <div className={styles.recoveryTipsList}>
-                  {stats.byConcept.slice(0, 5).map((c) => {
+                <ol className={styles.conceptList}>
+                  {stats.byConcept.slice(0, 5).map((c, i) => {
                     const topicId = topicIdForLesson(c.lessonId);
                     return (
-                      <div key={c.concept} className={styles.tipItem}>
-                        <span className={styles.tipHighlight}>
-                          {c.concept}{c.section ? ` · ${c.section}` : ""}
-                        </span>
-                        {plural(c.count, "wrong answer")}{c.marksLost > 0 ? `, ${plural(c.marksLost, "mark")} lost` : ", no negative marks"}.{" "}
-                        <button
-                          type="button"
-                          onClick={() => { setActiveSection("ALL"); setActiveConcept(c.concept); setVisible(PAGE_SIZE); document.getElementById("mistakes-review-list")?.scrollIntoView({ behavior: "smooth" }); }}
-                          style={{ background: "none", border: "none", padding: 0, color: "#2563EB", fontWeight: 600, cursor: "pointer", fontSize: "inherit" }}
-                        >
-                          Show them
-                        </button>
-                        {topicId && (
-                          <>
-                            {" · "}
-                            <Link href={`/topics/${topicId}`} style={{ color: "#2563EB", fontWeight: 600 }}>Open lesson</Link>
-                          </>
-                        )}
-                      </div>
+                      <li key={c.concept} className={styles.conceptRow}>
+                        <span className={styles.conceptRank}>{String(i + 1).padStart(2, "0")}</span>
+                        <div className={styles.conceptMain}>
+                          <div className={styles.conceptTop}>
+                            <span className={styles.conceptName}>
+                              {c.concept}
+                              {c.section && <span className={styles.conceptSec} style={{ color: SECTION_COLOR[c.section] }}>{c.section}</span>}
+                            </span>
+                            <span className={styles.conceptCount}>{c.count}</span>
+                          </div>
+                          <span className={styles.conceptTrack}><span style={{ width: `${(c.count / maxConceptCount) * 100}%` }} /></span>
+                          <div className={styles.conceptFoot}>
+                            <span>{plural(c.count, "wrong answer")}{c.marksLost > 0 ? `, ${plural(c.marksLost, "mark")} lost` : ", no negative marks"}</span>
+                            <span className={styles.conceptLinks}>
+                              <button
+                                type="button"
+                                className={styles.inlineLink}
+                                onClick={() => { setActiveSection("ALL"); setActiveConcept(c.concept); setVisible(PAGE_SIZE); document.getElementById("mistakes-review-list")?.scrollIntoView({ behavior: "smooth" }); }}
+                              >
+                                Show them
+                              </button>
+                              {topicId && <Link href={`/topics/${topicId}`} className={styles.inlineLink}>Open lesson</Link>}
+                            </span>
+                          </div>
+                        </div>
+                      </li>
                     );
                   })}
+                </ol>
+              </RevealItem>
+            </RevealGroup>
+
+            {/* Filter bar */}
+            <Reveal id="mistakes-review-list" className={`glass-card ${styles.filterBar}`} data-tint="blue">
+              <div className={styles.filterTop}>
+                <div className={styles.segment} role="group" aria-label="Filter by section">
+                  {(["ALL", "QA", "DILR", "VARC"] as const).map((sec) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      aria-pressed={activeSection === sec}
+                      className={`${styles.segBtn} ${activeSection === sec ? styles.segBtnActive : ""}`}
+                      onClick={() => { setActiveSection(sec); setActiveConcept("ALL"); setVisible(PAGE_SIZE); }}
+                    >
+                      {sec !== "ALL" && <i style={{ background: SECTION_COLOR[sec] }} aria-hidden="true" />}
+                      {sec === "ALL" ? "All sections" : sec}
+                    </button>
+                  ))}
                 </div>
+                <label className={styles.searchBox}>
+                  <Search size={16} aria-hidden="true" />
+                  <input
+                    type="text"
+                    placeholder="Search concept or question…"
+                    aria-label="Search concept or question"
+                    className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setVisible(PAGE_SIZE); }}
+                  />
+                  {searchQuery && (
+                    <button type="button" className={styles.searchClear} aria-label="Clear search" onClick={() => { setSearchQuery(""); setVisible(PAGE_SIZE); }}>
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  )}
+                </label>
               </div>
-            </div>
-
-            {/* Filter Bar */}
-            <div id="mistakes-review-list" className={styles.filterBar}>
-              <div className={styles.subjectTabs}>
-                {(["ALL", "QA", "DILR", "VARC"] as const).map((sec) => (
-                  <button key={sec} className={`${styles.tabBtn} ${activeSection === sec ? styles.tabBtnActive : ""}`}
-                    onClick={() => { setActiveSection(sec); setActiveConcept("ALL"); setVisible(PAGE_SIZE); }}>
-                    {sec === "ALL" ? "All Sections" : sec}
-                  </button>
-                ))}
-              </div>
-
-              <div className={styles.errorTypePills}>
+              <div className={styles.chips} role="group" aria-label="Filter by concept">
                 {["ALL", ...conceptsForFilter].map((c) => (
-                  <button key={c} className={`${styles.pillBtn} ${activeConcept === c ? styles.pillBtnActive : ""}`}
-                    onClick={() => { setActiveConcept(c); setVisible(PAGE_SIZE); }}>
-                    {c === "ALL" ? "All Concepts" : c}
+                  <button
+                    key={c}
+                    type="button"
+                    aria-pressed={activeConcept === c}
+                    className={`${styles.chipBtn} ${activeConcept === c ? styles.chipBtnActive : ""}`}
+                    onClick={() => { setActiveConcept(c); setVisible(PAGE_SIZE); }}
+                  >
+                    {c === "ALL" ? "All concepts" : c}
                   </button>
                 ))}
               </div>
+            </Reveal>
 
-              <div className={styles.searchBox}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" placeholder="Search concept or question..." className={styles.searchInput} value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setVisible(PAGE_SIZE); }} />
-              </div>
-            </div>
+            <p className={styles.resultCount}>
+              Showing <strong>{Math.min(visible, filtered.length)}</strong> of <strong>{filtered.length}</strong> {filtered.length === 1 ? "mistake" : "mistakes"}
+            </p>
 
-            <div className={styles.questionsList}>
+            <div className={styles.list}>
               {filtered.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px 20px", background: "#FFF", borderRadius: "16px", border: "1px solid #E2E8F0" }}>
-                  <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#0F172A", marginBottom: "8px" }}>No mistakes found for this filter</h3>
-                  <p style={{ color: "#64748B", fontSize: "14px" }}>Try another section or concept, or clear your search.</p>
+                <div className={`glass-card ${styles.emptyCard}`} data-tint="blue">
+                  <h3 className={styles.emptyTitle}>No mistakes found for this filter</h3>
+                  <p className={styles.emptyBody}>Try another section or concept, or clear your search.</p>
                 </div>
               ) : (
                 filtered.slice(0, visible).map((x) => {
                   const d = details[x.questionId];
                   const topicId = topicIdForLesson(x.lessonId ?? d?.recommendedLessonId ?? null);
                   return (
-                    <div key={`${x.attemptId}-${x.questionId}`} className={styles.questionCard}>
-                      <div className={styles.qHeader}>
-                        <div className={styles.qTags}>
-                          {renderSectionBadge(x.section)}
-                          <span className={styles.sourceBadge}>{sourceLabel(x)}{x.concept ? ` • ${x.concept}` : ""}</span>
-                        </div>
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                          <span className={`${styles.errorBadge} ${x.marksLost > 0 ? styles.errorCalc : styles.errorConcept}`}>
-                            {x.questionType}{x.marksLost > 0 ? ` · −${x.marksLost}` : " · no negative"}
-                          </span>
-                          {x.timeSpentSeconds !== null && (
-                            <span className={styles.timeSpentBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                              </svg>
-                              {Math.floor(x.timeSpentSeconds / 60)}m {x.timeSpentSeconds % 60}s
+                    <Reveal
+                      key={`${x.attemptId}-${x.questionId}`}
+                      y={16}
+                      className={`glass-card ${styles.qCard}`}
+                      data-tint={x.section ? SECTION_TINT[x.section] : "blue"}
+                      style={x.section ? { ["--sec" as string]: SECTION_COLOR[x.section] } : undefined}
+                    >
+                      <article>
+                        <header className={styles.qHeader}>
+                          <div className={styles.qTags}>
+                            {renderSectionBadge(x.section)}
+                            <span className={styles.sourceTag}>{sourceLabel(x)}</span>
+                            {x.concept && <span className={styles.conceptTag}>{x.concept}</span>}
+                          </div>
+                          <div className={styles.qChips}>
+                            <span className={styles.typeChip}>{x.questionType}</span>
+                            <span className={`${styles.typeChip} ${x.marksLost > 0 ? styles.chipLoss : styles.chipNoLoss}`}>
+                              {x.marksLost > 0 ? `−${x.marksLost} mark` : "No negative"}
                             </span>
-                          )}
-                        </div>
-                      </div>
+                            {x.timeSpentSeconds !== null && (
+                              <span className={`${styles.typeChip} ${styles.chipTime}`}>
+                                <Clock size={12} aria-hidden="true" />
+                                {Math.floor(x.timeSpentSeconds / 60)}m {x.timeSpentSeconds % 60}s
+                              </span>
+                            )}
+                          </div>
+                        </header>
 
-                      {d ? (
-                        <>
-                          {d.context && (
-                            <details className={styles.contextBox}>
-                              <summary>Show passage / data set</summary>
-                              <div className={styles.contextText}><PYQMarkdownViewer content={d.context} /></div>
-                            </details>
-                          )}
-                          <div className={styles.qBody}><PYQMarkdownViewer content={d.text} /></div>
+                        {d ? (
+                          <>
+                            {d.context && (
+                              <details className={styles.contextBox}>
+                                <summary>Show passage / data set</summary>
+                                <div className={styles.contextText}><PYQMarkdownViewer content={d.context} /></div>
+                              </details>
+                            )}
+                            <div className={styles.qBody}><PYQMarkdownViewer content={d.text} /></div>
 
-                          {d.type === "MCQ" && d.options.length > 0 ? (
-                            <div className={styles.optionsGrid}>
-                              {d.options.map((opt, i) => {
-                                const isCorrect = d.correctOption === i;
-                                const isChosen = x.selectedOption === i;
-                                return (
-                                  <div
-                                    key={i}
-                                    className={isCorrect ? `${styles.optionItem} ${styles.optionCorrect}` : styles.optionItem}
-                                    style={isChosen && !isCorrect ? { borderColor: "#FCA5A5", background: "#FEF2F2" } : undefined}
-                                  >
-                                    <span><strong>{OPTION_LABELS[i] ?? i + 1}.</strong> <MathText text={opt} /></span>
-                                    {isChosen && !isCorrect && <span className={styles.optionMarkerWrong}>Your answer</span>}
-                                    {isCorrect && (
-                                      <span className={styles.optionMarkerCorrect} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                        Correct Answer
-                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : d.correctTita !== null ? (
-                            <div className={styles.optionsGrid}>
-                              {x.titaAnswer && (
-                                <div className={styles.optionItem} style={{ borderColor: "#FCA5A5", background: "#FEF2F2" }}>
-                                  <span><strong>Your answer:</strong> {x.titaAnswer}</span>
-                                </div>
-                              )}
-                              <div className={`${styles.optionItem} ${styles.optionCorrect}`}>
-                                <span><strong>Correct answer:</strong> {d.correctTita}</span>
+                            {d.type === "MCQ" && d.options.length > 0 ? (
+                              <div className={styles.options}>
+                                {d.options.map((opt, i) => {
+                                  const isCorrect = d.correctOption === i;
+                                  const isChosen = x.selectedOption === i;
+                                  const state = isCorrect ? "correct" : isChosen ? "wrong" : undefined;
+                                  return (
+                                    <div key={i} className={styles.option} data-state={state}>
+                                      <span className={styles.optLetter}>{OPTION_LABELS[i] ?? i + 1}</span>
+                                      <span className={styles.optText}><MathText text={opt} /></span>
+                                      {isChosen && !isCorrect && (
+                                        <span className={`${styles.optMark} ${styles.optMarkWrong}`}><X size={12} aria-hidden="true" />Your answer</span>
+                                      )}
+                                      {isCorrect && (
+                                        <span className={`${styles.optMark} ${styles.optMarkRight}`}><Check size={12} aria-hidden="true" />Correct answer</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            </div>
-                          ) : null}
+                            ) : d.correctTita !== null ? (
+                              <div className={styles.titaCompare}>
+                                {x.titaAnswer && (
+                                  <div className={styles.titaBox} data-state="wrong">
+                                    <span className={styles.titaLbl}><X size={13} aria-hidden="true" />Your answer</span>
+                                    <span className={styles.titaVal}>{x.titaAnswer}</span>
+                                  </div>
+                                )}
+                                <div className={styles.titaBox} data-state="correct">
+                                  <span className={styles.titaLbl}><Check size={13} aria-hidden="true" />Correct answer</span>
+                                  <span className={styles.titaVal}>{d.correctTita}</span>
+                                </div>
+                              </div>
+                            ) : null}
 
-                          {d.explanation && (
-                            <div className={styles.aiDiagnosticBox}>
-                              <div className={styles.aiDiagTitle}>Explanation</div>
-                              <div className={styles.aiDiagText}><PYQMarkdownViewer content={d.explanation} /></div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className={styles.qBody} style={{ color: "#64748B", fontWeight: 500 }}>
-                          {detailsLoading || !(x.questionId in details)
-                            ? "Loading question..."
-                            : "The full text of this question is not available (for example, an auto-generated practice question)."}
-                        </div>
-                      )}
-
-                      <div className={styles.cardFooter}>
-                        <span style={{ fontSize: "12px", color: "#94A3B8" }}>Answered on {shortDate(x.submittedAt)}</span>
-                        {topicId && (
-                          <Link href={`/topics/${topicId}`} className={`${styles.btnAction} ${styles.btnPrimaryAction}`}>
-                            Review Concept Lesson &rarr;
-                          </Link>
+                            {d.explanation && (
+                              <div className={styles.explain}>
+                                <div className={styles.explainTitle}><Lightbulb size={15} aria-hidden="true" />Explanation</div>
+                                <div className={styles.explainText}><PYQMarkdownViewer content={d.explanation} /></div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className={`${styles.qBody} ${styles.qMissing}`}>
+                            {detailsLoading || !(x.questionId in details)
+                              ? "Loading question…"
+                              : "The full text of this question is not available (for example, an auto-generated practice question)."}
+                          </div>
                         )}
-                      </div>
-                    </div>
+
+                        <footer className={styles.qFooter}>
+                          <span className={styles.qDate}>Answered on {shortDate(x.submittedAt)}</span>
+                          {topicId && (
+                            <Link href={`/topics/${topicId}`} className={styles.textLink}>
+                              Review concept lesson <ArrowRight size={15} aria-hidden="true" />
+                            </Link>
+                          )}
+                        </footer>
+                      </article>
+                    </Reveal>
                   );
                 })
               )}
               {filtered.length > visible && (
-                <button type="button" className={styles.tabBtn} style={{ alignSelf: "center" }} onClick={() => setVisible((v) => v + PAGE_SIZE)}>
+                <button type="button" className={`${styles.btn} ${styles.btnSecondary} ${styles.moreBtn}`} onClick={() => setVisible((v) => v + PAGE_SIZE)}>
                   Show more ({filtered.length - visible} left)
                 </button>
               )}

@@ -1,91 +1,158 @@
+/* Today's focus — the single guidance strip on the dashboard */
 .widgetContainer {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
-  border: 1px solid #E2E8F0;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.avatarBox {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  align-items: stretch;
+  gap: 24px;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  font-family: var(--ff-sans);
 }
 
 .messageBox {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 48px;
+  gap: 8px;
 }
 
-.aiHeader {
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748B;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: flex;
+.focusLabel {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--ff-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue-700);
+}
+
+.taskCount {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--line);
 }
 
 .messageContent {
-  font-size: 15px;
-  color: #1E293B;
-  line-height: 1.5;
   margin: 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink);
 }
 
-.highlight {
+.nextStep {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.nextStepLabel {
+  flex-shrink: 0;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #2563EB;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: #fff;
+  background: var(--blue-600);
 }
 
 .streakBox {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  gap: 8px;
   flex-shrink: 0;
-  min-width: 92px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  min-width: 168px;
+  padding-left: 24px;
+  border-left: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+.streakTop {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.streakIcon {
+  align-self: center;
+  color: var(--data-amber);
 }
 
 .streakValue {
-  font-size: 22px;
-  font-weight: 800;
-  color: #EA580C;
-  line-height: 1.1;
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
 }
 
 .streakLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.weekCells {
+  display: flex;
+  gap: 4px;
+}
+
+.weekCell {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(12, 23, 48, 0.07);
+}
+
+.weekCellActive {
+  background: var(--data-amber);
+}
+
+.weekCellToday {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--blue-400);
 }
 
 .streakBest {
-  font-size: 10.5px;
-  color: #94A3B8;
-  margin-top: 2px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 640px) {
+  .widgetContainer {
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+  }
+  .streakBox {
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: 0;
+    border-top: 1px solid rgba(59, 130, 246, 0.18);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nextStep {
+    flex-direction: column;
+    gap: 6px;
+  }
 }

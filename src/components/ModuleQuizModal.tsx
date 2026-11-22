@@ -10,6 +10,11 @@ import { useAuth } from "@/context/AuthContext";
 import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
 import ProctorPanel, { ProctorConsent } from "./proctoring/ProctorPanel";
 import {
+  ArrowLeft, ArrowRight, Award, BookOpen, Calculator, ChartColumn, Check, Circle, Clock, Delete,
+  Eraser, FileText, Flag, Keyboard, Lightbulb, ListChecks, Lock, Play, RotateCcw, Send, ShieldCheck,
+  Target, Timer, TriangleAlert, Trophy, X, Zap,
+} from "lucide-react";
+import {
   useProctoring,
   logProctorEvent,
   newAttemptKey,
@@ -102,6 +107,10 @@ export default function ModuleQuizModal({
   const [calcMemory, setCalcMemory] = useState<number | null>(null);
   const [calcOp, setCalcOp] = useState<string | null>(null);
   const [calcClearNext, setCalcClearNext] = useState(false);
+
+  // Question palette (UI only): which questions were opened and which are marked for review.
+  const [visitedSet, setVisitedSet] = useState<Set<number>>(() => new Set([0]));
+  const [markedSet, setMarkedSet] = useState<Set<number>>(() => new Set());
 
   useEffect(() => {
     const loadPrefs = () => {
@@ -632,6 +641,10 @@ export default function ModuleQuizModal({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    setVisitedSet((prev) => (prev.has(currentIdx) ? prev : new Set(prev).add(currentIdx)));
+  }, [currentIdx]);
+
   if (!isOpen) return null;
 
   // In-modal retake (no onRetake handler): go back through the proctoring consent step.
@@ -641,6 +654,8 @@ export default function ModuleQuizModal({
     setProctored(false);
     proctor.reset();
     attemptKeyRef.current = newAttemptKey();
+    setVisitedSet(new Set([0]));
+    setMarkedSet(new Set());
   };
 
   const showProctorConsent = !isSubmitted && !examStarted && !initialReviewMode;
@@ -697,6 +712,78 @@ export default function ModuleQuizModal({
   });
 
 
+  // ---- Display-only derived values (palette + results charts) ----
+  const isAnsweredIdx = (idx: number) => selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== "";
+  const paletteState = (idx: number): "answered" | "notAnswered" | "marked" | "answeredMarked" | "notVisited" => {
+    const answered = isAnsweredIdx(idx);
+    const marked = markedSet.has(idx);
+    if (answered && marked) return "answeredMarked";
+    if (marked) return "marked";
+    if (answered) return "answered";
+    if (visitedSet.has(idx)) return "notAnswered";
+    return "notVisited";
+  };
+  const paletteCounts = questions.reduce(
+    (acc, _q, idx) => {
+      acc[paletteState(idx)] += 1;
+      return acc;
+    },
+    { answered: 0, notAnswered: 0, marked: 0, answeredMarked: 0, notVisited: 0 }
+  );
+  const PALETTE_CLASS: Record<ReturnType<typeof paletteState>, string> = {
+    answered: styles.qPillAnswered,
+    notAnswered: styles.qPillNotAnswered,
+    marked: styles.qPillMarked,
+    answeredMarked: styles.qPillAnsweredMarked,
+    notVisited: "",
+  };
+  const isCurrentMarked = markedSet.has(currentIdx);
+  const toggleMarkCurrent = () =>
+    setMarkedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(currentIdx)) next.delete(currentIdx);
+      else next.add(currentIdx);
+      return next;
+    });
+
+  const correctCount = questions.filter((q, idx) => checkQuestionCorrect(q, idx)).length;
+  const skippedCount = questions.filter((_q, idx) => !isAnsweredIdx(idx)).length;
+  const wrongCount = Math.max(0, questions.length - correctCount - skippedCount);
+  const totalQ = questions.length || 1;
+  const RING_R = 52;
+  const RING_C = 2 * Math.PI * RING_R;
+  const ringSegments = [
+    { key: "correct", value: correctCount, color: "var(--data-emerald)" },
+    { key: "wrong", value: wrongCount, color: "var(--data-coral)" },
+    { key: "skipped", value: skippedCount, color: "#d3dbe8" },
+  ];
+  let ringOffset = 0;
+
+  const kickerLabel = initialReviewMode
+    ? `Report card · attempt ${attemptNumber}`
+    : attemptContext?.kind === "pyq"
+      ? "CAT past paper · timed section"
+      : isGrandQuiz
+        ? "Grand comprehensive quiz"
+        : "Compulsory module quiz";
+  const timerTone =
+    timeLeft < 120 ? styles.timerDanger : examPrefs.timerAlerts && timeLeft <= 300 && timeLeft > 0 ? styles.timerPulseWarning : "";
+
+  const resetForInModalRetake = () => {
+    setIsSubmitted(false);
+    setSelectedAnswers({});
+    setTimeLeft(initialDuration);
+    setCurrentIdx(0);
+    setAnalysis(null);
+    setRawScore(null);
+    setStrikes(0);
+    strikesRef.current = 0;
+    prepareFreshStart();
+    setProctorAlert(null);
+    setShowSubmitConfirm(false);
+    setAutoSubmitNotice(null);
+  };
+
   const modalContent = (
     <div
       className={styles.overlay}
@@ -706,7 +793,11 @@ export default function ModuleQuizModal({
       onPaste={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
-      <div className={`${styles.modalBox} ${examPrefs.highContrast ? styles.highContrastExam : ""}`}>
+      <div
+        className={`${styles.modalBox} ${isSubmitted ? styles.modalBoxResult : ""} ${
+          examPrefs.highContrast ? styles.highContrastExam : ""
+        }`}
+      >
         {/* Webcam proctoring consent step (timer starts only after this) */}
         {showProctorConsent && (
           <ProctorConsent
@@ -727,25 +818,14 @@ export default function ModuleQuizModal({
         )}
         {/* Real-time Proctoring Warning Banner */}
         {proctorAlert && (
-          <div className={styles.proctorWarningBanner}>
+          <div className={styles.proctorWarningBanner} role="alert">
             <div className={styles.proctorWarningLeft}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+              <TriangleAlert size={16} strokeWidth={2.4} />
               <span>{proctorAlert}</span>
             </div>
-            <button
-              type="button"
-              className={styles.proctorDismissBtn}
-              onClick={() => setProctorAlert(null)}
-            >
+            <button type="button" className={styles.proctorDismissBtn} onClick={() => setProctorAlert(null)}>
               Dismiss
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "4px" }}>
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <X size={13} strokeWidth={2.5} />
             </button>
           </div>
         )}
@@ -753,35 +833,15 @@ export default function ModuleQuizModal({
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.headerLeft}>
-            <span className={isGrandQuiz ? styles.grandQuizBadge : styles.quizBadge} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <span className={isGrandQuiz ? styles.grandQuizBadge : styles.quizBadge}>
               {initialReviewMode ? (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
-                  {`Detailed Report Card (Attempt ${attemptNumber})`}
-                </>
+                <ChartColumn size={14} />
               ) : isGrandQuiz ? (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="8" r="7" />
-                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                  </svg>
-                  {"Grand Comprehensive Quiz"}
-                </>
+                <Award size={14} />
               ) : (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                  {"Compulsory Module Quiz"}
-                </>
+                <FileText size={14} />
               )}
+              {kickerLabel}
             </span>
             <h2 className={styles.modalTitle}>{title}</h2>
           </div>
@@ -790,23 +850,12 @@ export default function ModuleQuizModal({
             {!isSubmitted && examPrefs.ionCalculator && (
               <button
                 type="button"
-                className={styles.calculatorToggleBtn}
+                className={`${styles.calculatorToggleBtn} ${showCalculator ? styles.calculatorToggleOn : ""}`}
                 onClick={() => setShowCalculator((prev) => !prev)}
-                title="TCS iON On-Screen Calculator"
+                title="TCS iON on-screen calculator"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <rect x="4" y="2" width="16" height="20" rx="2" />
-                  <line x1="8" y1="6" x2="16" y2="6" />
-                  <line x1="16" y1="14" x2="16" y2="18" />
-                  <path d="M16 10h.01" />
-                  <path d="M12 10h.01" />
-                  <path d="M8 10h.01" />
-                  <path d="M12 14h.01" />
-                  <path d="M8 14h.01" />
-                  <path d="M12 18h.01" />
-                  <path d="M8 18h.01" />
-                </svg>
-                <span>{showCalculator ? "Hide Calc" : "Calculator"}</span>
+                <Calculator size={16} />
+                <span>{showCalculator ? "Hide calculator" : "Calculator"}</span>
               </button>
             )}
             {onBackToAttempts && isSubmitted && (
@@ -814,64 +863,32 @@ export default function ModuleQuizModal({
                 type="button"
                 className={styles.backToAttemptsBtn}
                 onClick={onBackToAttempts}
-                title="Back to All Attempts List"
+                title="Back to all attempts"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="19" y1="12" x2="5" y2="12" />
-                  <polyline points="12 19 5 12 12 5" />
-                </svg>
-                <span>Back to Attempts</span>
+                <ArrowLeft size={16} />
+                <span>Back to attempts</span>
               </button>
             )}
             {!isSubmitted && (
               <div
-                className={`${styles.timerBadge} ${timeLeft < 120 ? styles.timerDanger : ""} ${
-                  examPrefs.timerAlerts && timeLeft <= 300 && timeLeft > 0 ? styles.timerPulseWarning : ""
-                }`}
-                title={timeLeft <= 300 && examPrefs.timerAlerts ? "Warning: Under 5 minutes remaining!" : "Time Remaining"}
+                className={`${styles.timerBadge} ${timerTone}`}
+                title={timeLeft <= 300 && examPrefs.timerAlerts ? "Under 5 minutes remaining" : "Time remaining"}
+                role="timer"
+                aria-label="Time remaining"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                <span>{formatTimer(timeLeft)}</span>
+                <Timer size={16} strokeWidth={2.2} />
+                <span className={styles.timerLabel}>Time left</span>
+                <span className={styles.timerValue}>{formatTimer(timeLeft)}</span>
               </div>
             )}
             {!isSubmitted ? (
-              <div
-                className={styles.examLockedBadge}
-                title="Exam in progress. You must submit your quiz before closing."
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <span>Active Exam • Locked</span>
+              <div className={styles.examLockedBadge} title="Exam in progress. You must submit your quiz before closing.">
+                <Lock size={14} />
+                <span>Locked</span>
               </div>
             ) : (
-              <button
-                className={styles.closeBtn}
-                onClick={handleSafeClose}
-                title="Close Quiz Report"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+              <button className={styles.closeBtn} onClick={handleSafeClose} title="Close report" aria-label="Close report">
+                <X size={20} />
               </button>
             )}
           </div>
@@ -881,34 +898,25 @@ export default function ModuleQuizModal({
         {showCalculator && !isSubmitted && examPrefs.ionCalculator && (
           <div className={styles.calcModalOverlay}>
             <div className={styles.calcHeader}>
-              <span className={styles.calcTitle}>TCS iON Calculator</span>
+              <span className={styles.calcTitle}>
+                <Keyboard size={14} />
+                TCS iON calculator
+              </span>
               <button
                 type="button"
                 className={styles.calcCloseBtn}
                 onClick={() => setShowCalculator(false)}
-                title="Close Calculator"
+                title="Close calculator"
+                aria-label="Close calculator"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={14} />
               </button>
             </div>
             <div className={styles.calcScreen}>{calcInput}</div>
             <div className={styles.calcGrid}>
               <button type="button" className={`${styles.calcBtn} ${styles.calcBtnClear}`} onClick={handleCalcClear}>C</button>
-              <button
-                type="button"
-                className={styles.calcBtn}
-                onClick={handleCalcBackspace}
-                aria-label="Backspace"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
-                  <line x1="18" y1="9" x2="12" y2="15" />
-                  <line x1="12" y1="9" x2="18" y2="15" />
-                </svg>
+              <button type="button" className={styles.calcBtn} onClick={handleCalcBackspace} aria-label="Backspace">
+                <Delete size={16} />
               </button>
               <button type="button" className={styles.calcBtn} onClick={handleCalcSqrt}>√</button>
               <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} onClick={() => handleCalcOp("÷")}>÷</button>
@@ -930,339 +938,381 @@ export default function ModuleQuizModal({
 
               <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit("0")}>0</button>
               <button type="button" className={styles.calcBtn} onClick={() => handleCalcDigit(".")}>.</button>
-              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnOp}`} style={{ gridColumn: "span 2" }} onClick={handleCalcEquals}>=</button>
+              <button type="button" className={`${styles.calcBtn} ${styles.calcBtnEquals}`} onClick={handleCalcEquals}>=</button>
             </div>
           </div>
         )}
 
         {!isSubmitted ? (
-          <>
-            {/* Question Tracker & Rules Bar */}
-            <div className={styles.questionTracker}>
-              <div>
-                Question <strong>{currentIdx + 1}</strong> of <strong>{questions.length}</strong> (
-                {answeredCount} Answered)
-              </div>
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                {strikes > 0 && (
-                  <span
-                    style={{
-                      fontSize: "11.5px",
-                      fontWeight: 700,
-                      color: "#dc2626",
-                      background: "#fef2f2",
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      border: "1px solid #fecaca",
-                      animation: "pulse 1.5s infinite",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                      <line x1="12" y1="9" x2="12" y2="13" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                    Strikes: {strikes} / 3
+          <div className={styles.examLayout}>
+            <div className={styles.examMain}>
+              {/* Question Tracker & Rules Bar */}
+              <div className={styles.questionTracker}>
+                <div className={styles.trackerLeft}>
+                  <span className={styles.qNumber}>
+                    Question <strong>{String(currentIdx + 1).padStart(2, "0")}</strong>
+                    <span className={styles.qOf}>/ {String(questions.length).padStart(2, "0")}</span>
                   </span>
-                )}
-                {!isGrandQuiz && (
-                  <span style={{ fontSize: "11.5px", color: "#64748b" }}>
-                    Attempt <strong>{attemptNumber}</strong> of {maxAttempts}
-                  </span>
-                )}
-                <div className={styles.cutoffNotice}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    {scoringScheme === "cat" ? "CAT Scoring: +3 / -1 (TITA: +3/0)" : "70% Cutoff Required to Pass"}
-                  </span>
+                  {currentQ.type === "TITA" ? (
+                    <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>
+                  ) : (
+                    <span className={`${styles.typeChip} ${styles.typeChipMcq}`}>MCQ</span>
+                  )}
+                  {currentQ.isOutsideContext && <span className={styles.outsideTag}>CAT applied problem</span>}
                 </div>
-              </div>
-            </div>
-
-            {/* Quick Question Pills Navigator */}
-            <div className={`${styles.pillsRow} ${examPrefs.compactPalette ? styles.compactPillsRow : ""}`}>
-              {questions.map((q, idx) => {
-                const isCurrent = idx === currentIdx;
-                const isAnswered = selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== "";
-                return (
-                  <button
-                    key={q.id || idx}
-                    type="button"
-                    onClick={() => setCurrentIdx(idx)}
-                    className={`${styles.qPill} ${isCurrent ? styles.qPillActive : ""} ${
-                      isAnswered && !isCurrent ? styles.qPillAnswered : ""
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Question Body (NEVER shows right/wrong or explanation during active quiz) */}
-            <div className={styles.bodyContent}>
-              {currentQ.context && (
-                <div className={styles.passageContainer}>
-                  <div className={styles.passageHeader}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
-                    <span>Reading Passage / Caselet Context</span>
-                  </div>
-                  <div className={styles.passageText}>
-                    <PYQMarkdownViewer content={currentQ.context} />
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.questionMeta}>
-                <span className={styles.conceptBadge}>Concept: {currentQ.concept}</span>
-                {currentQ.type === "TITA" ? (
-                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <rect x="2" y="4" width="20" height="16" rx="2" />
-                      <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
-                    </svg>
-                    TITA Question
-                  </span>
-                ) : (
-                  <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="4" />
-                    </svg>
-                    Multiple Choice
-                  </span>
-                )}
-                {currentQ.isOutsideContext && (
-                  <span className={styles.outsideTag}>CAT Applied Problem</span>
-                )}
-              </div>
-
-              <div className={styles.questionTitle}>
-                <PYQMarkdownViewer content={currentQ.q} />
-              </div>
-
-              {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
-                <div className={styles.titaContainer}>
-                  <div className={styles.titaLabel}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <rect x="2" y="4" width="20" height="16" rx="2" />
-                        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
-                      </svg>
-                      Type In The Answer (TITA)
+                <div className={styles.trackerRight}>
+                  {strikes > 0 && (
+                    <span className={styles.strikeChip}>
+                      <TriangleAlert size={13} strokeWidth={2.4} />
+                      Strikes <strong>{strikes}/3</strong>
                     </span>
-                    <span className={styles.titaSubtext}>
-                      Key in your numerical value or exact text answer below. (No negative marks apply in CAT).
+                  )}
+                  {!isGrandQuiz && (
+                    <span className={styles.attemptChip}>
+                      Attempt <strong>{attemptNumber}/{maxAttempts}</strong>
                     </span>
-                  </div>
-                  <div className={styles.titaInputWrapper}>
-                    <input
-                      type="text"
-                      className={styles.titaInput}
-                      placeholder="Enter numerical value or text answer..."
-                      value={selectedAnswers[currentIdx] !== undefined ? String(selectedAnswers[currentIdx]) : ""}
-                      onChange={(e) => handleSetTITAAnswer(e.target.value)}
-                    />
-                    {selectedAnswers[currentIdx] !== undefined && selectedAnswers[currentIdx] !== "" && (
-                      <button
-                        type="button"
-                        onClick={() => handleSetTITAAnswer("")}
-                        className={styles.titaClearBtn}
-                        title="Clear Answer"
-                      >
-                        Clear
-                      </button>
+                  )}
+                  <span className={styles.cutoffNotice}>
+                    <Target size={13} />
+                    {scoringScheme === "cat" ? (
+                      <>
+                        Marks <b className={styles.markPlus}>+3</b> <b className={styles.markMinus}>−1</b>
+                        <span className={styles.markNote}>TITA +3 / 0</span>
+                      </>
+                    ) : (
+                      "70% cutoff to pass"
                     )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Question Body (NEVER shows right/wrong or explanation during active quiz) */}
+              <div className={`${styles.bodyContent} ${currentQ.context ? styles.bodySplit : ""}`}>
+                {currentQ.context && (
+                  <div className={styles.passageContainer}>
+                    <div className={styles.passageHeader}>
+                      <BookOpen size={15} />
+                      <span>Passage / caselet</span>
+                    </div>
+                    <div className={styles.passageText}>
+                      <PYQMarkdownViewer content={currentQ.context} />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className={styles.optionsGrid}>
-                  {currentQ.options.map((optText, optIdx) => {
-                    const isSelected = selectedAnswers[currentIdx] === optIdx;
-                    return (
-                      <div
-                        key={optIdx}
-                        onClick={() => handleSelectOption(optIdx)}
-                        className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
-                      >
-                        <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                        <div className={styles.optionText}><MathText text={optText} /></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-
-            {/* Modal Footer Controls */}
-            <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={`${styles.navActionBtn} ${styles.btnSecondary}`}
-                onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-                disabled={currentIdx === 0}
-              >
-                ← Previous
-              </button>
-
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                {!isLastQuestion ? (
-                  <button
-                    type="button"
-                    className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                    onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-                  >
-                    Next →
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className={`${styles.navActionBtn} ${styles.btnSubmit}`}
-                    onClick={() => setShowSubmitConfirm(true)}
-                  >
-                    Submit Quiz
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  </button>
                 )}
+
+                <div className={styles.questionPane}>
+                  <div className={styles.questionMeta}>
+                    <span className={styles.conceptBadge}>{currentQ.concept}</span>
+                  </div>
+
+                  <div className={styles.questionTitle}>
+                    <PYQMarkdownViewer content={currentQ.q} />
+                  </div>
+
+                  {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
+                    <div className={styles.titaContainer}>
+                      <div className={styles.titaLabel}>
+                        <span className={styles.titaLabelMain}>
+                          <Keyboard size={15} />
+                          Type in the answer
+                        </span>
+                        <span className={styles.titaSubtext}>
+                          Enter a number or the exact text. No negative marks for TITA in CAT.
+                        </span>
+                      </div>
+                      <div className={styles.titaInputWrapper}>
+                        <input
+                          type="text"
+                          className={styles.titaInput}
+                          placeholder="Your answer"
+                          value={selectedAnswers[currentIdx] !== undefined ? String(selectedAnswers[currentIdx]) : ""}
+                          onChange={(e) => handleSetTITAAnswer(e.target.value)}
+                        />
+                        {selectedAnswers[currentIdx] !== undefined && selectedAnswers[currentIdx] !== "" && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetTITAAnswer("")}
+                            className={styles.titaClearBtn}
+                            title="Clear answer"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.optionsGrid} role="radiogroup" aria-label="Answer options">
+                      {currentQ.options.map((optText, optIdx) => {
+                        const isSelected = selectedAnswers[currentIdx] === optIdx;
+                        return (
+                          <div
+                            key={optIdx}
+                            role="radio"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onClick={() => handleSelectOption(optIdx)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleSelectOption(optIdx);
+                              }
+                            }}
+                            className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
+                          >
+                            <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
+                            <div className={styles.optionText}><MathText text={optText} /></div>
+                            {isSelected && <Check size={16} strokeWidth={2.6} className={styles.optionTick} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer Controls */}
+              <div className={styles.modalFooter}>
+                <div className={styles.footerGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.navActionBtn} ${isCurrentMarked ? styles.btnMarkOn : styles.btnMark}`}
+                    onClick={toggleMarkCurrent}
+                    aria-pressed={isCurrentMarked}
+                  >
+                    <Flag size={15} />
+                    <span>{isCurrentMarked ? "Marked" : "Mark for review"}</span>
+                  </button>
+                  {isAnsweredIdx(currentIdx) && (
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnGhost}`}
+                      onClick={() => handleSetTITAAnswer("")}
+                    >
+                      <Eraser size={15} />
+                      <span>Clear response</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.footerGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.navActionBtn} ${styles.btnSecondary}`}
+                    onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
+                    disabled={currentIdx === 0}
+                  >
+                    <ArrowLeft size={15} />
+                    <span>Previous</span>
+                  </button>
+                  {!isLastQuestion ? (
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnPrimary}`}
+                      onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
+                    >
+                      <span>Save &amp; next</span>
+                      <ArrowRight size={15} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnSubmit}`}
+                      onClick={() => setShowSubmitConfirm(true)}
+                    >
+                      <span>Submit quiz</span>
+                      <Send size={15} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </>
+
+            {/* Question palette */}
+            <aside
+              className={`${styles.paletteAside} ${proctored ? styles.paletteAsideCam : ""}`}
+              aria-label="Question palette"
+            >
+              <div className={styles.paletteHead}>
+                <span className={styles.paletteTitle}>Question palette</span>
+                <span className={styles.paletteProgress}>
+                  <strong>{answeredCount}</strong>/{questions.length}
+                </span>
+              </div>
+              <div className={styles.paletteMeter} aria-hidden="true">
+                <span style={{ width: `${(answeredCount / totalQ) * 100}%` }} />
+              </div>
+
+              <div className={`${styles.pillsRow} ${examPrefs.compactPalette ? styles.compactPillsRow : ""}`}>
+                {questions.map((q, idx) => {
+                  const isCurrent = idx === currentIdx;
+                  const state = paletteState(idx);
+                  return (
+                    <button
+                      key={q.id || idx}
+                      type="button"
+                      onClick={() => setCurrentIdx(idx)}
+                      aria-current={isCurrent ? "true" : undefined}
+                      aria-label={`Question ${idx + 1}`}
+                      className={`${styles.qPill} ${PALETTE_CLASS[state]} ${isCurrent ? styles.qPillActive : ""}`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <ul className={styles.legend}>
+                <li><span className={`${styles.legendSwatch} ${styles.qPillAnswered}`} />Answered<b>{paletteCounts.answered}</b></li>
+                <li><span className={`${styles.legendSwatch} ${styles.qPillNotAnswered}`} />Not answered<b>{paletteCounts.notAnswered}</b></li>
+                <li><span className={`${styles.legendSwatch} ${styles.qPillMarked}`} />Marked<b>{paletteCounts.marked}</b></li>
+                <li><span className={`${styles.legendSwatch} ${styles.qPillAnsweredMarked}`} />Answered &amp; marked<b>{paletteCounts.answeredMarked}</b></li>
+                <li><span className={styles.legendSwatch} />Not visited<b>{paletteCounts.notVisited}</b></li>
+                <li><span className={`${styles.legendSwatch} ${styles.legendCurrent}`} />Current</li>
+              </ul>
+
+              <button type="button" className={styles.asideSubmitBtn} onClick={() => setShowSubmitConfirm(true)}>
+                <Send size={15} />
+                Submit quiz
+              </button>
+            </aside>
+          </div>
         ) : (
           /* Result, Diagnostics & Comprehensive Solutions Review (ONLY AFTER SUBMISSION) */
           <div className={`${styles.bodyContent} ${styles.resultContainer}`}>
-            <div
-              className={`${styles.resultTrophy} ${
-                analysis?.passed ? styles.trophyPass : styles.trophyFail
-              }`}
-            >
-              {analysis?.passed ? (
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                  <path d="M4 22h16" />
-                  <path d="M10 14.66V17c0 .55-.45 1-1 1H7.5a1.5 1.5 0 0 0 0 3h9a1.5 1.5 0 0 0 0-3H15c-.55 0-1-.45-1-1v-2.34" />
-                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-                </svg>
-              ) : (
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              )}
+            <div className={styles.resultHero}>
+              {/* Featured score card */}
+              <div className={`${styles.scoreFeature} ${analysis?.passed ? styles.trophyPass : styles.trophyFail}`}>
+                <div className={styles.resultTrophy}>
+                  {analysis?.passed ? <Trophy size={18} /> : <TriangleAlert size={18} />}
+                  <span>{analysis?.passed ? "Passed" : "Cutoff not met"}</span>
+                </div>
+                <h3 className={styles.resultHeading}>
+                  {analysis?.passed
+                    ? isGrandQuiz
+                      ? "Course mastered"
+                      : "Module passed"
+                    : "Cutoff not met (70% required)"}
+                </h3>
+                <div className={styles.scoreBanner}>
+                  <div className={styles.scoreMetricMain}>
+                    <span className={styles.scoreVal}>{analysis?.score}</span>
+                    <span className={styles.scoreOutOf}>/ {analysis?.total}</span>
+                  </div>
+                  <span className={styles.scoreLbl}>{strikes > 0 ? "Final score" : scoringScheme === "cat" ? "Score" : "Correct answers"}</span>
+                </div>
+                <p className={styles.resultSubheading}>
+                  {analysis?.passed
+                    ? isGrandQuiz
+                      ? "You have completed the CAT grand comprehensive assessment."
+                      : "You have mastered this module. The next module is now unlocked."
+                    : `You scored ${analysis?.percentage}%. You need at least 70% to unlock the next module.`}
+                </p>
+                <div className={styles.scoreFootRow}>
+                  {strikes > 0 && (
+                    <>
+                      <span className={styles.scoreMetric}>
+                        <b>{rawScore !== null ? rawScore : analysis?.score}</b> raw
+                      </span>
+                      <span className={`${styles.scoreMetric} ${styles.scoreMetricPenalty}`}>
+                        <b>−{strikes}</b> penalty
+                      </span>
+                    </>
+                  )}
+                  <span className={styles.scoreMetric}>
+                    <b>{analysis?.percentage}%</b> accuracy
+                  </span>
+                  {analysis?.passed && (
+                    <span className={styles.xpAwardBadge}>+{isGrandQuiz ? 100 : 50} XP</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Accuracy chart */}
+              <div className={`glass-card ${styles.accuracyCard}`} data-tint="teal">
+                <div className={styles.cardKicker}>Accuracy breakdown</div>
+                <div className={styles.accuracyBody}>
+                  <svg className={styles.ring} viewBox="0 0 132 132" role="img" aria-label={`${correctCount} correct, ${wrongCount} wrong, ${skippedCount} skipped`}>
+                    <circle cx="66" cy="66" r={RING_R} fill="none" stroke="#eef2f8" strokeWidth="14" />
+                    {ringSegments.map((seg) => {
+                      const len = (seg.value / totalQ) * RING_C;
+                      const el = (
+                        <circle
+                          key={seg.key}
+                          cx="66"
+                          cy="66"
+                          r={RING_R}
+                          fill="none"
+                          stroke={seg.color}
+                          strokeWidth="14"
+                          strokeDasharray={`${len} ${RING_C - len}`}
+                          strokeDashoffset={-ringOffset}
+                          transform="rotate(-90 66 66)"
+                        />
+                      );
+                      ringOffset += len;
+                      return seg.value > 0 ? el : null;
+                    })}
+                    <text x="66" y="64" textAnchor="middle" className={styles.ringValue}>
+                      {Math.round((correctCount / totalQ) * 100)}%
+                    </text>
+                    <text x="66" y="82" textAnchor="middle" className={styles.ringLabel}>
+                      correct
+                    </text>
+                  </svg>
+                  <ul className={styles.ringLegend}>
+                    <li><span style={{ background: "var(--data-emerald)" }} />Correct<b>{correctCount}</b></li>
+                    <li><span style={{ background: "var(--data-coral)" }} />Wrong<b>{wrongCount}</b></li>
+                    <li><span style={{ background: "#d3dbe8" }} />Skipped<b>{skippedCount}</b></li>
+                  </ul>
+                </div>
+                <div className={styles.qStrip} aria-hidden="true">
+                  {questions.map((q, idx) => (
+                    <span
+                      key={q.id || idx}
+                      className={
+                        checkQuestionCorrect(q, idx)
+                          ? styles.qStripCorrect
+                          : isAnsweredIdx(idx)
+                            ? styles.qStripWrong
+                            : styles.qStripSkipped
+                      }
+                      title={`Q${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-
-            <h3 className={styles.resultHeading}>
-              {analysis?.passed
-                ? isGrandQuiz
-                  ? "Outstanding! Course Mastered!"
-                  : "Congratulations! Module Passed!"
-                : "Cutoff Not Met (70% Required)"}
-            </h3>
-
-            <p className={styles.resultSubheading}>
-              {analysis?.passed
-                ? isGrandQuiz
-                  ? "You have completed the CAT Grand Comprehensive Assessment. Your topic readiness is benchmarked at 99+ percentile!"
-                  : "Great work! You have successfully mastered this module. The next module is now unlocked for you."
-                : `You scored ${analysis?.percentage}%. You need at least 70% to unlock the next module.`}
-            </p>
 
             {/* Proctoring Penalty Notice Banner (If any strikes incurred) */}
             {strikes > 0 && (
               <div className={styles.penaltyNoticeBanner}>
                 <div className={styles.penaltyNoticeTitle}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                  <span>Proctoring Strike Penalty Applied (-{strikes} Mark{strikes > 1 ? "s" : ""})</span>
+                  <TriangleAlert size={15} />
+                  <span>Proctoring penalty applied (−{strikes} mark{strikes > 1 ? "s" : ""})</span>
                 </div>
                 <div className={styles.penaltyNoticeDesc}>
-                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam for security policy violations (screenshot, tab switching or webcam proctoring detected).
-                  A penalty of <strong>-{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
+                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam (screenshot, tab switching or webcam proctoring).
+                  A penalty of <strong>−{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
                 </div>
               </div>
             )}
 
-            {/* Score & Points Banner */}
-            <div className={styles.scoreBanner}>
-              {strikes > 0 ? (
-                <>
-                  <div className={styles.scoreMetric}>
-                    <span className={styles.scoreVal}>
-                      {rawScore !== null ? rawScore : analysis?.score} / {analysis?.total}
-                    </span>
-                    <span className={styles.scoreLbl}>Raw Score</span>
-                  </div>
-                  <div style={{ width: "1px", height: "36px", background: "#cbd5e1" }} />
-                  <div className={styles.scoreMetric}>
-                    <span className={styles.scoreVal} style={{ color: "#dc2626" }}>
-                      -{strikes}
-                    </span>
-                    <span className={styles.scoreLbl}>Penalty</span>
-                  </div>
-                  <div style={{ width: "1px", height: "36px", background: "#cbd5e1" }} />
-                  <div className={styles.scoreMetric}>
-                    <span className={styles.scoreVal}>
-                      {analysis?.score} / {analysis?.total}
-                    </span>
-                    <span className={styles.scoreLbl}>Final Score</span>
-                  </div>
-                </>
-              ) : (
-                <div className={styles.scoreMetric}>
-                  <span className={styles.scoreVal}>
-                    {analysis?.score} / {analysis?.total}
-                  </span>
-                  <span className={styles.scoreLbl}>Correct Answers</span>
-                </div>
-              )}
-              <div style={{ width: "1px", height: "36px", background: "#cbd5e1" }} />
-              <div className={styles.scoreMetric}>
-                <span className={styles.scoreVal}>{analysis?.percentage}%</span>
-                <span className={styles.scoreLbl}>Accuracy</span>
-              </div>
-              {analysis?.passed && (
-                <>
-                  <div style={{ width: "1px", height: "36px", background: "#cbd5e1" }} />
-                  <div className={styles.xpAwardBadge}>
-                    +{isGrandQuiz ? 100 : 50} XP Points Earned!
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Time & Proctoring Analytics Bar */}
+            {/* Time & Proctoring Analytics */}
             <div className={styles.analyticsGrid}>
-              <div className={styles.analyticsCard}>
+              <div className={`glass-card ${styles.analyticsCard}`} data-tint="blue">
+                <span className={styles.analyticsLbl}>
+                  <Clock size={14} />
+                  Time taken
+                </span>
                 <span className={styles.analyticsVal}>
                   {formatTimer(analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft))}
                 </span>
-                <span className={styles.analyticsLbl}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  Time Taken
-                </span>
               </div>
-              <div className={styles.analyticsCard}>
+              <div className={`glass-card ${styles.analyticsCard}`} data-tint="violet">
+                <span className={styles.analyticsLbl}>
+                  <Zap size={14} />
+                  Avg speed
+                </span>
                 <span className={styles.analyticsVal}>
                   {Math.max(
                     1,
@@ -1270,98 +1320,59 @@ export default function ModuleQuizModal({
                       (analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft)) /
                         (questions.length || 1)
                     )
-                  )}s / Q
-                </span>
-                <span className={styles.analyticsLbl}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                  Avg Speed
+                  )}
+                  <small>s / Q</small>
                 </span>
               </div>
-              <div className={styles.analyticsCard}>
-                <span
-                  className={`${styles.analyticsVal} ${
-                    strikes > 0 ? styles.analyticsStrike : styles.analyticsPass
-                  }`}
-                >
-                  {strikes > 0 ? `-${strikes} Mark${strikes > 1 ? "s" : ""}` : "Clean (0)"}
-                </span>
+              <div className={`glass-card ${styles.analyticsCard}`} data-tint={strikes > 0 ? "coral" : "teal"}>
                 <span className={styles.analyticsLbl}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
+                  <ShieldCheck size={14} />
                   Proctoring
                 </span>
-              </div>
-              <div className={styles.analyticsCard}>
-                <span
-                  className={`${styles.analyticsVal} ${
-                    analysis?.passed ? styles.analyticsPass : styles.analyticsStrike
-                  }`}
-                >
-                  {analysis?.passed ? "Passed" : "Cutoff 70%"}
-                  {analysis?.passed && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "4px" }}>
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
+                <span className={`${styles.analyticsVal} ${strikes > 0 ? styles.analyticsStrike : styles.analyticsPass}`}>
+                  {strikes > 0 ? `−${strikes} mark${strikes > 1 ? "s" : ""}` : "Clean"}
                 </span>
+              </div>
+              <div className={`glass-card ${styles.analyticsCard}`} data-tint="amber">
                 <span className={styles.analyticsLbl}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <circle cx="12" cy="12" r="6" />
-                    <circle cx="12" cy="12" r="2" />
-                  </svg>
+                  <Target size={14} />
                   Benchmark
+                </span>
+                <span className={`${styles.analyticsVal} ${analysis?.passed ? styles.analyticsPass : styles.analyticsStrike}`}>
+                  {analysis?.passed ? "Passed" : "70% cutoff"}
+                  {analysis?.passed && <Check size={16} strokeWidth={3} />}
                 </span>
               </div>
             </div>
 
-            {/* AI Diagnosis & Prescribed Rewatches (If Failed) */}
+            {/* Concept Diagnosis & Prescribed Rewatches (If Failed) */}
             {!analysis?.passed && analysis && (
               <>
                 {attemptNumber >= maxAttempts && (
                   <div className={styles.lockoutBanner}>
                     <div className={styles.lockoutTitle}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                      <span>Attempt Limit Reached ({maxAttempts} of {maxAttempts})</span>
+                      <Lock size={17} />
+                      <span>Attempt limit reached ({maxAttempts} of {maxAttempts})</span>
                     </div>
                     <p className={styles.lockoutDesc}>
-                      You have used all 3 attempts. To ensure mastery, please re-watch the recommended
-                      lectures below. Once you review them, click below to refresh your attempts.
+                      You have used all 3 attempts. Re-watch the recommended lectures below, then refresh your
+                      attempts.
                     </p>
                     {onResetAttemptsAfterRewatch && (
-                      <button
-                        type="button"
-                        className={styles.resetAttemptsBtn}
-                        onClick={onResetAttemptsAfterRewatch}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        I Have Re-watched the Lectures • Reset Attempts
+                      <button type="button" className={styles.resetAttemptsBtn} onClick={onResetAttemptsAfterRewatch}>
+                        <Check size={15} strokeWidth={2.6} />
+                        I have re-watched the lectures — reset attempts
                       </button>
                     )}
                   </div>
                 )}
 
-                <div className={styles.aiDiagnosisCard}>
+                <div className={`glass-card ${styles.aiDiagnosisCard}`} data-tint="violet">
                   <div className={styles.aiCardHeader}>
-                    <div className={styles.aiIconBox}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                      </svg>
-                    </div>
-                    <h4 className={styles.aiCardTitle}>
-                      AI Concept Diagnosis: Topics Requiring Review
-                    </h4>
+                    <ListChecks size={18} className={styles.aiIconBox} />
+                    <h4 className={styles.aiCardTitle}>Concepts to review</h4>
                   </div>
 
-                  {/* Missed Questions */}
                   <div className={styles.missedTopicsList}>
                     {analysis.missedConcepts.map((item, idx) => (
                       <div key={idx} className={styles.missedTopicItem}>
@@ -1372,25 +1383,18 @@ export default function ModuleQuizModal({
                     ))}
                   </div>
 
-                  {/* Recommended Lectures to Rewatch */}
                   {analysis.recommendedLessons.length > 0 && (
                     <div className={styles.recommendedLecturesSection}>
-                      <div className={styles.recHeading}>
-                        Recommended Lectures to Rewatch:
-                      </div>
+                      <div className={styles.recHeading}>Recommended lectures to re-watch</div>
                       <div className={styles.recLecturesList}>
                         {analysis.recommendedLessons.map((rec) => (
                           <div key={rec.lessonId} className={styles.recLectureRow}>
                             <div>
                               <div className={styles.recLectureTitle}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px", verticalAlign: "middle" }}>
-                                  <polygon points="5 3 19 12 5 21 5 3" />
-                                </svg>
+                                <Play size={13} />
                                 {rec.lessonTitle}
                               </div>
-                              <span style={{ fontSize: "11px", color: "#64748b" }}>
-                                {rec.reason}
-                              </span>
+                              <span className={styles.recLectureReason}>{rec.reason}</span>
                             </div>
                             {onSelectLessonToRewatch && (
                               <button
@@ -1401,7 +1405,8 @@ export default function ModuleQuizModal({
                                   onClose();
                                 }}
                               >
-                                Watch Lecture →
+                                Watch lecture
+                                <ArrowRight size={14} />
                               </button>
                             )}
                           </div>
@@ -1416,38 +1421,28 @@ export default function ModuleQuizModal({
             {/* FULL POST-SUBMISSION SOLUTIONS & EXPLANATIONS SECTION */}
             <div className={styles.solutionsSection}>
               <div className={styles.solutionsHeader}>
-                <div className={styles.solutionsTitle}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                    </svg>
-                    Detailed Solutions & Explanations
-                  </span>
-                </div>
-                <div className={styles.filterTabs}>
+                <h4 className={styles.solutionsTitle}>Solutions &amp; explanations</h4>
+                <div className={styles.filterTabs} role="tablist">
                   <button
                     type="button"
                     className={`${styles.filterTabBtn} ${reviewFilter === "all" ? styles.filterTabBtnActive : ""}`}
                     onClick={() => setReviewFilter("all")}
                   >
-                    All ({questions.length})
+                    All <b>{questions.length}</b>
                   </button>
                   <button
                     type="button"
                     className={`${styles.filterTabBtn} ${reviewFilter === "wrong" ? styles.filterTabBtnActive : ""}`}
                     onClick={() => setReviewFilter("wrong")}
                   >
-                    Incorrect ({questions.filter((q, idx) => selectedAnswers[idx] !== q.answer).length})
+                    Incorrect <b>{questions.filter((q, idx) => selectedAnswers[idx] !== q.answer).length}</b>
                   </button>
                   <button
                     type="button"
                     className={`${styles.filterTabBtn} ${reviewFilter === "correct" ? styles.filterTabBtnActive : ""}`}
                     onClick={() => setReviewFilter("correct")}
                   >
-                    Correct ({questions.filter((q, idx) => selectedAnswers[idx] === q.answer).length})
+                    Correct <b>{questions.filter((q, idx) => selectedAnswers[idx] === q.answer).length}</b>
                   </button>
                 </div>
               </div>
@@ -1458,60 +1453,46 @@ export default function ModuleQuizModal({
                   const userChoice = selectedAnswers[originalIdx];
                   const isUserCorrect = checkQuestionCorrect(q, originalIdx);
                   const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
+                  const isSkipped = userChoice === undefined || userChoice === null || userChoice === "";
 
                   return (
                     <div
                       key={q.id}
                       className={`${styles.reviewCard} ${
-                        isUserCorrect ? styles.reviewCardCorrect : styles.reviewCardWrong
+                        isUserCorrect ? styles.reviewCardCorrect : isSkipped ? styles.reviewCardSkipped : styles.reviewCardWrong
                       }`}
                     >
                       <div className={styles.reviewCardHeader}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span className={styles.conceptBadge}>
-                            Q{originalIdx + 1} • {q.concept}
-                          </span>
-                          {isTITA && (
-                            <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#92400e", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <rect x="2" y="4" width="20" height="16" rx="2" />
-                                <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
-                              </svg>
-                              TITA
-                            </span>
-                          )}
+                        <div className={styles.reviewCardHeadLeft}>
+                          <span className={styles.reviewQNum}>Q{String(originalIdx + 1).padStart(2, "0")}</span>
+                          <span className={styles.conceptBadge}>{q.concept}</span>
+                          {isTITA && <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>}
                         </div>
                         {isUserCorrect ? (
-                          <span className={styles.reviewStatusBadgeCorrect} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Correct {scoringScheme === "cat" ? "(+3)" : ""}
+                          <span className={styles.reviewStatusBadgeCorrect}>
+                            <Check size={13} strokeWidth={2.8} />
+                            Correct {scoringScheme === "cat" ? <b>+3</b> : null}
                           </span>
-                        ) : userChoice === undefined || userChoice === null || userChoice === "" ? (
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", background: "#f1f5f9", padding: "3px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <circle cx="12" cy="12" r="10" />
-                            </svg>
-                            Unattempted (0)
+                        ) : isSkipped ? (
+                          <span className={styles.reviewStatusBadgeSkipped}>
+                            <Circle size={11} strokeWidth={2.6} />
+                            Unattempted <b>0</b>
                           </span>
                         ) : (
-                          <span className={styles.reviewStatusBadgeWrong} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                            Incorrect {scoringScheme === "cat" ? (isTITA ? "(0)" : "(-1)") : ""}
+                          <span className={styles.reviewStatusBadgeWrong}>
+                            <X size={13} strokeWidth={2.8} />
+                            Incorrect {scoringScheme === "cat" ? <b>{isTITA ? "0" : "−1"}</b> : null}
                           </span>
                         )}
                       </div>
 
                       {q.context && (
-                        <div className={styles.passageContainer} style={{ maxHeight: "360px", marginBottom: "12px" }}>
+                        <div className={`${styles.passageContainer} ${styles.passageReview}`}>
                           <div className={styles.passageHeader}>
-                            <span>Context / Passage:</span>
+                            <BookOpen size={14} />
+                            <span>Passage</span>
                           </div>
-                          <div className={styles.passageText} style={{ fontSize: "12.5px" }}>
+                          <div className={styles.passageText}>
                             <PYQMarkdownViewer content={q.context} />
                           </div>
                         </div>
@@ -1524,13 +1505,13 @@ export default function ModuleQuizModal({
                       {isTITA ? (
                         <div className={styles.titaReviewBlock}>
                           <div className={styles.titaReviewRow}>
-                            <span className={styles.titaReviewLabel}>Your Answer:</span>
+                            <span className={styles.titaReviewLabel}>Your answer</span>
                             <span className={`${styles.titaUserVal} ${isUserCorrect ? styles.titaUserValCorrect : styles.titaUserValWrong}`}>
-                              {userChoice !== undefined && userChoice !== "" ? String(userChoice) : "(Unattempted)"}
+                              {userChoice !== undefined && userChoice !== "" ? String(userChoice) : "Unattempted"}
                             </span>
                           </div>
                           <div className={styles.titaReviewRow}>
-                            <span className={styles.titaReviewLabel}>Correct Answer:</span>
+                            <span className={styles.titaReviewLabel}>Correct answer</span>
                             <span className={styles.titaCorrectVal}>
                               <MathText text={q.titaAnswer || q.explanation.slice(0, 80)} />
                             </span>
@@ -1548,42 +1529,33 @@ export default function ModuleQuizModal({
                             if (isSelectedByUser && isActualCorrect) {
                               rowClass += ` ${styles.reviewOptSelectedCorrect}`;
                               tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                  Your Answer (Correct)
+                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
+                                  <Check size={12} strokeWidth={2.8} />
+                                  Your answer
                                 </span>
                               );
                             } else if (isSelectedByUser && !isActualCorrect) {
                               rowClass += ` ${styles.reviewOptSelectedWrong}`;
                               tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <line x1="18" y1="6" x2="6" y2="18" />
-                                    <line x1="6" y1="6" x2="18" y2="18" />
-                                  </svg>
-                                  Your Answer (Incorrect)
+                                <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>
+                                  <X size={12} strokeWidth={2.8} />
+                                  Your answer
                                 </span>
                               );
                             } else if (isActualCorrect) {
                               rowClass += ` ${styles.reviewOptCorrectAnswer}`;
                               tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                  Correct Answer
+                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
+                                  <Check size={12} strokeWidth={2.8} />
+                                  Correct answer
                                 </span>
                               );
                             }
 
                             return (
                               <div key={optIdx} className={rowClass}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                  <span style={{ fontWeight: 700, color: "#64748b" }}>
-                                    {OPTION_LETTERS[optIdx]}.
-                                  </span>
+                                <div className={styles.reviewOptMain}>
+                                  <span className={styles.reviewOptKey}>{OPTION_LETTERS[optIdx]}</span>
                                   <span><MathText text={opt} /></span>
                                 </div>
                                 {tag}
@@ -1596,20 +1568,8 @@ export default function ModuleQuizModal({
                       {/* Step-by-Step Explanation Callout */}
                       <div className={styles.explanationCallout}>
                         <div className={styles.explanationTitle}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <circle cx="12" cy="12" r="5" />
-                              <line x1="12" y1="1" x2="12" y2="3" />
-                              <line x1="12" y1="21" x2="12" y2="23" />
-                              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                              <line x1="1" y1="12" x2="3" y2="12" />
-                              <line x1="21" y1="12" x2="23" y2="12" />
-                              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                            </svg>
-                            Step-by-Step Explanation & Shortcut:
-                          </span>
+                          <Lightbulb size={15} />
+                          Explanation &amp; shortcut
                         </div>
                         <div>
                           <PYQMarkdownViewer content={q.explanation} />
@@ -1619,11 +1579,10 @@ export default function ModuleQuizModal({
                   );
                 })}
               </div>
-
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap", alignItems: "center" }}>
+            <div className={styles.resultActions}>
               {onBackToAttempts && (
                 <button
                   type="button"
@@ -1631,7 +1590,8 @@ export default function ModuleQuizModal({
                   onClick={onBackToAttempts}
                   title="Return to the list of all past attempts"
                 >
-                  ← Back to All Attempts
+                  <ArrowLeft size={15} />
+                  Back to all attempts
                 </button>
               )}
               {analysis?.passed ? (
@@ -1643,38 +1603,16 @@ export default function ModuleQuizModal({
                       if (onRetake) {
                         onRetake();
                       } else {
-                        setIsSubmitted(false);
-                        setSelectedAnswers({});
-                        setTimeLeft(initialDuration);
-                        setCurrentIdx(0);
-                        setAnalysis(null);
-                        setRawScore(null);
-                        setStrikes(0);
-                        strikesRef.current = 0;
-                        prepareFreshStart();
-                        setProctorAlert(null);
-                        setShowSubmitConfirm(false);
-                        setAutoSubmitNotice(null);
+                        resetForInModalRetake();
                       }
                     }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
-                      <polyline points="23 4 23 10 17 10" />
-                      <polyline points="1 20 1 14 7 14" />
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                    Retake Quiz with Fresh Questions (Improve Score)
+                    <RotateCcw size={15} />
+                    Retake with fresh questions
                   </button>
-                  <button
-                    type="button"
-                    className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                    onClick={handleSafeClose}
-                  >
-                    Continue Learning
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
+                  <button type="button" className={`${styles.navActionBtn} ${styles.btnPrimary}`} onClick={handleSafeClose}>
+                    Continue learning
+                    <ArrowRight size={15} />
                   </button>
                 </>
               ) : attemptNumber < maxAttempts ? (
@@ -1685,35 +1623,16 @@ export default function ModuleQuizModal({
                     if (onRetake) {
                       onRetake();
                     } else {
-                      setIsSubmitted(false);
-                      setSelectedAnswers({});
-                      setTimeLeft(initialDuration);
-                      setCurrentIdx(0);
-                      setAnalysis(null);
-                      setRawScore(null);
-                      setStrikes(0);
-                      strikesRef.current = 0;
-                      prepareFreshStart();
-                      setProctorAlert(null);
-                      setShowSubmitConfirm(false);
-                      setAutoSubmitNotice(null);
+                      resetForInModalRetake();
                     }
                   }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: "6px" }}>
-                    <polyline points="23 4 23 10 17 10" />
-                    <polyline points="1 20 1 14 7 14" />
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                  </svg>
-                  Retake Quiz with Fresh Questions (Attempt {attemptNumber + 1} of {maxAttempts})
+                  <RotateCcw size={15} />
+                  Retake with fresh questions (attempt {attemptNumber + 1} of {maxAttempts})
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className={`${styles.navActionBtn} ${styles.btnSecondary}`}
-                  onClick={handleSafeClose}
-                >
-                  Close & Review Videos
+                <button type="button" className={`${styles.navActionBtn} ${styles.btnSecondary}`} onClick={handleSafeClose}>
+                  Close &amp; review videos
                 </button>
               )}
             </div>
@@ -1723,30 +1642,30 @@ export default function ModuleQuizModal({
         {/* Submission Re-verification Confirmation Dialog */}
         {showSubmitConfirm && (
           <div className={styles.confirmOverlay} onClick={() => setShowSubmitConfirm(false)}>
-            <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
               <div className={styles.confirmIcon}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
+                <Send size={22} />
               </div>
-              <h3 className={styles.confirmTitle}>Submit Your Exam?</h3>
-              <p className={styles.confirmDesc}>
-                You have answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
-                <br />
-                Time remaining: <strong>{formatTimer(timeLeft)}</strong>.
-                <br />
-                Are you sure you want to finalize and submit your answers?
-              </p>
+              <h3 className={styles.confirmTitle}>Submit your exam?</h3>
+              <div className={styles.confirmStats}>
+                <div>
+                  <b>{answeredCount}<small>/{questions.length}</small></b>
+                  <span>Answered</span>
+                </div>
+                <div>
+                  <b>{paletteCounts.marked + paletteCounts.answeredMarked}</b>
+                  <span>Marked</span>
+                </div>
+                <div>
+                  <b>{formatTimer(timeLeft)}</b>
+                  <span>Time left</span>
+                </div>
+              </div>
+              <p className={styles.confirmDesc}>Once submitted, your answers are final and the exam is graded.</p>
               <div className={styles.confirmActions}>
-                <button
-                  type="button"
-                  className={styles.confirmCancelBtn}
-                  onClick={() => setShowSubmitConfirm(false)}
-                >
-                  ← Continue Exam
+                <button type="button" className={styles.confirmCancelBtn} onClick={() => setShowSubmitConfirm(false)}>
+                  <ArrowLeft size={15} />
+                  Continue exam
                 </button>
                 <button
                   type="button"
@@ -1756,10 +1675,8 @@ export default function ModuleQuizModal({
                     handleSubmit();
                   }}
                 >
-                  Yes, Submit Exam
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  Yes, submit
+                  <Check size={15} strokeWidth={2.6} />
                 </button>
               </div>
             </div>
@@ -1770,103 +1687,38 @@ export default function ModuleQuizModal({
         {autoSubmitNotice && (
           <div className={styles.confirmOverlay} onClick={() => setAutoSubmitNotice(null)}>
             <div
-              className={styles.confirmBox}
+              className={`${styles.confirmBox} ${autoSubmitNotice.type === "cheat" ? styles.confirmBoxCheat : styles.confirmBoxTimeout}`}
               onClick={(e) => e.stopPropagation()}
-              style={{
-                borderTop:
-                  autoSubmitNotice.type === "cheat"
-                    ? "4px solid #dc2626"
-                    : "4px solid #d97706",
-              }}
+              role="alertdialog"
+              aria-modal="true"
             >
               <div className={styles.confirmIcon}>
-                {autoSubmitNotice.type === "cheat" ? (
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                ) : (
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                )}
+                {autoSubmitNotice.type === "cheat" ? <TriangleAlert size={22} /> : <Clock size={22} />}
               </div>
-              <h3
-                className={styles.confirmTitle}
-                style={{
-                  color: autoSubmitNotice.type === "cheat" ? "#dc2626" : "#b45309",
-                }}
-              >
-                {autoSubmitNotice.title}
-              </h3>
-              <p className={styles.confirmDesc}>
-                {autoSubmitNotice.description}
-              </p>
+              <h3 className={styles.confirmTitle}>{autoSubmitNotice.title}</h3>
+              <p className={styles.confirmDesc}>{autoSubmitNotice.description}</p>
               {autoSubmitNotice.type === "cheat" && (
-                <div
-                  style={{
-                    background: "#fef2f2",
-                    border: "1px solid #fecaca",
-                    color: "#991b1b",
-                    padding: "10px 14px",
-                    borderRadius: "10px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    marginBottom: "18px",
-                    textAlign: "left",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                  <strong>Security Advisory:</strong> Switching browser tabs, minimizing the exam window, taking screenshots, or developer tool access are strictly disallowed during testing.
+                <div className={`${styles.confirmNote} ${styles.confirmNoteCheat}`}>
+                  <TriangleAlert size={15} />
+                  <span>
+                    <strong>Security advisory:</strong> switching tabs, minimising the exam window, taking screenshots or
+                    opening developer tools is not allowed during the exam.
+                  </span>
                 </div>
               )}
               {autoSubmitNotice.type === "timeout" && (
-                <div
-                  style={{
-                    background: "#fffbeb",
-                    border: "1px solid #fde68a",
-                    color: "#92400e",
-                    padding: "10px 14px",
-                    borderRadius: "10px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    marginBottom: "18px",
-                    textAlign: "left",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <strong>Time Allocation Notice:</strong> All answered questions have been safely graded. Unanswered questions are marked as unattempted.
+                <div className={`${styles.confirmNote} ${styles.confirmNoteTimeout}`}>
+                  <Clock size={15} />
+                  <span>
+                    <strong>Time is up:</strong> all answered questions have been graded. Unanswered questions are marked
+                    as unattempted.
+                  </span>
                 </div>
               )}
               <div className={styles.confirmActions}>
-                <button
-                  type="button"
-                  className={styles.confirmSubmitBtn}
-                  style={{
-                    background:
-                      autoSubmitNotice.type === "cheat"
-                        ? "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
-                        : "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
-                  }}
-                  onClick={() => setAutoSubmitNotice(null)}
-                >
-                  View Score &amp; Detailed Analysis
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: "6px" }}>
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
+                <button type="button" className={styles.confirmSubmitBtn} onClick={() => setAutoSubmitNotice(null)}>
+                  View score &amp; analysis
+                  <ChartColumn size={15} />
                 </button>
               </div>
             </div>

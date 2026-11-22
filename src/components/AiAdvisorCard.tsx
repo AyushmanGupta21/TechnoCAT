@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { ArrowRight, CircleCheck, ListChecks, MessageSquare, Play, Trophy } from "lucide-react";
 import styles from "./AiAdvisorCard.module.css";
 
 export interface QuizReportCardData {
@@ -102,15 +103,11 @@ export default function AiAdvisorCard({
       if (firstReview.quizPassed) {
         return {
           type: "rewatch" as const,
-          heading: `Target 90%+ Mastery: ${shortName}`,
+          heading: `Aim for 90%+ in ${shortName}`,
           text: `You passed ${shortName} with ${firstReview.quizScore}%. Review "${recTitle}" to solidify missed concepts and aim for 90%+ on your next retake!`,
-          buttonLabel: `Watch "${recTitle}" Now →`,
+          buttonLabel: `Watch "${recTitle}" now`,
           buttonClass: styles.btnRewatch,
-          icon: (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-          ),
+          icon: <Play size={15} fill="currentColor" aria-hidden="true" />,
           execute: () => {
             if (recId && onSelectRewatch) {
               onSelectRewatch(recId);
@@ -123,16 +120,11 @@ export default function AiAdvisorCard({
       if (firstReview.recommendedLessonCompleted) {
         return {
           type: "quiz" as const,
-          heading: `Review Completed: ${shortName}`,
-          text: `Great work! You have re-watched "${recTitle}". Your conceptual gaps are resolved. You are now prepared to retake the Compulsory Quiz with fresh questions!`,
-          buttonLabel: `Retake ${shortName} Compulsory Quiz (Attempt ${(firstReview.attemptsUsed || 0) + 1}/3) →`,
+          heading: `Review complete: ${shortName}`,
+          text: `Great work! You have re-watched "${recTitle}". Your conceptual gaps are resolved. You are now prepared to retake the module quiz with fresh questions.`,
+          buttonLabel: `Retake ${shortName} quiz (attempt ${(firstReview.attemptsUsed || 0) + 1}/3)`,
           buttonClass: styles.btnQuiz,
-          icon: (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="9 11 12 14 22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-          ),
+          icon: <ListChecks size={15} aria-hidden="true" />,
           execute: () => {
             if (onStartModuleQuiz) {
               onStartModuleQuiz(firstReview.moduleTitle);
@@ -146,10 +138,10 @@ export default function AiAdvisorCard({
       const isAttemptsExhausted = (firstReview.attemptsUsed || 0) >= 3;
 
       const heading = isWeakStreakLocked
-        ? `Locked (5 Weak Scores): ${shortName}`
+        ? `Locked (5 weak scores): ${shortName}`
         : isAttemptsExhausted
-        ? `Locked (3 Attempts Used): ${shortName}`
-        : `Review Required: ${shortName}`;
+        ? `Locked (3 attempts used): ${shortName}`
+        : `Review needed: ${shortName}`;
 
       const text = isWeakStreakLocked
         ? `You have reached a streak of 5 weak scores below the 70% cutoff. The quiz is locked. Rewatch "${recTitle}" to unlock fresh attempts!`
@@ -161,13 +153,9 @@ export default function AiAdvisorCard({
         type: "rewatch" as const,
         heading,
         text,
-        buttonLabel: `Watch "${recTitle}" Now →`,
+        buttonLabel: `Watch "${recTitle}" now`,
         buttonClass: styles.btnRewatch,
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-        ),
+        icon: <Play size={15} fill="currentColor" aria-hidden="true" />,
         execute: () => {
           if (recId && onSelectRewatch) {
             onSelectRewatch(recId);
@@ -182,16 +170,11 @@ export default function AiAdvisorCard({
       const shortName = activeModuleTitle.split(":")[0];
       return {
         type: "quiz" as const,
-        heading: `Quiz Ready: ${shortName}`,
-        text: `All lectures completed in "${shortName}"! Take your 10-question compulsory quiz (70% cutoff) to earn +50 XP and unlock the next module.`,
-        buttonLabel: `Start ${shortName} Compulsory Quiz (+50 XP) →`,
+        heading: `Quiz ready: ${shortName}`,
+        text: `All lectures completed in "${shortName}"! Take the 10-question module quiz (70% cutoff) to earn +50 XP and unlock the next module.`,
+        buttonLabel: `Start ${shortName} quiz (+50 XP)`,
         buttonClass: styles.btnQuiz,
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="9 11 12 14 22 4" />
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-          </svg>
-        ),
+        icon: <ListChecks size={15} aria-hidden="true" />,
         execute: () => {
           if (onStartModuleQuiz) {
             onStartModuleQuiz(activeModuleTitle);
@@ -204,15 +187,11 @@ export default function AiAdvisorCard({
     if (isAllModulesPassed && !grandQuizPassed) {
       return {
         type: "grand" as const,
-        heading: "Grand Assessment Unlocked!",
+        heading: "Grand assessment unlocked",
         text: "All module quizzes passed! Take the 30-question CAT Comprehensive Exam to achieve full course certification and earn +100 XP.",
-        buttonLabel: "Start 30-Question Grand Quiz (+100 XP) →",
+        buttonLabel: "Start the 30-question grand quiz (+100 XP)",
         buttonClass: styles.btnGrand,
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6 2h12v3H6zM18 5v4c0 3.31-2.69 6-6 6s-6-2.69-6-6V5H3v3c0 4.42 3.58 8 8 8v3H8v2h8v-2h-3v-3c4.42 0 8-3.58 8-8V5h-3z" />
-          </svg>
-        ),
+        icon: <Trophy size={15} aria-hidden="true" />,
         execute: () => {
           if (onStartGrandQuiz) {
             onStartGrandQuiz();
@@ -225,15 +204,11 @@ export default function AiAdvisorCard({
     if (grandQuizPassed) {
       return {
         type: "prompt" as const,
-        heading: "Course Mastered!",
+        heading: "Course mastered",
         text: "You have completed all lectures and assessments for this course with top accuracy!",
-        buttonLabel: "Ask AI Tutor for Advanced Mock Strategy →",
+        buttonLabel: "Ask the AI tutor for an advanced mock strategy",
         buttonClass: styles.btnPrompt,
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        ),
+        icon: <MessageSquare size={15} aria-hidden="true" />,
         execute: () => {
           if (onAskAiPrompt) {
             onAskAiPrompt(
@@ -248,15 +223,11 @@ export default function AiAdvisorCard({
     const shortActive = activeModuleTitle.split(":")[0];
     return {
       type: "prompt" as const,
-      heading: "Recommended Next Action",
-      text: `Focus on completing all lectures in "${shortActive}" to unlock your first Compulsory Module Quiz!`,
-      buttonLabel: `Ask AI Tutor: Breakthrough Study Plan for ${shortActive} →`,
+      heading: "Recommended next step",
+      text: `Focus on completing all lectures in "${shortActive}" to unlock its module quiz.`,
+      buttonLabel: `Ask the AI tutor for a ${shortActive} study plan`,
       buttonClass: styles.btnPrompt,
-      icon: (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      ),
+      icon: <MessageSquare size={15} aria-hidden="true" />,
       execute: () => {
         if (onAskAiPrompt) {
           onAskAiPrompt(
@@ -283,39 +254,32 @@ export default function AiAdvisorCard({
     <div className={styles.advisorCard}>
       <div className={styles.advisorHeader}>
         <div className={styles.headerLeft}>
-          <div className={styles.aiAvatar}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            </svg>
-          </div>
+          <span className={styles.aiAvatar} aria-hidden="true" />
           <div>
-            <h3 className={styles.advisorTitle}>AI Study Advisor</h3>
-            <p className={styles.advisorSubtitle}>Personalized CAT Readiness Diagnostics</p>
+            <h3 className={styles.advisorTitle}>Study advisor</h3>
+            <p className={styles.advisorSubtitle}>Based on your quiz results in this course</p>
           </div>
-        </div>
-
-        <div className={styles.livePill}>
-          <span className={styles.liveDot} />
-          <span>Active</span>
         </div>
       </div>
 
       {/* Strong Modules */}
       <div className={styles.sectionGroup}>
         <div className={styles.sectionLabel}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          <span>Strong Areas (Score ≥ 80%)</span>
+          <span className={`${styles.legendDot} ${styles.legendStrong}`} aria-hidden="true" />
+          <span>Strong areas</span>
+          <span className={styles.sectionHint}>80%+</span>
         </div>
         <div className={styles.chipsRow}>
           {strongModules.length > 0 ? (
             strongModules.map((m) => (
               <span key={m.moduleTitle} className={styles.strongChip}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><polyline points="20 6 9 17 4 12"/></svg>
-                <span>{m.moduleTitle.split(":")[0]} ({m.quizScore}%)</span>
+                <CircleCheck size={13} aria-hidden="true" />
+                <span>{m.moduleTitle.split(":")[0]}</span>
+                <b>{m.quizScore}%</b>
               </span>
             ))
           ) : (
-            <span className={styles.emptyHint}>Complete module quizzes to discover strengths</span>
+            <span className={styles.emptyHint}>Complete module quizzes to see your strengths</span>
           )}
         </div>
       </div>
@@ -323,8 +287,8 @@ export default function AiAdvisorCard({
       {/* Review Recommended */}
       <div className={styles.sectionGroup}>
         <div className={styles.sectionLabel}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span>Needs Review / Rewatch</span>
+          <span className={`${styles.legendDot} ${styles.legendReview}`} aria-hidden="true" />
+          <span>Needs review</span>
         </div>
         <div className={styles.chipsRow}>
           {reviewModules.length > 0 ? (
@@ -334,34 +298,34 @@ export default function AiAdvisorCard({
                 className={m.recommendedLessonCompleted ? styles.reviewedChip : styles.reviewChip}
                 title={m.recommendedLessonTitle ? `Recommended: ${m.recommendedLessonTitle}` : "Review status"}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                <span>{m.moduleTitle.split(":")[0]} ({m.quizScore ? `${m.quizScore}%` : "Incomplete"}
-                {m.recommendedLessonCompleted ? " • Reviewed" : ""})</span>
+                <span>{m.moduleTitle.split(":")[0]}</span>
+                <b>{m.quizScore ? `${m.quizScore}%` : "Incomplete"}</b>
+                {m.recommendedLessonCompleted ? <span className={styles.chipNote}>reviewed</span> : null}
               </span>
             ))
           ) : (
-            <span className={styles.emptyHint}>No critical weak areas identified!</span>
+            <span className={styles.emptyHint}>No weak areas so far</span>
           )}
         </div>
       </div>
 
-      {/* AI Recommendation Box */}
-      <div className={styles.recommendationBox}>
+      {/* Recommendation */}
+      <div className={styles.recommendationBox} data-type={agenticAction.type}>
         <div className={styles.recHeader}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
           <span>{agenticAction.heading}</span>
         </div>
         <p className={styles.recText}>{agenticAction.text}</p>
       </div>
 
-      {/* DYNAMIC AGENTIC ACTION BUTTON */}
+      {/* Next action */}
       <button
         type="button"
         className={`${styles.agenticActionBtn} ${agenticAction.buttonClass}`}
         onClick={agenticAction.execute}
       >
         {agenticAction.icon}
-        <span>{agenticAction.buttonLabel}</span>
+        <span className={styles.btnLabel}>{agenticAction.buttonLabel}</span>
+        <ArrowRight size={15} className={styles.btnArrow} aria-hidden="true" />
       </button>
     </div>
   );

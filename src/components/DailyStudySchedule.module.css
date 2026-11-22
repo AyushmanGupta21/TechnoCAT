@@ -1,495 +1,253 @@
 .scheduleBox {
-  background: #FFFFFF;
-  border-radius: 20px;
-  padding: 24px 28px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-  border: 1px solid #F1F5F9;
-  min-height: 440px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  font-family: var(--ff-sans);
+  color: var(--ink);
 }
 
+.mono {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ---------- Header ---------- */
 .headerRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .dateTitleArea {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.calendarIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #EFF6FF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2563EB;
+  min-width: 0;
 }
 
 .dateHeading {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0F172A;
   margin: 0;
-  letter-spacing: -0.01em;
+  font-family: var(--ff-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
+
+.dateLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  color: var(--ink-3);
+}
+
+.dateMono {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.stateTag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  background: rgba(12, 23, 48, 0.05);
+}
+.stateToday { color: #0f766e; background: rgba(20, 184, 166, 0.13); }
+.stateUpcoming { color: var(--blue-700); background: rgba(59, 130, 246, 0.1); }
 
 .actionsArea {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+}
+
+.progressMeter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 112px;
+}
+
+.progressFigure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.progressWord {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.progressTrack {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(59, 130, 246, 0.14);
+  overflow: hidden;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--data-emerald);
+  transition: width 0.5s var(--ease-out);
 }
 
 .addTaskBtn {
-  background: #2563EB;
-  color: #FFFFFF;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--elev-1);
+  transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
 }
+.addTaskBtn:hover { border-color: var(--blue-300); color: var(--blue-700); }
 
-.addTaskBtn:hover {
-  background: #1D4ED8;
-  transform: translateY(-1px);
-}
-
+/* ---------- Filters ---------- */
 .filterRow {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 20px;
-  scrollbar-width: none;
-}
-
-.filterRow::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .filterChip {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #64748B;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.filterChip:hover {
-  background: #F1F5F9;
-  color: #0F172A;
-}
-
-.filterChipActive {
-  background: #0F172A;
-  color: #FFFFFF;
-  border-color: #0F172A;
-}
-
-.filterChipActive:hover {
-  background: #1E293B;
-  color: #FFFFFF;
-}
-
-.aiNotice {
-  background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
-  border: 1px solid #BFDBFE;
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.aiIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: #FFFFFF;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: #2563EB;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
-}
-
-.aiContent {
-  flex: 1;
-}
-
-.aiTag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #2563EB;
-  letter-spacing: 0.5px;
-  margin: 0 0 2px 0;
-}
-
-.aiText {
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  font: inherit;
   font-size: 13px;
-  color: #334155;
-  margin: 0;
-  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.filterChip:hover { border-color: var(--blue-200); color: var(--ink); }
+.filterChipActive,
+.filterChipActive:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
 }
 
-.timelineList {
+.filterDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.dotQA { background: var(--data-blue); }
+.dotDILR { background: var(--data-teal); }
+.dotVARC { background: var(--data-violet); }
+.dotMock { background: var(--data-amber); }
+
+/* ---------- Overdue backlog panel ---------- */
+.schedulerCard {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.taskCard {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-left-width: 4px;
-  border-radius: 14px;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  transition: all 0.2s;
-}
-
-.taskCard:hover {
-  background: #FFFFFF;
-  border-color: #CBD5E1;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-  transform: translateY(-1px);
-}
-
-.taskCardCompleted {
-  opacity: 0.65;
-  background: #F8FAFC;
-}
-
-.taskCardQA {
-  border-left-color: #2563EB;
-}
-
-.taskCardDILR {
-  border-left-color: #8B5CF6;
-}
-
-.taskCardVARC {
-  border-left-color: #EC4899;
-}
-
-.taskCardMock {
-  border-left-color: #6366F1;
-}
-
-.leftDetails {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex: 1;
-}
-
-.timeCol {
-  min-width: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.timeVal {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0F172A;
-}
-
-.timeDuration {
-  font-size: 11.5px;
-  color: #94A3B8;
-  font-weight: 500;
-}
-
-.infoCol {
-  flex: 1;
-}
-
-.pillRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.categoryPill {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.pillQA {
-  background: #EFF6FF;
-  color: #2563EB;
-}
-
-.pillDILR {
-  background: #F5F3FF;
-  color: #8B5CF6;
-}
-
-.pillVARC {
-  background: #FDF2F8;
-  color: #DB2777;
-}
-
-.pillMock {
-  background: #eef2ff;
-  color: #D97706;
-}
-
-.codeBadge {
-  font-size: 11px;
-  color: #94A3B8;
-  font-weight: 600;
-}
-
-.taskTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0F172A;
-  margin: 0 0 3px 0;
-  line-height: 1.3;
-}
-
-.taskSubtitle {
-  font-size: 12.5px;
-  color: #64748B;
-  margin: 0;
-}
-
-.checkboxBtn {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: 2px solid #CBD5E1;
-  background: #FFFFFF;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: transparent;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.checkboxBtn:hover {
-  border-color: #2563EB;
-}
-
-.checkboxBtnActive {
-  background: #0D9488;
-  border-color: #0D9488;
-  color: #FFFFFF;
-}
-
-.checkboxBtnLocked {
-  background: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  cursor: not-allowed !important;
-  opacity: 0.85;
-}
-
-.checkboxBtnLocked:hover {
-  border-color: #CBD5E1 !important;
-  transform: none !important;
-}
-
-.emptyTasks {
-  text-align: center;
-  padding: 32px 16px;
-  color: #94A3B8;
-  font-size: 14px;
-}
-
-.sectionSubheading {
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748B;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 12px 0 6px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.rescheduledBadge {
-  font-size: 10.5px;
-  font-weight: 700;
-  background: #FEF2F2;
-  color: #DC2626;
-  border: 1px solid #FECACA;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.autoPlanBox {
-  background: #F8FAFC;
-  border: 1.5px dashed #CBD5E1;
-  border-radius: 14px;
-  padding: 24px 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.autoPlanTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1E293B;
-  margin: 0;
-}
-
-.autoPlanDesc {
-  font-size: 13px;
-  color: #64748B;
-  margin: 0;
-  max-width: 440px;
-  line-height: 1.5;
-}
-
-.autoPlanBtn {
-  background: #0F172A;
-  color: #FFFFFF;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.autoPlanBtn:hover {
-  background: #2563EB;
-}
-
-/* ===== INTELLIGENT SCHEDULER & BACKLOG PACER ===== */
-.schedulerCard {
-  background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
-  border: 1px solid #BFDBFE;
-  border-radius: 16px;
-  padding: 18px 20px;
-  margin-bottom: 22px;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.05);
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.7));
 }
 
 .schedulerTop {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.schedulerHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.schedulerIconBox {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2563EB;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+  gap: 16px;
 }
 
 .schedulerTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0F172A;
-  margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .schedulerBadge {
-  font-size: 11px;
-  font-weight: 700;
-  background: #FEF2F2;
-  color: #DC2626;
-  border: 1px solid #FECACA;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.schedulerLoadBadge {
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  padding: 6px 14px;
-  border-radius: 999px;
+  font-family: var(--ff-mono);
   font-size: 12px;
-  font-weight: 700;
-  color: #1E293B;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.18);
 }
 
 .schedulerDesc {
+  margin: 6px 0 0;
   font-size: 13px;
-  color: #334155;
-  margin: 0 0 14px 0;
   line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.schedulerLoadBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--line);
+}
+
+.loadLabel {
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+.loadFigure {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 .schedulerControlsRow {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  padding: 12px 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 12px 20px;
 }
 
 .stepperWrap {
@@ -499,158 +257,277 @@
 }
 
 .stepperLabel {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: #1E293B;
+  color: var(--ink-2);
 }
 
 .stepperBox {
   display: inline-flex;
   align-items: center;
-  background: #F8FAFC;
-  border: 1px solid #CBD5E1;
-  border-radius: 8px;
-  padding: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
 }
 
 .stepperBtn {
-  width: 28px;
-  height: 28px;
-  border: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
   background: transparent;
-  border-radius: 6px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-2);
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1E293B;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
 }
-
-.stepperBtn:hover:not(:disabled) {
-  background: #EFF6FF;
-  color: #2563EB;
-}
-
-.stepperBtn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
+.stepperBtn:hover:not(:disabled) { background: var(--blue-50); color: var(--blue-700); }
+.stepperBtn:disabled { color: var(--ink-4); cursor: not-allowed; }
 
 .stepperValue {
   min-width: 32px;
   text-align: center;
-  font-size: 14px;
-  font-weight: 800;
-  color: #0F172A;
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .presetChips {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
 .presetChip {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #475569;
-  font-size: 11.5px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 5px 10px;
-  border-radius: 6px;
+  color: var(--ink-2);
   cursor: pointer;
-  transition: all 0.15s;
 }
-
-.presetChip:hover {
-  background: #EFF6FF;
-  border-color: #93C5FD;
-  color: #1D4ED8;
-}
-
-.presetChipActive {
-  background: #2563EB;
-  border-color: #2563EB;
-  color: #FFFFFF;
-}
-
+.presetChip:hover { border-color: rgba(245, 158, 11, 0.5); color: var(--ink); }
+.presetChipActive,
 .presetChipActive:hover {
-  background: #1D4ED8;
-  color: #FFFFFF;
+  border-color: #b45309;
+  background: #b45309;
+  color: #fff;
 }
 
-/* Section Dividers in Timeline */
+/* ---------- Timeline ---------- */
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .sectionDivider {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px 0 6px 0;
-  margin-top: 6px;
-  border-bottom: 1.5px dashed #E2E8F0;
+  gap: 10px;
+  margin: 2px 0;
 }
+.sectionDivider[data-spaced] { margin-top: 12px; }
 
-.sectionDividerLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sectionBadgeOverdue {
-  font-size: 11px;
-  font-weight: 800;
+.sectionBadge {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  background: #FEF2F2;
-  color: #DC2626;
-  border: 1px solid #FECACA;
-  padding: 3px 10px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
-
-.sectionBadgeToday {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  background: #F0FDF4;
-  color: #16A34A;
-  border: 1px solid #BBF7D0;
-  padding: 3px 10px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+.sectionBadgeOverdue { color: #b45309; }
+.sectionBadgeToday { color: var(--blue-700); }
 
 .sectionSubtitle {
   font-size: 12px;
-  color: #64748B;
+  color: var(--ink-4);
+}
+
+.taskCard {
+  --cat: var(--data-blue);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.taskCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cat);
+}
+.taskCard:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--elev-2);
+  transform: translateY(-1px);
+}
+.taskCardQA { --cat: var(--data-blue); }
+.taskCardDILR { --cat: var(--data-teal); }
+.taskCardVARC { --cat: var(--data-violet); }
+.taskCardMock { --cat: var(--data-amber); }
+
+.taskCardCompleted {
+  background: rgba(255, 255, 255, 0.55);
+}
+.taskCardCompleted .taskTitle {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-4);
+}
+
+.leftDetails {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.timeCol {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 72px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.timeVal {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
-.sectionHint {
+.timeDuration {
+  font-family: var(--ff-mono);
   font-size: 11.5px;
-  color: #94A3B8;
-  font-style: italic;
+  color: var(--ink-4);
 }
 
-/* Smart Backlog Drawer */
+.infoCol {
+  min-width: 0;
+  flex: 1;
+}
+
+.pillRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.categoryPill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+.pillQA { color: #1d4ed8; background: rgba(59, 130, 246, 0.12); }
+.pillDILR { color: #0f766e; background: rgba(20, 184, 166, 0.14); }
+.pillVARC { color: #6d28d9; background: rgba(139, 92, 246, 0.12); }
+.pillMock { color: #b45309; background: rgba(245, 158, 11, 0.15); }
+
+.codeBadge {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+.rescheduledBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.taskSubtitle {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+/* 44px hit area around a 24px box */
+.checkboxBtn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.checkboxBox {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--line-strong);
+  background: #fff;
+  color: #fff;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.checkboxBtn:hover:not(:disabled) .checkboxBox { border-color: var(--data-emerald); }
+.checkboxBtn:active:not(:disabled) .checkboxBox { transform: scale(0.92); }
+.checkboxBtnActive .checkboxBox {
+  background: var(--data-emerald);
+  border-color: var(--data-emerald);
+}
+.checkboxBtnLocked { cursor: not-allowed; }
+.checkboxBtnLocked .checkboxBox {
+  background: rgba(12, 23, 48, 0.04);
+  border-color: var(--line);
+  color: var(--ink-4);
+}
+.checkboxBtnLocked.checkboxBtnActive .checkboxBox {
+  background: rgba(16, 185, 129, 0.55);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ---------- Backlog drawer ---------- */
 .backlogDrawer {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 14px;
-  padding: 14px 18px;
-  margin-top: 14px;
-  transition: all 0.2s;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--line-strong);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .backlogDrawerHeader {
@@ -658,102 +535,181 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .backlogDrawerTitle {
-  font-size: 13px;
-  font-weight: 700;
-  color: #334155;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
 }
+.backlogDrawerTitle svg { color: var(--ink-3); }
 
 .backlogDrawerDesc {
-  font-size: 12px;
-  color: #64748B;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
 }
 
 .backlogToggleBtn {
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  color: #2563EB;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
+  gap: 4px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
 }
-
-.backlogToggleBtn:hover {
-  background: #EFF6FF;
-  border-color: #93C5FD;
-}
+.backlogToggleBtn:hover { border-color: var(--blue-300); color: var(--blue-700); }
 
 .backlogList {
-  margin-top: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid #E2E8F0;
-  padding-top: 12px;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .backlogItem {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
 }
 
 .backlogItemLeft {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-width: 0;
 }
 
+.backlogItemText {
+  min-width: 0;
+}
+
 .backlogItemTitle {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #1E293B;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--ink);
 }
 
 .backlogItemMeta {
-  font-size: 11px;
-  color: #64748B;
+  margin-top: 2px;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  color: var(--ink-4);
 }
 
 .pullTaskBtn {
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-  color: #1D4ED8;
-  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.08);
+  font: inherit;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
+  color: var(--blue-700);
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
+}
+.pullTaskBtn:hover { background: rgba(59, 130, 246, 0.14); }
+
+/* ---------- Empty states ---------- */
+.emptyTasks {
+  padding: 22px 16px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--line-strong);
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-3);
 }
 
-.pullTaskBtn:hover {
-  background: #2563EB;
-  color: #FFFFFF;
-  border-color: #2563EB;
+.autoPlanBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--line-strong);
+  background: rgba(255, 255, 255, 0.55);
 }
 
+.emptyIcon { color: var(--blue-500); }
+.emptyIconMuted { color: var(--ink-4); }
 
+.autoPlanTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.autoPlanDesc {
+  margin: 0 0 6px;
+  max-width: 460px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+.autoPlanDesc strong { color: var(--ink); font-weight: 600; }
+
+.autoPlanBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--blue-600);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -10px rgba(37, 86, 224, 0.6);
+  transition: background-color var(--dur) var(--ease-out);
+}
+.autoPlanBtn:hover { background: var(--blue-700); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+  .scheduleBox { padding: 18px; }
+  .actionsArea { width: 100%; justify-content: space-between; }
+  .schedulerTop { flex-direction: column; }
+  .schedulerLoadBadge { align-items: flex-start; }
+}
+
+@media (max-width: 520px) {
+  .leftDetails { flex-direction: column; gap: 6px; }
+  .timeCol { flex-direction: row; align-items: baseline; gap: 8px; width: auto; }
+  .backlogDrawerHeader { flex-direction: column; align-items: flex-start; }
+  .backlogItem { flex-direction: column; align-items: stretch; }
+  .pullTaskBtn { align-self: flex-start; }
+  .stepperWrap { width: 100%; justify-content: space-between; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taskCard:hover { transform: none; }
+}

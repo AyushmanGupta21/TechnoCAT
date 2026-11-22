@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { AlertTriangle, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, ChevronUp, Clock, Layers, Lock, Plus, Sparkles } from "lucide-react";
 import styles from "./DailyStudySchedule.module.css";
 
 export interface ScheduleItem {
@@ -282,6 +283,9 @@ export default function DailyStudySchedule({
   const pendingCount = allVisibleTasks.filter((t) => !t.isCompleted).length;
   const completedCount = allVisibleTasks.filter((t) => t.isCompleted).length;
 
+  const visibleTotal = allVisibleTasks.length;
+  const progressPct = visibleTotal > 0 ? Math.round((completedCount / visibleTotal) * 100) : 0;
+
   const renderTaskCard = (task: ScheduleItem) => (
     <div
       key={task.id}
@@ -301,20 +305,12 @@ export default function DailyStudySchedule({
             <span className={styles.codeBadge}>{task.code}</span>
             {task.isOverdue && task.originalDay && (
               <span className={styles.rescheduledBadge}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                <span>Rolled Over from {months[task.originalMonthIndex ?? task.monthIndex ?? 8]?.slice(0, 3)} {task.originalDay}</span>
+                <AlertTriangle size={12} strokeWidth={2.25} aria-hidden="true" />
+                <span>Rolled over from {months[task.originalMonthIndex ?? task.monthIndex ?? 8]?.slice(0, 3)} {task.originalDay}</span>
               </span>
             )}
           </div>
-          <h3
-            className={styles.taskTitle}
-            style={{
-              textDecoration: task.isCompleted ? "line-through" : "none",
-              color: task.isCompleted ? "#64748B" : "#0F172A",
-            }}
-          >
-            {task.title}
-          </h3>
+          <h3 className={styles.taskTitle}>{task.title}</h3>
           <p className={styles.taskSubtitle}>{task.subtitle}</p>
         </div>
       </div>
@@ -341,124 +337,100 @@ export default function DailyStudySchedule({
             : "Mark complete"
         }
       >
-        {task.isCompleted ? (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        ) : !isToday ? (
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        ) : null}
+        <span className={styles.checkboxBox}>
+          {task.isCompleted ? (
+            <Check size={14} strokeWidth={3} />
+          ) : !isToday ? (
+            <Lock size={12} strokeWidth={2.25} />
+          ) : null}
+        </span>
       </button>
     </div>
   );
 
   return (
-    <div className={styles.scheduleBox}>
+    <section className={`glass-card ${styles.scheduleBox}`} data-tint="blue">
       <div className={styles.headerRow}>
         <div className={styles.dateTitleArea}>
-          <div className={styles.calendarIcon}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-          </div>
-          <div>
-            <h2 className={styles.dateHeading}>
-              {monthName} {selectedDay}, {selectedYear} Schedule
-            </h2>
-            {isToday && (
-              <span style={{ fontSize: "12px", color: "#0D9488", fontWeight: "600" }}>
-                ● Today&apos;s Active Planner
-              </span>
-            )}
-            {isPast && (
-              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500" }}>
-                Historical Session Record
-              </span>
-            )}
+          <h2 className={styles.dateHeading}>Schedule</h2>
+          <p className={styles.dateLine}>
+            <CalendarDays size={14} strokeWidth={2} aria-hidden="true" />
+            <span className={styles.dateMono}>
+              {monthName.slice(0, 3)} {selectedDay}, {selectedYear}
+            </span>
+            {isToday && <span className={`${styles.stateTag} ${styles.stateToday}`}>Today</span>}
+            {isPast && <span className={styles.stateTag}>Past day · read only</span>}
             {!isToday && !isPast && isWithinRollingWindow && (
-              <span style={{ fontSize: "12px", color: "#2563EB", fontWeight: "600" }}>
-                Active 1-Month Schedule Window
-              </span>
+              <span className={`${styles.stateTag} ${styles.stateUpcoming}`}>Within your 1-month plan</span>
             )}
-            {isBeyondRollingWindow && (
-              <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: "600" }}>
-                Upcoming Schedule Window
-              </span>
-            )}
-          </div>
+            {isBeyondRollingWindow && <span className={styles.stateTag}>Beyond your 1-month plan</span>}
+          </p>
         </div>
 
         <div className={styles.actionsArea}>
+          {visibleTotal > 0 && (
+            <div
+              className={styles.progressMeter}
+              title={`${completedCount} of ${visibleTotal} done, ${pendingCount} open`}
+            >
+              <span className={styles.progressFigure}>
+                {completedCount}/{visibleTotal}
+                <span className={styles.progressWord}>{pendingCount === 0 ? "all done" : "done"}</span>
+              </span>
+              <span className={styles.progressTrack} aria-hidden="true">
+                <span className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+              </span>
+            </div>
+          )}
           <button type="button" className={styles.addTaskBtn} onClick={onAddTask}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add Task
+            <Plus size={16} strokeWidth={2.25} aria-hidden="true" />
+            Add task
           </button>
         </div>
       </div>
 
       {/* Filter Chips */}
       {(isWithinRollingWindow || filteredTasks.length > 0) && (
-        <div className={styles.filterRow}>
+        <div className={styles.filterRow} role="group" aria-label="Filter tasks by section">
           {["All", "QA", "DILR", "VARC", "Mock"].map((filter) => (
             <button
               key={filter}
               type="button"
+              aria-pressed={activeFilter === filter}
               className={`${styles.filterChip} ${activeFilter === filter ? styles.filterChipActive : ""}`}
               onClick={() => setActiveFilter(filter)}
             >
-              {filter === "All" ? "All Tasks" : filter}
+              {filter !== "All" && <span className={`${styles.filterDot} ${styles[`dot${filter}`]}`} aria-hidden="true" />}
+              {filter === "All" ? "All tasks" : filter}
             </button>
           ))}
         </div>
       )}
 
-      {/* INTELLIGENT BACKLOG SCHEDULER PANEL (When Viewing Today & Overdue Backlog Exists) */}
-      {isToday && totalOverdueCount > 0 ? (
+      {/* Overdue backlog pacing (today only, when overdue tasks exist) */}
+      {isToday && totalOverdueCount > 0 && (
         <div className={styles.schedulerCard}>
           <div className={styles.schedulerTop}>
-            <div className={styles.schedulerHeaderLeft}>
-              <div className={styles.schedulerIconBox}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                </svg>
-              </div>
-              <div>
-                <h3 className={styles.schedulerTitle}>
-                  TechnoCAT Intelligent Scheduler
-                  <span className={styles.schedulerBadge}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <span>{totalOverdueCount} Overdue Detected</span>
-                  </span>
-                </h3>
-                <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0 0" }}>
-                  Cognitive load balancer: Backlog is intelligently paced alongside today&apos;s new topics.
-                </p>
-              </div>
+            <div>
+              <h3 className={styles.schedulerTitle}>
+                Overdue backlog
+                <span className={styles.schedulerBadge}>{totalOverdueCount} overdue</span>
+              </h3>
+              <p className={styles.schedulerDesc}>
+                Choose how many overdue tasks to take on today. They come first, then today&apos;s new topics; the rest stay queued.
+              </p>
             </div>
-
             <div className={styles.schedulerLoadBadge}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
-              <span>Today&apos;s Load: <strong>{assignedOverdueTasks.length} Overdue</strong> + <strong>{todayNewTopics.length} New Topics</strong> ({assignedOverdueTasks.length + todayNewTopics.length} Total)</span>
+              <span className={styles.loadLabel}>Today&apos;s load</span>
+              <span className={styles.loadFigure}>
+                {assignedOverdueTasks.length} overdue + {todayNewTopics.length} new = {assignedOverdueTasks.length + todayNewTopics.length}
+              </span>
             </div>
           </div>
 
-          <p className={styles.schedulerDesc}>
-            It is impossible to finish a heavy backlog in one day. Set how many overdue tasks you want to tackle today:
-            <strong> 1st your assigned overdue tasks will be cleared, next today&apos;s new topic(s) will be assigned.</strong>
-          </p>
-
           <div className={styles.schedulerControlsRow}>
             <div className={styles.stepperWrap}>
-              <span className={styles.stepperLabel}>Assign Overdue Tasks for Today:</span>
+              <span className={styles.stepperLabel}>Overdue tasks today</span>
               <div className={styles.stepperBox}>
                 <button
                   type="button"
@@ -466,6 +438,7 @@ export default function DailyStudySchedule({
                   onClick={() => handleSetOverdueQuota(overdueQuota - 1)}
                   disabled={overdueQuota <= 0}
                   title="Decrease overdue tasks for today"
+                  aria-label="Decrease overdue tasks for today"
                 >
                   –
                 </button>
@@ -476,6 +449,7 @@ export default function DailyStudySchedule({
                   onClick={() => handleSetOverdueQuota(overdueQuota + 1)}
                   disabled={overdueQuota >= totalOverdueCount}
                   title="Increase overdue tasks for today"
+                  aria-label="Increase overdue tasks for today"
                 >
                   +
                 </button>
@@ -484,10 +458,10 @@ export default function DailyStudySchedule({
 
             <div className={styles.presetChips}>
               {[
-                { label: "0 (Only Today)", val: 0 },
-                { label: "1 Task", val: 1 },
-                { label: "2 Tasks (Recommended)", val: 2 },
-                { label: "3 Tasks", val: 3 },
+                { label: "0 (only today)", val: 0 },
+                { label: "1", val: 1 },
+                { label: "2 (recommended)", val: 2 },
+                { label: "3", val: 3 },
                 { label: `All (${totalOverdueCount})`, val: totalOverdueCount },
               ].map((preset) => (
                 <button
@@ -502,119 +476,71 @@ export default function DailyStudySchedule({
             </div>
           </div>
         </div>
-      ) : (
-        /* Regular AI Assistant Insight for other states */
-        <div className={styles.aiNotice}>
-          <div className={styles.aiIcon}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            </svg>
-          </div>
-          <div className={styles.aiContent}>
-            <p className={styles.aiTag}>AI Automated Study Tracker</p>
-            <p className={styles.aiText}>
-              {isBeyondRollingWindow ? (
-                <>
-                  Schedules for <strong>{monthName} {selectedDay}, {selectedYear}</strong> unlock day-by-day on a rolling 1-month window as you progress through your enrolled CAT topics.
-                </>
-              ) : isPast ? (
-                <>
-                  Reviewing past study activity for {monthName} {selectedDay}. Completed drills contribute to your weekly benchmark analytics.
-                </>
-              ) : pendingCount === 0 && completedCount > 0 ? (
-                <>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Outstanding work! All tasks for {monthName} {selectedDay} are completed.</span>
-                </>
-              ) : (
-                <>
-                  You have <strong>{pendingCount} task(s) planned</strong> for {monthName} {selectedDay}. Focus on Quantitative drills first for maximum retention.
-                </>
-              )}
-            </p>
-          </div>
-        </div>
       )}
 
       {/* Timeline Task Cards or Contextual State */}
-      <div className={styles.timelineList} style={{ flex: 1 }}>
+      <div className={styles.timelineList}>
         {isToday && totalOverdueCount > 0 ? (
           <>
-            {/* 1. ASSIGNED OVERDUE SECTION (1st PRIORITY) */}
+            {/* 1. Assigned overdue tasks (first) */}
             {filteredOverdueTasks.length > 0 && (
               <div className={styles.sectionDivider}>
-                <div className={styles.sectionDividerLeft}>
-                  <span className={styles.sectionBadgeOverdue}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    1st Priority • Overdue Recovery
-                  </span>
-                  <span className={styles.sectionSubtitle}>
-                    {filteredOverdueTasks.length} assigned task{filteredOverdueTasks.length > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <span className={styles.sectionHint}>Clear high-priority backlog first to build momentum</span>
+                <span className={`${styles.sectionBadge} ${styles.sectionBadgeOverdue}`}>Overdue first</span>
+                <span className={styles.sectionSubtitle}>
+                  {filteredOverdueTasks.length} assigned task{filteredOverdueTasks.length > 1 ? "s" : ""}
+                </span>
               </div>
             )}
 
-            {/* Overdue task cards */}
             {filteredOverdueTasks.map((task) => renderTaskCard(task))}
 
-            {/* 2. TODAY'S NEW TOPICS SECTION (NEXT) */}
+            {/* 2. Today's new topics (next) */}
             {filteredTodayTopics.length > 0 && (
-              <div className={styles.sectionDivider} style={{ marginTop: filteredOverdueTasks.length > 0 ? "18px" : "4px" }}>
-                <div className={styles.sectionDividerLeft}>
-                  <span className={styles.sectionBadgeToday}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Next • Today&apos;s Scheduled Topics
-                  </span>
-                  <span className={styles.sectionSubtitle}>
-                    {filteredTodayTopics.length} new curriculum topic{filteredTodayTopics.length > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <span className={styles.sectionHint}>Scheduled syllabus progression</span>
+              <div className={styles.sectionDivider} data-spaced={filteredOverdueTasks.length > 0 ? "true" : undefined}>
+                <span className={`${styles.sectionBadge} ${styles.sectionBadgeToday}`}>Then today&apos;s topics</span>
+                <span className={styles.sectionSubtitle}>
+                  {filteredTodayTopics.length} new topic{filteredTodayTopics.length > 1 ? "s" : ""}
+                </span>
               </div>
             )}
 
-            {/* Today's new topic cards */}
             {filteredTodayTopics.map((task) => renderTaskCard(task))}
 
-            {/* If both filters hide everything */}
             {filteredOverdueTasks.length === 0 && filteredTodayTopics.length === 0 && (
               <div className={styles.emptyTasks}>
                 No tasks found under category &ldquo;{activeFilter}&rdquo; for today.
               </div>
             )}
 
-            {/* 3. SMART BACKLOG DRAWER */}
+            {/* 3. Queued backlog */}
             {remainingBacklogTasks.length > 0 && (
               <div className={styles.backlogDrawer}>
                 <div className={styles.backlogDrawerHeader}>
                   <div>
                     <div className={styles.backlogDrawerTitle}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-                      <span>Queued Backlog: <strong>{remainingBacklogTasks.length} pending tasks</strong></span>
+                      <Layers size={16} strokeWidth={2} aria-hidden="true" />
+                      <span>
+                        Queued backlog: <span className={styles.mono}>{remainingBacklogTasks.length}</span> pending
+                      </span>
                     </div>
                     <p className={styles.backlogDrawerDesc}>
-                      Safely queued for upcoming study sessions so you don&apos;t feel overwhelmed. 100% syllabus coverage guaranteed.
+                      Kept for upcoming days so today stays manageable. Nothing is dropped.
                     </p>
                   </div>
                   <button
                     type="button"
                     className={styles.backlogToggleBtn}
                     onClick={() => setIsBacklogExpanded(!isBacklogExpanded)}
+                    aria-expanded={isBacklogExpanded}
                   >
                     {isBacklogExpanded ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        Hide Queued Backlog <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-                      </span>
+                      <>
+                        Hide <ChevronUp size={14} strokeWidth={2.25} aria-hidden="true" />
+                      </>
                     ) : (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        View Queued Backlog ({remainingBacklogTasks.length}) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                      </span>
+                      <>
+                        View ({remainingBacklogTasks.length}) <ChevronDown size={14} strokeWidth={2.25} aria-hidden="true" />
+                      </>
                     )}
                   </button>
                 </div>
@@ -627,10 +553,10 @@ export default function DailyStudySchedule({
                           <span className={`${styles.categoryPill} ${styles[`pill${t.category}`]}`}>
                             {t.category}
                           </span>
-                          <div>
+                          <div className={styles.backlogItemText}>
                             <div className={styles.backlogItemTitle}>{t.title}</div>
                             <div className={styles.backlogItemMeta}>
-                              {t.code} • {t.duration} • Rolled over from {months[t.monthIndex ?? 8]?.slice(0, 3)} {t.day}
+                              {t.code} · {t.duration} · from {months[t.monthIndex ?? 8]?.slice(0, 3)} {t.day}
                             </div>
                           </div>
                         </div>
@@ -642,7 +568,8 @@ export default function DailyStudySchedule({
                           }}
                           title="Assign this task to today"
                         >
-                          + Assign to Today
+                          <Plus size={14} strokeWidth={2.25} aria-hidden="true" />
+                          Assign to today
                         </button>
                       </div>
                     ))}
@@ -654,42 +581,27 @@ export default function DailyStudySchedule({
         ) : filteredTasks.length > 0 ? (
           filteredTasks.map((task) => renderTaskCard(task))
         ) : isPast ? (
-          /* Past Day - DO NOT SHOW AUTO-ASSIGN */
-          <div className={styles.emptyTasks} style={{ padding: "40px 20px" }}>
-            <div style={{ marginBottom: "8px", color: "#94A3B8" }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <h4 style={{ fontSize: "15px", color: "#475569", margin: "0 0 4px 0", fontWeight: "600" }}>
-              Past Study Archive ({monthName} {selectedDay}, {selectedYear})
-            </h4>
-            <p style={{ fontSize: "13px", color: "#94A3B8", margin: 0 }}>
-              This date has passed. Unfinished tasks from earlier dates are automatically rolled over to today&apos;s active study plan.
+          /* Past day: no auto-assign */
+          <div className={styles.autoPlanBox}>
+            <Clock size={22} strokeWidth={1.75} aria-hidden="true" className={styles.emptyIconMuted} />
+            <h3 className={styles.autoPlanTitle}>
+              Nothing recorded for {monthName.slice(0, 3)} {selectedDay}
+            </h3>
+            <p className={styles.autoPlanDesc}>
+              This date has passed. Unfinished tasks from earlier dates roll over to today&apos;s plan automatically.
             </p>
           </div>
         ) : isBeyondRollingWindow ? (
-          /* Beyond 1-Month Rolling Window - Upcoming Task Scheduler */
           <div className={styles.autoPlanBox}>
-            <div style={{ padding: "10px", background: "#EFF6FF", borderRadius: "50%", color: "#2563EB", marginBottom: "4px" }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </div>
-            <h3 className={styles.autoPlanTitle}>Upcoming Task Scheduler</h3>
+            <CalendarDays size={22} strokeWidth={1.75} aria-hidden="true" className={styles.emptyIcon} />
+            <h3 className={styles.autoPlanTitle}>Not scheduled yet</h3>
             <p className={styles.autoPlanDesc}>
-              Dynamic study tasks are assigned for a 1-month rolling window (currently scheduled through {maxRollingMonthName} {maxRollingDay}). As each day passes from today to tomorrow, tasks for <strong>{monthName} {selectedDay}</strong> will be automatically scheduled one-by-one based on your enrolled syllabus.
+              Study tasks are planned one month ahead (currently through {maxRollingMonthName} {maxRollingDay}). Tasks for{" "}
+              <strong>{monthName} {selectedDay}</strong> are added from your enrolled syllabus as that date comes into range.
             </p>
-            <button
-              type="button"
-              className={styles.autoPlanBtn}
-              onClick={onAddTask}
-            >
-              + Add Custom Target for {monthName} {selectedDay}
+            <button type="button" className={styles.autoPlanBtn} onClick={onAddTask}>
+              <Plus size={16} strokeWidth={2.25} aria-hidden="true" />
+              Add your own task for {monthName.slice(0, 3)} {selectedDay}
             </button>
           </div>
         ) : isWithinRollingWindow ? (
@@ -699,50 +611,32 @@ export default function DailyStudySchedule({
             </div>
           ) : enrolledCount === 0 && !isDemo ? (
             <div className={styles.autoPlanBox}>
-              <div style={{ padding: "10px", background: "#EFF6FF", borderRadius: "50%", color: "#2563EB", marginBottom: "4px" }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
-              </div>
-              <h3 className={styles.autoPlanTitle}>No Courses Enrolled Yet</h3>
+              <BookOpen size={22} strokeWidth={1.75} aria-hidden="true" className={styles.emptyIcon} />
+              <h3 className={styles.autoPlanTitle}>No courses enrolled yet</h3>
               <p className={styles.autoPlanDesc}>
-                You have not enrolled in any CAT courses yet. Browse our comprehensive curriculum and enroll in Quantitative Aptitude, DILR, or VARC so the AI schedule planner can automatically assign your daily study tasks.
+                Enroll in Quantitative Aptitude, DILR or VARC and your daily study tasks will be planned here automatically.
               </p>
-              <a
-                href="/browse"
-                className={styles.autoPlanBtn}
-                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}
-              >
-                <span>Browse Courses &amp; Enroll</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
+              <a href="/browse" className={styles.autoPlanBtn}>
+                <span>Browse courses and enroll</span>
+                <ArrowRight size={16} strokeWidth={2.25} aria-hidden="true" />
               </a>
             </div>
           ) : (
             <div className={styles.autoPlanBox}>
-              <h3 className={styles.autoPlanTitle}>No Tasks Scheduled for {monthName} {selectedDay}</h3>
+              <h3 className={styles.autoPlanTitle}>No tasks for {monthName} {selectedDay}</h3>
               <p className={styles.autoPlanDesc}>
-                Our AI curriculum scheduler can automatically assign the next recommended lectures and practice drills from your enrolled CAT topics to this date.
+                Fill this day with the next lessons and practice sets from your enrolled CAT topics.
               </p>
-              <button
-                type="button"
-                className={styles.autoPlanBtn}
-                onClick={() => onAutoAssignDay(selectedDay)}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                <span>Auto-Assign Enrolled Topics to {monthName.slice(0, 3)} {selectedDay}</span>
+              <button type="button" className={styles.autoPlanBtn} onClick={() => onAutoAssignDay(selectedDay)}>
+                <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
+                <span>Auto-assign enrolled topics to {monthName.slice(0, 3)} {selectedDay}</span>
               </button>
             </div>
           )
         ) : (
-          <div className={styles.emptyTasks}>
-            No tasks found for this date.
-          </div>
+          <div className={styles.emptyTasks}>No tasks found for this date.</div>
         )}
       </div>
-    </div>
+    </section>
   );
 }

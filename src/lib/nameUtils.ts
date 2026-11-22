@@ -3,7 +3,7 @@
  * 1. If registered with a valid name (and not legacy mock names like Sabrina), use it.
  * 2. If no name was registered, extract the student's name from their email address.
  *    e.g. "student@technocat.edu" -> "Student"
- *    e.g. "ayushman.gupta@domain.com" -> "Ayushman Gupta"
+ *    e.g. "priya.sharma@domain.com" -> "Priya Sharma"
  *    e.g. "rahul_verma@gmail.com" -> "Rahul Verma"
  * 3. Never fallback to hardcoded mock names.
  */

@@ -3,7 +3,30 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import {
+  ArrowUpRight,
+  Award,
+  BarChart3,
+  CalendarDays,
+  CircleCheck,
+  CircleMinus,
+  Clock,
+  Download,
+  FileText,
+  Flame,
+  GraduationCap,
+  Lock,
+  Puzzle,
+  Star,
+  Target,
+  Timer,
+  TrendingUp,
+  Trophy,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import AppNav from "@/components/app/AppNav";
+import { GradientText, Reveal, RevealGroup, RevealItem, CountUp, type Tint } from "@/components/landing/motion";
 import MetricInspectorModal, { type MetricId } from "@/components/MetricInspectorModal";
 import TopicQuizModal from "@/components/TopicQuizModal";
 import type { StudentMetrics, SectionKey, TestRecord, ConceptStat } from "@/lib/metrics/types";
@@ -22,7 +45,6 @@ import {
   CartesianGrid,
 } from "recharts";
 import styles from "./analytics.module.css";
-import BrandLogo from "@/components/BrandLogo";
 
 // My Analytics: history & performance. Every number comes from GET /api/me/metrics
 // (src/lib/metrics/compute.ts defines each metric); demo and real accounts share this code path.
@@ -37,7 +59,11 @@ const SECTION_NAMES: Record<SectionKey, string> = {
   DILR: "Data Interpretation & Logical Reasoning",
   VARC: "Verbal Ability & Reading Comprehension",
 };
-const SECTION_COLORS: Record<SectionKey, string> = { QA: "#2563EB", DILR: "#8B5CF6", VARC: "#10B981" };
+// App-wide section colours (globals.css --data-*): VARC blue, DILR teal, QA violet.
+const SECTION_COLORS: Record<SectionKey, string> = { VARC: "#3b82f6", DILR: "#14b8a6", QA: "#8b5cf6" };
+const SECTION_TINTS: Record<SectionKey, Tint> = { VARC: "blue", DILR: "teal", QA: "violet" };
+const LESSON_COLOR = "#3b82f6";
+const PRACTICE_COLOR = "#f59e0b";
 const KIND_LABELS: Record<TestRecord["kind"], string> = {
   pyq: "PYQ section",
   module_quiz: "Module quiz",
@@ -47,13 +73,41 @@ const KIND_LABELS: Record<TestRecord["kind"], string> = {
 };
 const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "pyq", label: "PYQ Sections" },
-  { id: "module_quiz", label: "Module Quizzes" },
-  { id: "grand_quiz", label: "Grand Quizzes" },
-  { id: "lesson_practice", label: "Lesson Practice" },
+  { id: "pyq", label: "PYQ sections" },
+  { id: "module_quiz", label: "Module quizzes" },
+  { id: "grand_quiz", label: "Grand quizzes" },
+  { id: "lesson_practice", label: "Lesson practice" },
 ];
-const TIMEFRAME_LABELS: Record<Timeframe, string> = { "7d": "Last 7 Days", "30d": "Last 30 Days", all: "All Time" };
+const TIMEFRAME_LABELS: Record<Timeframe, string> = { "7d": "Last 7 days", "30d": "Last 30 days", all: "All time" };
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_ACTIVE_SECONDS = 120;
+
+const TABS: { id: Tab; label: string; Icon: LucideIcon }[] = [
+  { id: "overview", label: "Overview", Icon: BarChart3 },
+  { id: "topics", label: "Courses & concepts", Icon: Target },
+  { id: "mocks", label: "Test history", Icon: FileText },
+  { id: "achievements", label: "Badges & certificate", Icon: Award },
+];
+
+const BADGE_ICONS: Record<string, { Icon: LucideIcon; tint: Tint }> = {
+  trophy: { Icon: Trophy, tint: "amber" },
+  puzzle: { Icon: Puzzle, tint: "violet" },
+  flame: { Icon: Flame, tint: "coral" },
+  trend: { Icon: TrendingUp, tint: "teal" },
+  bolt: { Icon: Zap, tint: "blue" },
+  star: { Icon: Star, tint: "amber" },
+};
+
+const TOOLTIP_STYLE: React.CSSProperties = {
+  background: "#ffffff",
+  borderRadius: 12,
+  border: "1px solid #e4e9f2",
+  boxShadow: "0 12px 28px -12px rgba(23, 47, 110, 0.25)",
+  fontSize: 12,
+  fontFamily: "var(--ff-sans)",
+  padding: "8px 12px",
+};
+const AXIS_TICK = { fill: "#66708a", fontSize: 11, fontFamily: "var(--ff-mono)" };
 
 function fmtDuration(seconds: number): string {
   const mins = Math.round(seconds / 60);
@@ -106,66 +160,14 @@ function downloadTestHistoryCsv(tests: TestRecord[], timeframe: Timeframe) {
   URL.revokeObjectURL(url);
 }
 
-function renderBadgeIcon(iconName: string) {
-  switch (iconName) {
-    case "trophy":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-          <path d="M4 22h16" />
-          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-          <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
-        </svg>
-      );
-    case "star":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
-      );
-    case "flame":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c3.5 0 5-2.5 5-5.5 0-3-2-5.5-4-7.5C11 7 9 9 9 11c0 1.5.5 2.5-.5 3.5z" />
-          <path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-7 5-9 1 2 2 3 3 0z" />
-        </svg>
-      );
-    case "trend":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-          <polyline points="17 6 23 6 23 12" />
-        </svg>
-      );
-    case "bolt":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-      );
-    case "puzzle":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19.439 7.85c0-1.57.802-2.54 1.636-3.55a.8.8 0 0 0-.616-1.3H17a1 1 0 0 0-1-1c0-.834-.98-1.636-2.55-1.636-1.57 0-2.55.802-2.55 1.636a1 1 0 0 0-1 1H6.46a.8.8 0 0 0-.615 1.3c.834 1.01 1.635 1.98 1.635 3.55 0 1.57-.801 2.54-1.635 3.55a.8.8 0 0 0 .615 1.3H9.9a1 1 0 0 0 1 1c0 .834.98 1.636 2.55 1.636 1.57 0 2.55-.802 2.55-1.636a1 1 0 0 0 1-1h3.46a.8.8 0 0 0 .615-1.3c-.834-1.01-1.635-1.98-1.635-3.55z" />
-        </svg>
-      );
-    default:
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-      );
-  }
+function SectionChip({ section }: { section: SectionKey | null | undefined }) {
+  const color = section ? SECTION_COLORS[section] : "#98a1b5";
+  return (
+    <span className={styles.sectionChip} style={{ "--chip": color } as React.CSSProperties}>
+      {section ?? "Other"}
+    </span>
+  );
 }
-
-const inspectIcon = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
 
 function AnalyticsPageContent() {
   const searchParams = useSearchParams();
@@ -266,7 +268,7 @@ function AnalyticsPageContent() {
       { key: "QA", name: "Quantitative Ability", color: SECTION_COLORS.QA },
       { key: "DILR", name: "DILR", color: SECTION_COLORS.DILR },
       { key: "VARC", name: "VARC", color: SECTION_COLORS.VARC },
-      { key: "OTHER", name: "Other courses", color: "#94A3B8" },
+      { key: "OTHER", name: "Other courses", color: "#98a1b5" },
     ];
     return rows
       .filter((r) => secs[r.key] > 0)
@@ -293,17 +295,17 @@ function AnalyticsPageContent() {
     if (!metrics) return [];
     const sectionsAttempted = SECTIONS.filter((s) => metrics.sections[s].pyqAttempts > 0).length;
     const list = [
-      { id: "first-pyq", title: "First PYQ Section", desc: "Submit your first CAT past-year (PYQ) section.", icon: "trophy", color: "#fef3c7", current: metrics.tests.pyq.length, target: 1, unit: "section" },
-      { id: "all-sections", title: "All-Rounder", desc: "Attempt a PYQ section in each of VARC, DILR and QA.", icon: "puzzle", color: "#f3e8ff", current: sectionsAttempted, target: 3, unit: "sections" },
-      { id: "streak-7", title: "7-Day Streak", desc: "Study on 7 consecutive days (at least 2 minutes a day). Counts your best streak.", icon: "flame", color: "#fee2e2", current: metrics.streak.best, target: 7, unit: "days" },
-      { id: "lessons-10", title: "10 Lessons Completed", desc: "Complete 10 lessons in any course.", icon: "trend", color: "#dcfce7", current: metrics.courses.lessonsCompleted, target: 10, unit: "lessons" },
-      { id: "modules-3", title: "Module Finisher", desc: "Pass 3 different module quizzes.", icon: "bolt", color: "#e0e7ff", current: metrics.tests.modulesPassed, target: 3, unit: "modules" },
-      { id: "accuracy-80", title: "Sharp Shooter", desc: "Reach 80% overall accuracy in timed tests (at least 5 answers).", icon: "star", color: "#dbeafe", current: metrics.accuracy.overall ?? 0, target: 80, unit: "%" },
+      { id: "first-pyq", title: "First PYQ section", desc: "Submit your first CAT past-year (PYQ) section.", icon: "trophy", current: metrics.tests.pyq.length, target: 1, unit: "section" },
+      { id: "all-sections", title: "All-rounder", desc: "Attempt a PYQ section in each of VARC, DILR and QA.", icon: "puzzle", current: sectionsAttempted, target: 3, unit: "sections" },
+      { id: "streak-7", title: "7-day streak", desc: "Study on 7 consecutive days (at least 2 minutes a day). Counts your best streak.", icon: "flame", current: metrics.streak.best, target: 7, unit: "days" },
+      { id: "lessons-10", title: "10 lessons completed", desc: "Complete 10 lessons in any course.", icon: "trend", current: metrics.courses.lessonsCompleted, target: 10, unit: "lessons" },
+      { id: "modules-3", title: "Module finisher", desc: "Pass 3 different module quizzes.", icon: "bolt", current: metrics.tests.modulesPassed, target: 3, unit: "modules" },
+      { id: "accuracy-80", title: "Sharp shooter", desc: "Reach 80% overall accuracy in timed tests (at least 5 answers).", icon: "star", current: metrics.accuracy.overall ?? 0, target: 80, unit: "%" },
     ];
     return list.map((b) => {
       const unlocked = b.current >= b.target;
       const progress = b.unit === "%" ? (metrics.accuracy.overall === null ? "no accuracy yet" : `${b.current}% / 80%`) : `${Math.min(b.current, b.target)}/${b.target} ${b.unit}`;
-      return { ...b, unlocked, status: unlocked ? "Unlocked • criterion met" : `Locked • ${progress}` };
+      return { ...b, unlocked, progress: Math.min(1, b.current / b.target), status: unlocked ? "Unlocked · criterion met" : progress };
     });
   }, [metrics]);
 
@@ -318,13 +320,18 @@ function AnalyticsPageContent() {
   const bench = m?.speed.benchmarkSecondsPerQuestion ?? 109;
   const anyPercentileShown = m ? m.percentile.overallEstimate !== null || SECTIONS.some((s) => m.sections[s].estimatedPercentile !== null) : false;
   const sectionsWithData = m ? SECTIONS.filter((s) => m.sections[s].attempted > 0 || m.sections[s].pyqAttempts > 0) : [];
+  const last14 = m ? m.studyTime.daily.slice(-14) : [];
+  const last7 = m ? m.studyTime.daily.slice(-7) : [];
+  const last7Max = Math.max(1, ...last7.map((d) => d.learningSeconds + d.practiceSeconds));
+  const recentPyqs = m ? [...m.tests.pyq].slice(0, 8).reverse() : [];
+  const recentPyqMaxWrong = Math.max(1, ...recentPyqs.map((t) => t.wrong));
 
   const emptyBox = (title: string, text: string, cta?: { href: string; label: string }) => (
     <div className={styles.emptyState}>
       <h3 className={styles.emptyStateTitle}>{title}</h3>
       <p className={styles.emptyStateText}>{text}</p>
       {cta && (
-        <Link href={cta.href} className={styles.drillWeakCta} style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+        <Link href={cta.href} className={`${styles.btn} ${styles.btnPrimary}`}>
           <span>{cta.label}</span>
         </Link>
       )}
@@ -333,69 +340,27 @@ function AnalyticsPageContent() {
 
   return (
     <div className={styles.analyticsWrapper}>
-      {/* ===== STICKY TOP NAVBAR ===== */}
-      <header className={styles.stickyNavHeader}>
-        <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Analytics Navigation">
-            <div className={styles.topNavLeft}>
-              <Link href="/dashboard" className={styles.brandLogo} title="Back to TechnoCAT Home">
-                <BrandLogo height={70} />
-              </Link>
-              <div className={styles.backNavGroup}>
-                <Link href="/dashboard" className={styles.backDashboardBtn}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12" />
-                    <polyline points="12 19 5 12 12 5" />
-                  </svg>
-                  Back to Dashboard
-                </Link>
-                <span className={styles.backNavDivider} aria-hidden="true">|</span>
-                <Link href="/intelligence" className={styles.backDashboardBtn}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12" />
-                    <polyline points="12 19 5 12 12 5" />
-                  </svg>
-                  Back to Intelligence Hub
-                </Link>
-              </div>
+      <AppNav />
+
+      {/* ===== PAGE HEADER ===== */}
+      <header className={styles.pageHeader}>
+        <div className={styles.container}>
+          <RevealGroup className={styles.pageHeaderRow}>
+            <div className={styles.pageHeaderText}>
+              <RevealItem>
+                <h1 className={styles.pageTitle}>
+                  My performance <GradientText>analytics</GradientText>
+                </h1>
+              </RevealItem>
+              <RevealItem>
+                <p className={styles.pageSubtitle}>
+                  Test history, accuracy, pace and estimated percentile from your recorded activity. Click any card to see how it is calculated.
+                </p>
+              </RevealItem>
             </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== HEADER SECTION ===== */}
-      <div className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          <div className={styles.headerContent}>
-            <div>
-              <div className={styles.pillBadge}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span>History & Performance</span>
-              </div>
-              <h1 className={styles.pageTitle}>
-                My Performance & <span className={styles.headingHighlight}>Analytics</span>
-              </h1>
-              <p className={styles.pageSubtitle}>
-                Your test history, accuracy, pace, estimated percentile and study habits, calculated from your recorded activity. Click any card to see exactly how it is calculated.
-              </p>
-            </div>
-
-            <div className={styles.headerActions}>
+            <RevealItem className={styles.pageActions}>
               <button
-                className={styles.drillWeakCta}
-                onClick={() => handleDrill("qa-quantitative-ability", "CAT Diagnostic Drill")}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                <span>Drill Weak Areas</span>
-              </button>
-              <button
-                className={styles.exportBtn}
+                className={`${styles.btn} ${styles.btnSecondary}`}
                 disabled={periodTests.length === 0}
                 title={
                   periodTests.length === 0
@@ -404,123 +369,47 @@ function AnalyticsPageContent() {
                 }
                 onClick={() => downloadTestHistoryCsv(periodTests, timeframe)}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Export Test History (CSV)
+                <Download size={16} strokeWidth={2.2} aria-hidden="true" />
+                Export CSV
               </button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => handleDrill("qa-quantitative-ability", "CAT Diagnostic Drill")}>
+                <Zap size={16} strokeWidth={2.2} aria-hidden="true" />
+                Drill weak areas
+              </button>
+            </RevealItem>
+          </RevealGroup>
+
+          {/* View tabs */}
+          <Reveal delay={0.1} className={styles.tabsRow}>
+            <div className={styles.viewTabs} role="tablist" aria-label="Analytics views">
+              {TABS.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  role="tab"
+                  aria-selected={activeTab === id}
+                  onClick={() => setActiveTab(id)}
+                  className={`${styles.viewTab} ${activeTab === id ? styles.viewTabActive : ""}`}
+                >
+                  <Icon size={16} strokeWidth={2.2} aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
-          </div>
 
-          {/* View Mode Tabs */}
-          <div className={styles.viewTabs}>
-            {[
-              {
-                id: "overview",
-                label: "Performance Overview",
-                icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
-                ),
-              },
-              {
-                id: "topics",
-                label: "Courses & Concepts",
-                icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <circle cx="12" cy="12" r="6" />
-                    <circle cx="12" cy="12" r="2" />
-                  </svg>
-                ),
-              },
-              {
-                id: "mocks",
-                label: "Test History",
-                icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                ),
-              },
-              {
-                id: "achievements",
-                label: "Badges & Certificate",
-                icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                    <path d="M4 22h16" />
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
-                  </svg>
-                ),
-              },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as Tab)}
-                className={`${styles.viewTab} ${activeTab === tab.id ? styles.viewTabActive : ""}`}
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ===== MAIN ANALYTICS CONTENT ===== */}
-      <main className={styles.mainContent}>
-        {!m ? (
-          loadError === "unauthorized" ? (
-            emptyBox("Please sign in", "Sign in to see your performance history and analytics.", { href: "/", label: "Go to sign in" })
-          ) : loadError === "failed" ? (
-            <div className={styles.emptyState}>
-              <h3 className={styles.emptyStateTitle}>Could not load your analytics</h3>
-              <p className={styles.emptyStateText}>Something went wrong while loading your metrics. Please try again.</p>
-              <button className={styles.drillWeakCta} onClick={() => window.location.reload()}>
-                Retry
-              </button>
-            </div>
-          ) : (
-            <div className={styles.emptyState}>Loading your analytics…</div>
-          )
-        ) : (
-          <>
-            {/* Timeframe toolbar: filters test history, daily study charts and the CSV export */}
-            {(activeTab === "overview" || activeTab === "mocks") && (
-              <div className={styles.timeframeToolbar}>
-                <div className={styles.toolbarTitle}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span>Analysis Period</span>
-                  <span className={styles.toolbarHint}>
-                    {activeTab === "overview"
-                      ? "Applies to the daily study chart and daily average. Other indicators are all-time."
-                      : "Applies to the test list, score trend and CSV export."}
-                  </span>
-                </div>
-
-                <div className={styles.timeframePillGroup}>
+            {/* Timeframe: filters test history, daily study charts and the CSV export */}
+            {m && (activeTab === "overview" || activeTab === "mocks") && (
+              <div className={styles.timeframeGroup}>
+                <span className={styles.timeframeHint}>
+                  <Clock size={14} strokeWidth={2.2} aria-hidden="true" />
+                  {activeTab === "overview" ? "Applies to the daily study chart and daily average" : "Applies to the test list, score trend and CSV export"}
+                </span>
+                <div className={styles.segmented} role="group" aria-label="Analysis period">
                   {(["7d", "30d", "all"] as Timeframe[]).map((tf) => (
                     <button
                       key={tf}
                       onClick={() => setTimeframe(tf)}
-                      className={`${styles.timeframePill} ${timeframe === tf ? styles.timeframePillActive : ""}`}
+                      aria-pressed={timeframe === tf}
+                      className={`${styles.segment} ${timeframe === tf ? styles.segmentActive : ""}`}
                     >
                       {TIMEFRAME_LABELS[tf]}
                     </button>
@@ -528,309 +417,351 @@ function AnalyticsPageContent() {
                 </div>
               </div>
             )}
+          </Reveal>
+        </div>
+      </header>
 
+      {/* ===== MAIN ANALYTICS CONTENT ===== */}
+      <main className={`${styles.container} ${styles.mainContent}`}>
+        {!m ? (
+          loadError === "unauthorized" ? (
+            emptyBox("Please sign in", "Sign in to see your performance history and analytics.", { href: "/", label: "Go to sign in" })
+          ) : loadError === "failed" ? (
+            <div className={styles.emptyState}>
+              <h3 className={styles.emptyStateTitle}>Could not load your analytics</h3>
+              <p className={styles.emptyStateText}>Something went wrong while loading your metrics. Please try again.</p>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => window.location.reload()}>
+                Retry
+              </button>
+            </div>
+          ) : (
+            <div className={styles.loadingState} aria-busy="true">
+              <span className={styles.loadingBar} />
+              <span className={styles.loadingText}>Loading your analytics…</span>
+            </div>
+          )
+        ) : (
+          <>
             {/* TAB 1: OVERVIEW */}
             {activeTab === "overview" && (
               <>
-                {/* 4 headline KPI cards */}
-                <div>
-                  <div className={styles.sectionHeaderRow}>
-                    <h2 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="6" />
-                        <circle cx="12" cy="12" r="2" />
-                      </svg>
-                      <span>Core Exam Indicators (All Time)</span>
+                {/* Headline indicators (all time) */}
+                <section aria-labelledby="kpi-heading">
+                  <div className={styles.sectionHead}>
+                    <h2 id="kpi-heading" className={styles.sectionTitle}>
+                      Core indicators
                     </h2>
-                    <div className={styles.interactiveHint} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18h6" />
-                        <path d="M10 22h4" />
-                        <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                      </svg>
-                      <span>Click any card to see how it is calculated</span>
-                    </div>
+                    <span className={styles.sectionMeta}>All time</span>
                   </div>
 
-                  <div className={styles.heroGrid}>
-                    {/* 1. Estimated percentile */}
-                    <div
-                      className={`${styles.metricCard} ${styles.metricCardPercentile}`}
-                      onClick={() => setInspectingMetricId("percentile")}
-                      title={m.percentile.disclaimer}
-                    >
-                      <div className={styles.cardTopRow}>
-                        <div className={styles.cardIconBox}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                          </svg>
-                        </div>
-                        <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <span>How it&apos;s estimated</span>
-                          {inspectIcon}
+                  <RevealGroup className={styles.statGrid}>
+                    {/* 1. Estimated percentile (featured) */}
+                    <RevealItem className={styles.statCellFeatured}>
+                      <button
+                        type="button"
+                        className={`${styles.statCard} ${styles.statFeatured}`}
+                        onClick={() => setInspectingMetricId("percentile")}
+                        title={m.percentile.disclaimer}
+                      >
+                        <span className={styles.statLabel}>
+                          <Target size={16} strokeWidth={2.2} aria-hidden="true" />
+                          Estimated CAT percentile
+                          <ArrowUpRight size={16} className={styles.statArrow} aria-hidden="true" />
                         </span>
-                      </div>
-                      <div className={styles.cardName}>Estimated CAT Percentile</div>
-                      <div className={styles.cardValueRow}>
-                        <div className={styles.cardValue}>{m.percentile.overallEstimate !== null ? `${m.percentile.overallEstimate} %ile` : "—"}</div>
-                      </div>
-                      <div className={styles.cardSub}>
-                        {m.percentile.overallEstimate !== null
-                          ? `From an overall PYQ score of ${m.percentile.overallScore} / ${SECTIONS.reduce((s, k) => s + m.sections[k].maxScore, 0)}`
-                          : m.percentile.basis}
-                      </div>
-                      <p className={styles.disclaimerText}>{m.percentile.disclaimer}</p>
-                      <div className={styles.cardFooterStatus}>
-                        <div className={styles.statusIndicator}>
-                          <span className={`${styles.indicatorDot} ${m.percentile.overallEstimate !== null ? styles.dotInfo : styles.dotDanger}`}></span>
-                          <span style={{ color: m.percentile.overallEstimate !== null ? "#4F46E5" : "#DC2626" }}>
-                            {m.percentile.overallEstimate !== null
-                              ? "Estimated"
-                              : `${SECTIONS.filter((s) => m.sections[s].latestScore !== null).length}/3 sections attempted`}
+                        <span className={styles.statValueRow}>
+                          {m.percentile.overallEstimate !== null ? (
+                            <>
+                              <CountUp
+                                to={m.percentile.overallEstimate}
+                                decimals={Number.isInteger(m.percentile.overallEstimate) ? 0 : 1}
+                                className={styles.statValueXL}
+                              />
+                              <span className={styles.statUnit}>%ile</span>
+                            </>
+                          ) : (
+                            <span className={styles.statValueXL}>—</span>
+                          )}
+                        </span>
+                        <span className={styles.statSub}>
+                          {m.percentile.overallEstimate !== null
+                            ? `From an overall PYQ score of ${m.percentile.overallScore} / ${SECTIONS.reduce((s, k) => s + m.sections[k].maxScore, 0)}`
+                            : m.percentile.basis}
+                        </span>
+
+                        {/* Percentile scale */}
+                        <span className={styles.pctScale} aria-hidden="true">
+                          <span className={styles.pctTrack} />
+                          {m.percentile.overallEstimate !== null && (
+                            <span className={styles.pctMarker} style={{ left: `${Math.min(100, Math.max(0, m.percentile.overallEstimate))}%` }} />
+                          )}
+                          <span className={styles.pctTicks}>
+                            <span>0</span>
+                            <span>50</span>
+                            <span>90</span>
+                            <span>100</span>
                           </span>
-                        </div>
-                        <span className={styles.inspectArrow}>→</span>
-                      </div>
-                    </div>
+                        </span>
+
+                        <span className={styles.pctSections}>
+                          {SECTIONS.map((s) => (
+                            <span key={s} className={styles.pctSection}>
+                              <span className={styles.pctSectionDot} style={{ background: SECTION_COLORS[s] }} />
+                              <span className={styles.pctSectionName}>{s}</span>
+                              <span className={styles.pctSectionVal}>
+                                {m.sections[s].estimatedPercentile !== null ? m.sections[s].estimatedPercentile : "—"}
+                              </span>
+                            </span>
+                          ))}
+                        </span>
+
+                        <span className={styles.statFoot}>
+                          <span className={`${styles.dot} ${m.percentile.overallEstimate !== null ? styles.dotLight : styles.dotWarn}`} />
+                          {m.percentile.overallEstimate !== null
+                            ? "Estimated"
+                            : `${SECTIONS.filter((s) => m.sections[s].latestScore !== null).length}/3 sections attempted`}
+                        </span>
+                        <span className={styles.featuredDisclaimer}>{m.percentile.disclaimer}</span>
+                      </button>
+                    </RevealItem>
 
                     {/* 2. Accuracy */}
-                    <div
-                      className={`${styles.metricCard} ${styles.metricCardAccuracy}`}
-                      onClick={() => setInspectingMetricId("accuracy")}
-                      title="See how accuracy is calculated"
-                    >
-                      <div className={styles.cardTopRow}>
-                        <div className={styles.cardIconBox} style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                            <polyline points="17 6 23 6 23 12" />
-                          </svg>
-                        </div>
-                        <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <span>Inspect Data</span>
-                          {inspectIcon}
+                    <RevealItem className={styles.statCell}>
+                      <button
+                        type="button"
+                        className={`glass-card ${styles.statCard}`}
+                        data-tint="teal"
+                        onClick={() => setInspectingMetricId("accuracy")}
+                        title="See how accuracy is calculated"
+                      >
+                        <span className={styles.statLabel}>
+                          <TrendingUp size={16} strokeWidth={2.2} className={styles.iconTeal} aria-hidden="true" />
+                          Overall accuracy
+                          <ArrowUpRight size={16} className={styles.statArrow} aria-hidden="true" />
                         </span>
-                      </div>
-                      <div className={styles.cardName}>Overall Accuracy</div>
-                      <div className={styles.cardValueRow}>
-                        <div className={styles.cardValue} style={{ color: "#059669" }}>
-                          {m.accuracy.overall !== null ? `${m.accuracy.overall}%` : "—"}
-                        </div>
-                      </div>
-                      <div className={styles.cardSub}>
-                        {m.accuracy.overall !== null
-                          ? `${m.accuracy.correct} of ${m.accuracy.attempted} answered questions correct (timed tests)`
-                          : `Answer at least 5 questions in timed tests (PYQ sections or quizzes) to see your accuracy. So far: ${m.accuracy.attempted}.`}
-                      </div>
-                      <div className={styles.cardFooterStatus}>
-                        <div className={styles.statusIndicator}>
-                          <span className={`${styles.indicatorDot} ${m.accuracy.overall !== null && m.accuracy.overall >= 60 ? styles.dotSuccess : styles.dotDanger}`}></span>
-                          <span style={{ color: m.accuracy.overall !== null && m.accuracy.overall >= 60 ? "#059669" : "#DC2626" }}>
-                            {m.accuracy.overall === null ? "Not enough answers" : m.accuracy.overall >= 80 ? "Strong (80%+)" : m.accuracy.overall >= 60 ? "Moderate (60–80%)" : "Needs work (below 60%)"}
-                          </span>
-                        </div>
-                        <span className={styles.inspectArrow}>→</span>
-                      </div>
-                    </div>
+                        <span className={styles.statValueRow}>
+                          {m.accuracy.overall !== null ? (
+                            <>
+                              <CountUp to={m.accuracy.overall} className={styles.statValue} />
+                              <span className={styles.statUnitDark}>%</span>
+                            </>
+                          ) : (
+                            <span className={styles.statValue}>—</span>
+                          )}
+                        </span>
+                        <span className={styles.splitBar} aria-hidden="true">
+                          <span style={{ flexGrow: m.accuracy.correct || 0, background: "var(--data-emerald)" }} />
+                          <span style={{ flexGrow: Math.max(0, m.accuracy.attempted - m.accuracy.correct), background: "var(--data-coral)" }} />
+                          {m.accuracy.attempted === 0 && <span style={{ flexGrow: 1, background: "var(--line)" }} />}
+                        </span>
+                        <span className={styles.statSubDark}>
+                          {m.accuracy.overall !== null
+                            ? `${m.accuracy.correct} of ${m.accuracy.attempted} answered questions correct (timed tests)`
+                            : `Answer at least 5 questions in timed tests (PYQ sections or quizzes) to see your accuracy. So far: ${m.accuracy.attempted}.`}
+                        </span>
+                        <span className={styles.statFootDark}>
+                          <span className={`${styles.dot} ${m.accuracy.overall !== null && m.accuracy.overall >= 60 ? styles.dotGood : styles.dotBad}`} />
+                          {m.accuracy.overall === null ? "Not enough answers" : m.accuracy.overall >= 80 ? "Strong (80%+)" : m.accuracy.overall >= 60 ? "Moderate (60–80%)" : "Needs work (below 60%)"}
+                        </span>
+                      </button>
+                    </RevealItem>
 
                     {/* 3. Pace */}
-                    <div
-                      className={`${styles.metricCard} ${styles.metricCardSpeed}`}
-                      onClick={() => setInspectingMetricId("speed")}
-                      title="See how pace is calculated"
-                    >
-                      <div className={styles.cardTopRow}>
-                        <div className={styles.cardIconBox} style={{ background: "#EEF2FF", borderColor: "#C7D2FE" }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                          </svg>
-                        </div>
-                        <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <span>Inspect Pacing</span>
-                          {inspectIcon}
+                    <RevealItem className={styles.statCell}>
+                      <button
+                        type="button"
+                        className={`glass-card ${styles.statCard}`}
+                        data-tint="violet"
+                        onClick={() => setInspectingMetricId("speed")}
+                        title="See how pace is calculated"
+                      >
+                        <span className={styles.statLabel}>
+                          <Timer size={16} strokeWidth={2.2} className={styles.iconViolet} aria-hidden="true" />
+                          Pace per question
+                          <ArrowUpRight size={16} className={styles.statArrow} aria-hidden="true" />
                         </span>
-                      </div>
-                      <div className={styles.cardName}>Pace (Time per Question)</div>
-                      <div className={styles.cardValueRow}>
-                        <div className={styles.cardValue} style={{ color: "#4F46E5" }}>
-                          {pace !== null ? `${fmtPace(pace)} / Q` : "—"}
-                        </div>
-                      </div>
-                      <div className={styles.cardSub}>
-                        {pace !== null
-                          ? `CAT pace: ${fmtPace(bench)} / Q (120 min for 66 questions)`
-                          : "Take a timed test (PYQ section or quiz) to measure your pace."}
-                      </div>
-                      <div className={styles.cardFooterStatus}>
-                        <div className={styles.statusIndicator}>
-                          <span className={`${styles.indicatorDot} ${styles.dotInfo}`}></span>
-                          <span style={{ color: "#4F46E5" }}>
-                            {pace === null
-                              ? "No timed tests yet"
-                              : pace === bench
-                              ? "Exactly at CAT pace"
-                              : `${Math.abs(pace - bench)}s ${pace > bench ? "slower" : "faster"} than CAT pace`}
+                        <span className={styles.statValueRow}>
+                          <span className={styles.statValue}>{pace !== null ? fmtPace(pace) : "—"}</span>
+                          {pace !== null && <span className={styles.statUnitDark}>/ Q</span>}
+                        </span>
+                        {pace !== null && (
+                          <span className={styles.paceBars} aria-hidden="true">
+                            <span className={styles.paceRow}>
+                              <span className={styles.paceKey}>You</span>
+                              <span className={styles.paceTrack}>
+                                <span style={{ width: `${(pace / Math.max(pace, bench)) * 100}%`, background: "var(--data-violet)" }} />
+                              </span>
+                            </span>
+                            <span className={styles.paceRow}>
+                              <span className={styles.paceKey}>CAT</span>
+                              <span className={styles.paceTrack}>
+                                <span style={{ width: `${(bench / Math.max(pace, bench)) * 100}%`, background: "var(--ink-4)" }} />
+                              </span>
+                            </span>
                           </span>
-                        </div>
-                        <span className={styles.inspectArrow}>→</span>
-                      </div>
-                    </div>
+                        )}
+                        <span className={styles.statSubDark}>
+                          {pace !== null ? `CAT pace: ${fmtPace(bench)} / Q (120 min for 66 questions)` : "Take a timed test (PYQ section or quiz) to measure your pace."}
+                        </span>
+                        <span className={styles.statFootDark}>
+                          <span className={`${styles.dot} ${styles.dotInfo}`} />
+                          {pace === null
+                            ? "No timed tests yet"
+                            : pace === bench
+                            ? "Exactly at CAT pace"
+                            : `${Math.abs(pace - bench)}s ${pace > bench ? "slower" : "faster"} than CAT pace`}
+                        </span>
+                      </button>
+                    </RevealItem>
 
                     {/* 4. Negative marks */}
-                    <div
-                      className={`${styles.metricCard} ${styles.metricCardPenalty}`}
-                      onClick={() => setInspectingMetricId("negativeMarking")}
-                      title="See how negative marks are counted"
-                    >
-                      <div className={styles.cardTopRow}>
-                        <div className={styles.cardIconBox} style={{ background: "#FEF2F2", borderColor: "#FECACA" }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                            <line x1="12" y1="9" x2="12" y2="13" />
-                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                          </svg>
-                        </div>
-                        <span className={styles.inspectBadge} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <span>Inspect Loss</span>
-                          {inspectIcon}
+                    <RevealItem className={styles.statCell}>
+                      <button
+                        type="button"
+                        className={`glass-card ${styles.statCard}`}
+                        data-tint="coral"
+                        onClick={() => setInspectingMetricId("negativeMarking")}
+                        title="See how negative marks are counted"
+                      >
+                        <span className={styles.statLabel}>
+                          <CircleMinus size={16} strokeWidth={2.2} className={styles.iconCoral} aria-hidden="true" />
+                          Marks lost to negatives
+                          <ArrowUpRight size={16} className={styles.statArrow} aria-hidden="true" />
                         </span>
-                      </div>
-                      <div className={styles.cardName}>Marks Lost to Negatives</div>
-                      <div className={styles.cardValueRow}>
-                        <div className={styles.cardValue} style={{ color: "#DC2626" }}>
-                          {m.tests.pyq.length ? `−${m.accuracy.negativeMarksLost} marks` : "—"}
-                        </div>
-                      </div>
-                      <div className={styles.cardSub}>
-                        {m.tests.pyq.length
-                          ? `${m.accuracy.negativeMarksLost} wrong MCQ answer${m.accuracy.negativeMarksLost === 1 ? "" : "s"} in PYQ sections, −1 each`
-                          : "Attempt a PYQ section to track negative marking."}
-                      </div>
-                      <div className={styles.cardFooterStatus}>
-                        <div className={styles.statusIndicator}>
-                          <span className={`${styles.indicatorDot} ${styles.dotDanger}`}></span>
-                          <span style={{ color: "#DC2626" }}>
-                            {m.tests.pyq.length ? `Across ${m.tests.pyq.length} PYQ section${m.tests.pyq.length === 1 ? "" : "s"} · TITA has no penalty` : "No PYQ sections yet"}
+                        <span className={styles.statValueRow}>
+                          <span className={`${styles.statValue} ${styles.valueCoral}`}>{m.tests.pyq.length ? `−${m.accuracy.negativeMarksLost}` : "—"}</span>
+                          {m.tests.pyq.length > 0 && <span className={styles.statUnitDark}>marks</span>}
+                        </span>
+                        {recentPyqs.length > 0 && (
+                          <span className={styles.miniBars} aria-hidden="true">
+                            {recentPyqs.map((t) => (
+                              <span key={t.attemptId} style={{ height: `${Math.max(8, (t.wrong / recentPyqMaxWrong) * 100)}%` }} />
+                            ))}
                           </span>
-                        </div>
-                        <span className={styles.inspectArrow}>→</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                        )}
+                        <span className={styles.statSubDark}>
+                          {m.tests.pyq.length
+                            ? `${m.accuracy.negativeMarksLost} wrong MCQ answer${m.accuracy.negativeMarksLost === 1 ? "" : "s"} in PYQ sections, −1 each`
+                            : "Attempt a PYQ section to track negative marking."}
+                        </span>
+                        <span className={styles.statFootDark}>
+                          <span className={`${styles.dot} ${styles.dotBad}`} />
+                          {m.tests.pyq.length ? `Across ${m.tests.pyq.length} PYQ section${m.tests.pyq.length === 1 ? "" : "s"} · TITA has no penalty` : "No PYQ sections yet"}
+                        </span>
+                      </button>
+                    </RevealItem>
+                  </RevealGroup>
+                </section>
 
                 {/* Study habits */}
-                <div>
-                  <div className={styles.sectionHeaderRow}>
-                    <h2 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      <span>Study Habits & Consistency</span>
+                <section aria-labelledby="habits-heading">
+                  <div className={styles.sectionHead}>
+                    <h2 id="habits-heading" className={styles.sectionTitle}>
+                      Study habits
                     </h2>
-                    <div className={styles.interactiveHint}>
-                      <span>Click for day-by-day logs</span>
-                    </div>
+                    <span className={styles.sectionMeta}>Click for day-by-day logs</span>
                   </div>
 
-                  <div className={styles.habitsGrid}>
-                    {/* Daily average */}
-                    <div className={styles.habitCard} onClick={() => setInspectingMetricId("dailyAverage")}>
-                      <div className={styles.habitIconBox} style={{ background: "#EFF6FF", color: "#2563EB" }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                      </div>
-                      <div className={styles.habitInfo}>
-                        <div className={styles.habitTitle}>Daily Average</div>
-                        <div className={styles.habitValue}>{fmtDuration(Math.round(windowTotalSeconds / windowDays))} / day</div>
-                        <div className={styles.habitMeta}>{fmtDuration(windowTotalSeconds)} over the last {windowDays} days</div>
-                      </div>
-                    </div>
+                  <RevealGroup className={styles.habitsGrid}>
+                    <RevealItem>
+                      <button type="button" className={`glass-card ${styles.habitCard}`} data-tint="blue" onClick={() => setInspectingMetricId("dailyAverage")}>
+                        <span className={styles.habitTitle}>
+                          <Clock size={16} strokeWidth={2.2} className={styles.iconBlue} aria-hidden="true" />
+                          Daily average
+                        </span>
+                        <span className={styles.habitValue}>
+                          {fmtDuration(Math.round(windowTotalSeconds / windowDays))}
+                          <small> / day</small>
+                        </span>
+                        <span className={styles.habitMeta}>
+                          {fmtDuration(windowTotalSeconds)} over the last {windowDays} days
+                        </span>
+                      </button>
+                    </RevealItem>
 
-                    {/* Weekly volume */}
-                    <div className={styles.habitCard} onClick={() => setInspectingMetricId("weeklyVolume")}>
-                      <div className={styles.habitIconBox} style={{ background: "#ECFDF5", color: "#059669" }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                      </div>
-                      <div className={styles.habitInfo}>
-                        <div className={styles.habitTitle}>Last 7 Days</div>
-                        <div className={styles.habitValue}>{fmtDuration(m.studyTime.last7DaysSeconds)}</div>
-                        <div className={styles.habitMeta}>Today: {fmtDuration(m.studyTime.todaySeconds)}</div>
-                      </div>
-                    </div>
+                    <RevealItem>
+                      <button type="button" className={`glass-card ${styles.habitCard}`} data-tint="amber" onClick={() => setInspectingMetricId("weeklyVolume")}>
+                        <span className={styles.habitTitle}>
+                          <CalendarDays size={16} strokeWidth={2.2} className={styles.iconAmber} aria-hidden="true" />
+                          Last 7 days
+                        </span>
+                        <span className={styles.habitValueRow}>
+                          <span className={styles.habitValue}>{fmtDuration(m.studyTime.last7DaysSeconds)}</span>
+                          <span className={styles.weekBars} aria-hidden="true">
+                            {last7.map((d) => (
+                              <span key={d.date} style={{ height: `${Math.max(6, ((d.learningSeconds + d.practiceSeconds) / last7Max) * 100)}%` }} />
+                            ))}
+                          </span>
+                        </span>
+                        <span className={styles.habitMeta}>Today: {fmtDuration(m.studyTime.todaySeconds)}</span>
+                      </button>
+                    </RevealItem>
 
-                    {/* Consistency */}
-                    <div className={styles.habitCard} onClick={() => setInspectingMetricId("consistency")}>
-                      <div className={styles.habitIconBox} style={{ background: "#FAF5FF", color: "#9333EA" }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </div>
-                      <div className={styles.habitInfo}>
-                        <div className={styles.habitTitle}>Consistency</div>
-                        <div className={styles.habitValue}>{m.consistency.activeDaysLast14} / 14 days</div>
-                        <div className={styles.habitMeta}>{m.consistency.score}% of the last 14 days active</div>
-                      </div>
-                    </div>
+                    <RevealItem>
+                      <button type="button" className={`glass-card ${styles.habitCard}`} data-tint="teal" onClick={() => setInspectingMetricId("consistency")}>
+                        <span className={styles.habitTitle}>
+                          <CircleCheck size={16} strokeWidth={2.2} className={styles.iconTeal} aria-hidden="true" />
+                          Consistency
+                        </span>
+                        <span className={styles.habitValue}>
+                          {m.consistency.activeDaysLast14}
+                          <small> / 14 days</small>
+                        </span>
+                        <span className={styles.dayCells} aria-hidden="true">
+                          {last14.map((d) => (
+                            <span key={d.date} className={d.learningSeconds + d.practiceSeconds >= MIN_ACTIVE_SECONDS ? styles.dayOn : ""} />
+                          ))}
+                        </span>
+                        <span className={styles.habitMeta}>{m.consistency.score}% of the last 14 days active</span>
+                      </button>
+                    </RevealItem>
 
-                    {/* Streak */}
-                    <div className={styles.habitCard} onClick={() => setInspectingMetricId("streak")}>
-                      <div className={styles.habitIconBox} style={{ background: "#FFF7ED", color: "#EA580C" }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c3.5 0 5-2.5 5-5.5 0-3-2-5.5-4-7.5C11 7 9 9 9 11c0 1.5.5 2.5-.5 3.5z" />
-                          <path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-7 5-9 1 2 2 3 3 0z" />
-                        </svg>
-                      </div>
-                      <div className={styles.habitInfo}>
-                        <div className={styles.habitTitle}>Active Study Streak</div>
-                        <div className={styles.habitValue}>
-                          {m.streak.current} day{m.streak.current === 1 ? "" : "s"}
-                        </div>
-                        <div className={styles.habitMeta}>
+                    <RevealItem>
+                      <button type="button" className={`glass-card ${styles.habitCard}`} data-tint="coral" onClick={() => setInspectingMetricId("streak")}>
+                        <span className={styles.habitTitle}>
+                          <Flame size={16} strokeWidth={2.2} className={styles.iconCoral} aria-hidden="true" />
+                          Study streak
+                        </span>
+                        <span className={styles.habitValue}>
+                          {m.streak.current}
+                          <small> day{m.streak.current === 1 ? "" : "s"}</small>
+                        </span>
+                        <span className={styles.streakTrack} aria-hidden="true">
+                          <span style={{ width: `${m.streak.best > 0 ? Math.min(100, (m.streak.current / m.streak.best) * 100) : 0}%` }} />
+                        </span>
+                        <span className={styles.habitMeta}>
                           Best: {m.streak.best} day{m.streak.best === 1 ? "" : "s"}
                           {!m.streak.activeToday && m.streak.current > 0 ? " · study today to keep it" : ""}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                        </span>
+                      </button>
+                    </RevealItem>
+                  </RevealGroup>
+                </section>
 
                 {/* Charts */}
                 <div className={styles.chartsGrid}>
-                  {/* Chart 1: daily study minutes */}
-                  <div className={styles.chartCard}>
-                    <div className={styles.chartCardHeader}>
-                      <div className={styles.chartTitleArea}>
-                        <h3 className={styles.chartTitle}>Daily Study Time (Minutes)</h3>
-                        <p className={styles.chartSubtitle}>
-                          Lessons vs practice (quizzes, PYQs, lesson practice), last {windowDays} days
+                  {/* Main chart: daily study minutes */}
+                  <Reveal className={`${styles.panel} ${styles.mainChartPanel}`}>
+                    <div className={styles.panelHead}>
+                      <div>
+                        <h3 className={styles.panelTitle}>Daily study time</h3>
+                        <p className={styles.panelSub}>
+                          Minutes of lessons vs practice (quizzes, PYQs, lesson practice), last {windowDays} days
                           {timeframe === "all" ? " (daily history covers the last 30 days)" : ""}
                         </p>
                       </div>
-                      <div style={{ display: "flex", gap: "12px", fontSize: "12px", fontWeight: 600 }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px", color: "#2563EB" }}>
-                          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#2563EB" }}></span>
+                      <div className={styles.legend}>
+                        <span className={styles.legendItem}>
+                          <span className={styles.legendSwatch} style={{ background: LESSON_COLOR }} />
                           Lessons
                         </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px", color: "#9333EA" }}>
-                          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#9333EA" }}></span>
+                        <span className={styles.legendItem}>
+                          <span className={styles.legendSwatch} style={{ background: PRACTICE_COLOR }} />
                           Practice
                         </span>
                       </div>
                     </div>
 
-                    <div className={styles.chartContainer}>
+                    <div className={styles.mainChart}>
                       {windowTotalSeconds === 0 ? (
                         <div className={styles.chartEmpty}>
                           No study time recorded in the last {windowDays} days. Open a lesson or a PYQ section and your time will appear here.
@@ -838,91 +769,98 @@ function AnalyticsPageContent() {
                       ) : (
                         mounted && (
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 11 }} />
-                              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 12 }} unit="m" allowDecimals={false} />
+                            <BarChart data={activityData} margin={{ top: 10, right: 6, left: -18, bottom: 0 }} barCategoryGap="22%">
+                              <defs>
+                                <linearGradient id="anLessonFill" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#60a5fa" />
+                                  <stop offset="100%" stopColor={LESSON_COLOR} />
+                                </linearGradient>
+                                <linearGradient id="anPracticeFill" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#fbbf24" />
+                                  <stop offset="100%" stopColor={PRACTICE_COLOR} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 4" vertical={false} stroke="#e4e9f2" />
+                              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={AXIS_TICK} minTickGap={12} />
+                              <YAxis axisLine={false} tickLine={false} tick={AXIS_TICK} unit="m" allowDecimals={false} />
                               <Tooltip
-                                cursor={{ fill: "rgba(241, 245, 249, 0.6)" }}
-                                contentStyle={{ background: "#ffffff", borderRadius: "10px", border: "1px solid #E2E8F0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", fontSize: "12px" }}
+                                cursor={{ fill: "rgba(59, 130, 246, 0.06)" }}
+                                contentStyle={TOOLTIP_STYLE}
                                 formatter={(value: any, name: any) => [`${value} min`, name]}
                               />
-                              <Bar dataKey="learning" name="Lessons" fill="#2563EB" stackId="a" />
-                              <Bar dataKey="practice" name="Practice" fill="#9333EA" radius={[4, 4, 0, 0]} stackId="a" />
+                              <Bar dataKey="learning" name="Lessons" fill="url(#anLessonFill)" stackId="a" />
+                              <Bar dataKey="practice" name="Practice" fill="url(#anPracticeFill)" radius={[5, 5, 0, 0]} stackId="a" />
                             </BarChart>
                           </ResponsiveContainer>
                         )
                       )}
                     </div>
-                  </div>
+                  </Reveal>
 
-                  {/* Chart 2: study time by section */}
-                  <div className={styles.chartCard}>
-                    <div className={styles.chartCardHeader}>
-                      <div className={styles.chartTitleArea}>
-                        <h3 className={styles.chartTitle}>Study Time by Section</h3>
-                        <p className={styles.chartSubtitle}>All-time study time recorded in each course</p>
+                  {/* Study time by section */}
+                  <Reveal delay={0.08} className={styles.panel}>
+                    <div className={styles.panelHead}>
+                      <div>
+                        <h3 className={styles.panelTitle}>Time by section</h3>
+                        <p className={styles.panelSub}>All-time study time recorded in each course</p>
                       </div>
                     </div>
 
                     {knowledgeData.length === 0 ? (
-                      <div className={styles.chartContainer} style={{ height: "200px" }}>
+                      <div className={styles.donutBox}>
                         <div className={styles.chartEmpty}>No course study time recorded yet. Start a lesson in any course to see where your time goes.</div>
                       </div>
                     ) : (
                       <>
-                        <div className={styles.chartContainer} style={{ height: "200px" }}>
+                        <div className={styles.donutBox}>
                           {mounted && (
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
-                                <Pie data={knowledgeData} innerRadius={55} outerRadius={80} paddingAngle={knowledgeData.length > 1 ? 5 : 0} dataKey="value">
+                                <Pie
+                                  data={knowledgeData}
+                                  innerRadius="62%"
+                                  outerRadius="92%"
+                                  paddingAngle={knowledgeData.length > 1 ? 3 : 0}
+                                  cornerRadius={4}
+                                  stroke="none"
+                                  dataKey="value"
+                                >
                                   {knowledgeData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                   ))}
                                 </Pie>
-                                <Tooltip
-                                  contentStyle={{ background: "#ffffff", borderRadius: "10px", border: "1px solid #E2E8F0", fontSize: "12px" }}
-                                  formatter={(value: any, name: any) => [`${value}% of course study time`, name]}
-                                />
+                                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: any, name: any) => [`${value}% of course study time`, name]} />
                               </PieChart>
                             </ResponsiveContainer>
                           )}
                         </div>
-                        <div className={styles.donutLegend}>
+                        <ul className={styles.donutLegend}>
                           {knowledgeData.map((item) => (
-                            <div key={item.name} className={styles.donutLegendItem}>
-                              <div className={styles.legendLeft}>
-                                <span className={styles.legendColorDot} style={{ background: item.color }}></span>
+                            <li key={item.name} className={styles.donutLegendItem}>
+                              <span className={styles.legendLeft}>
+                                <span className={styles.legendSwatch} style={{ background: item.color }} />
                                 <span className={styles.legendName}>{item.name}</span>
-                              </div>
-                              <div className={styles.legendRight}>
+                              </span>
+                              <span className={styles.legendRight}>
                                 <span>{item.hours}</span>
                                 <span className={styles.legendPercent}>{item.value}%</span>
-                              </div>
-                            </div>
+                              </span>
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </>
                     )}
-                  </div>
+                  </Reveal>
                 </div>
 
-                {/* Section breakdown: accuracy by section + PYQ scores */}
-                <div className={styles.chartCard}>
-                  <div className={styles.chartCardHeader}>
-                    <div className={styles.chartTitleArea}>
-                      <h3 className={styles.chartTitle}>Section Breakdown</h3>
-                      <p className={styles.chartSubtitle}>
-                        Accuracy in timed tests per section (bar), with your latest full-section PYQ score and its estimated percentile. All time.
+                {/* Section breakdown */}
+                <Reveal className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <div>
+                      <h3 className={styles.panelTitle}>Section breakdown</h3>
+                      <p className={styles.panelSub}>
+                        Accuracy in timed tests per section, with your latest full-section PYQ score and its estimated percentile. All time.
                       </p>
-                    </div>
-                    <div className={styles.difficultyLegends}>
-                      {SECTIONS.map((s) => (
-                        <div key={s} className={styles.diffLegendTag}>
-                          <span style={{ width: 10, height: 10, borderRadius: 2, background: SECTION_COLORS[s] }}></span>
-                          {s}
-                        </div>
-                      ))}
                     </div>
                   </div>
 
@@ -933,52 +871,71 @@ function AnalyticsPageContent() {
                       { href: "/browse#pyq-section", label: "Browse PYQ sections" }
                     )
                   ) : (
-                    <div className={styles.difficultyList}>
+                    <RevealGroup className={styles.sectionGrid}>
                       {SECTIONS.map((s) => {
                         const x = m.sections[s];
                         return (
-                          <div key={s} className={styles.difficultyItem}>
-                            <div className={styles.difficultyHeader}>
-                              <span>{SECTION_NAMES[s]} ({s})</span>
-                              <span style={{ color: "#64748B", fontSize: "12px" }}>
-                                {x.accuracy !== null ? `Accuracy ${x.accuracy}% (${x.correct}/${x.attempted})` : "No timed answers yet"}
-                                {" | "}
-                                {x.latestScore !== null ? `Latest PYQ ${x.latestScore}/${x.maxScore}` : `PYQ attempts: ${x.pyqAttempts}`}
-                                {x.bestScore !== null && x.bestScore !== x.latestScore ? ` (best ${x.bestScore})` : ""}
-                                {x.estimatedPercentile !== null ? ` | Est. ${x.estimatedPercentile} %ile` : ""}
-                              </span>
+                          <RevealItem key={s}>
+                            <div className={`glass-card ${styles.sectionCard}`} data-tint={SECTION_TINTS[s]} style={{ "--sec": SECTION_COLORS[s] } as React.CSSProperties}>
+                              <div className={styles.sectionCardTop}>
+                                <span className={styles.sectionCode}>{s}</span>
+                                <span className={styles.sectionName}>{SECTION_NAMES[s]}</span>
+                              </div>
+                              <div className={styles.sectionAcc}>
+                                <span className={styles.sectionAccValue}>{x.accuracy !== null ? `${x.accuracy}%` : "—"}</span>
+                                <span className={styles.sectionAccLabel}>
+                                  {x.accuracy !== null ? `accuracy · ${x.correct}/${x.attempted}` : "No timed answers yet"}
+                                </span>
+                              </div>
+                              <div className={styles.sectionBar} title={x.accuracy !== null ? `Accuracy: ${x.accuracy}%` : "No data"}>
+                                <span style={{ width: `${x.accuracy ?? 0}%` }} />
+                              </div>
+                              <dl className={styles.sectionStats}>
+                                <div>
+                                  <dt>Latest PYQ</dt>
+                                  <dd>{x.latestScore !== null ? `${x.latestScore}/${x.maxScore}` : "—"}</dd>
+                                </div>
+                                <div>
+                                  <dt>Best</dt>
+                                  <dd>{x.bestScore !== null ? x.bestScore : "—"}</dd>
+                                </div>
+                                <div>
+                                  <dt>Est. %ile</dt>
+                                  <dd>{x.estimatedPercentile !== null ? x.estimatedPercentile : "—"}</dd>
+                                </div>
+                              </dl>
+                              {x.latestScore === null && <span className={styles.sectionNote}>PYQ attempts: {x.pyqAttempts}</span>}
                             </div>
-                            <div className={styles.stackedBar}>
-                              <div style={{ width: `${x.accuracy ?? 0}%`, background: SECTION_COLORS[s] }} title={x.accuracy !== null ? `Accuracy: ${x.accuracy}%` : "No data"} />
-                            </div>
-                          </div>
+                          </RevealItem>
                         );
                       })}
-                    </div>
+                    </RevealGroup>
                   )}
                   {anyPercentileShown && <p className={styles.disclaimerText}>Estimated percentiles: {m.percentile.disclaimer}</p>}
-                </div>
+                </Reveal>
               </>
             )}
 
             {/* TAB 2: COURSES & CONCEPTS */}
             {activeTab === "topics" && (
               <>
-                <div className={styles.tableCard}>
-                  <div className={styles.tableCardHeader}>
-                    <div className={styles.chartTitleArea}>
-                      <h2 className={styles.chartTitle}>Course Progress</h2>
-                      <p className={styles.chartSubtitle}>Lessons completed, study time and points earned in each course you have started.</p>
+                <Reveal className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <div>
+                      <h2 className={styles.panelTitle}>Course progress</h2>
+                      <p className={styles.panelSub}>Lessons completed, study time and points earned in each course you have started.</p>
                     </div>
 
-                    <div className={styles.sectionFilterPills}>
+                    <div className={styles.filterChips} role="group" aria-label="Filter by section">
                       {(["ALL", "QA", "DILR", "VARC"] as const).map((sec) => (
                         <button
                           key={sec}
                           onClick={() => setSectionFilter(sec)}
-                          className={`${styles.sectionFilterBtn} ${sectionFilter === sec ? styles.sectionFilterBtnActive : ""}`}
+                          aria-pressed={sectionFilter === sec}
+                          className={`${styles.filterChip} ${sectionFilter === sec ? styles.filterChipActive : ""}`}
                         >
-                          {sec}
+                          {sec !== "ALL" && <span className={styles.chipDot} style={{ background: SECTION_COLORS[sec] }} />}
+                          {sec === "ALL" ? "All" : sec}
                         </button>
                       ))}
                     </div>
@@ -991,66 +948,60 @@ function AnalyticsPageContent() {
                       { href: "/topics", label: "Browse courses" }
                     )
                   ) : (
-                    <div className={styles.responsiveTableWrap}>
-                      <table className={styles.masteryTable}>
+                    <div className={styles.tableWrap}>
+                      <table className={styles.dataTable}>
                         <thead>
                           <tr>
                             <th>Course</th>
                             <th>Section</th>
                             <th>Status</th>
                             <th>Progress</th>
-                            <th>Lessons</th>
-                            <th>Study Time</th>
-                            <th>Points</th>
-                            <th>Action</th>
+                            <th className={styles.num}>Lessons</th>
+                            <th className={styles.num}>Study time</th>
+                            <th className={styles.num}>Points</th>
+                            <th aria-label="Action" />
                           </tr>
                         </thead>
                         <tbody>
                           {filteredTopics.map((t) => (
                             <tr key={t.topicId}>
                               <td>
-                                <div className={styles.topicNameCell}>
-                                  <Link href={`/topics/${t.topicId}`} className={styles.topicTitle} style={{ textDecoration: "none" }}>
-                                    {t.title}
-                                  </Link>
-                                </div>
+                                <Link href={`/topics/${t.topicId}`} className={styles.rowTitleLink}>
+                                  {t.title}
+                                </Link>
                               </td>
                               <td>
-                                <span className={styles.topicSectionBadge}>{t.section ?? "Other"}</span>
+                                <SectionChip section={t.section} />
                               </td>
                               <td>
                                 <span
-                                  className={`${styles.levelTag} ${
-                                    t.progressPercent >= 100 ? styles.levelStrong : t.progressPercent > 0 ? styles.levelModerate : styles.levelAttention
+                                  className={`${styles.statusTag} ${
+                                    t.progressPercent >= 100 ? styles.tagGood : t.progressPercent > 0 ? styles.tagInfo : styles.tagMuted
                                   }`}
                                 >
                                   {t.progressPercent >= 100 ? "Completed" : t.progressPercent > 0 ? "In progress" : "Not started"}
                                 </span>
                               </td>
                               <td>
-                                <div className={styles.accuracyBarWrap}>
-                                  <div className={styles.accuracyBarBg}>
-                                    <div className={styles.accuracyBarFill} style={{ width: `${Math.min(100, t.progressPercent)}%`, background: "#2563EB" }} />
+                                <div className={styles.barCell}>
+                                  <div className={styles.barTrack}>
+                                    <div
+                                      className={styles.barFill}
+                                      style={{ width: `${Math.min(100, t.progressPercent)}%`, background: t.section ? SECTION_COLORS[t.section] : "var(--data-blue)" }}
+                                    />
                                   </div>
-                                  <span className={styles.accuracyPercent}>{Math.round(t.progressPercent)}%</span>
+                                  <span className={styles.barValue}>{Math.round(t.progressPercent)}%</span>
                                 </div>
                               </td>
-                              <td>
+                              <td className={styles.num}>
                                 {t.lessonsCompleted} / {t.totalLessons}
                               </td>
-                              <td>{fmtDuration(t.studySeconds)}</td>
-                              <td>{t.pointsEarned}</td>
+                              <td className={styles.num}>{fmtDuration(t.studySeconds)}</td>
+                              <td className={styles.num}>{t.pointsEarned}</td>
                               <td>
-                                <button
-                                  className={styles.drillTableBtn}
-                                  onClick={() => handleDrill(t.topicId, t.title)}
-                                  title={`Generate a practice quiz for ${t.title}`}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-                                >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                                  </svg>
-                                  <span>Drill Topic</span>
+                                <button className={styles.rowAction} onClick={() => handleDrill(t.topicId, t.title)} title={`Generate a practice quiz for ${t.title}`}>
+                                  <Zap size={14} strokeWidth={2.4} aria-hidden="true" />
+                                  <span>Drill topic</span>
                                 </button>
                               </td>
                             </tr>
@@ -1059,14 +1010,14 @@ function AnalyticsPageContent() {
                       </table>
                     </div>
                   )}
-                </div>
+                </Reveal>
 
-                <div className={styles.tableCard}>
-                  <div className={styles.tableCardHeader}>
-                    <div className={styles.chartTitleArea}>
-                      <h2 className={styles.chartTitle}>Concept Accuracy: Weak & Strong Areas</h2>
-                      <p className={styles.chartSubtitle}>
-                        Concepts with at least 3 answered questions across quizzes and PYQs. Listed when accuracy is below 60% (needs work) or 80% and above (strong).
+                <Reveal className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <div>
+                      <h2 className={styles.panelTitle}>Concept accuracy</h2>
+                      <p className={styles.panelSub}>
+                        Concepts with at least 3 answered questions across quizzes and PYQs: below 60% needs work, 80% and above is strong.
                       </p>
                     </div>
                   </div>
@@ -1079,57 +1030,51 @@ function AnalyticsPageContent() {
                         : "None of your concepts is below 60% or at 80%+ yet (or none has 3 answers). Keep practising to build a clearer picture."
                     )
                   ) : (
-                    <div className={styles.responsiveTableWrap}>
-                      <table className={styles.masteryTable}>
+                    <div className={styles.tableWrap}>
+                      <table className={styles.dataTable}>
                         <thead>
                           <tr>
                             <th>Concept</th>
                             <th>Section</th>
                             <th>Tier</th>
                             <th>Accuracy</th>
-                            <th>Correct / Answered</th>
-                            <th>Action</th>
+                            <th className={styles.num}>Correct / answered</th>
+                            <th aria-label="Action" />
                           </tr>
                         </thead>
                         <tbody>
                           {concepts.map((c) => {
                             const topic = topicForSection(c.section);
+                            const tierColor = c.tier === "strong" ? "var(--data-emerald)" : c.tier === "weak" ? "var(--data-coral)" : "var(--data-amber)";
                             return (
                               <tr key={`${c.tier}-${c.concept}-${c.section}`}>
                                 <td>
-                                  <div className={styles.topicNameCell}>
-                                    <span className={styles.topicTitle}>{c.concept}</span>
-                                  </div>
+                                  <span className={styles.rowTitle}>{c.concept}</span>
                                 </td>
+                                <td>{c.section ? <SectionChip section={c.section} /> : <span className={styles.muted}>—</span>}</td>
                                 <td>
-                                  <span className={styles.topicSectionBadge}>{c.section ?? "—"}</span>
-                                </td>
-                                <td>
-                                  <span className={`${styles.levelTag} ${c.tier === "strong" ? styles.levelStrong : styles.levelAttention}`}>
+                                  <span className={`${styles.statusTag} ${c.tier === "strong" ? styles.tagGood : c.tier === "weak" ? styles.tagBad : styles.tagWarn}`}>
                                     {c.tier === "strong" ? "Strong" : c.tier === "weak" ? "Needs work" : "Steady"}
                                   </span>
                                 </td>
                                 <td>
-                                  <div className={styles.accuracyBarWrap}>
-                                    <div className={styles.accuracyBarBg}>
-                                      <div
-                                        className={styles.accuracyBarFill}
-                                        style={{ width: `${c.accuracy}%`, background: c.tier === "strong" ? "#0D9488" : c.tier === "weak" ? "#EF4444" : "#F59E0B" }}
-                                      />
+                                  <div className={styles.barCell}>
+                                    <div className={styles.barTrack}>
+                                      <div className={styles.barFill} style={{ width: `${c.accuracy}%`, background: tierColor }} />
                                     </div>
-                                    <span className={styles.accuracyPercent}>{c.accuracy}%</span>
+                                    <span className={styles.barValue}>{c.accuracy}%</span>
                                   </div>
                                 </td>
-                                <td>
+                                <td className={styles.num}>
                                   {c.correct} / {c.attempted}
                                 </td>
                                 <td>
                                   {topic ? (
-                                    <Link href={`/topics/${topic.topicId}`} className={styles.drillTableBtn} style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none" }}>
+                                    <Link href={`/topics/${topic.topicId}`} className={styles.rowAction}>
                                       <span>Open {c.section} course</span>
                                     </Link>
                                   ) : (
-                                    <span style={{ color: "#94A3B8" }}>—</span>
+                                    <span className={styles.muted}>—</span>
                                   )}
                                 </td>
                               </tr>
@@ -1139,27 +1084,28 @@ function AnalyticsPageContent() {
                       </table>
                     </div>
                   )}
-                </div>
+                </Reveal>
               </>
             )}
 
             {/* TAB 3: TEST HISTORY */}
             {activeTab === "mocks" && (
-              <div className={styles.tableCard}>
-                <div className={styles.tableCardHeader}>
-                  <div className={styles.chartTitleArea}>
-                    <h2 className={styles.chartTitle}>Test History: PYQ Sections & Quizzes</h2>
-                    <p className={styles.chartSubtitle}>
-                      Every submitted CAT past-year (PYQ) section, module quiz, grand quiz and lesson practice, newest first ({TIMEFRAME_LABELS[timeframe].toLowerCase()}).
+              <Reveal className={styles.panel}>
+                <div className={styles.panelHead}>
+                  <div>
+                    <h2 className={styles.panelTitle}>Test history</h2>
+                    <p className={styles.panelSub}>
+                      Every submitted PYQ section, module quiz, grand quiz and lesson practice, newest first ({TIMEFRAME_LABELS[timeframe].toLowerCase()}).
                     </p>
                   </div>
 
-                  <div className={styles.sectionFilterPills}>
+                  <div className={styles.filterChips} role="group" aria-label="Filter by test type">
                     {KIND_FILTERS.map((k) => (
                       <button
                         key={k.id}
                         onClick={() => setKindFilter(k.id)}
-                        className={`${styles.sectionFilterBtn} ${kindFilter === k.id ? styles.sectionFilterBtnActive : ""}`}
+                        aria-pressed={kindFilter === k.id}
+                        className={`${styles.filterChip} ${kindFilter === k.id ? styles.filterChipActive : ""}`}
                       >
                         {k.label}
                       </button>
@@ -1183,44 +1129,59 @@ function AnalyticsPageContent() {
                 ) : (
                   <>
                     {/* Score trend (% of maximum, oldest to newest) */}
-                    <p className={styles.chartSubtitle} style={{ margin: "0 0 8px 0" }}>
-                      Score trend (% of maximum marks, oldest to newest)
-                    </p>
-                    <div style={{ height: "240px", width: "100%", marginBottom: "16px" }}>
-                      {mounted && (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={scoreTrend}>
-                            <defs>
-                              <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                            <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
-                            <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} unit="%" />
-                            <Tooltip
-                              contentStyle={{ background: "#ffffff", borderRadius: "10px", border: "1px solid #E2E8F0" }}
-                              labelFormatter={(_: any, payload: any) => payload?.[0]?.payload?.name ?? ""}
-                              formatter={(value: any) => [`${value}%`, "Score"]}
-                            />
-                            <Area type="monotone" dataKey="percentage" stroke="#2563EB" strokeWidth={3} fillOpacity={1} fill="url(#scoreGradient)" name="Score %" />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      )}
+                    <div className={styles.trendBox}>
+                      <p className={styles.trendLabel}>Score trend · % of maximum marks, oldest to newest</p>
+                      <div className={styles.trendChart}>
+                        {mounted && (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={scoreTrend} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="anScoreStroke" x1="0" y1="0" x2="1" y2="0">
+                                  <stop offset="0%" stopColor="#2563eb" />
+                                  <stop offset="60%" stopColor="#3b82f6" />
+                                  <stop offset="100%" stopColor="#06b6d4" />
+                                </linearGradient>
+                                <linearGradient id="anScoreFill" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.28} />
+                                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 4" vertical={false} stroke="#e4e9f2" />
+                              <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} minTickGap={12} />
+                              <YAxis domain={[0, 100]} tick={AXIS_TICK} axisLine={false} tickLine={false} unit="%" />
+                              <Tooltip
+                                contentStyle={TOOLTIP_STYLE}
+                                labelFormatter={(_: any, payload: any) => payload?.[0]?.payload?.name ?? ""}
+                                formatter={(value: any) => [`${value}%`, "Score"]}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="percentage"
+                                stroke="url(#anScoreStroke)"
+                                strokeWidth={3}
+                                fillOpacity={1}
+                                fill="url(#anScoreFill)"
+                                name="Score %"
+                                dot={{ r: 3, fill: "#fff", stroke: "#3b82f6", strokeWidth: 2 }}
+                                activeDot={{ r: 5, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
                     </div>
 
-                    <div className={styles.responsiveTableWrap}>
-                      <table className={styles.masteryTable}>
+                    <div className={styles.tableWrap}>
+                      <table className={styles.dataTable}>
                         <thead>
                           <tr>
                             <th>Test</th>
                             <th>Type</th>
                             <th>Date</th>
-                            <th>Score</th>
-                            <th>Accuracy</th>
-                            <th>Pace</th>
-                            <th>Est. %ile (PYQ)</th>
+                            <th className={styles.num}>Score</th>
+                            <th className={styles.num}>Accuracy</th>
+                            <th className={styles.num}>Pace</th>
+                            <th className={styles.num}>Est. %ile</th>
                             <th>Result</th>
                           </tr>
                         </thead>
@@ -1228,37 +1189,38 @@ function AnalyticsPageContent() {
                           {visibleTests.map((t) => (
                             <tr key={t.attemptId}>
                               <td>
-                                <strong style={{ color: "#0F172A" }}>{t.title}</strong>
-                              </td>
-                              <td>
-                                <span className={styles.topicSectionBadge}>{KIND_LABELS[t.kind]}</span>
-                              </td>
-                              <td style={{ color: "#64748B" }}>{fmtDate(t.submittedAt)}</td>
-                              <td>
-                                <span style={{ fontWeight: 700, color: "#2563EB" }}>
-                                  {t.score} / {t.maxScore}
+                                <span className={styles.rowTitleWithDot}>
+                                  <span className={styles.chipDot} style={{ background: t.section ? SECTION_COLORS[t.section] : "#98a1b5" }} />
+                                  <span className={styles.rowTitle}>{t.title}</span>
                                 </span>
                               </td>
-                              <td>{t.accuracy !== null ? `${t.accuracy}% (${t.correct}/${t.attempted})` : `0/${t.questionCount} answered`}</td>
-                              <td>{t.secondsPerQuestion !== null ? `${fmtPace(t.secondsPerQuestion)} / Q` : "—"}</td>
                               <td>
+                                <span className={styles.kindTag}>{KIND_LABELS[t.kind]}</span>
+                              </td>
+                              <td className={styles.muted}>{fmtDate(t.submittedAt)}</td>
+                              <td className={styles.num}>
+                                <span className={styles.scoreValue}>
+                                  {t.score} <span className={styles.muted}>/ {t.maxScore}</span>
+                                </span>
+                              </td>
+                              <td className={styles.num}>{t.accuracy !== null ? `${t.accuracy}% (${t.correct}/${t.attempted})` : `0/${t.questionCount} answered`}</td>
+                              <td className={styles.num}>{t.secondsPerQuestion !== null ? `${fmtPace(t.secondsPerQuestion)} / Q` : "—"}</td>
+                              <td className={styles.num}>
                                 {t.estimatedPercentile !== null ? (
-                                  <span style={{ fontWeight: 700, color: "#059669" }} title={m.percentile.disclaimer}>
-                                    {t.estimatedPercentile} (est.)
+                                  <span className={styles.pctValue} title={m.percentile.disclaimer}>
+                                    {t.estimatedPercentile} <span className={styles.muted}>(est.)</span>
                                   </span>
                                 ) : (
-                                  <span style={{ color: "#94A3B8" }} title={t.kind === "pyq" ? "Only full PYQ sections get an estimate" : "Estimates are for PYQ sections only"}>
+                                  <span className={styles.muted} title={t.kind === "pyq" ? "Only full PYQ sections get an estimate" : "Estimates are for PYQ sections only"}>
                                     —
                                   </span>
                                 )}
                               </td>
                               <td>
                                 {t.passed === null ? (
-                                  <span className={`${styles.levelTag} ${styles.levelModerate}`}>Submitted</span>
+                                  <span className={`${styles.statusTag} ${styles.tagInfo}`}>Submitted</span>
                                 ) : (
-                                  <span className={`${styles.levelTag} ${t.passed ? styles.levelStrong : styles.levelAttention}`}>
-                                    {t.passed ? "Passed" : "Not passed"}
-                                  </span>
+                                  <span className={`${styles.statusTag} ${t.passed ? styles.tagGood : styles.tagBad}`}>{t.passed ? "Passed" : "Not passed"}</span>
                                 )}
                               </td>
                             </tr>
@@ -1271,48 +1233,82 @@ function AnalyticsPageContent() {
                     )}
                   </>
                 )}
-              </div>
+              </Reveal>
             )}
 
             {/* TAB 4: BADGES & CERTIFICATE */}
             {activeTab === "achievements" && (
-              <div className={styles.tableCard}>
-                <div className={styles.tableCardHeader}>
-                  <div className={styles.chartTitleArea}>
-                    <h2 className={styles.chartTitle}>Badges & Milestones</h2>
-                    <p className={styles.chartSubtitle}>Each badge has one fixed criterion, checked against your recorded activity.</p>
+              <>
+                <section aria-labelledby="badges-heading">
+                  <div className={styles.sectionHead}>
+                    <h2 id="badges-heading" className={styles.sectionTitle}>
+                      Badges & milestones
+                    </h2>
+                    <span className={styles.sectionMeta}>
+                      {badges.filter((b) => b.unlocked).length} of {badges.length} unlocked · each badge has one fixed criterion
+                    </span>
                   </div>
-                </div>
 
-                <div className={styles.achievementsGrid}>
-                  {badges.map((b) => (
-                    <div key={b.id} className={`${styles.badgeCard} ${!b.unlocked ? styles.badgeLocked : ""}`}>
-                      <div className={styles.badgeIconBox} style={{ background: b.color }}>
-                        {renderBadgeIcon(b.icon)}
-                      </div>
-                      <div className={styles.badgeBody}>
-                        <h3 className={styles.badgeTitle}>{b.title}</h3>
-                        <p className={styles.badgeDesc}>{b.desc}</p>
-                        <span className={styles.badgeDate}>{b.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  <RevealGroup className={styles.badgeGrid}>
+                    {badges.map((b) => {
+                      const { Icon, tint } = BADGE_ICONS[b.icon] ?? { Icon: Award, tint: "blue" as Tint };
+                      return (
+                        <RevealItem key={b.id}>
+                          <div className={`glass-card ${styles.badgeCard} ${!b.unlocked ? styles.badgeLocked : ""}`} data-tint={tint}>
+                            <div className={styles.badgeTop}>
+                              <span className={styles.badgeMedal}>
+                                <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
+                              </span>
+                              <span className={`${styles.badgeState} ${b.unlocked ? styles.badgeStateOn : ""}`}>
+                                {b.unlocked ? <CircleCheck size={14} strokeWidth={2.4} aria-hidden="true" /> : <Lock size={13} strokeWidth={2.4} aria-hidden="true" />}
+                                {b.unlocked ? "Unlocked" : "Locked"}
+                              </span>
+                            </div>
+                            <h3 className={styles.badgeTitle}>{b.title}</h3>
+                            <p className={styles.badgeDesc}>{b.desc}</p>
+                            <div className={styles.badgeProgress}>
+                              <span className={styles.badgeTrack}>
+                                <span style={{ width: `${b.progress * 100}%` }} />
+                              </span>
+                              <span className={styles.badgeStatus}>{b.status}</span>
+                            </div>
+                          </div>
+                        </RevealItem>
+                      );
+                    })}
+                  </RevealGroup>
+                </section>
 
                 {/* Certificate progress = syllabus coverage */}
-                <div className={styles.certificateBanner}>
-                  <div>
-                    <h3 className={styles.certTitle}>Course Completion Certificate</h3>
+                <Reveal className={styles.certificateBanner}>
+                  <div className={styles.certText}>
+                    <span className={styles.certKicker}>
+                      <GraduationCap size={16} strokeWidth={2.2} aria-hidden="true" />
+                      Syllabus coverage
+                    </span>
+                    <h2 className={styles.certTitle}>Course completion certificate</h2>
                     <p className={styles.certDesc}>
                       Progress is your CAT syllabus coverage: {syllabusDone} of {syllabusLessons} lessons completed across the VARC, DILR and QA courses. Complete every lesson to reach 100%.
                     </p>
                   </div>
-                  <div className={styles.certScoreBox}>
-                    <div className={styles.certPercent}>{certPercent}%</div>
-                    <div className={styles.certSub}>Syllabus Covered</div>
+                  <div className={styles.certRing} style={{ "--p": certPercent } as React.CSSProperties}>
+                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="anCertGrad" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#93c5fd" />
+                          <stop offset="100%" stopColor="#67e8f9" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="60" cy="60" r="50" className={styles.certRingTrack} />
+                      <circle cx="60" cy="60" r="50" className={styles.certRingFill} pathLength={100} strokeDasharray={`${certPercent} 100`} />
+                    </svg>
+                    <div className={styles.certRingLabel}>
+                      <span className={styles.certPercent}>{certPercent}%</span>
+                      <span className={styles.certSub}>Syllabus covered</span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </Reveal>
+              </>
             )}
           </>
         )}
@@ -1346,7 +1342,7 @@ function AnalyticsPageContent() {
 
 export default function AnalyticsPage() {
   return (
-    <React.Suspense fallback={<div style={{ minHeight: "100vh", background: "#F4F6F9" }} />}>
+    <React.Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--canvas)" }} />}>
       <AnalyticsPageContent />
     </React.Suspense>
   );

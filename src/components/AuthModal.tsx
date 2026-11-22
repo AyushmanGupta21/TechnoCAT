@@ -166,7 +166,7 @@ export default function AuthModal() {
               <input
                 type="text"
                 className={styles.textInput}
-                placeholder="e.g. Ayushman Gupta"
+                placeholder="e.g. Priya Sharma"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required

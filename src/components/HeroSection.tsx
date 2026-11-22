@@ -87,7 +87,7 @@ export default function HeroSection() {
   };
   const rise: Variants = {
     hidden: { opacity: 0, y: 16 * d },
-    show: { opacity: 1, y: 0, transition: { duration: reduce ? 0.2 : 0.8, ease: EASE_OUT } },
+    show: { opacity: 1, y: 0, transition: { duration: reduce ? 0.8 : 0.8, ease: EASE_OUT } },
   };
   const line: Variants = {
     hidden: {},
@@ -99,14 +99,14 @@ export default function HeroSection() {
       y: 0,
       opacity: 1,
       transition: {
-        y: { duration: reduce ? 0.2 : 0.9, ease: EASE_OUT, delay: reduce ? 0 : 0.2 },
-        opacity: { duration: 0.2 },
+        y: { duration: reduce ? 0.8 : 0.9, ease: EASE_OUT, delay: reduce ? 0 : 0.2 },
+        opacity: { duration: reduce ? 0.8 : 0.5 },
       },
     },
   };
   const word: Variants = {
     hidden: { y: reduce ? 0 : "105%", opacity: reduce ? 0 : 1 },
-    show: { y: 0, opacity: 1, transition: { duration: reduce ? 0.2 : 0.85, ease: EASE_OUT } },
+    show: { y: 0, opacity: 1, transition: { duration: reduce ? 0.8 : 0.85, ease: EASE_OUT } },
   };
 
   return (
@@ -214,7 +214,7 @@ export default function HeroSection() {
               <motion.div
                 initial={{ opacity: 0, y: reduce ? 0 : 28, scale: reduce ? 1 : 0.97 }}
                  animate={rv ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: reduce ? 0 : 28, scale: reduce ? 1 : 0.97 }}
-                transition={{ duration: reduce ? 0.2 : 1.1, delay: reduce ? 0 : 0.25, ease: EASE_OUT }}
+                transition={{ duration: reduce ? 0.8 : 1.1, delay: reduce ? 0 : 0.25, ease: EASE_OUT }}
               >
                 <TiltFrame className={styles.tilt} max={5}>
                   <div

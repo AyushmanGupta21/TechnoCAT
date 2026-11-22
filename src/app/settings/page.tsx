@@ -1,22 +1,76 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Check,
+  ChevronRight,
+  KeyRound,
+  Monitor,
+  Shield,
+  Trash2,
+  UserPen,
+  type LucideIcon,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import AppNav from "@/components/app/AppNav";
+import { GradientText, Reveal } from "@/components/landing/motion";
 import styles from "./settings.module.css";
-import BrandLogo from "@/components/BrandLogo";
-
-const navLinks = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Browse", href: "/browse" },
-  { name: "My Topics", href: "/topics" },
-  { name: "Intelligence Hub", href: "/intelligence" },
-  { name: "Speak & Assess", href: "/mock-viva-prep" },
-];
 
 type SettingsTab = "notifications" | "exam" | "security";
+
+const TAB_META: { id: SettingsTab; label: string; hint: string; icon: LucideIcon; color: string }[] = [
+  { id: "notifications", label: "Notifications", hint: "Reminders and alerts", icon: Bell, color: "var(--data-blue)" },
+  { id: "exam", label: "Exam environment", hint: "Mock test interface", icon: Monitor, color: "var(--data-teal)" },
+  { id: "security", label: "Account & security", hint: "Password and account", icon: Shield, color: "var(--data-violet)" },
+];
+
+/** One preference row with a switch (markup only; state lives in the page). */
+function ToggleRow({
+  title,
+  desc,
+  checked,
+  onChange,
+  accent,
+}: {
+  title: string;
+  desc: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  accent: string;
+}) {
+  return (
+    <label className={styles.optionItem} style={{ "--row-accent": accent } as React.CSSProperties}>
+      <span className={styles.optionText}>
+        <span className={styles.optionTitle}>{title}</span>
+        <span className={styles.optionSub}>{desc}</span>
+      </span>
+      <span className={styles.switchLabel}>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className={styles.switchInput}
+          aria-label={title}
+        />
+        <span className={styles.slider} aria-hidden="true" />
+      </span>
+    </label>
+  );
+}
+
+function SavedPill() {
+  return (
+    <span className={styles.saveSuccessPill} role="status">
+      <Check size={14} strokeWidth={2.6} />
+      Saved
+    </span>
+  );
+}
 
 function SettingsContent() {
   const router = useRouter();
@@ -226,698 +280,466 @@ function SettingsContent() {
     }
   };
 
+  const activeMeta = TAB_META.find((t) => t.id === activeTab) ?? TAB_META[0];
+
   return (
     <div className={styles.pageWrapper}>
-      {/* ===== STICKY TOP NAVIGATION ===== */}
-      <header className={styles.stickyNavHeader}>
+      <AppNav />
+
+      {/* ===== PAGE HEADER ===== */}
+      <header className={styles.pageHeader}>
         <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Main Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
-
-            <div className={styles.navLinks}>
-              {navLinks.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.href === "#") e.preventDefault();
-                  }}
-                  className={styles.navLink}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== HERO HEADER SECTION ===== */}
-      <div className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          {/* Breadcrumb & Hero Heading */}
-          <div className={styles.heroRow}>
-            <div className={styles.badgeRow}>
-              <span className={styles.badgeLabel}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                Platform Preferences &amp; Security
-              </span>
-              {isDemo && (
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    padding: "5px 12px",
-                    background: "#FEF3C7",
-                    color: "#B45309",
-                    borderRadius: "20px",
-                    border: "1px solid #FDE68A",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                  Demo Showcase Account
-                </span>
-              )}
-            </div>
-
+          <Reveal className={styles.heroRow}>
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
               <Link href="/dashboard" className={styles.breadcrumbLink}>
                 Dashboard
               </Link>
-              <span className={styles.breadcrumbSep}>›</span>
+              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
               <span className={styles.breadcrumbCurrent}>Settings</span>
             </nav>
-
-            <div>
-              <h1 className={styles.heroHeading}>
-                System &amp; Account <span className={styles.heroHighlight}>Settings</span>
-              </h1>
-              <p className={styles.heroSubtitle}>
-                Customize your exam simulation environment, manage study notifications, and configure security preferences.
-              </p>
+            <div className={styles.heroTitleRow}>
+              <div>
+                <h1 className={styles.heroHeading}>
+                  Account <GradientText>settings</GradientText>
+                </h1>
+                <p className={styles.heroSubtitle}>
+                  Choose which reminders you get, tune the mock exam interface and keep your account secure.
+                </p>
+              </div>
+              <div className={styles.heroActions}>
+                {isDemo && (
+                  <span className={styles.demoChip}>
+                    <span className={styles.demoDot} aria-hidden="true" />
+                    Demo showcase account
+                  </span>
+                )}
+                <Link href="/profile/edit" className={styles.heroBtn}>
+                  <UserPen size={16} strokeWidth={2} />
+                  Edit profile
+                </Link>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
-      </div>
+      </header>
 
       {/* ===== MAIN CONTENT GRID ===== */}
       <main className={styles.mainContent}>
         <div className={styles.settingsGrid}>
-          {/* Left Sidebar Tab Navigation */}
-          <aside className={styles.tabNavCard}>
-            <button
-              type="button"
-              onClick={() => setActiveTab("notifications")}
-              className={`${styles.tabBtn} ${activeTab === "notifications" ? styles.tabBtnActive : ""}`}
-            >
-              <svg className={styles.tabIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span>Notifications</span>
-            </button>
+          {/* Sub-navigation */}
+          <Reveal delay={0.05} className={styles.tabNavWrap}>
+            <aside className={`glass-card ${styles.tabNavCard}`} data-tint="blue" aria-label="Settings sections">
+              <span className={styles.tabNavLabel}>Settings</span>
+              <div className={styles.tabList} role="tablist" aria-orientation="vertical">
+                {TAB_META.map((t) => {
+                  const Icon = t.icon;
+                  const active = activeTab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setActiveTab(t.id)}
+                      className={`${styles.tabBtn} ${active ? styles.tabBtnActive : ""}`}
+                      style={{ "--tab-accent": t.color } as React.CSSProperties}
+                    >
+                      <Icon className={styles.tabIcon} size={18} strokeWidth={1.9} />
+                      <span className={styles.tabText}>
+                        <span className={styles.tabName}>{t.label}</span>
+                        <span className={styles.tabHint}>{t.hint}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className={styles.tabNavFooter}>
+                <Link href="/profile/edit" className={styles.profileLink}>
+                  <UserPen size={16} strokeWidth={1.9} />
+                  <span>Edit profile</span>
+                  <ChevronRight size={15} className={styles.profileLinkArrow} />
+                </Link>
+              </div>
+            </aside>
+          </Reveal>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("exam")}
-              className={`${styles.tabBtn} ${activeTab === "exam" ? styles.tabBtnActive : ""}`}
-            >
-              <svg className={styles.tabIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                <line x1="8" y1="21" x2="16" y2="21" />
-                <line x1="12" y1="17" x2="12" y2="21" />
-              </svg>
-              <span>Exam Environment</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("security")}
-              className={`${styles.tabBtn} ${activeTab === "security" ? styles.tabBtnActive : ""}`}
-            >
-              <svg className={styles.tabIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <span>Account &amp; Security</span>
-            </button>
-
-            <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #F1F5F9" }}>
-              <Link
-                href="/profile/edit"
-                className={styles.tabBtn}
-                style={{ textDecoration: "none", color: "#2563EB", background: "#EFF6FF" }}
-              >
-                <svg className={styles.tabIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <span>Edit Profile</span>
-              </Link>
-            </div>
-          </aside>
-
-          {/* Right Content Area */}
-          <div className={styles.contentArea}>
+          {/* Content */}
+          <div className={styles.contentArea} key={activeTab}>
             {/* ================= TAB 1: NOTIFICATIONS ================= */}
             {activeTab === "notifications" && (
-              <>
-                <div className={styles.cardBox}>
+              <Reveal y={14}>
+                <section className={`glass-card ${styles.cardBox}`} data-tint="blue">
                   <div className={styles.cardHeader}>
                     <div>
                       <h2 className={styles.cardTitle}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                        In-App Notification Preferences
+                        <span className={styles.cardMarker} style={{ background: activeMeta.color }} aria-hidden="true" />
+                        In-app notifications
                       </h2>
                       <p className={styles.cardDesc}>
-                        Manage real-time study prompts, streak alerts, and mock benchmark notifications inside your TechnoCAT panel.
+                        Pick the reminders and alerts that show up in the bell menu.
                       </p>
                     </div>
-
-                    {justSaved && (
-                      <span className={styles.saveSuccessPill}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Saved
-                      </span>
-                    )}
+                    {justSaved && <SavedPill />}
                   </div>
 
                   <div className={styles.optionList}>
-                    {/* Leaderboard privacy */}
                     {!isDemo && (
-                      <div className={styles.optionItem}>
-                        <div className={styles.optionText}>
-                          <h3 className={styles.optionTitle}>Show me on the leaderboard</h3>
-                          <p className={styles.optionSub}>
-                            Other students see your first name and last initial with your XP. Turn off to stay hidden.
-                          </p>
-                        </div>
-                        <label className={styles.switchLabel}>
-                          <input
-                            type="checkbox"
-                            checked={leaderboardVisible}
-                            onChange={(e) => updateLeaderboardVisibility(e.target.checked)}
-                            className={styles.switchInput}
-                          />
-                          <span className={styles.slider} />
-                        </label>
-                      </div>
+                      <ToggleRow
+                        accent="var(--data-violet)"
+                        title="Show me on the leaderboard"
+                        desc="Other students see your first name and last initial with your XP. Turn off to stay hidden."
+                        checked={leaderboardVisible}
+                        onChange={(v) => updateLeaderboardVisibility(v)}
+                      />
                     )}
-
-                    {/* Streak & Study Reminders */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Daily Practice &amp; Streak Alerts</h3>
-                        <p className={styles.optionSub}>
-                          Header alerts reminding you of pending daily curriculum drills and study streak maintenance.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={streakNotif}
-                          onChange={(e) => {
-                            setStreakNotif(e.target.checked);
-                            persistSettings({ streakNotif: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Mock & Score Benchmark Alerts */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Mock Test &amp; Benchmark Score Alerts</h3>
-                        <p className={styles.optionSub}>
-                          Instant notification when full-length All-India mock test percentiles and AI detailed analyses are published.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={mockAlerts}
-                          onChange={(e) => {
-                            setMockAlerts(e.target.checked);
-                            persistSettings({ mockAlerts: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Spaced Revision & Retention Drills */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Spaced Retention &amp; Topic Revision Drills</h3>
-                        <p className={styles.optionSub}>
-                          Intelligent memory retention alerts prompting formula and concept reviews after 5-7 days of topic inactivity.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={revisionNotif}
-                          onChange={(e) => {
-                            setRevisionNotif(e.target.checked);
-                            persistSettings({ revisionNotif: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Milestones & Badges */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Performance Milestones &amp; Achievement Alerts</h3>
-                        <p className={styles.optionSub}>
-                          Celebratory notifications when you unlock practice points, pass module quizzes, or jump leaderboard ranks.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={milestoneNotif}
-                          onChange={(e) => {
-                            setMilestoneNotif(e.target.checked);
-                            persistSettings({ milestoneNotif: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
+                    <ToggleRow
+                      accent="var(--data-amber)"
+                      title="Daily practice and streak alerts"
+                      desc="Reminders about pending daily drills and keeping your study streak alive."
+                      checked={streakNotif}
+                      onChange={(v) => {
+                        setStreakNotif(v);
+                        persistSettings({ streakNotif: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-blue)"
+                      title="Mock test and score alerts"
+                      desc="A notification when your mock percentile and analysis report are ready."
+                      checked={mockAlerts}
+                      onChange={(v) => {
+                        setMockAlerts(v);
+                        persistSettings({ mockAlerts: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-teal)"
+                      title="Topic revision reminders"
+                      desc="A nudge to review formulas and concepts after 5–7 days away from a topic."
+                      checked={revisionNotif}
+                      onChange={(v) => {
+                        setRevisionNotif(v);
+                        persistSettings({ revisionNotif: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-emerald)"
+                      title="Milestones and achievements"
+                      desc="When you earn practice points, pass module quizzes or climb leaderboard ranks."
+                      checked={milestoneNotif}
+                      onChange={(v) => {
+                        setMilestoneNotif(v);
+                        persistSettings({ milestoneNotif: v });
+                      }}
+                    />
                   </div>
-                </div>
-              </>
+                </section>
+              </Reveal>
             )}
 
             {/* ================= TAB 2: EXAM ENVIRONMENT ================= */}
             {activeTab === "exam" && (
-              <>
-                <div className={styles.cardBox}>
+              <Reveal y={14}>
+                <section className={`glass-card ${styles.cardBox}`} data-tint="teal">
                   <div className={styles.cardHeader}>
                     <div>
                       <h2 className={styles.cardTitle}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                          <line x1="8" y1="21" x2="16" y2="21" />
-                          <line x1="12" y1="17" x2="12" y2="21" />
-                        </svg>
-                        TCS iON CAT Mock Simulator Preferences
+                        <span className={styles.cardMarker} style={{ background: activeMeta.color }} aria-hidden="true" />
+                        Mock exam interface
                       </h2>
                       <p className={styles.cardDesc}>
-                        Tune the mock examination interface to replicate the official computer-based CAT test environment.
+                        Make the mock test screen behave like the official TCS iON CAT interface.
                       </p>
                     </div>
-
-                    {justSaved && (
-                      <span className={styles.saveSuccessPill}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Saved
-                      </span>
-                    )}
+                    {justSaved && <SavedPill />}
                   </div>
 
                   <div className={styles.optionList}>
-                    {/* Virtual Calculator */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>TCS iON Virtual Calculator Mode</h3>
-                        <p className={styles.optionSub}>
-                          Keep the on-screen official scientific calculator readily available in the QA and DILR sections.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={ionCalculator}
-                          onChange={(e) => {
-                            setIonCalculator(e.target.checked);
-                            persistSettings({ ionCalculator: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Auto-Save Responses */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Auto-Save Answers on Section Switch</h3>
-                        <p className={styles.optionSub}>
-                          Automatically save chosen radio options whenever navigating between VARC, DILR, and QA tabs.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={autoSaveResponses}
-                          onChange={(e) => {
-                            setAutoSaveResponses(e.target.checked);
-                            persistSettings({ autoSaveResponses: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Compact Question Palette */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>Compact Question Palette</h3>
-                        <p className={styles.optionSub}>
-                          Collapse the right question number grid to provide maximum horizontal space for VARC RC passages.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={compactPalette}
-                          onChange={(e) => {
-                            setCompactPalette(e.target.checked);
-                            persistSettings({ compactPalette: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* High Contrast Reading Mode */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>High Contrast Reading Mode</h3>
-                        <p className={styles.optionSub}>
-                          Increases text contrast and enhances DI chart line borders for fatigue-free 120-minute mocks.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={highContrast}
-                          onChange={(e) => {
-                            setHighContrast(e.target.checked);
-                            persistSettings({ highContrast: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
-
-                    {/* Timer Alert */}
-                    <div className={styles.optionItem}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle}>5-Minute Section Remaining Pulse</h3>
-                        <p className={styles.optionSub}>
-                          Display an amber countdown warning when 5 minutes remain in the current sectional timer.
-                        </p>
-                      </div>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={timerAlerts}
-                          onChange={(e) => {
-                            setTimerAlerts(e.target.checked);
-                            persistSettings({ timerAlerts: e.target.checked });
-                          }}
-                          className={styles.switchInput}
-                        />
-                        <span className={styles.slider} />
-                      </label>
-                    </div>
+                    <ToggleRow
+                      accent="var(--data-teal)"
+                      title="On-screen calculator"
+                      desc="Keep the official TCS iON calculator available in the QA and DILR sections."
+                      checked={ionCalculator}
+                      onChange={(v) => {
+                        setIonCalculator(v);
+                        persistSettings({ ionCalculator: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-blue)"
+                      title="Auto-save answers on section switch"
+                      desc="Save your chosen options whenever you move between VARC, DILR and QA."
+                      checked={autoSaveResponses}
+                      onChange={(v) => {
+                        setAutoSaveResponses(v);
+                        persistSettings({ autoSaveResponses: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-violet)"
+                      title="Compact question palette"
+                      desc="Collapse the question-number grid to give long RC passages more room."
+                      checked={compactPalette}
+                      onChange={(v) => {
+                        setCompactPalette(v);
+                        persistSettings({ compactPalette: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-cyan)"
+                      title="High contrast reading mode"
+                      desc="Stronger text contrast and chart borders for long mock sessions."
+                      checked={highContrast}
+                      onChange={(v) => {
+                        setHighContrast(v);
+                        persistSettings({ highContrast: v });
+                      }}
+                    />
+                    <ToggleRow
+                      accent="var(--data-amber)"
+                      title="5-minute section warning"
+                      desc="Show an amber countdown when 5 minutes remain in the current section."
+                      checked={timerAlerts}
+                      onChange={(v) => {
+                        setTimerAlerts(v);
+                        persistSettings({ timerAlerts: v });
+                      }}
+                    />
                   </div>
-                </div>
-              </>
+                </section>
+              </Reveal>
             )}
 
             {/* ================= TAB 3: ACCOUNT & SECURITY ================= */}
             {activeTab === "security" && (
               <>
-                <div className={styles.cardBox}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <h2 className={styles.cardTitle}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                        Security &amp; Credentials
-                      </h2>
-                      <p className={styles.cardDesc}>
-                        Keep your TechnoCAT account protected with strong passwords and active session controls.
-                      </p>
-                    </div>
-
-                    {justSaved && (
-                      <span className={styles.saveSuccessPill}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Saved
-                      </span>
-                    )}
-                  </div>
-
-                  {passwordFeedback && (
-                    <div
-                      style={{
-                        padding: "12px 16px",
-                        borderRadius: "10px",
-                        fontSize: "13.5px",
-                        fontWeight: 500,
-                        marginBottom: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        background: passwordFeedback.type === "success" ? "#ECFDF5" : "#FEF2F2",
-                        border: passwordFeedback.type === "success" ? "1px solid #A7F3D0" : "1px solid #FECACA",
-                        color: passwordFeedback.type === "success" ? "#065F46" : "#991B1B",
-                      }}
-                    >
-                      {passwordFeedback.type === "success" ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="12" y1="8" x2="12" y2="12" />
-                          <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
-                      )}
-                      <span>{passwordFeedback.message}</span>
-                    </div>
-                  )}
-
-                  <div className={styles.optionList}>
-                    {/* Password change item */}
-                    <div className={styles.optionItem} style={{ flexDirection: "column", alignItems: "stretch" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <div className={styles.optionText}>
-                          <h3 className={styles.optionTitle}>Account Password</h3>
-                          <p className={styles.optionSub}>
-                            Last changed 2 months ago. Updating your password regularly maintains account integrity.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsChangingPassword(!isChangingPassword);
-                            setPasswordFeedback(null);
-                          }}
-                          className={styles.actionBtn}
-                        >
-                          {isChangingPassword ? "Cancel" : "Change Password"}
-                        </button>
-                      </div>
-
-                      {/* Expandable Password Form */}
-                      {isChangingPassword && (
-                        <form onSubmit={handlePasswordSubmit} className={styles.passwordPanel}>
-                          <div className={styles.formField}>
-                            <label className={styles.formLabel}>Current Password</label>
-                            <input
-                              type="password"
-                              placeholder="Enter your current password"
-                              value={currentPassword}
-                              onChange={(e) => setCurrentPassword(e.target.value)}
-                              required
-                              className={styles.formInput}
-                            />
-                          </div>
-
-                          <div className={styles.passwordInputGrid}>
-                            <div className={styles.formField}>
-                              <label className={styles.formLabel}>New Password</label>
-                              <input
-                                type="password"
-                                placeholder="At least 8 characters"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                                className={styles.formInput}
-                              />
-                            </div>
-
-                            <div className={styles.formField}>
-                              <label className={styles.formLabel}>Confirm New Password</label>
-                              <input
-                                type="password"
-                                placeholder="Repeat new password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                className={styles.formInput}
-                              />
-                            </div>
-                          </div>
-
-                          <div className={styles.panelActions}>
-                            <button
-                              type="button"
-                              onClick={() => setIsChangingPassword(false)}
-                              className={styles.actionBtn}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              disabled={isUpdatingPassword}
-                              style={{
-                                background: "#2563EB",
-                                color: "#FFFFFF",
-                                border: "none",
-                                padding: "9px 20px",
-                                borderRadius: "10px",
-                                fontSize: "13.5px",
-                                fontWeight: 600,
-                                cursor: isUpdatingPassword ? "not-allowed" : "pointer",
-                                transition: "all 0.2s",
-                              }}
-                            >
-                              {isUpdatingPassword ? "Updating..." : "Update Password"}
-                            </button>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Danger Zone Card */}
-                <div className={`${styles.cardBox} ${styles.dangerCard}`}>
-                  <div className={`${styles.cardHeader} ${styles.dangerHeader}`}>
-                    <div>
-                      <h2 className={`${styles.cardTitle} ${styles.dangerTitle}`}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BE123C" strokeWidth="2">
-                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                          <line x1="12" y1="9" x2="12" y2="13" />
-                          <line x1="12" y1="17" x2="12.01" y2="17" />
-                        </svg>
-                        Danger Zone
-                      </h2>
-                      <p className={styles.cardDesc}>
-                        Irreversible account actions. Please exercise caution when modifying these parameters.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={styles.optionList}>
-                    <div className={styles.optionItem} style={{ background: "#FFF5F5", borderColor: "#FECDD3" }}>
-                      <div className={styles.optionText}>
-                        <h3 className={styles.optionTitle} style={{ color: "#BE123C" }}>
-                          Delete Account &amp; Test Records
-                        </h3>
-                        <p className={styles.optionSub}>
-                          Permanently delete your profile, video watch progress, full mock test submissions, and percentile history.
+                <Reveal y={14}>
+                  <section className={`glass-card ${styles.cardBox}`} data-tint="violet">
+                    <div className={styles.cardHeader}>
+                      <div>
+                        <h2 className={styles.cardTitle}>
+                          <span className={styles.cardMarker} style={{ background: activeMeta.color }} aria-hidden="true" />
+                          Password
+                        </h2>
+                        <p className={styles.cardDesc}>
+                          Use a strong password you don&apos;t use anywhere else.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowDeleteModal(true)}
-                        className={styles.dangerBtn}
-                      >
-                        Delete Account
-                      </button>
+                      {justSaved && <SavedPill />}
                     </div>
-                  </div>
-                </div>
+
+                    {passwordFeedback && (
+                      <div
+                        className={`${styles.feedback} ${
+                          passwordFeedback.type === "success" ? styles.feedbackSuccess : styles.feedbackError
+                        }`}
+                        role={passwordFeedback.type === "error" ? "alert" : "status"}
+                      >
+                        {passwordFeedback.type === "success" ? (
+                          <Check size={17} strokeWidth={2.4} />
+                        ) : (
+                          <AlertCircle size={17} strokeWidth={2.2} />
+                        )}
+                        <span>{passwordFeedback.message}</span>
+                      </div>
+                    )}
+
+                    <div className={styles.optionList}>
+                      <div className={`${styles.optionItem} ${styles.optionItemStack}`}>
+                        <div className={styles.optionRow}>
+                          <span className={styles.optionLead} aria-hidden="true">
+                            <KeyRound size={18} strokeWidth={1.9} />
+                          </span>
+                          <div className={styles.optionText}>
+                            <h3 className={styles.optionTitle}>Account password</h3>
+                            <p className={styles.optionSub}>
+                              Last changed 2 months ago. Changing it regularly keeps your account safe.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsChangingPassword(!isChangingPassword);
+                              setPasswordFeedback(null);
+                            }}
+                            className={styles.actionBtn}
+                            aria-expanded={isChangingPassword}
+                          >
+                            {isChangingPassword ? "Cancel" : "Change password"}
+                          </button>
+                        </div>
+
+                        {isChangingPassword && (
+                          <form onSubmit={handlePasswordSubmit} className={styles.passwordPanel}>
+                            <div className={styles.formField}>
+                              <label className={styles.formLabel} htmlFor="set-current-pw">
+                                Current password
+                              </label>
+                              <input
+                                id="set-current-pw"
+                                type="password"
+                                autoComplete="current-password"
+                                placeholder="Enter your current password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                required
+                                className={styles.formInput}
+                              />
+                            </div>
+
+                            <div className={styles.passwordInputGrid}>
+                              <div className={styles.formField}>
+                                <label className={styles.formLabel} htmlFor="set-new-pw">
+                                  New password
+                                </label>
+                                <input
+                                  id="set-new-pw"
+                                  type="password"
+                                  autoComplete="new-password"
+                                  placeholder="At least 8 characters"
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  required
+                                  className={styles.formInput}
+                                />
+                              </div>
+
+                              <div className={styles.formField}>
+                                <label className={styles.formLabel} htmlFor="set-confirm-pw">
+                                  Confirm new password
+                                </label>
+                                <input
+                                  id="set-confirm-pw"
+                                  type="password"
+                                  autoComplete="new-password"
+                                  placeholder="Repeat new password"
+                                  value={confirmPassword}
+                                  onChange={(e) => setConfirmPassword(e.target.value)}
+                                  required
+                                  className={styles.formInput}
+                                />
+                              </div>
+                            </div>
+
+                            <div className={styles.strengthRow} aria-hidden="true">
+                              {[0, 1, 2, 3].map((i) => (
+                                <span
+                                  key={i}
+                                  className={styles.strengthBar}
+                                  data-on={newPassword.length >= 8 + i * 3 || (i === 0 && newPassword.length > 0) ? "true" : "false"}
+                                />
+                              ))}
+                              <span className={styles.strengthText}>
+                                {newPassword.length === 0
+                                  ? "8+ characters"
+                                  : newPassword.length < 8
+                                  ? `${8 - newPassword.length} more characters`
+                                  : confirmPassword && confirmPassword !== newPassword
+                                  ? "Passwords don't match yet"
+                                  : "Looks good"}
+                              </span>
+                            </div>
+
+                            <div className={styles.panelActions}>
+                              <button type="button" onClick={() => setIsChangingPassword(false)} className={styles.ghostBtn}>
+                                Cancel
+                              </button>
+                              <button type="submit" disabled={isUpdatingPassword} className={styles.primaryBtn}>
+                                {isUpdatingPassword ? "Updating…" : "Update password"}
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                </Reveal>
+
+                {/* Danger zone */}
+                <Reveal y={14} delay={0.06}>
+                  <section className={`glass-card ${styles.cardBox} ${styles.dangerCard}`} data-tint="coral">
+                    <div className={styles.cardHeader}>
+                      <div>
+                        <h2 className={`${styles.cardTitle} ${styles.dangerTitle}`}>
+                          <AlertTriangle size={18} strokeWidth={2} />
+                          Danger zone
+                        </h2>
+                        <p className={styles.cardDesc}>These actions are permanent and can&apos;t be undone.</p>
+                      </div>
+                    </div>
+
+                    <div className={styles.optionList}>
+                      <div className={`${styles.optionItem} ${styles.dangerRow}`}>
+                        <div className={styles.optionText}>
+                          <h3 className={styles.optionTitle}>Delete account and test records</h3>
+                          <p className={styles.optionSub}>
+                            Permanently deletes your profile, video progress, mock test submissions and percentile history.
+                          </p>
+                        </div>
+                        <button type="button" onClick={() => setShowDeleteModal(true)} className={styles.dangerBtn}>
+                          <Trash2 size={15} strokeWidth={2} />
+                          Delete account
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                </Reveal>
               </>
             )}
           </div>
         </div>
       </main>
 
-      {/* Delete Account Confirmation Modal */}
+      {/* Delete account confirmation modal */}
       {showDeleteModal && (
         <div className={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div
-                style={{
-                  width: "44px",
-                  height: "44px",
-                  borderRadius: "50%",
-                  background: "#FEE2E2",
-                  color: "#DC2626",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
+          <div
+            className={styles.modalBox}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+          >
+            <div className={styles.modalHead}>
+              <span className={styles.modalIcon} aria-hidden="true">
+                <AlertTriangle size={22} strokeWidth={2.2} />
+              </span>
               <div>
-                <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#111827", margin: 0 }}>
-                  Delete TechnoCAT Account?
+                <h3 id="delete-modal-title" className={styles.modalTitle}>
+                  Delete your TechnoCAT account?
                 </h3>
-                <p style={{ fontSize: "13px", color: "#6B7280", margin: "2px 0 0 0" }}>
-                  This action cannot be undone.
-                </p>
+                <p className={styles.modalSub}>This action cannot be undone.</p>
               </div>
             </div>
 
-            <p style={{ fontSize: "14px", color: "#4B5563", lineHeight: 1.5, margin: 0 }}>
-              All of your enrolled modules, video watch timestamps, test attempt percentiles, and AI Viva logs will be permanently erased.
+            <p className={styles.modalBody}>
+              Your enrolled modules, video watch progress, test percentiles and Speak &amp; Assess history will be permanently
+              erased.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: "13px", fontWeight: 600, color: "#374151" }}>
-                Type <strong style={{ color: "#DC2626" }}>DELETE</strong> to confirm:
+            <div className={styles.formField}>
+              <label className={styles.formLabel} htmlFor="delete-confirm">
+                Type <strong className={styles.deleteWord}>DELETE</strong> to confirm
               </label>
               <input
+                id="delete-confirm"
                 type="text"
                 placeholder="DELETE"
+                autoComplete="off"
                 value={deleteConfirmationText}
                 onChange={(e) => setDeleteConfirmationText(e.target.value)}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  border: "1.5px solid #CBD5E1",
-                  outline: "none",
-                  fontSize: "14px",
-                }}
+                className={`${styles.formInput} ${styles.deleteInput}`}
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+            <div className={styles.modalActions}>
               <button
                 type="button"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setDeleteConfirmationText("");
                 }}
-                className={styles.actionBtn}
+                className={styles.ghostBtn}
               >
                 Cancel
               </button>
@@ -925,19 +747,9 @@ function SettingsContent() {
                 type="button"
                 onClick={handleDeleteAccount}
                 disabled={isDeletingAccount || deleteConfirmationText !== "DELETE"}
-                style={{
-                  background: deleteConfirmationText === "DELETE" && !isDeletingAccount ? "#DC2626" : "#FCA5A5",
-                  color: "#FFFFFF",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "10px",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  cursor: deleteConfirmationText === "DELETE" && !isDeletingAccount ? "pointer" : "not-allowed",
-                  transition: "all 0.2s",
-                }}
+                className={styles.dangerSolidBtn}
               >
-                {isDeletingAccount ? "Deleting..." : "Permanently Delete"}
+                {isDeletingAccount ? "Deleting…" : "Permanently delete"}
               </button>
             </div>
           </div>

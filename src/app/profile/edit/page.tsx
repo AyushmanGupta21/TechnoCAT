@@ -1,21 +1,30 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  AlertCircle,
+  BadgeCheck,
+  Building2,
+  CalendarDays,
+  Camera,
+  Check,
+  ChevronRight,
+  LayoutDashboard,
+  Mail,
+  Phone,
+  Save,
+  Settings,
+  Sparkles,
+  Upload,
+  User,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PROFILE_ICON } from "@/lib/nameUtils";
+import AppNav from "@/components/app/AppNav";
+import { GradientText, Reveal } from "@/components/landing/motion";
 import styles from "./edit-profile.module.css";
-import BrandLogo from "@/components/BrandLogo";
-
-const navLinks = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Browse", href: "/browse" },
-  { name: "My Topics", href: "/topics" },
-  { name: "Intelligence Hub", href: "/intelligence" },
-  { name: "Speak & Assess", href: "/mock-viva-prep" },
-];
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -202,480 +211,385 @@ export default function EditProfilePage() {
     }
   };
 
+
+  const initials =
+    fullNameDisplay
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p, i, arr) => (i === 0 || i === arr.length - 1 ? p[0] : ""))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "S";
+
+  const renderAvatar = (cls: string, initialsCls: string) =>
+    isCustomAvatar ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={displayedAvatar}
+        alt={fullNameDisplay}
+        className={cls}
+        onError={(e) => {
+          e.currentTarget.src = DEFAULT_PROFILE_ICON;
+        }}
+      />
+    ) : (
+      <span className={`${cls} ${initialsCls}`} aria-label={fullNameDisplay}>
+        {initials}
+      </span>
+    );
+
   return (
     <div className={styles.pageWrapper}>
-      {/* ===== STICKY TOP NAVIGATION ===== */}
-      <header className={styles.stickyNavHeader}>
+      <AppNav />
+
+      {/* ===== PAGE HEADER ===== */}
+      <header className={styles.pageHeader}>
         <div className={styles.headerInner}>
-          <nav className={styles.topNav} aria-label="Main Navigation">
-            <Link href="/" className={styles.brandLogo} title="Back to TechnoCAT Home">
-              <BrandLogo height={70} />
-            </Link>
-
-            <div className={styles.navLinks}>
-              {navLinks.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.href === "#") e.preventDefault();
-                  }}
-                  className={styles.navLink}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            <PostLoginNavActions />
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== HERO HEADER SECTION ===== */}
-      <div className={styles.darkHeader}>
-        <div className={styles.headerInner}>
-          {/* Breadcrumb & Hero Heading */}
-          <div className={styles.heroRow}>
-            <div className={styles.badgeRow}>
-              <span className={styles.badgeLabel}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                Profile &amp; Aspirant Settings
-              </span>
-              {isDemo && (
-                <span className={styles.demoPill}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                  Demo Showcase Account
-                </span>
-              )}
-            </div>
-
+          <Reveal className={styles.heroRow}>
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
               <Link href="/dashboard" className={styles.breadcrumbLink}>
                 Dashboard
               </Link>
-              <span className={styles.breadcrumbSep}>›</span>
-              <span className={styles.breadcrumbCurrent}>Edit Profile</span>
+              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+              <span className={styles.breadcrumbCurrent}>Edit profile</span>
             </nav>
-
-            <div>
-              <h1 className={styles.heroHeading}>
-                Edit Aspirant <span className={styles.heroHighlight}>Profile</span>
-              </h1>
-              <p className={styles.heroSubtitle}>
-                Keep your aspirant credentials, target exam year, and contact details up to date to personalize your CAT preparation journey.
-              </p>
+            <div className={styles.heroTitleRow}>
+              <div>
+                <h1 className={styles.heroHeading}>
+                  Your <GradientText>profile</GradientText>
+                </h1>
+                <p className={styles.heroSubtitle}>
+                  Keep your name, contact details and CAT target up to date so your reports and plans stay personal.
+                </p>
+              </div>
+              {isDemo && (
+                <span className={styles.demoPill}>
+                  <span className={styles.demoDot} aria-hidden="true" />
+                  Demo showcase account
+                </span>
+              )}
             </div>
-          </div>
+          </Reveal>
         </div>
-      </div>
+      </header>
 
       {/* ===== MAIN CONTENT GRID ===== */}
       <main className={styles.mainContent}>
         <div className={styles.profileLayoutGrid}>
-          {/* Left Column: Profile Card */}
-          <aside className={styles.sidebarCard}>
-            <div className={styles.sidebarAvatarWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={displayedAvatar}
-                alt={fullNameDisplay}
-                className={styles.sidebarAvatar}
-                onError={(e) => {
-                  e.currentTarget.src = DEFAULT_PROFILE_ICON;
-                }}
-              />
-              <span className={styles.sidebarStatusBadge} title="Active Status" />
-            </div>
-
-            <h2 className={styles.sidebarName}>{fullNameDisplay}</h2>
-            <p className={styles.sidebarEmail}>{user?.email || (isDemo ? "student@technocat.edu" : "aspirant@technocat.edu")}</p>
-
-            <div className={styles.sidebarBadgeList}>
-              <span className={styles.sidebarPill}>{targetYear}</span>
-              <span className={styles.sidebarPill} style={{ background: "#FDF2F8", color: "#BE185D", borderColor: "#FBCFE8" }}>
-                CAT Aspirant
-              </span>
-            </div>
-
-            <div className={styles.sidebarDivider} />
-
-            <div className={styles.sidebarMetaList}>
-              <div className={styles.sidebarMetaItem}>
-                <span className={styles.sidebarMetaLabel}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                  Target Exam
-                </span>
-                <span className={styles.sidebarMetaValue}>{targetYear}</span>
+          {/* Left column: profile summary */}
+          <Reveal delay={0.05} className={styles.sidebarWrap}>
+            <aside className={`glass-card ${styles.sidebarCard}`} data-tint="blue">
+              <div className={styles.sidebarBand} aria-hidden="true" />
+              <div className={styles.sidebarAvatarWrap}>
+                {renderAvatar(styles.sidebarAvatar, styles.sidebarInitials)}
+                <span className={styles.sidebarStatusBadge} title="Active" />
               </div>
 
-              <div className={styles.sidebarMetaItem}>
-                <span className={styles.sidebarMetaLabel}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  Account Tier
-                </span>
-                <span className={styles.sidebarMetaValue} style={{ color: "#2563EB" }}>
-                  {isDemo ? "Demo Scholar" : "CAT Pro Scholar"}
-                </span>
+              <h2 className={styles.sidebarName}>{fullNameDisplay}</h2>
+              <p className={styles.sidebarEmail}>
+                {user?.email || (isDemo ? "student@technocat.edu" : "aspirant@technocat.edu")}
+              </p>
+
+              <div className={styles.sidebarBadgeList}>
+                <span className={styles.sidebarPill}>{targetYear}</span>
+                <span className={`${styles.sidebarPill} ${styles.sidebarPillViolet}`}>CAT aspirant</span>
               </div>
 
-              <div className={styles.sidebarMetaItem}>
-                <span className={styles.sidebarMetaLabel}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
-                  Verification
-                </span>
-                <span className={styles.sidebarMetaValue} style={{ color: "#059669" }}>
-                  Verified Student
-                </span>
-              </div>
-
-              {dreamSchool && (
+              <dl className={styles.sidebarMetaList}>
                 <div className={styles.sidebarMetaItem}>
-                  <span className={styles.sidebarMetaLabel}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 21h18" />
-                      <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-                      <line x1="9" y1="9" x2="9" y2="9.01" />
-                      <line x1="9" y1="13" x2="9" y2="13.01" />
-                      <line x1="9" y1="17" x2="9" y2="17.01" />
-                      <line x1="15" y1="9" x2="15" y2="9.01" />
-                      <line x1="15" y1="13" x2="15" y2="13.01" />
-                      <line x1="15" y1="17" x2="15" y2="17.01" />
-                    </svg>
-                    Dream School
-                  </span>
-                  <span className={styles.sidebarMetaValue} style={{ textAlign: "right", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {dreamSchool}
-                  </span>
+                  <dt className={styles.sidebarMetaLabel}>
+                    <CalendarDays size={15} strokeWidth={1.9} style={{ color: "var(--data-blue)" }} />
+                    Target exam
+                  </dt>
+                  <dd className={styles.sidebarMetaValue}>{targetYear}</dd>
+                </div>
+                <div className={styles.sidebarMetaItem}>
+                  <dt className={styles.sidebarMetaLabel}>
+                    <Sparkles size={15} strokeWidth={1.9} style={{ color: "var(--data-violet)" }} />
+                    Account tier
+                  </dt>
+                  <dd className={`${styles.sidebarMetaValue} ${styles.metaBlue}`}>
+                    {isDemo ? "Demo Scholar" : "CAT Pro Scholar"}
+                  </dd>
+                </div>
+                <div className={styles.sidebarMetaItem}>
+                  <dt className={styles.sidebarMetaLabel}>
+                    <BadgeCheck size={15} strokeWidth={1.9} style={{ color: "var(--data-emerald)" }} />
+                    Verification
+                  </dt>
+                  <dd className={`${styles.sidebarMetaValue} ${styles.metaGreen}`}>Verified student</dd>
+                </div>
+                {dreamSchool && (
+                  <div className={styles.sidebarMetaItem}>
+                    <dt className={styles.sidebarMetaLabel}>
+                      <Building2 size={15} strokeWidth={1.9} style={{ color: "var(--data-amber)" }} />
+                      Dream school
+                    </dt>
+                    <dd className={`${styles.sidebarMetaValue} ${styles.metaTruncate}`} title={dreamSchool}>
+                      {dreamSchool}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+
+              <div className={styles.sidebarLinks}>
+                <Link href="/settings" className={styles.sidebarLinkBtn}>
+                  <Settings size={16} strokeWidth={1.9} />
+                  <span>Account &amp; security settings</span>
+                  <ChevronRight size={15} className={styles.sidebarLinkArrow} />
+                </Link>
+                <Link href="/dashboard" className={styles.sidebarLinkBtn}>
+                  <LayoutDashboard size={16} strokeWidth={1.9} />
+                  <span>Back to dashboard</span>
+                  <ChevronRight size={15} className={styles.sidebarLinkArrow} />
+                </Link>
+              </div>
+            </aside>
+          </Reveal>
+
+          {/* Right column: form */}
+          <Reveal delay={0.1}>
+            <div className={`glass-card ${styles.formCard}`} data-tint="teal">
+              {feedback && (
+                <div
+                  className={`${styles.alertBanner} ${feedback.type === "success" ? styles.alertSuccess : styles.alertError}`}
+                  role={feedback.type === "error" ? "alert" : "status"}
+                >
+                  {feedback.type === "success" ? (
+                    <Check size={18} strokeWidth={2.4} />
+                  ) : (
+                    <AlertCircle size={18} strokeWidth={2.2} />
+                  )}
+                  <span>{feedback.message}</span>
                 </div>
               )}
-            </div>
 
-            <div className={styles.sidebarDivider} />
-
-            <div className={styles.sidebarLinks}>
-              <Link href="/settings" className={styles.sidebarLinkBtn}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-                Account &amp; Security Settings
-              </Link>
-              <Link href="/dashboard" className={styles.sidebarLinkBtn}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-                Return to Dashboard
-              </Link>
-            </div>
-          </aside>
-
-          {/* Right Column: Form Card */}
-          <div className={styles.formCard}>
-            {feedback && (
-              <div
-                className={`${styles.alertBanner} ${
-                  feedback.type === "success" ? styles.alertSuccess : styles.alertError
-                }`}
-              >
-                {feedback.type === "success" ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                )}
-                <span>{feedback.message}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveChanges}>
-              {/* Photo Section */}
-              <div className={styles.sectionGroup}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
-                    Profile Photo
-                  </h3>
-                  <p className={styles.sectionSubtitle}>
-                    Upload a high-resolution photo (PNG, JPG, or WebP up to 5MB). Photo will be centered and cropped into a circle.
-                  </p>
-                </div>
-
-                <div className={styles.avatarUploadRow}>
-                  <div className={styles.avatarPreviewContainer}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={displayedAvatar}
-                      alt="Avatar Preview"
-                      className={styles.avatarImage}
-                      onError={(e) => {
-                        e.currentTarget.src = DEFAULT_PROFILE_ICON;
-                      }}
-                    />
+              <form onSubmit={handleSaveChanges}>
+                {/* Photo */}
+                <section className={styles.sectionGroup}>
+                  <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>
+                      <span className={styles.sectionMarker} style={{ background: "var(--data-blue)" }} aria-hidden="true" />
+                      Profile photo
+                    </h3>
+                    <p className={styles.sectionSubtitle}>PNG, JPG or WebP up to 5MB. We centre and crop it into a circle.</p>
                   </div>
 
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/png, image/jpeg, image/jpg, image/webp"
-                    style={{ display: "none" }}
-                    onChange={handleImageFileSelect}
-                  />
+                  <div className={styles.avatarUploadRow}>
+                    <button
+                      type="button"
+                      className={styles.avatarPreviewContainer}
+                      onClick={() => fileInputRef.current?.click()}
+                      aria-label="Choose a new profile photo"
+                    >
+                      {renderAvatar(styles.avatarImage, styles.avatarInitials)}
+                      <span className={styles.avatarOverlay} aria-hidden="true">
+                        <Camera size={20} strokeWidth={2} />
+                      </span>
+                    </button>
 
-                  <div className={styles.avatarActions}>
-                    <div className={styles.avatarBtnGroup}>
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className={styles.uploadBtn}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="17 8 12 3 7 8" />
-                          <line x1="12" y1="3" x2="12" y2="15" />
-                        </svg>
-                        {isCustomAvatar ? "Upload New Photo" : "Upload Photo"}
-                      </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/png, image/jpeg, image/jpg, image/webp"
+                      style={{ display: "none" }}
+                      onChange={handleImageFileSelect}
+                    />
 
-                      {isCustomAvatar && (
-                        <button type="button" onClick={handleRemovePhoto} className={styles.removeBtn}>
-                          Remove Photo
+                    <div className={styles.avatarActions}>
+                      <div className={styles.avatarBtnGroup}>
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className={styles.uploadBtn}>
+                          <Upload size={16} strokeWidth={2.2} />
+                          {isCustomAvatar ? "Upload new photo" : "Upload photo"}
                         </button>
-                      )}
+                        {isCustomAvatar && (
+                          <button type="button" onClick={handleRemovePhoto} className={styles.removeBtn}>
+                            Remove photo
+                          </button>
+                        )}
+                      </div>
+                      <p className={styles.avatarHelpText}>A square photo with your face clearly visible works best.</p>
                     </div>
-                    <p className={styles.avatarHelpText}>
-                      We recommend a square image with your face clearly visible for mentor evaluations.
+                  </div>
+                </section>
+
+                {/* Personal information */}
+                <section className={styles.sectionGroup}>
+                  <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>
+                      <span className={styles.sectionMarker} style={{ background: "var(--data-teal)" }} aria-hidden="true" />
+                      Personal information
+                    </h3>
+                    <p className={styles.sectionSubtitle}>
+                      Your name appears on mock test reports, leaderboards and completion badges.
                     </p>
                   </div>
-                </div>
-              </div>
 
-              {/* Personal Information */}
-              <div className={styles.sectionGroup}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    Personal Information
-                  </h3>
-                  <p className={styles.sectionSubtitle}>
-                    This name will appear on your mock test report cards, performance leaderboards, and completion badges.
-                  </p>
-                </div>
+                  <div className={styles.formRowGrid}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-first">
+                        First name <span className={styles.inputRequired}>*</span>
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <User className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <input
+                          id="pf-first"
+                          type="text"
+                          autoComplete="given-name"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="e.g. Priya"
+                          required
+                          className={styles.textInput}
+                        />
+                      </div>
+                    </div>
 
-                <div className={styles.formRowGrid}>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>
-                      First Name <span className={styles.inputRequired}>*</span>
-                    </label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <input
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="e.g. Ayushman"
-                        required
-                        className={styles.textInput}
-                      />
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-last">
+                        Last name
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <User className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <input
+                          id="pf-last"
+                          type="text"
+                          autoComplete="family-name"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="e.g. Gomez"
+                          className={styles.textInput}
+                        />
+                      </div>
                     </div>
                   </div>
+                </section>
 
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Last Name</label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <input
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="e.g. Gomez"
-                        className={styles.textInput}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className={styles.sectionGroup}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                      <polyline points="22,6 12,13 2,6" />
-                    </svg>
-                    Contact &amp; Verification
-                  </h3>
-                  <p className={styles.sectionSubtitle}>
-                    Your primary registered communication channels for notifications and exam updates.
-                  </p>
-                </div>
-
-                <div className={styles.formRowGrid}>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>
-                      <span>Email Address</span>
-                      <span className={styles.verifiedBadge}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Verified
-                      </span>
-                    </label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                      </svg>
-                      <input
-                        type="email"
-                        value={user?.email || (isDemo ? "student@technocat.edu" : "")}
-                        disabled
-                        className={`${styles.textInput} ${styles.textInputDisabled}`}
-                      />
-                    </div>
+                {/* Contact */}
+                <section className={styles.sectionGroup}>
+                  <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>
+                      <span className={styles.sectionMarker} style={{ background: "var(--data-violet)" }} aria-hidden="true" />
+                      Contact details
+                    </h3>
+                    <p className={styles.sectionSubtitle}>Where we send notifications and exam updates.</p>
                   </div>
 
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Phone Number</label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                      </svg>
-                      <input
-                        type="tel"
-                        placeholder="+91 98765 43210"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className={styles.textInput}
-                      />
+                  <div className={styles.formRowGrid}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-email">
+                        <span>Email address</span>
+                        <span className={styles.verifiedBadge}>
+                          <Check size={12} strokeWidth={3} />
+                          Verified
+                        </span>
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <Mail className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <input
+                          id="pf-email"
+                          type="email"
+                          value={user?.email || (isDemo ? "student@technocat.edu" : "")}
+                          disabled
+                          className={`${styles.textInput} ${styles.textInputDisabled}`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-phone">
+                        Phone number
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <Phone className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <input
+                          id="pf-phone"
+                          type="tel"
+                          autoComplete="tel"
+                          placeholder="+91 98765 43210"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className={styles.textInput}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </section>
 
-              {/* CAT Aspirant Goals */}
-              <div className={styles.sectionGroup}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
-                    </svg>
-                    Aspirant Target &amp; B-School Goals
-                  </h3>
-                  <p className={styles.sectionSubtitle}>
-                    Helps the AI Intelligence Hub calibrate question difficulty and percentile projections.
-                  </p>
-                </div>
-
-                <div className={styles.formRowGrid}>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Target Examination Year</label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                      <select
-                        value={targetYear}
-                        onChange={(e) => setTargetYear(e.target.value)}
-                        className={styles.selectInput}
-                      >
-                        <option value="CAT 2025">CAT 2025 (Nov 2025)</option>
-                        <option value="CAT 2026">CAT 2026 (Recommended Cohort)</option>
-                        <option value="CAT 2027">CAT 2027 (Foundation)</option>
-                        <option value="XAT / OMETs 2026">XAT / OMETs 2026</option>
-                      </select>
-                    </div>
+                {/* Goals */}
+                <section className={styles.sectionGroup}>
+                  <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>
+                      <span className={styles.sectionMarker} style={{ background: "var(--data-amber)" }} aria-hidden="true" />
+                      Target and B-school goal
+                    </h3>
+                    <p className={styles.sectionSubtitle}>
+                      Used to set question difficulty and percentile projections in the Intelligence Hub.
+                    </p>
                   </div>
 
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Dream B-School Goal</label>
-                    <div className={styles.inputWrapper}>
-                      <svg className={styles.inputIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 21h18" />
-                        <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-                        <line x1="9" y1="9" x2="9" y2="9.01" />
-                        <line x1="9" y1="13" x2="9" y2="13.01" />
-                        <line x1="15" y1="9" x2="15" y2="9.01" />
-                        <line x1="15" y1="13" x2="15" y2="13.01" />
-                      </svg>
-                      <input
-                        type="text"
-                        value={dreamSchool}
-                        onChange={(e) => setDreamSchool(e.target.value)}
-                        placeholder="e.g. IIM Ahmedabad, IIM Bangalore, FMS Delhi"
-                        className={styles.textInput}
-                      />
+                  <div className={styles.formRowGrid}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-year">
+                        Target exam year
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <CalendarDays className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <select
+                          id="pf-year"
+                          value={targetYear}
+                          onChange={(e) => setTargetYear(e.target.value)}
+                          className={styles.selectInput}
+                        >
+                          <option value="CAT 2025">CAT 2025 (Nov 2025)</option>
+                          <option value="CAT 2026">CAT 2026 (Recommended Cohort)</option>
+                          <option value="CAT 2027">CAT 2027 (Foundation)</option>
+                          <option value="XAT / OMETs 2026">XAT / OMETs 2026</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel} htmlFor="pf-dream">
+                        Dream B-school
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <Building2 className={styles.inputIcon} size={16} strokeWidth={1.9} />
+                        <input
+                          id="pf-dream"
+                          type="text"
+                          value={dreamSchool}
+                          onChange={(e) => setDreamSchool(e.target.value)}
+                          placeholder="e.g. IIM Ahmedabad, IIM Bangalore, FMS Delhi"
+                          className={styles.textInput}
+                        />
+                      </div>
                     </div>
                   </div>
+                </section>
+
+                {/* Action bar */}
+                <div className={styles.actionBar}>
+                  <button type="button" onClick={() => router.push("/dashboard")} className={styles.cancelBtn}>
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={isSubmitting} className={styles.saveBtn}>
+                    {isSubmitting ? (
+                      <>
+                        <span className={styles.spinner} />
+                        Saving…
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} strokeWidth={2.2} />
+                        Save changes
+                      </>
+                    )}
+                  </button>
                 </div>
-              </div>
-
-              {/* Action Bar */}
-              <div className={styles.actionBar}>
-                <button
-                  type="button"
-                  onClick={() => router.push("/dashboard")}
-                  className={styles.cancelBtn}
-                >
-                  Cancel
-                </button>
-
-                <button type="submit" disabled={isSubmitting} className={styles.saveBtn}>
-                  {isSubmitting ? (
-                    <>
-                      <div className={styles.spinner} />
-                      Saving Changes...
-                    </>
-                  ) : (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                        <polyline points="17 21 17 13 7 13 7 21" />
-                        <polyline points="7 3 7 8 15 8" />
-                      </svg>
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+              </form>
+            </div>
+          </Reveal>
         </div>
       </main>
     </div>
