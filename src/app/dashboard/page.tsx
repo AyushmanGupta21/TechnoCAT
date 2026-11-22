@@ -812,10 +812,10 @@ export default function DashboardPage() {
           <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
         </div>
 
-        {/* 2-Column Responsive Dashboard Grid (65% / 35%) */}
+        {/* 2-Column Responsive Dashboard Grid (Balanced Left & Right Columns) */}
         <div className={styles.dashboardGrid}>
-          {/* LEFT COLUMN: Study Planner, Performance Chart & Notices (65%) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* LEFT COLUMN: Study Planner, Performance Chart & Upcoming Agenda */}
+          <div className={styles.dashboardCol}>
             {/* 1. Daily Study Schedule & Tasks */}
             <DailyStudySchedule
               selectedMonthIndex={selectedMonthIndex}
@@ -1025,9 +1025,29 @@ export default function DashboardPage() {
                 )))}
               </div>
             </div>
+          </div>
 
-            {/* 4. CAT Prep Notices (Full Column Width) - Dynamic Daily Notice Board */}
-            <div className={styles.cardBox}>
+          {/* RIGHT COLUMN: Calendar, Readiness, Leaderboard & CAT Prep Notices */}
+          <div className={styles.dashboardCol}>
+            {/* 1. Interactive Study Calendar */}
+            <StudyCalendarWidget
+              selectedMonthIndex={selectedMonthIndex}
+              onSelectMonthIndex={setSelectedMonthIndex}
+              selectedYear={selectedYear}
+              selectedDay={selectedDay}
+              onSelectDay={(day) => setSelectedDay(day)}
+              taskCategoryMap={taskCategoryMap}
+              isDemo={isDemo}
+            />
+
+            {/* 2. CAT Readiness: single score + estimated percentile; breakdown lives in /intelligence */}
+            <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
+
+            {/* 3. Weekly Leaderboard */}
+            <LeaderboardWidget />
+
+            {/* 4. CAT Prep Notices - Dynamic Daily Notice Board */}
+            <div className={`${styles.cardBox} ${styles.noticeBoardCard}`}>
               <div className={styles.noticeBoardHeader}>
                 <div className={styles.noticeBoardTitleGroup}>
                   <h2 className={styles.cardTitle}>CAT Prep Notices</h2>
@@ -1142,26 +1162,6 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
-          </div>
-
-          {/* RIGHT COLUMN: Calendar, Readiness & Leaderboard (35%) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            {/* 1. Interactive Study Calendar */}
-            <StudyCalendarWidget
-              selectedMonthIndex={selectedMonthIndex}
-              onSelectMonthIndex={setSelectedMonthIndex}
-              selectedYear={selectedYear}
-              selectedDay={selectedDay}
-              onSelectDay={(day) => setSelectedDay(day)}
-              taskCategoryMap={taskCategoryMap}
-              isDemo={isDemo}
-            />
-
-            {/* 2. CAT Readiness: single score + estimated percentile; breakdown lives in /intelligence */}
-            <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
-
-            {/* 3. Weekly Leaderboard */}
-            <LeaderboardWidget />
           </div>
         </div>
       </main>
