@@ -1,310 +1,204 @@
-/* ==========================================================================
-   DESKTOP NAVBAR STYLES (>= 1024px)
-   ========================================================================== */
-
+/* ============ Desktop header (>= 1024px) ============ */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 1000;
-  transition: transform 0.3s ease;
   pointer-events: auto;
 }
-
 @media (max-width: 1023px) {
-  .header {
-    display: none !important;
-  }
+  .header { display: none !important; }
 }
 
-/* --- Top Utility Bar --- */
-.topBar {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 3px 0;
-}
-
-.topBarInner {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-  gap: 12px;
-}
-
-
-.utilityLinks {
-  display: flex;
-  font-size: 12px;
-  color: #111827;
-  align-items: center;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  white-space: nowrap;
-}
-
-.utilityLinks li {
-  border-right: 1px solid #d1d5db;
-  padding: 1px 12px;
-  cursor: pointer;
-}
-
-.utilityLinks li:last-child {
-  border-right: none;
-  padding-right: 0;
-}
-
-.utilityLinks li a {
-  color: #1f2937;
-  text-decoration: none;
-  transition: color 0.15s;
-}
-
-.utilityLinks li a:hover {
-  color: #2563EB;
-  text-decoration: underline;
-}
-
-/* Gracefully hide lower-priority utility items if screen width reduces below 1200px */
-@media (max-width: 1199px) {
-  .utilityLinks li:nth-child(n+4) {
-    display: none;
-  }
-}
-
-/* --- Main Navigation Bar --- */
 .mainNav {
-  background: var(--white);
-  border-bottom: 1px solid var(--primary-light);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+.headerScrolled .mainNav {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom-color: var(--line);
+  box-shadow: 0 8px 24px -18px rgba(12, 23, 48, 0.25);
 }
 
 .mainNavInner {
-  max-width: 1320px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 12px 24px;
-  min-height: 75px;
+  padding: 0 24px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
 }
 
 .navLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: nowrap;
+  gap: 36px;
+  min-width: 0;
 }
-
-@media (max-width: 1150px) {
-  .navLeft {
-    gap: 10px;
-  }
-}
-
-/* Logo */
 .logoLink {
-  text-decoration: none;
   display: inline-flex;
-  align-items: center;
   flex-shrink: 0;
-  width: auto;
-  height: 75px;
 }
 
-
-
-/* Nav links list */
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
 }
-
 .dropdownContainer {
   position: relative;
 }
-
-.allCoursesBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-soft);
-  color: var(--text-main);
-  padding: 7px 15px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid var(--primary-light);
-  font-family: inherit;
-}
-
-.allCoursesBtn:hover {
-  background: var(--primary);
-  color: #ffffff;
-}
-
 .navLinkBtn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: transparent;
-  padding: 7px 11px;
-  border-radius: 8px;
-  border: none;
-  font-family: inherit;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.navLinkBtn:hover,
+.navLinkBtnActive {
+  color: var(--ink);
+  background: rgba(37, 86, 224, 0.06);
+}
+.chevron {
+  color: var(--ink-4);
+  transition: transform var(--dur) var(--ease-out);
 }
 
-.navLinkBtn:hover {
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-/* Floating Dropdown Menus */
+/* Dropdown */
 .dropdownMenu {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  background: var(--white);
-  border: 1px solid var(--primary-light);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  min-width: 290px;
-  max-width: 360px;
-  z-index: 100;
+  top: calc(100% + 10px);
+  left: -8px;
+  width: 400px;
   padding: 10px;
-  animation: dropdownFadeIn 0.18s ease-out;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--elev-4);
+  transform-origin: top left;
+  z-index: 10;
 }
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dropdownMenu::before {
+  /* hover bridge so the menu doesn't close in the gap */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
 }
-
 .dropdownHeader {
-  padding: 6px 10px 8px;
-  border-bottom: 1px solid var(--bg-soft);
-  margin-bottom: 6px;
+  padding: 8px 12px 10px;
 }
-
 .dropdownTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
 }
-
 .dropdownGrid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
-
 .dropdownItem {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  text-decoration: none;
-  transition: all 0.15s ease;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
-
 .dropdownItem:hover {
-  background: var(--bg-soft);
+  background: var(--blue-25);
+  box-shadow: inset 0 0 0 1px var(--blue-100);
 }
-
 .dropdownItemHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
-
 .dropdownItemLabel {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-main);
-  transition: color 0.15s;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
 }
-
 .dropdownItem:hover .dropdownItemLabel {
-  color: var(--primary);
+  color: var(--blue-700);
 }
-
-.dropdownBadge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--primary-light);
-  color: var(--primary);
-  border: 1px solid var(--primary-light);
-  text-transform: uppercase;
+.dropdownBadge,
+.accordionBadge {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: var(--blue-700);
+  background: var(--blue-50);
+  white-space: nowrap;
 }
-
 .dropdownItemDesc {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-3);
 }
 
-/* Nav Right Actions */
+/* Right actions */
 .navActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
 }
-
+.signInLink {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.signInLink:hover {
+  color: var(--ink);
+  background: rgba(37, 86, 224, 0.06);
+}
 .loginBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--primary);
-  color: #ffffff;
-  font-size: 13px;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 11px;
+  font-size: 15px;
   font-weight: 600;
-  padding: 7px 18px;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  text-decoration: none;
-  font-family: inherit;
-  box-shadow: var(--shadow-sm);
+  color: #fff;
+  background: var(--blue-600);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 16px -8px rgba(37, 86, 224, 0.7);
+  transition: background-color var(--dur) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
-
 .loginBtn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: var(--blue-700);
+}
+.loginBtn:active {
+  transform: translateY(1px);
 }
 
+@media (max-width: 1150px) {
+  .navLeft { gap: 20px; }
+  .navLinkBtn { padding: 0 10px; font-size: 14.5px; }
+}
 
-/* ==========================================================================
-   MOBILE & TABLET NAVBAR (< 1024px)
-   ========================================================================== */
-
+/* ============ Mobile bar (< 1024px) ============ */
 .mobileNav {
   display: none;
   position: fixed;
@@ -312,579 +206,339 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: var(--white);
-  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
   pointer-events: auto;
 }
-
+.mobileNavScrolled {
+  border-bottom-color: var(--line);
+  box-shadow: 0 8px 24px -18px rgba(12, 23, 48, 0.25);
+}
 @media (max-width: 1023px) {
-  .mobileNav {
-    display: block !important;
-  }
+  .mobileNav { display: block; }
 }
 
-
 .mobileMainBar {
-  background: var(--white);
-  padding: 4px 16px;
-  min-height: 75px;
+  height: 68px;
+  padding: 0 12px 0 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-cyan);
-  position: relative;
-  z-index: 1001;
-  pointer-events: auto;
+  gap: 8px;
 }
-
 .mobileNavLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1002;
-  pointer-events: auto;
+  gap: 4px;
+  min-width: 0;
 }
-
 .mobileMenuBtn {
-  color: var(--text-main);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 7px;
-  margin-left: -6px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  position: relative;
-  z-index: 1003;
-  pointer-events: auto;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--ink);
 }
-
 .mobileMenuBtn:hover {
-  background: #F0F9FF;
-  color: #2563EB;
+  background: var(--blue-50);
 }
-
-.mobileMenuBtn:active {
-  background: #E0F2FE;
-  transform: scale(0.96);
-}
-
 .mobileLogoLink {
   display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-  pointer-events: auto;
+  flex-shrink: 0;
 }
-
-
-
 .mobileNavRight {
   display: flex;
   align-items: center;
-  gap: 8px;
-  position: relative;
-  z-index: 1002;
-  pointer-events: auto;
+  flex-shrink: 0;
 }
-
-/* Clean, prominent Login button on mobile matching desktop pill design */
 .mobileLoginBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
-  color: #ffffff;
-  font-size: 13px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 7px 18px;
-  border-radius: 9999px;
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  font-family: inherit;
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1003;
-  pointer-events: auto;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  color: #fff;
+  background: var(--blue-600);
 }
 
-.mobileLoginBtn:hover,
-.mobileLoginBtn:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-  opacity: 0.95;
-}
-
-
-/* ==========================================================================
-   SLIDE-OUT LEFT DRAWER (Mobile & Tablet Navigation)
-   ========================================================================== */
-
+/* ============ Drawer ============ */
 .drawerBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  z-index: 10010;
-  animation: backdropFadeIn 0.25s ease-out;
-  pointer-events: auto;
+  z-index: 1100;
+  background: rgba(12, 23, 48, 0.4);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
-
-@keyframes backdropFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* When closed, completely hidden with NO box-shadow or pointer interception */
 .drawerPanel {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 320px;
-  max-width: 86vw;
-  background: var(--white);
-  border-right: 1px solid var(--border-cyan);
-  z-index: 10020;
-  transform: translateX(-110%);
-  visibility: hidden;
-  pointer-events: none;
-  box-shadow: none;
-  opacity: 0;
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s, visibility 0.28s;
+  z-index: 1101;
+  width: min(360px, 88vw);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  background: #fff;
+  box-shadow: 24px 0 60px -20px rgba(12, 23, 48, 0.35);
+  transition: transform 420ms var(--ease-out), visibility 0s linear 420ms;
 }
-
-/* Explicit closed state */
-.drawerClosed {
-  visibility: hidden !important;
-  pointer-events: none !important;
-  box-shadow: none !important;
-  transform: translateX(-110%) !important;
-  opacity: 0 !important;
-}
-
-/* Explicit open state */
 .drawerOpen {
-  transform: translateX(0) !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  opacity: 1 !important;
-  box-shadow: 10px 0 40px rgba(14, 165, 233, 0.15) !important;
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 420ms var(--ease-out), visibility 0s;
+}
+.drawerClosed {
+  transform: translateX(-105%);
+  visibility: hidden;
+}
+@media (min-width: 1024px) {
+  .drawerPanel, .drawerBackdrop { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawerPanel, .drawerOpen { transition: none; }
 }
 
-/* Drawer Header */
 .drawerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border-cyan);
-  background: #F8FCFF;
+  height: 68px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
 }
-
 .drawerBrand {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
-
 .drawerCloseBtn {
-  background: #F0F9FF;
-  border: 1px solid var(--border-cyan);
-  color: var(--text-muted);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  pointer-events: auto;
-  touch-action: manipulation;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--ink-2);
 }
-
 .drawerCloseBtn:hover {
-  background: #E0F2FE;
-  color: var(--text-main);
+  background: var(--blue-50);
 }
-
-/* Drawer Content Scroll */
 .drawerContent {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  -webkit-overflow-scrolling: touch;
-  background: var(--white);
+  gap: 22px;
 }
 
-/* Drawer User / Guest Card */
-.drawerAuthBox {
-  background: #F8FCFF;
-  border: 1px solid var(--border-cyan);
-  border-radius: 16px;
-  padding: 14px;
+.drawerGuestCard,
+.drawerUserCard {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--blue-25);
+  border: 1px solid var(--blue-100);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-
 .drawerGuestHeader {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-bottom: 12px;
+  gap: 4px;
 }
-
 .drawerGuestTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-main);
+  font-family: var(--ff-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
 }
-
 .drawerGuestSub {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.35;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  line-height: 1.45;
 }
-
-.drawerGuestBtns {
-  display: flex;
+.drawerGuestBtns,
+.drawerUserActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
-
-.drawerLoginBtn {
-  flex: 1;
-  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  touch-action: manipulation;
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
-}
-
-.drawerLoginBtn:hover {
-  opacity: 0.92;
-}
-
-.drawerSignupBtn {
-  flex: 1;
-  background: #F0F9FF;
-  color: #2563EB;
-  border: 1px solid #BAE6FD;
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-size: 12px;
+.drawerLoginBtn,
+.drawerLogoutBtn {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  touch-action: manipulation;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line-strong);
 }
-
-.drawerSignupBtn:hover {
-  background: #E0F2FE;
+.drawerSignupBtn,
+.drawerDashboardBtn {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue-600);
 }
-
-/* Logged-In User Card */
-.drawerUserCard {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .drawerUserInfo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
 }
-
 .drawerAvatar {
-  width: 38px;
-  height: 38px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue-600);
 }
-
 .drawerUserDetails {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-width: 0;
 }
-
 .drawerUserName {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.drawerUserEmail {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.drawerUserActions {
-  display: flex;
-  gap: 8px;
-}
-
-.drawerDashboardBtn {
-  flex: 2;
-  background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
-  color: #ffffff;
-  text-align: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
   font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.2s;
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
+  color: var(--ink);
+}
+.drawerUserEmail {
+  font-size: 13px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.drawerDashboardBtn:hover {
-  opacity: 0.92;
-}
-
-.drawerLogoutBtn {
-  flex: 1;
-  background: #FEF2F2;
-  color: #EF4444;
-  border: 1px solid #FECACA;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.drawerLogoutBtn:hover {
-  background: #FEE2E2;
-}
-
-/* Sections in Drawer */
 .drawerSection {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .drawerSectionTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #0284c7;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
   padding: 0 4px;
 }
-
-/* Accordion Group */
 .accordionGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-top: 1px solid var(--line);
 }
-
 .accordionItem {
-  background: #F8FCFF;
-  border: 1px solid var(--border-cyan);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
+  border-bottom: 1px solid var(--line);
 }
-
-.accordionItem:hover {
-  border-color: #BAE6FD;
-}
-
 .accordionHeader {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s;
-  touch-action: manipulation;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 4px;
+  text-align: left;
 }
-
-.accordionHeader:hover {
-  background: #F0F9FF;
-}
-
 .accordionTitle {
-  color: var(--text-main);
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--ink);
 }
-
+.accordionClip {
+  overflow: hidden;
+}
 .accordionBody {
   display: flex;
   flex-direction: column;
-  padding: 4px 10px 10px;
-  gap: 2px;
-  border-top: 1px solid var(--border-cyan);
+  padding: 0 0 10px;
 }
-
 .accordionLink {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px;
-  border-radius: 6px;
-  text-decoration: none;
-  gap: 8px;
-  transition: background 0.15s;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
 }
-
 .accordionLink:hover {
-  background: #F0F9FF;
+  background: var(--blue-25);
 }
-
 .accordionLinkText {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  min-width: 0;
 }
-
-.accordionLinkText span:first-child {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.accordionLink:hover .accordionLinkText span:first-child {
-  color: #2563EB;
-}
-
 .accordionLinkDesc {
-  font-size: 10.5px;
-  color: var(--text-muted);
-  line-height: 1.3;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-3);
 }
 
-.accordionBadge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #E0F2FE;
-  color: #0284c7;
-  border: 1px solid #BAE6FD;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-/* Tools List */
 .toolsList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
-
 .toolItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  color: var(--text-main);
-  font-size: 12.5px;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 14.5px;
   font-weight: 500;
-  text-decoration: none;
-  background: #F8FCFF;
-  border: 1px solid var(--border-cyan);
-  transition: all 0.15s;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
 }
-
+.toolItem svg {
+  color: var(--ink-4);
+}
 .toolItem:hover {
-  background: #F0F9FF;
-  color: #2563EB;
-  border-color: #BAE6FD;
+  color: var(--blue-700);
 }
 
-/* Drawer Footer */
 .drawerFooter {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-cyan);
+  padding-bottom: 8px;
 }
-
-.drawerWhatsappBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #059669;
-  color: #ffffff;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.drawerWhatsappBtn:hover {
-  opacity: 0.9;
-}
-
+.drawerWhatsappBtn,
 .drawerDownloadBtn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #F0F9FF;
-  color: #2563EB;
-  border: 1px solid #BAE6FD;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 12px;
+  min-height: 48px;
+  border-radius: 12px;
+  font-size: 14.5px;
   font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s;
 }
-
-.drawerDownloadBtn:hover {
-  background: #E0F2FE;
+.drawerWhatsappBtn {
+  color: var(--blue-700);
+  background: var(--blue-50);
+}
+.drawerDownloadBtn {
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
 }

@@ -1,5 +1,33 @@
 import type { Metadata } from "next";
+import { Roboto, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+// Satoshi (Fontshare, free for commercial use), self-hosted from src/app/fonts.
+// Body and UI text; exposed as --font-sans.
+const satoshi = localFont({
+  src: [
+    { path: "./fonts/Satoshi-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Satoshi-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/Satoshi-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Satoshi-900.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-sans",
+  display: "swap",
+});
+// Roboto (Apache 2.0, same heading face as Techno India University) for headlines; self-hosted by next/font.
+const display = Roboto({
+  subsets: ["latin"],
+  weight: ["500", "700", "900"],
+  variable: "--font-display",
+  display: "swap",
+});
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "TechnoCAT: Free CAT Mock Tests 2026 - 35 Full Mocks & AI Analysis",
@@ -33,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${satoshi.variable} ${display.variable} ${mono.variable}`}>
       <body>
         <AuthProvider>
           {children}

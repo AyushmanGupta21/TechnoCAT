@@ -1,9 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { ArrowRight, Check, RotateCcw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import styles from "./IimPredictor.module.css";
 import { TOP_B_SCHOOLS } from "@/data/bSchoolEngine";
+import { EASE_OUT, GradientText, Reveal, RevealGroup, RevealItem } from "@/components/landing/motion";
+import ui from "@/components/landing/ui.module.css";
+import styles from "./IimPredictor.module.css";
 
 // Honest teaser: which listed schools' past GENERAL-category overall cutoffs the entered
 // percentile clears. The full predictor (after sign-in) also weighs academics, work-ex etc.
@@ -16,9 +20,18 @@ function cutoffTeaser(percentileInput: string) {
   return { cleared, total: TOP_B_SCHOOLS.length };
 }
 
+const CHECK_TINTS = ["var(--tint-teal)", "var(--tint-blue)", "var(--tint-violet)", "var(--tint-amber)"];
+
+const POINTS = [
+  "Based on real selection criteria",
+  "Considers academic diversity",
+  "Highly accurate percentile mapping",
+];
+
 export default function IimPredictor() {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
+  const reduce = useReducedMotion();
   const [predicted, setPredicted] = useState(false);
 
   const [tenth, setTenth] = useState("");
@@ -74,112 +87,154 @@ export default function IimPredictor() {
     }
   };
 
-  return (
-    <section className={styles.section}>
-      <div className={styles.container}>
-        <div className={styles.widgetGrid}>
-          <div className={styles.textContent}>
-            <div className={styles.tag}>FREE TOOL</div>
-            <h2 className={styles.heading}>IIM Call Predictor</h2>
-            <p className={styles.desc}>
-              Don't guess your chances. Compare your profile with past cutoffs and published selection criteria of top B-Schools.
-            </p>
-            <ul className={styles.features}>
-              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Based on real selection criteria</li>
-              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Considers academic diversity</li>
-              <li style={{ display: "flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Highly accurate percentile mapping</li>
-            </ul>
-          </div>
+  const fields = [
+    { id: "tenth", label: "10th percentage", value: tenth, set: setTenth, min: "30", ph: "85", unit: "%" },
+    { id: "twelfth", label: "12th percentage", value: twelfth, set: setTwelfth, min: "30", ph: "88", unit: "%" },
+    { id: "grad", label: "Graduation", value: grad, set: setGrad, min: "30", ph: "75", unit: "%" },
+    { id: "pct", label: "Expected CAT percentile", value: percentile, set: setPercentile, min: "50", ph: "95.5", unit: "%ile" },
+  ];
 
-          <div className={styles.widgetCard}>
-            {!predicted ? (
-              <form className={styles.form} onSubmit={handleSubmit}>
-                <h3 className={styles.formTitle}>Check Your Chances</h3>
-                <div className={styles.inputGroup}>
-                  <label>10th Percentage (%)</label>
-                  <input
-                    type="number"
-                    required
-                    min="30"
-                    max="100"
-                    step="any"
-                    placeholder="e.g. 85"
-                    value={tenth}
-                    onChange={(e) => setTenth(e.target.value)}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>12th Percentage (%)</label>
-                  <input
-                    type="number"
-                    required
-                    min="30"
-                    max="100"
-                    step="any"
-                    placeholder="e.g. 88"
-                    value={twelfth}
-                    onChange={(e) => setTwelfth(e.target.value)}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Graduation (%)</label>
-                  <input
-                    type="number"
-                    required
-                    min="30"
-                    max="100"
-                    step="any"
-                    placeholder="e.g. 75"
-                    value={grad}
-                    onChange={(e) => setGrad(e.target.value)}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Expected CAT Percentile</label>
-                  <input
-                    type="number"
-                    required
-                    min="50"
-                    max="100"
-                    step="any"
-                    placeholder="e.g. 95.5"
-                    value={percentile}
-                    onChange={(e) => setPercentile(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className={styles.submitBtn}>Predict My IIM Calls</button>
-              </form>
-            ) : (
-              <div className={styles.resultView}>
-                <div className={styles.successIcon}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></div>
-                <h3 className={styles.formTitle}>Your quick check</h3>
-                {(() => {
-                  const { cleared, total } = cutoffTeaser(percentile);
-                  return (
-                    <>
-                      <p className={styles.resultDesc}>
-                        A {percentile} percentile clears the past general-category overall cutoff of{" "}
-                        <strong>{cleared.length} of {total}</strong> B-Schools in our list. Shortlists also depend on
-                        academics, work experience and category — the full report weighs all of them.
-                      </p>
-                      <div className={styles.blurredList}>
-                        {cleared.slice(0, 3).map((school) => (
-                          <div key={school.id} className={styles.blurRow}>
-                            {school.shortName} - <span>cutoff {school.overallCutoff.GENERAL}</span>
-                          </div>
-                        ))}
-                        {cleared.length === 0 && <div className={styles.blurRow}>No listed school's past cutoff yet</div>}
-                      </div>
-                    </>
-                  );
-                })()}
-                <button className={styles.signUpBtn} onClick={handleUnlockReport}>
-                  {user && !user.isGuest ? "View Full Report →" : "Sign Up Free to Unlock Full Report"}
-                </button>
-                <button className={styles.resetBtn} onClick={() => setPredicted(false)}>Recalculate</button>
-              </div>
-            )}
-          </div>
+  const swap = {
+    initial: { opacity: 0, y: reduce ? 0 : 12 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: reduce ? 0 : -8 },
+    transition: { duration: reduce ? 0.15 : 0.4, ease: EASE_OUT },
+  };
+
+  const teaser = cutoffTeaser(percentile);
+  const ratio = teaser.total ? teaser.cleared.length / teaser.total : 0;
+
+  return (
+    <section className={`${styles.section} ${ui.sectionCanvas}`} id="iim-predictor">
+      <div className={ui.container}>
+        <div className={styles.grid}>
+          <RevealGroup className={styles.text} stagger={0.05}>
+            <RevealItem>
+              <span className={styles.eyebrow}>Free tool</span>
+            </RevealItem>
+            <RevealItem>
+              <h2 className={styles.heading}>
+                IIM <GradientText>call predictor</GradientText>
+              </h2>
+            </RevealItem>
+            <RevealItem>
+              <p className={styles.desc}>
+                Don&apos;t guess your chances. Compare your profile with past cutoffs and the published selection
+                criteria of top B-schools.
+              </p>
+            </RevealItem>
+            <RevealItem>
+              <ul className={styles.points}>
+                {POINTS.map((p, i) => (
+                  <li key={p}>
+                    <span className={styles.check} style={{ "--c": CHECK_TINTS[i % CHECK_TINTS.length] } as React.CSSProperties}>
+                      <Check size={13} strokeWidth={2.5} />
+                    </span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </RevealItem>
+          </RevealGroup>
+
+          <Reveal delay={0.1} className={`${styles.card} glass-card`} data-tint="violet">
+            <AnimatePresence mode="wait" initial={false}>
+              {!predicted ? (
+                <motion.form key="form" className={styles.form} onSubmit={handleSubmit} {...swap}>
+                  <div className={styles.formHead}>
+                    <h3 className={styles.formTitle}>Check your chances</h3>
+                    <span className={styles.formHint}>Takes 20 seconds</span>
+                  </div>
+                  <div className={styles.fields}>
+                    {fields.map((f) => (
+                      <label key={f.id} className={styles.field} htmlFor={`iim-${f.id}`}>
+                        <span className={styles.label}>{f.label}</span>
+                        <span className={styles.inputWrap}>
+                          <input
+                            id={`iim-${f.id}`}
+                            type="number"
+                            inputMode="decimal"
+                            required
+                            min={f.min}
+                            max="100"
+                            step="any"
+                            placeholder={`e.g. ${f.ph}`}
+                            value={f.value}
+                            onChange={(e) => f.set(e.target.value)}
+                          />
+                          <span className={styles.unit}>{f.unit}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <button type="submit" className={`${ui.btn} ${ui.btnPrimary} ${styles.submit}`}>
+                    Predict my IIM calls
+                    <ArrowRight size={18} strokeWidth={1.75} data-arrow />
+                  </button>
+                </motion.form>
+              ) : (
+                <motion.div key="result" className={styles.result} {...swap}>
+                  <div className={styles.formHead}>
+                    <h3 className={styles.formTitle}>Your quick check</h3>
+                    <span className={`${ui.figure} ${styles.resultPct}`}>{percentile}%ile</span>
+                  </div>
+
+                  <div className={styles.meter}>
+                    <div className={styles.meterTop}>
+                      <span className={`${ui.figure} ${styles.meterBig}`}>
+                        {teaser.cleared.length}
+                        <span className={styles.meterOf}> / {teaser.total}</span>
+                      </span>
+                      <span className={styles.meterLabel}>past cutoffs cleared</span>
+                    </div>
+                    <div className={styles.meterTrack}>
+                      <motion.span
+                        className={styles.meterFill}
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: ratio }}
+                        transition={{ duration: reduce ? 0 : 1.1, ease: EASE_OUT, delay: 0.15 }}
+                      />
+                    </div>
+                  </div>
+
+                  <p className={styles.resultDesc}>
+                    Past general-category overall cutoffs only. Shortlists also weigh academics, work experience
+                    and category; the full report covers all of them.
+                  </p>
+
+                  <div className={styles.blurredList}>
+                    {teaser.cleared.slice(0, 3).map((school, i) => (
+                      <motion.div
+                        key={school.id}
+                        className={styles.blurRow}
+                        initial={{ opacity: 0, x: reduce ? 0 : -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: reduce ? 0 : 0.3 + i * 0.08, duration: 0.4, ease: EASE_OUT }}
+                      >
+                        <span className={styles.blurName}>
+                          <i className={styles.okDot} />
+                          {school.shortName}
+                        </span>
+                        <span className={ui.figure}>cutoff {school.overallCutoff.GENERAL}</span>
+                      </motion.div>
+                    ))}
+                    {teaser.cleared.length === 0 && (
+                      <div className={styles.blurRow}>No listed school&apos;s past cutoff yet</div>
+                    )}
+                  </div>
+
+                  <button type="button" className={`${ui.btn} ${ui.btnPrimary} ${styles.submit}`} onClick={handleUnlockReport}>
+                    {user && !user.isGuest ? "View full report" : "Sign up free to unlock the full report"}
+                    <ArrowRight size={18} strokeWidth={1.75} data-arrow />
+                  </button>
+                  <button type="button" className={`${ui.btn} ${ui.btnGhost} ${styles.reset}`} onClick={() => setPredicted(false)}>
+                    <RotateCcw size={15} strokeWidth={1.75} />
+                    Recalculate
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Reveal>
         </div>
       </div>
     </section>

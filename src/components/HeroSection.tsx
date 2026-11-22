@@ -2,14 +2,30 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion, type Variants } from "motion/react";
+import { ArrowRight, Check, FileText, MessageCircle, Play, Trophy } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import CardInfoModal, { CardInfoData } from "./CardInfoModal";
+import { CountUp, Doodle, EASE_OUT, TiltFrame, useReplay } from "@/components/landing/motion";
+import ui from "@/components/landing/ui.module.css";
 import styles from "./HeroSection.module.css";
 
+const LATEST_MOCK = "/browse?section=mocks&mock=latest#pyq-section";
+const PYQ = "/browse?section=pyqs#pyq-section";
+
+const HEADLINE: { text: string; accent?: boolean }[] = [
+  { text: "The best CAT mock test," },
+  { text: "with 35 full mocks and AI analysis", accent: true },
+];
+
+const CHIPS = ["35 full CAT mocks", "45 sectional tests", "Detailed video solutions", "All-India percentiles"];
+
 export default function HeroSection() {
+  const rv = useReplay();
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
   const [modalData, setModalData] = useState<CardInfoData | null>(null);
+  const reduce = useReducedMotion();
 
   const handleAuthAction = (destination: string) => {
     if (!user || user.isGuest) {
@@ -33,307 +49,331 @@ export default function HeroSection() {
 
   const openTestTakersModal = () => {
     setModalData({
-      badge: "ALL-INDIA BENCHMARK",
-      title: "20,000+ Serious CAT Aspirants",
+      badge: "All-India benchmark",
+      title: "20,000+ serious CAT aspirants",
       description:
-        "Compete against India's most focused CAT candidates. Every mock test gives you an instant All-India Percentile ranking and section-wise standing.",
+        "Compete against India's most focused CAT candidates. Every mock test gives you an instant All-India percentile ranking and section-wise standing.",
       highlights: [
         "Live All-India percentile calculated with every submission",
         "Compare question-wise accuracy and time spent against the top 1%",
-        "Sectional pacing analysis: VARC, DILR, and QA benchmarked live"
+        "Sectional pacing analysis: VARC, DILR and QA benchmarked live",
       ],
-      primaryBtnText: "Attempt Free Mock Now",
-      onPrimaryClick: () => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")
+      primaryBtnText: "Attempt a free mock",
+      onPrimaryClick: () => handleAuthAction(LATEST_MOCK),
     });
   };
 
   const openToppersModal = () => {
     setModalData({
-      badge: "HALL OF FAME",
+      badge: "Hall of fame",
       title: "580+ 99%ilers in CAT 2025",
       description:
-        "TechnoCAT learners consistently dominate the 99th percentile, converting dream calls at IIM Ahmedabad, Bangalore, Calcutta, Lucknow, and FMS Delhi.",
+        "TechnoCAT learners consistently reach the 99th percentile, converting calls at IIM Ahmedabad, Bangalore, Calcutta, Lucknow and FMS Delhi.",
       highlights: [
-        "Average percentile jump of +14.2% within first 6 mocks",
-        "Over 82 students scored 99.8+ percentile in QA & DILR",
-        "Includes 1-on-1 interview and GD-PI mentorship from IIM alumni"
+        "Average percentile jump of +14.2% within the first 6 mocks",
+        "Over 82 students scored 99.8+ percentile in QA and DILR",
+        "Includes 1-on-1 interview and GD-PI mentorship from IIM alumni",
       ],
-      primaryBtnText: "Start Preparation Free",
-      onPrimaryClick: () => handleAuthAction("/dashboard")
+      primaryBtnText: "Start preparing for free",
+      onPrimaryClick: () => handleAuthAction("/dashboard"),
     });
+  };
+
+  /* ---------- entrance choreography ---------- */
+  const d = reduce ? 0 : 1;
+  const col: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 * d, delayChildren: 0.05 * d } },
+  };
+  const rise: Variants = {
+    hidden: { opacity: 0, y: 16 * d },
+    show: { opacity: 1, y: 0, transition: { duration: reduce ? 0.2 : 0.8, ease: EASE_OUT } },
+  };
+  const line: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.045 * d } },
+  };
+  const accentLine: Variants = {
+    hidden: { y: reduce ? 0 : "105%", opacity: reduce ? 0 : 1 },
+    show: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        y: { duration: reduce ? 0.2 : 0.9, ease: EASE_OUT, delay: reduce ? 0 : 0.2 },
+        opacity: { duration: 0.2 },
+      },
+    },
+  };
+  const word: Variants = {
+    hidden: { y: reduce ? 0 : "105%", opacity: reduce ? 0 : 1 },
+    show: { y: 0, opacity: 1, transition: { duration: reduce ? 0.2 : 0.85, ease: EASE_OUT } },
   };
 
   return (
     <>
       <section className={styles.hero}>
+        <div className={styles.wash} aria-hidden="true" />
         <div className={styles.container}>
           <div className={styles.grid}>
-            {/* Left: Text content */}
-            <div className={styles.leftCol}>
-              {/* Badge */}
-              <div className={styles.heroBadge}>
-                <span className={styles.badgePulse} />
-                <span>AI-Powered CAT Mock Series 2026</span>
-              </div>
+            {/* ---------------- Left ---------------- */}
+            <motion.div className={styles.leftCol} variants={col} initial="hidden" animate={rv ? "show" : "hidden"} >
+              <motion.p className={styles.eyebrow} variants={rise}>
+                <span className={ui.liveDot} aria-hidden="true" />
+                <span>TechnoCAT 6.0 mock is open</span>
+                <span className={styles.eyebrowSep} aria-hidden="true" />
+                <span className={styles.eyebrowMuted}>CAT 2026 mock series</span>
+              </motion.p>
 
-              {/* Heading */}
               <h1 className={styles.heading}>
-                TechnoCAT: Best CAT Mock Test
-                <span className={styles.headingAccent}>with 35 Full Mocks &amp; AI Analysis</span>
+                <span className={styles.srOnly}>TechnoCAT: </span>
+                {HEADLINE.map((l) => (
+                  <motion.span
+                    key={l.text}
+                    className={`${styles.headLine} ${l.accent ? styles.headingAccent : ""}`}
+                    variants={line}
+                  >
+                    {l.accent ? (
+                      // Accent line: one gradient run (per-word clipping would repeat the gradient)
+                      <span className={styles.lineMask}>
+                        <motion.span className={`text-gradient ${styles.accentRun}`} variants={accentLine}>
+                          {l.text}
+                        </motion.span>
+                      </span>
+                    ) : (
+                      l.text.split(" ").map((w, i, arr) => (
+                        <span key={i} className={styles.wordMask}>
+                          <motion.span className={styles.word} variants={word}>
+                            {w}
+                          </motion.span>
+                          {i === arr.length - 1 ? null : " "}
+                        </span>
+                      )).concat(
+                        <span key="sparkle" className={styles.sparkleWrap}>
+                          <Doodle kind="sparkle" className={styles.sparkle} delay={1.1} />
+                        </span>
+                      )
+                    )}
+                  </motion.span>
+                ))}
               </h1>
 
-              {/* Subtitle / Description */}
-              <p className={styles.description}>
-                Personalized AI Mentor based on Your Performance &amp; Indra&apos;s Mock Analysis
-                which reduces your Mock Analysis time from 3 hrs to 0 hrs.
-              </p>
+              <motion.p className={styles.description} variants={rise}>
+                A personal AI mentor that reads your performance, plus Indra&apos;s mock analysis, takes your
+                post-mock review from 3 hours to zero.
+              </motion.p>
 
-              {/* Feature Chips / Pills */}
-              <div className={styles.featureChips}>
-                <span className={styles.chipItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  35 Full CAT Mocks
-                </span>
-                <span className={styles.chipItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  45 Sectional Tests
-                </span>
-                <span className={styles.chipItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Detailed Video Solutions
-                </span>
-                <span className={styles.chipItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  All-India Percentiles
-                </span>
-              </div>
+              <motion.ul className={styles.featureChips} variants={rise}>
+                {CHIPS.map((c, i) => (
+                  <li key={c} className={styles.chipItem}>
+                    <span className={styles.chipCheck} data-c={i}>
+                      <Check size={12} strokeWidth={2.5} />
+                    </span>
+                    {c}
+                  </li>
+                ))}
+              </motion.ul>
 
-              {/* Primary & Secondary Action CTAs */}
-              <div className={styles.ctaGroup}>
+              <motion.div className={styles.ctaGroup} variants={rise}>
                 <div className={styles.primaryCtaRow}>
                   <button
-                    className={styles.freeAttemptBtn}
-                    onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
+                    type="button"
+                    className={`${ui.btn} ${ui.btnPrimary} ${styles.ctaMain}`}
+                    onClick={() => handleAuthAction(LATEST_MOCK)}
                   >
-                    <span className={styles.freeBadge}>FREE</span>
-                    <span>Attempt TechnoCAT 6.0 Mock</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    <span>Attempt TechnoCAT 6.0 mock</span>
+                    <span className={styles.ctaNote}>Free</span>
+                    <ArrowRight size={17} strokeWidth={2} data-arrow />
                   </button>
-                  <button className={styles.enrollBtn} onClick={handleEnroll}>
-                    Enroll for 2026 Mock Series
+                  <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={handleEnroll}>
+                    Enroll for 2026 mock series
                   </button>
                 </div>
 
                 <div className={styles.secondaryCtaRow}>
-                  <button
-                    className={styles.pyqBtn}
-                    onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                    </svg>
-                    <span>Attempt Past Year Paper as Mock</span>
+                  <button type="button" className={styles.textLink} onClick={() => handleAuthAction(PYQ)}>
+                    <FileText size={16} strokeWidth={1.75} />
+                    <span>Attempt a past year paper as mock</span>
                   </button>
+                  <span className={styles.linkSep} aria-hidden="true" />
                   <button
-                    className={styles.whatsappBtn}
-                    onClick={() =>
-                      window.open("https://chat.whatsapp.com/sample-technocat-cat2026", "_blank")
-                    }
+                    type="button"
+                    className={styles.textLink}
+                    onClick={() => window.open("https://chat.whatsapp.com/sample-technocat-cat2026", "_blank")}
                   >
-                    <svg
-                      className={styles.whatsappIcon}
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="white"
-                    >
-                      <path d="M21.98 11.41c-.34-5.8-5.61-10.27-11.68-9.27-4.18.69-7.53 4.08-8.18 8.26-.38 2.42.12 4.71 1.21 6.6l-.89 3.31c-.2.75.49 1.43 1.23 1.22l3.26-.9c1.48.87 3.21 1.37 5.06 1.37 5.64 0 10.32-4.97 9.99-10.59z" />
-                    </svg>
-                    <span>Join Community (20k+)</span>
+                    <MessageCircle size={16} strokeWidth={1.75} />
+                    <span>Join the community (20k+)</span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Free sectionals card */}
-              <div
-                className={styles.sectionalsCard}
-                onClick={() => handleAuthAction("/browse?section=pyqs#pyq-section")}
-              >
-                <div className={styles.sectionalsInner}>
-                  <div className={styles.sectionalsLeft}>
-                    <div className={styles.giftBox}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="3" y="8" width="18" height="4" rx="1" />
-                        <path d="M12 8v13" />
-                        <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-                        <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className={styles.sectionalsTitle}>6 CAT Sectionals Free For Everyone</div>
-                      <p className={styles.sectionalsDesc}>
-                        Attempt <span className={styles.bold}>2 Sectionals</span> each for QA, DILR
-                        and VARC with detailed AI analysis and video solutions.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    className={styles.attemptNowBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAuthAction("/browse?section=pyqs#pyq-section");
-                    }}
-                  >
-                    <span>Attempt Now</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+            </motion.div>
 
-            {/* Right: Mockup frame + Attempt Bar + Stats */}
+            {/* ---------------- Right ---------------- */}
             <div className={styles.rightCol}>
-              <div className={styles.rightContentWrapper}>
-                {/* Mockup Frame */}
-                <div
-                  className={styles.videoWrapper}
-                  onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
-                  title="Click to attempt TechnoCAT 6.0 Mock"
-                >
-                  <div className={styles.videoThumb}>
-                    <img
-                      src="/dashboard.jpg"
-                      alt="CAT mock test interface"
-                      className={styles.videoImg}
-                      width={680}
-                      height={380}
-                    />
-                    <div className={styles.playOverlay}>
-                      <button className={styles.playBtn} aria-label="CAT Online Coaching Video">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="26"
-                          height="26"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={styles.playIcon}
-                        >
-                          <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
-                        </svg>
-                      </button>
+              <Doodle kind="swirl" className={styles.swirl} color="var(--blue-300)" strokeWidth={1.6} delay={1.5} />
+              <motion.div
+                initial={{ opacity: 0, y: reduce ? 0 : 28, scale: reduce ? 1 : 0.97 }}
+                 animate={rv ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: reduce ? 0 : 28, scale: reduce ? 1 : 0.97 }}
+                transition={{ duration: reduce ? 0.2 : 1.1, delay: reduce ? 0 : 0.25, ease: EASE_OUT }}
+              >
+                <TiltFrame className={styles.tilt} max={5}>
+                  <div
+                    className={styles.browser}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleAuthAction(LATEST_MOCK)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAuthAction(LATEST_MOCK);
+                    }}
+                    title="Attempt TechnoCAT 6.0 mock"
+                  >
+                    <div className={styles.browserBar}>
+                      <span className={styles.dots} aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                      <span className={styles.url}>technocat · mock dashboard</span>
+                    </div>
+                    <div className={styles.screen}>
+                      <img
+                        src="/dashboard.jpg"
+                        alt="TechnoCAT mock test dashboard"
+                        className={styles.videoImg}
+                        width={680}
+                        height={380}
+                      />
+                      <span className={styles.playBtn} aria-label="Watch the TechnoCAT walkthrough">
+                        <Play size={22} strokeWidth={1.75} fill="currentColor" />
+                      </span>
+                    </div>
+                    <div className={styles.browserFoot}>
+                      <span className={styles.footLabel}>
+                        <span className={ui.liveDot} aria-hidden="true" /> TechnoCAT 6.0 full mock
+                      </span>
+                      <span className={styles.footCta}>
+                        Attempt now <ArrowRight size={15} strokeWidth={2} />
+                      </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Attempt Mock Link Bar */}
-                <div
-                  className={styles.attemptBar}
-                  onClick={() => handleAuthAction("/browse?section=mocks&mock=latest#pyq-section")}
-                  title="Click to attempt TechnoCAT 6.0 Mock"
-                >
-                  <p className={styles.attemptBarText}>
-                    <span>Attempt TechnoCAT 6.0 Mock Now</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </p>
-                </div>
-
-                {/* Stats cards */}
-                <div className={styles.statsRow}>
-                  <div
-                    className={styles.statCard}
-                    onClick={openTestTakersModal}
-                    title="Click to view All-India benchmark info"
+                  {/* Floating detail cards (depth via translateZ) */}
+                  <div className={styles.floatTimer} aria-hidden="true">
+                  <motion.div
+                    className={`${styles.float} glass-card`}
+                    data-tint="blue"
+                    initial={{ opacity: 0, x: reduce ? 0 : -16 }}
+                     animate={rv ? { opacity: 1, x: 0 } : { opacity: 0, x: reduce ? 0 : -16 }}
+                    transition={{ duration: 0.55, delay: reduce ? 0 : 0.9, ease: EASE_OUT }}
                   >
-                    <div className={styles.statCardInner}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
+                    <span className={styles.floatLabel}>Section timer</span>
+                    <span className={`${ui.figure} ${styles.floatValue}`}>40:00</span>
+                    <span className={styles.floatSub}>VARC · DILR · QA</span>
+                  </motion.div>
+                  </div>
+
+                  <div className={styles.floatPct} aria-hidden="true">
+                  <motion.div
+                    className={`${styles.float} glass-card`}
+                    data-tint="violet"
+                    initial={{ opacity: 0, x: reduce ? 0 : 16 }}
+                     animate={rv ? { opacity: 1, x: 0 } : { opacity: 0, x: reduce ? 0 : 16 }}
+                    transition={{ duration: 0.55, delay: reduce ? 0 : 1.05, ease: EASE_OUT }}
+                  >
+                    <span className={styles.floatLabel}>All-India percentile</span>
+                    <svg className={styles.spark} viewBox="0 0 120 36" fill="none">
+                      <motion.path
+                        d="M2 30 C 18 28, 24 22, 36 23 S 56 14, 68 16 S 92 6, 118 4"
+                        stroke="var(--blue-500)"
                         strokeWidth="2"
                         strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978" />
-                        <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978" />
-                        <path d="M18 9h1.5a1 1 0 0 0 0-5H18" />
-                        <path d="M4 22h16" />
-                        <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" />
-                        <path d="M6 9H4.5a1 1 0 0 1 0-5H6" />
-                      </svg>
-                      <span className={styles.statNumber}>20,000+</span>
-                    </div>
-                    <span className={styles.statLabel}>Active Test Takers</span>
+                        initial={{ pathLength: reduce ? 1 : 0 }}
+                        animate={rv ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
+                        transition={{ duration: 0.55, delay: reduce ? 0 : 1.2, ease: EASE_OUT }}
+                      />
+                    </svg>
+                    <span className={styles.floatSub}>Updated with every submission</span>
+                  </motion.div>
                   </div>
+                </TiltFrame>
+              </motion.div>
 
-                  <div
-                    className={styles.statCardOrange}
-                    onClick={openToppersModal}
-                    title="Click to view 99%ilers Hall of Fame"
-                  >
-                    <div className={styles.statOrangeTop}>
-                      <span className={styles.statNumberWhite}>580+</span>
-                      <div className={styles.avatarStack}>
-                        {[11, 12, 13, 14, 12].map((id, i) => (
-                          <img
-                            key={i}
-                            src={`https://i.pravatar.cc/40?img=${id}`}
-                            alt="IIM Call Winner"
-                            className={styles.avatar}
-                            style={{ zIndex: 5 - i, borderColor: "#2563EB" }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <span className={styles.statLabelWhite}>99%ilers in CAT 2025</span>
-                  </div>
-                </div>
-              </div>
+              {/* Stats */}
+              <motion.div
+                className={styles.statsRow}
+                initial="hidden"
+                animate={rv ? "show" : "hidden"} 
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 * d, delayChildren: 0.6 * d } } }}
+              >
+                <motion.button
+                  type="button"
+                  variants={rise}
+                  className={`${styles.statCard} glass-card`}
+                  data-tint="teal"
+                  onClick={openTestTakersModal}
+                >
+                  <span className={styles.statTop}>
+                    <Trophy size={18} strokeWidth={1.75} className={styles.statIcon} />
+                    <CountUp to={20000} suffix="+" className={styles.statNumber} />
+                  </span>
+                  <span className={styles.statLabel}>Active test takers</span>
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  variants={rise}
+                  className={`${styles.statCard} ${styles.statCardBlue}`}
+                  onClick={openToppersModal}
+                >
+                  <span className={styles.statTop}>
+                    <CountUp to={580} suffix="+" className={styles.statNumber} />
+                    <span className={styles.avatarStack}>
+                      {[11, 12, 13, 14, 15].map((id, i) => (
+                        <img
+                          key={i}
+                          src={`https://i.pravatar.cc/40?img=${id}`}
+                          alt=""
+                          className={styles.avatar}
+                          style={{ zIndex: 5 - i }}
+                          width={28}
+                          height={28}
+                        />
+                      ))}
+                    </span>
+                  </span>
+                  <span className={styles.statLabel}>99%ilers in CAT 2025</span>
+                </motion.button>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
-      <CardInfoModal
-        isOpen={!!modalData}
-        onClose={() => setModalData(null)}
-        data={modalData}
-      />
+      {/* Free sectionals strip: sits just below the first screen */}
+      <div className={styles.strip}>
+        <div className={styles.stripInner}>
+          <button type="button" className={styles.stripCard} onClick={() => handleAuthAction(PYQ)}>
+            <span className={styles.stripTags} aria-hidden="true">
+              {["QA", "DILR", "VARC"].map((t) => (
+                <span key={t} className={styles.stripTag}>
+                  {t}
+                  <i />
+                  <i />
+                </span>
+              ))}
+            </span>
+            <span className={styles.stripText}>
+              <strong>6 CAT sectionals, free for everyone.</strong> Two each for QA, DILR and VARC, with detailed
+              analysis and video solutions.
+            </span>
+            <span className={styles.attemptNow}>
+              Attempt now <ArrowRight size={15} strokeWidth={2} />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <CardInfoModal isOpen={!!modalData} onClose={() => setModalData(null)} data={modalData} />
     </>
   );
 }
-

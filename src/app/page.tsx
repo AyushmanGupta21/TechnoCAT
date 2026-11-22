@@ -14,54 +14,57 @@ import FloatingBanner from "@/components/FloatingBanner";
 import AiFeedbackLoop from "@/components/AiFeedbackLoop";
 import IimPredictor from "@/components/IimPredictor";
 import PricingSection from "@/components/PricingSection";
+import { ReplayScope } from "@/components/landing/motion";
+import SmoothScroll from "@/components/landing/SmoothScroll";
 
 export default function Home() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", paddingBottom: "80px", maxWidth: "100%", overflowX: "clip" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", maxWidth: "100%", overflowX: "clip" }}>
       <Navbar />
 
       {/* Spacer for fixed navbar - mobile only */}
       <div className="mobile-nav-spacer" />
 
-      <main>
+      <SmoothScroll />
+      <main className="landing">
         {/* 1. Hero */}
-        <HeroSection />
+        <ReplayScope><HeroSection /></ReplayScope>
 
         {/* 2. Problem-solving & Key Features carousels */}
-        <FeaturesSection />
+        <ReplayScope><FeaturesSection /></ReplayScope>
 
         {/* NEW: IIM Call Predictor (Interactive Lead Gen) */}
-        <IimPredictor />
+        <ReplayScope><IimPredictor /></ReplayScope>
 
         {/* NEW: AI Feedback Loop & Chat Tutor */}
-        <AiFeedbackLoop />
+        <ReplayScope><AiFeedbackLoop /></ReplayScope>
 
         {/* 3. Why TechnoCAT Mocks Stand Out – dark feature cards */}
-        <WhyStandOutSection />
+        <ReplayScope><WhyStandOutSection /></ReplayScope>
 
         {/* 4. Two Exam Modes – Classic vs Modern */}
-        <TwoModesSection />
+        <ReplayScope><TwoModesSection /></ReplayScope>
 
         {/* 5. What You Get – stats grid + feature icons */}
-        <WhatYouGetSection />
+        <ReplayScope><WhatYouGetSection /></ReplayScope>
 
         {/* 6. Community stats + phone mockups */}
-        <CommunitySection />
+        <ReplayScope><CommunitySection /></ReplayScope>
 
         {/* 7. Video reviews */}
-        <VideoReviewsSection />
+        <ReplayScope><VideoReviewsSection /></ReplayScope>
 
         {/* 8. Pricing packages */}
-        <PricingSection />
+        <ReplayScope><PricingSection /></ReplayScope>
 
         {/* 11. Comparison table */}
-        <ComparisonTable />
+        <ReplayScope><ComparisonTable /></ReplayScope>
 
         {/* 12. Student feedback & topper cards */}
-        <FeedbackSection />
+        <ReplayScope><FeedbackSection /></ReplayScope>
 
         {/* 13. FAQ accordion */}
-        <FaqSection />
+        <ReplayScope><FaqSection /></ReplayScope>
 
         {/* 14. Footer */}
         <Footer />

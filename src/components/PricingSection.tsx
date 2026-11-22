@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import CardInfoModal, { CardInfoData } from "./CardInfoModal";
+import { GradientText, RevealGroup, RevealItem, SectionHead, SpotlightCard, type Tint } from "@/components/landing/motion";
+import ui from "@/components/landing/ui.module.css";
+import styles from "./PricingSection.module.css";
 
 const plans = [
   {
@@ -45,6 +49,37 @@ const plans = [
   },
 ];
 
+// Display copy in sentence case; the original strings above still feed the modal.
+const DISPLAY: Record<string, { desc: string; features: string[] }> = {
+  "TechnoCAT Basic": {
+    desc: "Try the full exam experience before you commit.",
+    features: [
+      "1 full proctored CAT mock with live percentile",
+      "6 sectional tests (2 QA, 2 DILR, 2 VARC)",
+      "Instant scorecard and accuracy analysis",
+      "Previous year CAT papers as mocks",
+    ],
+  },
+  "TechnoCAT Pro": {
+    desc: "35 full mocks and 45 sectionals for the whole season.",
+    features: [
+      "35 full-length CAT mocks (20 proctored, 15 unproctored)",
+      "45 sectional tests with video solutions",
+      "AI error tracking and weakness diagnosis",
+      "Live all-India percentile benchmarking",
+    ],
+  },
+  "TechnoCAT Premium": {
+    desc: "Everything, plus mentorship and OMET mocks.",
+    features: [
+      "Everything in Pro, plus 15 OMET mocks (XAT, SNAP, NMAT)",
+      "1-on-1 strategy session with IIM alumni",
+      "24x7 priority AI doubt solver and chat tutor",
+      "GD-PI and SOP generator for top B-schools",
+    ],
+  },
+};
+
 export default function PricingSection() {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
@@ -63,7 +98,7 @@ export default function PricingSection() {
       router.push("/dashboard");
     } else {
       setModalData({
-        badge: plan.name.toUpperCase(),
+        badge: plan.name,
         title: `Enroll in ${plan.name} (${plan.price})`,
         description: `Get full access to ${plan.desc}. Complete syllabus coverage with real CAT-standard simulations, detailed video solutions, and Indra's AI feedback loop.`,
         highlights: plan.features,
@@ -75,118 +110,76 @@ export default function PricingSection() {
 
   return (
     <>
-      <section
-        id="courses"
-        style={{
-          background: "transparent",
-          padding: "64px 0",
-          scrollMarginTop: "90px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: "0 1rem",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: "30px",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "clamp(2rem, 4vw, 2.6rem)",
-                fontWeight: 700,
-                color: "var(--text-main)",
-                textAlign: "center",
-              }}
-            >
-              TechnoCAT Mocks Packages
-            </h2>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
-              gap: "24px",
-            }}
-          >
-            {plans.map((plan, i) => {
-              const cardBg =
-                i === 0
-                  ? "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)"
-                  : i === 1
-                  ? "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)"
-                  : "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)";
-              const borderColor =
-                i === 0 ? "#bae6fd" : i === 1 ? "#ddd6fe" : "#99f6e4";
+      <section id="courses" className={`${ui.section} ${styles.section}`}>
+        <div className={ui.container}>
+          <SectionHead
+            className={styles.head}
+            eyebrow="Packages"
+            title={<>TechnoCAT mock <GradientText>packages</GradientText></>}
+            lede="Start free. Upgrade for the full series, sectionals and mentorship."
+          />
 
+          <RevealGroup className={styles.grid} stagger={0.05}>
+            {plans.map((plan, i) => {
+              const d = DISPLAY[plan.name];
+              const featured = !!plan.popular;
+              const tint: Tint | undefined = featured ? undefined : i === 0 ? "teal" : "violet";
               return (
-                <div
-                  key={i}
+                <RevealItem
+                  key={plan.name}
                   id={i === 1 ? "pro-full-mocks" : i === 2 ? "omet-mocks" : undefined}
-                  className={`pricingCard ${i === 1 ? "pro" : ""}`}
-                  style={{
-                    background: cardBg,
-                    border: `1px solid ${borderColor}`,
-                    boxShadow: i === 1 ? "var(--shadow-lg)" : "var(--shadow-sm)",
-                    cursor: "pointer",
-                    scrollMarginTop: "90px",
-                  }}
-                  onClick={() => handlePlanClick(plan)}
-                  title={`Click to view ${plan.name}`}
+                  className={styles.cell}
                 >
-                  <h3
-                    style={{
-                      fontSize: "1.5rem",
-                      fontWeight: 700,
-                      color: "var(--text-main)",
-                      marginBottom: "8px",
-                    }}
+                  <SpotlightCard
+                    tone={featured ? "dark" : "light"}
+                    tint={tint}
+                    className={`${styles.card} ${featured ? styles.featured : ""} ${tint ? styles[`t_${tint}`] : ""}`}
+                    onClick={() => handlePlanClick(plan)}
+                    title={`View ${plan.name}`}
                   >
-                    {plan.name}
-                  </h3>
-                  <p
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: "14px",
-                      marginBottom: "24px",
-                    }}
-                  >
-                    {plan.desc}
-                  </p>
-                  <div
-                    style={{
-                      fontSize: "2rem",
-                      fontWeight: 800,
-                      color: "var(--primary-dark)",
-                      marginBottom: "24px",
-                    }}
-                  >
-                    {plan.price}
-                  </div>
-                  <button
-                    className={`pricingBtn ${i === 1 ? "pro" : ""}`}
-                    style={{
-                      background: i === 1 ? "var(--primary)" : "var(--white)",
-                      color: i === 1 ? "#fff" : "var(--primary-dark)",
-                      border: i === 1 ? "none" : "1px solid var(--primary-light)",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePlanClick(plan);
-                    }}
-                  >
-                    {i === 0 ? "Start Free" : "Enroll Now"}
-                  </button>
-                </div>
+                    <div className={styles.cardTop}>
+                      <h3 className={styles.name}>{plan.name.replace("TechnoCAT ", "")}</h3>
+                      {featured && (
+                        <span className={styles.tag}>
+                          <span className={ui.liveDot} aria-hidden="true" />
+                          Most chosen
+                        </span>
+                      )}
+                    </div>
+                    <p className={styles.desc}>{d.desc}</p>
+
+                    <div className={styles.priceRow}>
+                      <span className={styles.price}>
+                        {plan.isFree ? "₹0" : plan.price}
+                      </span>
+                      {plan.isFree && <span className={styles.per}>no credit card required</span>}
+                    </div>
+
+                    <ul className={styles.features}>
+                      {d.features.map((f) => (
+                        <li key={f}>
+                          <Check size={16} strokeWidth={2} className={styles.check} aria-hidden="true" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      type="button"
+                      className={`${ui.btn} ${featured ? ui.btnLight : i === 0 ? ui.btnPrimary : ui.btnSecondary} ${styles.cta}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlanClick(plan);
+                      }}
+                    >
+                      {i === 0 ? "Start free" : "Enroll now"}
+                      <ArrowRight size={16} strokeWidth={1.75} data-arrow aria-hidden="true" />
+                    </button>
+                  </SpotlightCard>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 

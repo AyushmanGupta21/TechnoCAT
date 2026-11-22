@@ -1,287 +1,144 @@
 "use client";
 
+import type React from "react";
 import { useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  Check,
+  ChartLine,
+  ScanSearch,
+  Clock,
+  FileText,
+  GraduationCap,
+  LayoutGrid,
+  MessageSquareText,
+  Minus,
+  CirclePlay,
+  Target,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useAuth } from "@/context/AuthContext";
+import { EASE_OUT, GradientText, Reveal, SectionHead, useReplay } from "@/components/landing/motion";
+import ui from "@/components/landing/ui.module.css";
 import styles from "./ComparisonTable.module.css";
 
-const features = [
-  { 
-    name: "35 Full Mock Tests", 
-    desc: "Comprehensive coverage of the actual exam pattern.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-        <polyline points="10 9 9 9 8 9"/>
-      </svg>
-    ),
-    icat: true, 
-    others: true 
-  },
-  { 
-    name: "Interactive AI Mentor", 
-    desc: "Personalized feedback and doubt resolution.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-        <circle cx="12" cy="12" r="4"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "Goal Tracker", 
-    desc: "Set and achieve your percentile milestones.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <circle cx="12" cy="12" r="6"/>
-        <circle cx="12" cy="12" r="2"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "Error Tracker", 
-    desc: "Automatically categorize and review your mistakes.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "B-School Predictor", 
-    desc: "Predict IIM calls based on your profile & mock scores.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "Across Mock Analysis", 
-    desc: "Track your performance trajectory over time.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "45 Sectionals + Video Solutions", 
-    desc: "Detailed video explanations for every sectional.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="5 3 19 12 5 21 5 3"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "PYQs as Mocks", 
-    desc: "Attempt past year papers in an exam-like interface.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-    ),
-    icat: true, 
-    others: true 
-  },
-  { 
-    name: "Mentorship", 
-    desc: "1-on-1 guidance from 99+ percentilers.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
-  { 
-    name: "Strategy Builder", 
-    desc: "Customized study plans based on your weaknesses.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <line x1="3" y1="9" x2="21" y2="9"/>
-        <line x1="9" y1="21" x2="9" y2="9"/>
-      </svg>
-    ),
-    icat: true, 
-    others: false 
-  },
+type Feature = { name: string; desc: string; icon: LucideIcon; others: boolean };
+
+// Icon accent colours cycle through the data palette
+const ACCENTS = ["--data-blue", "--data-violet", "--data-teal", "--data-coral", "--data-amber", "--data-cyan"];
+
+const features: Feature[] = [
+  { name: "35 full mock tests", desc: "Comprehensive coverage of the actual exam pattern.", icon: FileText, others: true },
+  { name: "Interactive AI mentor", desc: "Personalised feedback and doubt resolution.", icon: MessageSquareText, others: false },
+  { name: "Goal tracker", desc: "Set and achieve your percentile milestones.", icon: Target, others: false },
+  { name: "Error tracker", desc: "Automatically categorise and review your mistakes.", icon: ScanSearch, others: false },
+  { name: "B-school predictor", desc: "Predict IIM calls based on your profile and mock scores.", icon: GraduationCap, others: false },
+  { name: "Across-mock analysis", desc: "Track your performance trajectory over time.", icon: ChartLine, others: false },
+  { name: "45 sectionals with video solutions", desc: "Detailed video explanations for every sectional.", icon: CirclePlay, others: false },
+  { name: "PYQs as mocks", desc: "Attempt past year papers in an exam-like interface.", icon: Clock, others: true },
+  { name: "Mentorship", desc: "1-on-1 guidance from 99+ percentilers.", icon: Users, others: false },
+  { name: "Strategy builder", desc: "Customised study plans based on your weaknesses.", icon: LayoutGrid, others: false },
 ];
 
-function CheckIcon() {
-  return (
-    <span className={styles.checkGreen}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={styles.checkSvg}
-      >
-        <path d="M20 6 9 17l-5-5" />
-      </svg>
-    </span>
-  );
-}
-
-function CrossIcon() {
-  return (
-    <span className={styles.crossRed}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={styles.crossSvg}
-      >
-        <path d="M18 6 6 18" />
-        <path d="m6 6 12 12" />
-      </svg>
-    </span>
-  );
-}
-
 export default function ComparisonTable() {
+  const rv = useReplay();
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
+  const reduce = useReducedMotion();
+
+  const handleTry = () => {
+    if (!user || user.isGuest) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("technocat_auth_redirect", "/dashboard");
+      }
+      openAuthModal("signin");
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   return (
-    <div className={styles.wrapper}>
-      {/* Decorative Backgrounds */}
-      <div className={styles.bgBlobLeft}></div>
-      <div className={styles.bgBlobRight}></div>
-      <div className={styles.bgDots}>
-        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-          <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="2" fill="#3B82F6" />
-          </pattern>
-          <rect width="100" height="100" fill="url(#dots)" />
-        </svg>
-      </div>
-
-      <div className={styles.container}>
-        
-        {/* Illustrations */}
-        <div className={styles.illustLeft}>
-          <div className={styles.illustLeftIcon}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <circle cx="12" cy="12" r="2"/>
-            </svg>
-          </div>
-          <span className={styles.illustLeftText}>99+ Percentile<br/>Target</span>
+    <section className={`${ui.section} ${ui.sectionCanvas} ${styles.section}`}>
+      <div className={`${ui.container} ${styles.layout}`}>
+        <div className={styles.intro}>
+          <SectionHead
+            align="left"
+            className={styles.head}
+            eyebrow="Compare"
+            title={<><GradientText>TechnoCAT</GradientText> vs other mocks</>}
+            lede="What you get here that a standard mock series leaves out."
+          />
+          <Reveal className={styles.introCta} delay={0.15}>
+            <p className={styles.footerText}>
+              <strong>Everything you need for CAT,</strong> in one place.
+            </p>
+            <button type="button" className={`${ui.btn} ${ui.btnPrimary}`} onClick={handleTry}>
+              Try TechnoCAT mocks
+              <ArrowRight size={16} strokeWidth={1.75} data-arrow aria-hidden="true" />
+            </button>
+          </Reveal>
         </div>
 
-        <div className={styles.illustRight}>
-          <div className={styles.illustRightIcon}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-              <polyline points="16 7 22 7 22 13"/>
-            </svg>
-          </div>
-          <span className={styles.illustRightText}>Smart Preparation</span>
-          <span className={styles.illustRightSub}>→ Better Results</span>
-        </div>
-
-        <div className={styles.titleSection}>
-          <h2 className={styles.heading}>
-            TechnoCAT <span className={styles.vs}>vs</span> Other Mocks
-          </h2>
-          <p className={styles.subtitle}>See why top aspirants choose our AI-powered platform</p>
-        </div>
-
-        <div className={styles.tableWrapper}>
-          <div className={styles.tableInner}>
-            {/* Header */}
-            <div className={styles.headerRow}>
-              <div className={styles.featureHeader}>Feature Breakdown</div>
-              <div className={styles.icatHeader}>TechnoCAT Mocks</div>
-              <div className={styles.othersHeader}>Others</div>
+        <Reveal className={styles.tableWrapper}>
+          <div className={`${styles.table} glass-card`} data-tint="blue" role="table" aria-label="TechnoCAT compared with other mock series">
+            <div className={styles.headerRow} role="row">
+              <div role="columnheader" className={styles.featureHeader}>Feature</div>
+              <div role="columnheader" className={styles.usHeader}>TechnoCAT</div>
+              <div role="columnheader" className={styles.othersHeader}>Others</div>
             </div>
 
-            {/* Rows */}
-            <div className={styles.rows}>
-              {features.map((feature, i) => (
-                <div key={i} className={styles.row}>
-                  <div className={styles.featureCell}>
-                    <div className={styles.featureIconBox}>
-                      {feature.icon}
+            <motion.div
+              className={styles.rows}
+              initial="hidden"
+              animate={rv ? "show" : "hidden"}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: reduce ? 0 : 0.05 } } }}
+            >
+              {features.map((f, idx) => {
+                const Icon = f.icon;
+                return (
+                  <motion.div
+                    key={f.name}
+                    role="row"
+                    className={styles.row}
+                    style={{ "--c": `var(${ACCENTS[idx % ACCENTS.length]})` } as React.CSSProperties}
+                    variants={{
+                      hidden: { opacity: 0, y: reduce ? 0 : 10 },
+                      show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+                    }}
+                  >
+                    <div role="cell" className={styles.featureCell}>
+                      <Icon size={16} strokeWidth={1.75} className={styles.featureIcon} aria-hidden="true" />
+                      <span className={styles.featureText}>
+                        <span className={styles.featureTitle}>{f.name}</span>
+                        <span className={styles.featureDesc}>{f.desc}</span>
+                      </span>
                     </div>
-                    <div className={styles.featureTextWrap}>
-                      <span className={styles.featureTitle}>{feature.name}</span>
-                      <span className={styles.featureDesc}>{feature.desc}</span>
+                    <div role="cell" className={styles.usCell}>
+                      <span className={styles.yes} aria-label="Included">
+                        <Check size={15} strokeWidth={2.25} aria-hidden="true" />
+                      </span>
                     </div>
-                  </div>
-                  <div className={styles.icatCell}>
-                    <CheckIcon />
-                  </div>
-                  <div className={styles.othersCell}>
-                    {feature.others ? <CheckIcon /> : <CrossIcon />}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    <div role="cell" className={styles.othersCell}>
+                      {f.others ? (
+                        <span className={styles.yesMuted} aria-label="Included">
+                          <Check size={15} strokeWidth={2.25} aria-hidden="true" />
+                        </span>
+                      ) : (
+                        <span className={styles.no} aria-label="Not included">
+                          <Minus size={15} strokeWidth={2} aria-hidden="true" />
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
 
-            {/* Footer CTA */}
-            <div className={styles.tableFooter}>
-              <p className={styles.footerText}>
-                <span className={styles.footerBold}>TechnoCAT Mocks give you everything you need</span> to crack the CAT exam.
-              </p>
-              <button
-                className={styles.tryBtn}
-                onClick={() => {
-                  if (!user || user.isGuest) {
-                    if (typeof window !== "undefined") {
-                      sessionStorage.setItem("technocat_auth_redirect", "/dashboard");
-                    }
-                    openAuthModal("signin");
-                  } else {
-                    router.push("/dashboard");
-                  }
-                }}
-              >
-                Try TechnoCAT Mocks →
-              </button>
-            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
-    </div>
+    </section>
   );
 }

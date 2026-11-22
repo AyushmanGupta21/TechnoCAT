@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap');
+/* Fonts are self-hosted with next/font in src/app/layout.tsx (Satoshi = --font-sans, Roboto = --font-display, JetBrains Mono = --font-mono). */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -59,6 +59,75 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-cyan: 0 4px 20px rgba(14, 165, 233, 0.08);
+  /* ---------- Design tokens (landing redesign) ---------- */
+  --ff-display: var(--font-display), var(--font-sans), "Segoe UI", system-ui, sans-serif;
+  --ff-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --ff-mono: var(--font-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* One blue family */
+  --blue-25: #f7faff;
+  --blue-50: #eef4ff;
+  --blue-100: #dde8ff;
+  --blue-200: #bfd3ff;
+  --blue-300: #93b4fd;
+  --blue-400: #5f8cf8;
+  --blue-500: #3b6cf0;
+  --blue-600: #2556e0;
+  --blue-700: #1c44bd;
+  --blue-800: #1b3a96;
+  --blue-900: #172f6e;
+  --blue-950: #0d1b42;
+
+  /* Ink + neutrals */
+  --ink: #0c1730;
+  --ink-2: #39445c;
+  --ink-3: #66708a;
+  --ink-4: #98a1b5;
+  --line: #e4e9f2;
+  --line-strong: #d3dbe8;
+  --surface: #ffffff;
+  --canvas: #f5f8fd;
+
+  /* Techno red: brand accent only (live dots, tiny marks) */
+  --techno-red: #e3262f;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --elev-1: 0 1px 2px rgba(12, 23, 48, 0.05), 0 1px 1px rgba(12, 23, 48, 0.03);
+  --elev-2: 0 1px 2px rgba(12, 23, 48, 0.04), 0 6px 16px -4px rgba(12, 23, 48, 0.08);
+  --elev-3: 0 2px 4px rgba(12, 23, 48, 0.04), 0 18px 40px -12px rgba(23, 47, 110, 0.18);
+  --elev-4: 0 4px 8px rgba(12, 23, 48, 0.04), 0 40px 80px -24px rgba(23, 47, 110, 0.28);
+  --ring: 0 0 0 3px rgba(59, 108, 240, 0.28);
+
+  /* Data palette: colour lives in charts, legends and accents, not on surfaces */
+  --data-blue: #3b82f6;
+  --data-teal: #14b8a6;
+  --data-amber: #f59e0b;
+  --data-coral: #f43f5e;
+  --data-violet: #8b5cf6;
+  --data-emerald: #10b981;
+  --data-cyan: #06b6d4;
+
+  /* Signature gradients */
+  --grad-accent: linear-gradient(100deg, #2563eb 0%, #3b82f6 40%, #06b6d4 100%);
+  --grad-accent-dark: linear-gradient(100deg, #93c5fd 0%, #67e8f9 100%);
+  --grad-badge: linear-gradient(135deg, #3b82f6 0%, #2563eb 55%, #4f46e5 100%);
+
+  /* Glass tints (r g b) for tinted cards */
+  --tint-blue: 59 130 246;
+  --tint-teal: 20 184 166;
+  --tint-violet: 139 92 246;
+  --tint-amber: 245 158 11;
+  --tint-coral: 244 63 94;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur: 280ms;
 }
 
 html {
@@ -67,7 +136,7 @@ html {
 }
 
 html, body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--ff-sans);
   font-size: 16px;
   line-height: 1.5;
   color: var(--text-main);
@@ -146,7 +215,7 @@ ul { list-style: none; }
 .transition-all { transition: all 0.3s ease; }
 
 /* Bebas Neue for headings */
-.bebas { font-family: 'Bebas Neue', sans-serif; }
+.bebas { font-family: var(--ff-display); }
 
 /* Max width container */
 .container {
@@ -220,3 +289,107 @@ section { width: 100%; }
 body.exam-active header {
   visibility: hidden !important;
 }
+
+/* Keyboard focus that matches the blue system */
+:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ==========================================================================
+   Reusable visual utilities (landing redesign; safe to use across the app)
+   ========================================================================== */
+
+/* Gradient text for accent phrases in headlines */
+.text-gradient {
+  background-image: linear-gradient(100deg, #2563eb 0%, #3b82f6 30%, #06b6d4 50%, #3b82f6 70%, #2563eb 100%);
+  background-size: 250% 100%;
+  background-position: 0% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  padding-bottom: 0.06em; /* keep descenders inside the clip */
+}
+.text-gradient-dark {
+  background-image: linear-gradient(100deg, #93c5fd 0%, #bfdbfe 30%, #67e8f9 50%, #bfdbfe 70%, #93c5fd 100%);
+}
+
+/* Tinted glass card. Requires data-tint="blue|teal|violet|amber|coral".
+   Gradient hairline border (::before), soft top highlight, matching hover glow. */
+.glass-card[data-tint] {
+  --tint: var(--tint-blue);
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgb(var(--tint) / 0.075) 0%, rgb(var(--tint) / 0.02) 55%, rgba(255, 255, 255, 0) 100%),
+    rgba(255, 255, 255, 0.78);
+  border: 1px solid transparent !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(12, 23, 48, 0.04),
+    0 10px 28px -18px rgb(var(--tint) / 0.35);
+  transition: transform var(--dur) var(--ease-out);
+}
+.glass-card[data-tint]::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(160deg, rgb(var(--tint) / 0.5) 0%, rgba(226, 232, 240, 0.9) 38%, rgba(226, 232, 240, 0.7) 70%, rgb(var(--tint) / 0.3) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+@media (hover: hover) {
+  .glass-card[data-tint]:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 2px 4px rgba(12, 23, 48, 0.04),
+      0 22px 48px -20px rgb(var(--tint) / 0.55);
+  }
+}
+.glass-card[data-tint="blue"] { --tint: var(--tint-blue); }
+.glass-card[data-tint="teal"] { --tint: var(--tint-teal); }
+.glass-card[data-tint="violet"] { --tint: var(--tint-violet); }
+.glass-card[data-tint="amber"] { --tint: var(--tint-amber); }
+.glass-card[data-tint="coral"] { --tint: var(--tint-coral); }
+
+/* On dark (navy) surfaces */
+.glass-card.glass-dark[data-tint] {
+  background:
+    linear-gradient(180deg, rgb(var(--tint) / 0.16) 0%, rgb(var(--tint) / 0.04) 60%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 20px 40px -28px rgba(0, 0, 0, 0.6);
+}
+.glass-card.glass-dark[data-tint]::before {
+  background: linear-gradient(160deg, rgb(var(--tint) / 0.6) 0%, rgba(255, 255, 255, 0.12) 40%, rgba(255, 255, 255, 0.06) 70%, rgb(var(--tint) / 0.35) 100%);
+}
+@media (hover: hover) {
+  .glass-card.glass-dark[data-tint]:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 24px 56px -24px rgb(var(--tint) / 0.55);
+  }
+}
+
+/* Gradient number badge (steps 01/02/03) */
+.step-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-family: var(--ff-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff;
+  background: var(--grad-badge);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 18px -8px rgba(37, 99, 235, 0.7);
+}
+
+/* Landing headings: Roboto Bold, uppercase */
+main.landing h1, main.landing h2 { font-weight: 700 !important; letter-spacing: 0.01em !important; text-transform: uppercase; line-height: 1.08; }
+main.landing h3 { font-weight: 700 !important; letter-spacing: 0.02em !important; text-transform: uppercase; }

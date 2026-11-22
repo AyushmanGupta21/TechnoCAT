@@ -1,0 +1,141 @@
+/*
+ * Shared landing primitives. Buttons are combined: `${ui.btn} ${ui.btnPrimary}`.
+ *   import ui from "@/components/landing/ui.module.css";
+ */
+
+.section {
+  position: relative;
+  padding: clamp(64px, 9vw, 112px) 0;
+}
+.sectionTight {
+  padding: clamp(48px, 6vw, 80px) 0;
+}
+.sectionCanvas {
+  background: var(--canvas);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (max-width: 480px) {
+  .container { padding: 0 18px; }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 12px;
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out);
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn svg { flex-shrink: 0; transition: transform var(--dur) var(--ease-out); }
+.btn:hover svg[data-arrow] { transform: translateX(3px); }
+
+.btnPrimary {
+  color: #fff;
+  background: var(--blue-600);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(13, 27, 66, 0.2),
+    0 8px 20px -8px rgba(37, 86, 224, 0.6);
+}
+.btnPrimary:hover {
+  background: var(--blue-700);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(13, 27, 66, 0.2),
+    0 12px 28px -10px rgba(37, 86, 224, 0.7);
+}
+
+.btnSecondary {
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--elev-1);
+}
+.btnSecondary:hover {
+  border-color: var(--blue-300);
+  color: var(--blue-700);
+}
+
+.btnGhost {
+  color: var(--blue-700);
+  padding: 0 6px;
+  min-height: 44px;
+}
+.btnGhost:hover { color: var(--blue-900); }
+
+.btnLight {
+  color: var(--blue-900);
+  background: #fff;
+}
+.btnLight:hover { background: var(--blue-50); }
+
+.btnSm {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* ---------- Icon tile (single blue family) ---------- */
+.iconTile {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  box-shadow: inset 0 0 0 1px var(--blue-100);
+}
+.iconTileDark {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: var(--blue-200);
+  background: rgba(147, 180, 253, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(147, 180, 253, 0.18);
+}
+
+/* Mono figure style for numbers/timers */
+.figure {
+  font-family: var(--ff-mono);
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+/* Small live dot in Techno red */
+.liveDot {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--techno-red);
+  flex-shrink: 0;
+}

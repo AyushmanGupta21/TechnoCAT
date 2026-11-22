@@ -1,11 +1,36 @@
 "use client";
+
 import React from "react";
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight, Check, Clock3 } from "lucide-react";
 import styles from "./TwoModesSection.module.css";
+import ui from "@/components/landing/ui.module.css";
+import { GradientText, RevealGroup, RevealItem, SectionHead, SpotlightCard, EASE_OUT, useReplay } from "@/components/landing/motion";
 import { useAuth } from "@/context/AuthContext";
 
+// One data colour per checklist item (accents only)
+const CHECK_COLORS = ["var(--data-blue)", "var(--data-teal)", "var(--data-violet)", "var(--data-amber)"];
+const CHECK_COLORS_DARK = ["#93c5fd", "#5eead4", "#c4b5fd", "#fcd34d"];
+
+const CLASSIC_FEATURES = ["Actual CAT interface", "Smart navigation", "Sectional timing", "Real exam simulation"];
+const MODERN_FEATURES = [
+  "Smooth, interactive interface",
+  "Quick navigation between tabs",
+  "Enhanced analytics",
+  "Distraction-free experience",
+];
+
+// Question palette states for the classic mock preview
+const PALETTE: Array<"answered" | "review" | "visited" | "none" | "current"> = [
+  "answered", "answered", "visited", "answered", "review", "answered", "none", "answered",
+  "answered", "visited", "answered", "current", "none", "none", "none", "none",
+];
+
 export default function TwoModesSection() {
+  const rv = useReplay();
   const { user, openAuthModal } = useAuth();
+  const reduce = useReducedMotion();
 
   const handleModeClick = (e: React.MouseEvent) => {
     if (!user || user.isGuest) {
@@ -14,203 +39,180 @@ export default function TwoModesSection() {
     }
   };
 
+  const optionIn = (i: number) => ({
+    initial: { opacity: 0, x: reduce ? 0 : -10 },
+    animate: rv ? { opacity: 1, x: 0 } : { opacity: 0, x: reduce ? 0 : -10 },
+    transition: { duration: 0.5, delay: reduce ? 0 : 0.25 + i * 0.07, ease: EASE_OUT },
+  });
+
   return (
-    <section className={styles.section} id="two-modes">
-      <div className={styles.container}>
+    <section className={`${ui.section} ${styles.sec}`} id="two-modes">
+      <div className={ui.container}>
+        <SectionHead
+          eyebrow="Two exam modes"
+          title={
+            <>
+              Sit every mock <GradientText>the way you prefer</GradientText>
+            </>
+          }
+          lede="Classic mirrors the actual CAT interface. Modern is built for focus. Switch any time."
+          className={styles.compactHead}
+        />
 
-        <div className={styles.modesGrid}>
-          
-          {/* CLASSIC MODE CARD */}
-          <div className={`${styles.modeCard} ${styles.classicCard}`}>
-            {/* Decorations */}
-            <div className={styles.decorClassicShape1}></div>
-            <div className={styles.decorClassicPattern}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                <circle cx="10" cy="10" r="2" fill="#BAE6FD"/>
-                <circle cx="30" cy="10" r="2" fill="#BAE6FD"/>
-                <circle cx="50" cy="10" r="2" fill="#BAE6FD"/>
-                <circle cx="10" cy="30" r="2" fill="#BAE6FD"/>
-                <circle cx="30" cy="30" r="2" fill="#BAE6FD"/>
-                <circle cx="50" cy="30" r="2" fill="#BAE6FD"/>
-                <circle cx="10" cy="50" r="2" fill="#BAE6FD"/>
-                <circle cx="30" cy="50" r="2" fill="#BAE6FD"/>
-                <circle cx="50" cy="50" r="2" fill="#BAE6FD"/>
-              </svg>
-            </div>
-
-            <div className={styles.classicHeader}>
-              <div className={styles.classicHeaderLeft}>
-                <div className={styles.classicIconBox}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
+        <RevealGroup className={styles.grid} stagger={0.05}>
+          {/* Classic */}
+          <RevealItem className={styles.cell}>
+            <SpotlightCard className={styles.card} tint="teal">
+              <div className={styles.cardHead}>
+                <div className={styles.cardTitles}>
+                  <h3 className={styles.cardTitle}>Classic mode</h3>
+                  <p className={styles.cardSub}>Mode 01 · the real CAT experience</p>
                 </div>
-                <div>
-                  <h3 className={styles.classicTitle}>Classic Mode</h3>
-                  <p className={styles.classicSubtitle}>Real CAT Experience</p>
+                <Link href="/browse" onClick={handleModeClick} className={`${ui.btn} ${ui.btnSecondary} ${ui.btnSm} ${styles.tryBtn}`}>
+                  Try now
+                  <ArrowRight size={16} strokeWidth={1.75} data-arrow />
+                </Link>
+              </div>
+
+              <ul className={styles.features}>
+                {CLASSIC_FEATURES.map((f, i) => (
+                  <li key={f}>
+                    <Check size={16} strokeWidth={2.25} className={styles.check} style={{ color: CHECK_COLORS[i] }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Classic interface preview */}
+              <div className={styles.screen} aria-hidden="true">
+                <div className={styles.classicBar}>
+                  <span>CAT mock · Classic mode</span>
+                  <span className={`${ui.figure} ${styles.timer}`}>
+                    <Clock3 size={13} strokeWidth={1.75} /> 38:12
+                  </span>
+                </div>
+                <div className={styles.classicBody}>
+                  <div className={styles.classicMain}>
+                    <div className={styles.qMeta}>
+                      <span>Question 12</span>
+                      <span className={ui.figure}>+3 / −1</span>
+                    </div>
+                    <p className={styles.qText}>
+                      If the ratio of work done by (x+2) workers in (x−3) days to the work done by (x+4) workers in
+                      (x−2) days is…
+                    </p>
+                    <div className={styles.radios}>
+                      {["9 : 10", "3 : 4", "8 : 9", "5 : 6"].map((o, i) => (
+                        <motion.div key={o} className={`${styles.radio} ${i === 2 ? styles.radioOn : ""}`} {...optionIn(i)}>
+                          <span className={styles.radioDot} />
+                          <span className={ui.figure}>{o}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                    <div className={styles.classicActions}>
+                      <span>Previous</span>
+                      <span>Chat tutor</span>
+                      <span className={styles.classicNext}>Save &amp; next</span>
+                    </div>
+                  </div>
+                  <div className={styles.palette}>
+                    {PALETTE.map((s, i) => (
+                      <motion.span
+                        key={i}
+                        className={`${styles.pal} ${styles[`pal_${s}`]}`}
+                        initial={{ opacity: 0, scale: reduce ? 1 : 0.6 }}
+                        animate={rv ? { opacity: 1, scale: 1 } : { opacity: 0, scale: reduce ? 1 : 0.6 }}
+                        transition={{ duration: 0.35, delay: reduce ? 0 : 0.3 + i * 0.025, ease: EASE_OUT }}
+                      >
+                        {i + 1}
+                      </motion.span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <Link href="/browse" onClick={handleModeClick} className={styles.classicBtn}>
-                Try Now
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </Link>
-            </div>
+            </SpotlightCard>
+          </RevealItem>
 
-            <div className={styles.classicFeatures}>
-              <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Actual CAT Interface
-              </div>
-              <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smart Navigation
-              </div>
-              <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Sectional Timing
-              </div>
-              <div className={styles.classicFeature}>
-                <span className={styles.classicCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Real Exam Simulation
-              </div>
-            </div>
+          <div className={styles.or} aria-hidden="true">
+            <span>or</span>
+          </div>
 
-            <div className={styles.classicMockupOuter}>
-              <div className={styles.classicMockupInner}>
-                <div className={styles.classicMockHeader}>
-                  <div className={styles.classicMockHeaderLeft}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          {/* Modern */}
+          <RevealItem className={styles.cell}>
+            <SpotlightCard tone="dark" className={`${styles.card} ${styles.cardDark}`}>
+              <div className={styles.cardHead}>
+                <div className={styles.cardTitles}>
+                  <h3 className={styles.cardTitle}>Modern mode</h3>
+                  <p className={styles.cardSub}>Mode 02 · the TechnoCAT interface</p>
+                </div>
+                <Link href="/intelligence" onClick={handleModeClick} className={`${ui.btn} ${ui.btnLight} ${ui.btnSm} ${styles.tryBtn}`}>
+                  Try now
+                  <ArrowRight size={16} strokeWidth={1.75} data-arrow />
+                </Link>
+              </div>
+
+              <ul className={styles.features}>
+                {MODERN_FEATURES.map((f, i) => (
+                  <li key={f}>
+                    <Check size={16} strokeWidth={2.25} className={styles.check} style={{ color: CHECK_COLORS_DARK[i] }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Modern interface preview */}
+              <div className={`${styles.screen} ${styles.screenModern}`} aria-hidden="true">
+                <div className={styles.modernTop}>
+                  <span className={styles.modernTabs}>
+                    <span className={styles.tabOn}>VARC</span>
+                    <span>DILR</span>
+                    <span>QA</span>
+                  </span>
+                  <span className={`${ui.figure} ${styles.modernTimer}`}>24:50</span>
+                </div>
+                <div className={styles.modernBody}>
+                  <p className={styles.modernQ}>
+                    The passage mentions several examples of corporations that claimed their actions were necessary
+                    for…
+                  </p>
+                  <div className={styles.modernOpts}>
+                    {["Option A", "Option B", "Option C", "Option D"].map((o, i) => (
+                      <motion.div key={o} className={`${styles.modernOpt} ${i === 1 ? styles.modernOptOn : ""}`} {...optionIn(i)}>
+                        <span className={styles.optKey}>{String.fromCharCode(65 + i)}</span>
+                        {o}
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className={styles.spark}>
+                    <div className={styles.sparkLabel}>
+                      <span>Accuracy this section</span>
+                      <span className={ui.figure}>82%</span>
+                    </div>
+                    <svg viewBox="0 0 200 44" preserveAspectRatio="none" className={styles.sparkSvg}>
+                      <defs>
+                        <linearGradient id="tmSpark" x1="0" x2="1" y1="0" y2="0">
+                          <stop offset="0%" stopColor="#3b82f6" />
+                          <stop offset="60%" stopColor="#06b6d4" />
+                          <stop offset="100%" stopColor="#10b981" />
+                        </linearGradient>
+                      </defs>
+                      <motion.path
+                        d="M0 36 C 20 34, 30 26, 50 28 S 80 18, 100 20 S 140 10, 160 12 S 190 6, 200 4"
+                        fill="none"
+                        stroke="url(#tmSpark)"
+                        strokeWidth="2.25"
+                        strokeLinecap="round"
+                        initial={{ pathLength: reduce ? 1 : 0 }}
+                        animate={rv ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
+                        transition={{ duration: 0.55, delay: 0.4, ease: EASE_OUT }}
+                      />
                     </svg>
-                    CAT Mock — Classic Mode
-                  </div>
-                  <span className={styles.classicMockQNum}>Q. 12/34</span>
-                </div>
-                <div className={styles.classicMockBody}>
-                  <div className={styles.classicMockQ}>
-                    Q.1 If the ratio of work done by (x+2) workers in (x-3) days to the work done by (x+4) workers in (x-2) days is...
-                  </div>
-                  <div className={styles.classicMockOptions}>
-                    <div className={styles.classicMockOption}>
-                      <span className={styles.classicMockOptionLabel}>A</span> Previous
-                    </div>
-                    <div className={styles.classicMockOption}>
-                      <span className={styles.classicMockOptionLabel}>B</span> Chat Tutor
-                    </div>
-                    <div className={styles.classicMockOption}>
-                      <span className={styles.classicMockOptionLabel}>C</span> Switch to Next ▶
-                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Floating Bottom Right Decoration */}
-              <div className={styles.decorClassicDoc}>
-                <div className={styles.decorClassicDocLine}></div>
-                <div className={styles.decorClassicDocLine}></div>
-                <div className={styles.decorClassicDocLine}></div>
-                <div className={styles.decorClassicClock}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* VS BADGE */}
-          <div className={styles.vsBadge}>VS</div>
-
-          {/* MODERN MODE CARD */}
-          <div className={`${styles.modeCard} ${styles.modernCard}`}>
-            {/* Decorations */}
-            <div className={styles.decorModernShape1}></div>
-            <div className={styles.decorModernPattern}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                <circle cx="10" cy="10" r="2" fill="#ffffff"/>
-                <circle cx="30" cy="10" r="2" fill="#ffffff"/>
-                <circle cx="50" cy="10" r="2" fill="#ffffff"/>
-                <circle cx="10" cy="30" r="2" fill="#ffffff"/>
-                <circle cx="30" cy="30" r="2" fill="#ffffff"/>
-                <circle cx="50" cy="30" r="2" fill="#ffffff"/>
-                <circle cx="10" cy="50" r="2" fill="#ffffff"/>
-                <circle cx="30" cy="50" r="2" fill="#ffffff"/>
-                <circle cx="50" cy="50" r="2" fill="#ffffff"/>
-              </svg>
-            </div>
-
-            <div className={styles.modernHeader}>
-              <div className={styles.modernHeaderLeft}>
-                <div className={styles.modernIconBox}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-                    <circle cx="12" cy="12" r="4"/>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className={styles.modernTitle}>Modern Mode</h3>
-                  <p className={styles.modernSubtitle}>TechnoCAT Mock UI</p>
-                </div>
-              </div>
-              <Link href="/intelligence" onClick={handleModeClick} className={styles.modernBtn}>
-                Try Now
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </Link>
-            </div>
-
-            <div className={styles.modernFeatures}>
-              <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smooth and Interactive UI
-              </div>
-              <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Smart Navigation To Tabs
-              </div>
-              <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Enhanced Analytics
-              </div>
-              <div className={styles.modernFeature}>
-                <span className={styles.modernCheck}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span> Distraction-Free Experience
-              </div>
-            </div>
-
-            <div className={styles.modernMockupOuter}>
-              <div className={styles.modernMockupInner}>
-                <div className={styles.modernMockHeader}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                  </svg>
-                  CAT Mock — Modern Mode
-                </div>
-                <div className={styles.modernMockBody}>
-                  <div className={styles.modernMockQ}>
-                    The passage mentions several examples of corporations that claimed their actions were necessary for...
-                  </div>
-                  <div className={styles.modernMockOptions}>
-                    <div className={styles.modernMockOption}>Option A</div>
-                    <div className={styles.modernMockOption}>Option B</div>
-                    <div className={styles.modernMockOption}>Option C</div>
-                    <div className={styles.modernMockOption}>Option D</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Bottom Right Decoration */}
-              <div className={styles.decorModernAiBox}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                  <polyline points="16 7 22 7 22 13"/>
-                </svg>
-                <div className={styles.decorModernAiText}>AI</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+            </SpotlightCard>
+          </RevealItem>
+        </RevealGroup>
       </div>
     </section>
   );

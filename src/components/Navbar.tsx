@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import CardInfoModal, { CardInfoData } from "./CardInfoModal";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { ChevronDown, ChevronRight, Download, LayoutDashboard, Menu, MessageCircle, UserRound, X } from "lucide-react";
 import styles from "./Navbar.module.css";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -24,43 +26,43 @@ interface NavCategory {
 const NAV_CATEGORIES: NavCategory[] = [
   {
     id: "courses",
-    title: "All Courses",
+    title: "All courses",
     links: [
       {
-        label: "Quantitative Ability (QA)",
+        label: "Quantitative ability (QA)",
         href: "/topics/qa-quantitative-ability",
-        desc: "Arithmetic, Algebra, Geometry with AI Video RAG",
+        desc: "Arithmetic, algebra and geometry with video lessons",
         badge: "Popular",
       },
       {
-        label: "Data Interpretation & LR (DILR)",
+        label: "Data interpretation and LR (DILR)",
         href: "/topics/dilr-data-interpretation",
-        desc: "Arrangements, Tables, Matrix & Logic sets",
+        desc: "Arrangements, tables, matrix and logic sets",
       },
       {
-        label: "Verbal Ability & RC (VARC)",
+        label: "Verbal ability and RC (VARC)",
         href: "/topics/varc-reading-comprehension",
-        desc: "RC Passages, Parajumbles, Critical Reasoning",
+        desc: "RC passages, parajumbles, critical reasoning",
       },
       {
-        label: "All Video Topics & AI Tutor",
+        label: "All video topics and AI tutor",
         href: "/topics",
-        desc: "Full syllabus, interactive viva & quiz engine",
-        badge: "AI Powered",
+        desc: "Full syllabus, interactive viva and quizzes",
+        badge: "AI tutor",
       },
       {
-        label: "35 Full CAT Mock Course",
+        label: "35 full CAT mock course",
         href: "/#courses",
-        desc: "Classic & Modern exam simulator with AI analysis",
+        desc: "Classic and modern exam simulator with analysis",
       },
     ],
   },
   {
     id: "past-papers",
-    title: "Past Papers",
+    title: "Past papers",
     links: [
       {
-        label: "CAT 2024 Actual Papers (All Slots)",
+        label: "CAT 2024 actual papers (all slots)",
         href: "/browse#pyq-section",
         badge: "Latest",
       },
@@ -73,7 +75,7 @@ const NAV_CATEGORIES: NavCategory[] = [
         href: "/browse#pyq-section",
       },
       {
-        label: "Attempt Past Year Paper as Mock",
+        label: "Attempt a past year paper as mock",
         href: "/browse#pyq-section",
         badge: "Free",
       },
@@ -84,20 +86,20 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: "Mocks",
     links: [
       {
-        label: "TechnoCAT 6.0 Full Mock",
+        label: "TechnoCAT 6.0 full mock",
         href: "/browse?section=mocks&mock=latest#pyq-section",
         badge: "Free",
       },
       {
-        label: "35 Full-Length CAT Mocks",
+        label: "35 full-length CAT mocks",
         href: "/#courses",
       },
       {
-        label: "45 Sectional Tests (QA, DILR, VARC)",
+        label: "45 sectional tests (QA, DILR, VARC)",
         href: "/topics",
       },
       {
-        label: "AI Mock Analysis & Benchmark",
+        label: "AI mock analysis and benchmark",
         href: "/intelligence/ai-analysis",
         badge: "AI",
       },
@@ -108,28 +110,28 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: "Know us",
     links: [
       {
-        label: "Why TechnoCAT Mocks Stand Out",
+        label: "Why TechnoCAT mocks stand out",
         href: "/#why-stand-out",
       },
       {
-        label: "Two Exam Modes (Classic vs Modern)",
+        label: "Two exam modes (classic vs modern)",
         href: "/#two-modes",
       },
       {
-        label: "What You Get in TechnoCAT",
+        label: "What you get in TechnoCAT",
         href: "/#what-you-get",
       },
       {
-        label: "580+ 99+%ilers Community",
+        label: "580+ 99%ilers community",
         href: "/#community",
         badge: "580+",
       },
       {
-        label: "Verified Student Video Reviews",
+        label: "Verified student video reviews",
         href: "/#reviews",
       },
       {
-        label: "Frequently Asked Questions",
+        label: "Frequently asked questions",
         href: "/#faq",
       },
     ],
@@ -137,11 +139,11 @@ const NAV_CATEGORIES: NavCategory[] = [
 ];
 
 const UTILITY_LINKS = [
-  { label: "Predict your BSchool", href: "/intelligence/b-school-predictor", requiresAuth: true },
-  { label: "Free CAT Daily Target", href: "/dashboard", requiresAuth: true },
-  { label: "Free CAT Study Material!", href: "/browse", requiresAuth: true },
-  { label: "SOP Generator", href: "#", isModal: true },
-  { label: "CAT Score Calculator", href: "/intelligence/ai-analysis", requiresAuth: true },
+  { label: "Predict your B-school", href: "/intelligence/b-school-predictor", requiresAuth: true },
+  { label: "Free CAT daily target", href: "/dashboard", requiresAuth: true },
+  { label: "Free CAT study material", href: "/browse", requiresAuth: true },
+  { label: "SOP generator", href: "#", isModal: true },
+  { label: "CAT score calculator", href: "/intelligence/ai-analysis", requiresAuth: true },
 ];
 
 export default function Navbar() {
@@ -155,13 +157,23 @@ export default function Navbar() {
   });
 
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const reduce = useReducedMotion();
+
+  // Elevate the bar once the page has scrolled
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleUtilityClick = (e: React.MouseEvent, link: typeof UTILITY_LINKS[0]) => {
     if (link.isModal) {
       e.preventDefault();
       setModalData({
-        badge: "AI ADMISSIONS ENGINE",
-        title: "AI Statement of Purpose (SOP) & Interview Studio",
+        badge: "Admissions studio",
+        title: "SOP and interview studio",
         description:
           "Craft winning SOPs and practice AI-guided mock interviews tailored to each IIM shortlist and top MBA program criteria.",
         highlights: [
@@ -170,7 +182,7 @@ export default function Navbar() {
           "Extensive archive of previous GD-PI questions and alumni transcripts",
           "Automated suggestions for highlighting academic and work experience achievements"
         ],
-        primaryBtnText: "Unlock SOP Studio with Login",
+        primaryBtnText: "Log in to open SOP studio",
         onPrimaryClick: () => {
           if (!user || user.isGuest) {
             if (typeof window !== "undefined") {
@@ -297,27 +309,23 @@ export default function Navbar() {
     setDrawerOpen(false);
   };
 
+  const isAuthed = !!user && !user.isGuest;
+
   return (
     <>
       {/* ========================================================================= */}
       {/* 1. DESKTOP NAVBAR (Visible >= 1024px)                                     */}
       {/* ========================================================================= */}
-      <header className={styles.header}>
-        {/* Main Navigation Row */}
+      <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ""}`}>
         <div className={styles.mainNav}>
           <div className={styles.mainNavInner}>
             <div className={styles.navLeft}>
-              {/* Logo */}
-              <Link href="/" className={styles.logoLink}>
-                <BrandLogo height={70} />
+              <Link href="/" className={styles.logoLink} aria-label="TechnoCAT home">
+                <BrandLogo height={60} />
               </Link>
 
-
-
-              {/* Desktop Nav Items with Dropdowns */}
-              <nav className={styles.navLinks}>
-                {NAV_CATEGORIES.map((cat, idx) => {
-                  const isFirst = idx === 0;
+              <nav className={styles.navLinks} aria-label="Primary">
+                {NAV_CATEGORIES.map((cat) => {
                   const isOpen = activeDropdown === cat.id;
 
                   return (
@@ -330,114 +338,81 @@ export default function Navbar() {
                       <button
                         type="button"
                         onClick={() => setActiveDropdown(isOpen ? null : cat.id)}
-                        className={isFirst ? styles.allCoursesBtn : styles.navLinkBtn}
+                        className={`${styles.navLinkBtn} ${isOpen ? styles.navLinkBtnActive : ""}`}
                         aria-expanded={isOpen}
                       >
                         <span>{cat.title}</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          style={{
-                            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                            transition: "transform 0.2s ease",
-                          }}
-                        >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
+                        <ChevronDown
+                          size={15}
+                          strokeWidth={1.75}
+                          className={styles.chevron}
+                          style={{ transform: isOpen ? "rotate(180deg)" : "none" }}
+                        />
                       </button>
 
-                      {/* Dropdown Floating Menu */}
-                      {isOpen && (
-                        <div className={styles.dropdownMenu}>
-                          <div className={styles.dropdownHeader}>
-                            <span className={styles.dropdownTitle}>{cat.title}</span>
-                          </div>
-                          <div className={styles.dropdownGrid}>
-                            {cat.links.map((link) => (
-                              <Link
-                                key={link.label}
-                                href={link.href}
-                                onClick={(e) => handleNavLinkClick(e, link, cat.id, () => setActiveDropdown(null))}
-                                className={styles.dropdownItem}
-                              >
-                                <div className={styles.dropdownItemHeader}>
-                                  <span className={styles.dropdownItemLabel}>
-                                    {link.label}
-                                  </span>
-                                  {link.badge && (
-                                    <span className={styles.dropdownBadge}>
-                                      {link.badge}
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            className={styles.dropdownMenu}
+                            initial={{ opacity: 0, y: reduce ? 0 : 8, scale: reduce ? 1 : 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: reduce ? 0 : 6, scale: reduce ? 1 : 0.98 }}
+                            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                          >
+                            <div className={styles.dropdownHeader}>
+                              <span className={styles.dropdownTitle}>{cat.title}</span>
+                            </div>
+                            <div className={styles.dropdownGrid}>
+                              {cat.links.map((link, i) => (
+                                <motion.div
+                                  key={link.label}
+                                  initial={{ opacity: 0, y: reduce ? 0 : 4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.25, delay: reduce ? 0 : 0.03 * i }}
+                                >
+                                  <Link
+                                    href={link.href}
+                                    onClick={(e) => handleNavLinkClick(e, link, cat.id, () => setActiveDropdown(null))}
+                                    className={styles.dropdownItem}
+                                  >
+                                    <span className={styles.dropdownItemHeader}>
+                                      <span className={styles.dropdownItemLabel}>{link.label}</span>
+                                      {link.badge && <span className={styles.dropdownBadge}>{link.badge}</span>}
                                     </span>
-                                  )}
-                                </div>
-                                {link.desc && (
-                                  <span className={styles.dropdownItemDesc}>
-                                    {link.desc}
-                                  </span>
-                                )}
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                                    {link.desc && <span className={styles.dropdownItemDesc}>{link.desc}</span>}
+                                  </Link>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   );
                 })}
               </nav>
             </div>
 
-            {/* Right Action: Login / Dashboard Button */}
             <div className={styles.navActions}>
-              {user && !user.isGuest ? (
+              {isAuthed ? (
                 <Link href="/dashboard" className={styles.loginBtn}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                  </svg>
+                  <LayoutDashboard size={16} strokeWidth={1.75} />
                   <span>Dashboard</span>
                 </Link>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => openAuthModal("signin")}
-                  className={styles.loginBtn}
-                  aria-label="Login to TechnoCAT"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal("signin")}
+                    className={styles.signInLink}
+                    aria-label="Log in to TechnoCAT"
                   >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <span>Login</span>
-                </button>
+                    Log in
+                  </button>
+                  <button type="button" onClick={() => openAuthModal("signup")} className={styles.loginBtn}>
+                    <span>Start free</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -447,12 +422,9 @@ export default function Navbar() {
       {/* ========================================================================= */}
       {/* 2. MOBILE / TABLET NAVBAR (Visible < 1024px)                               */}
       {/* ========================================================================= */}
-      <div className={styles.mobileNav}>
-
-        {/* Mobile Main Bar */}
+      <div className={`${styles.mobileNav} ${scrolled ? styles.mobileNavScrolled : ""}`}>
         <div className={styles.mobileMainBar}>
           <div className={styles.mobileNavLeft}>
-            {/* Hamburger Button on Left */}
             <button
               type="button"
               className={styles.mobileMenuBtn}
@@ -461,51 +433,21 @@ export default function Navbar() {
                 e.stopPropagation();
                 setDrawerOpen(true);
               }}
-              aria-label="Open Navigation Menu"
+              aria-label="Open navigation menu"
+              aria-expanded={drawerOpen}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 6h16" />
-                <path d="M4 12h16" />
-                <path d="M4 18h16" />
-              </svg>
+              <Menu size={22} strokeWidth={1.75} />
             </button>
 
-            {/* Logo */}
-            <Link href="/" className={styles.mobileLogoLink}>
-              <BrandLogo height={50} />
+            <Link href="/" className={styles.mobileLogoLink} aria-label="TechnoCAT home">
+              <BrandLogo height={44} />
             </Link>
           </div>
 
-          {/* Right Action: Consistent Login / Dashboard Button on Mobile */}
           <div className={styles.mobileNavRight}>
-            {user && !user.isGuest ? (
+            {isAuthed ? (
               <Link href="/dashboard" className={styles.mobileLoginBtn}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="7" height="9" x="3" y="3" rx="1" />
-                  <rect width="7" height="5" x="14" y="3" rx="1" />
-                  <rect width="7" height="9" x="14" y="12" rx="1" />
-                  <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg>
+                <LayoutDashboard size={15} strokeWidth={1.75} />
                 <span>Dashboard</span>
               </Link>
             ) : (
@@ -517,23 +459,10 @@ export default function Navbar() {
                   openAuthModal("signin");
                 }}
                 className={styles.mobileLoginBtn}
-                aria-label="Login to TechnoCAT"
+                aria-label="Log in to TechnoCAT"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <span>Login</span>
+                <UserRound size={15} strokeWidth={1.75} />
+                <span>Log in</span>
               </button>
             )}
           </div>
@@ -543,72 +472,54 @@ export default function Navbar() {
       {/* ========================================================================= */}
       {/* 3. SLIDE-OUT LEFT DRAWER (Mobile & Tablet Navigation)                     */}
       {/* ========================================================================= */}
-      {drawerOpen && (
-        <div
-          className={styles.drawerBackdrop}
-          onClick={closeDrawer}
-          aria-hidden="true"
-        />
-      )}
+      <AnimatePresence>
+        {drawerOpen && (
+          <motion.div
+            key="backdrop"
+            className={styles.drawerBackdrop}
+            onClick={closeDrawer}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          />
+        )}
+      </AnimatePresence>
 
       <aside
         className={`${styles.drawerPanel} ${drawerOpen ? styles.drawerOpen : styles.drawerClosed}`}
-        aria-label="Mobile Navigation Drawer"
+        aria-label="Mobile navigation"
+        aria-hidden={!drawerOpen}
       >
-        {/* Drawer Header */}
         <div className={styles.drawerHeader}>
           <div className={styles.drawerBrand}>
             <Link href="/" onClick={closeDrawer} className={styles.mobileLogoLink}>
-              <BrandLogo height={50} />
+              <BrandLogo height={42} />
             </Link>
-
           </div>
 
-          <button
-            type="button"
-            onClick={closeDrawer}
-            className={styles.drawerCloseBtn}
-            aria-label="Close Navigation Drawer"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+          <button type="button" onClick={closeDrawer} className={styles.drawerCloseBtn} aria-label="Close navigation">
+            <X size={20} strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* Drawer Scrollable Content */}
         <div className={styles.drawerContent}>
-          {/* User Profile / Authentication Banner */}
           <div className={styles.drawerAuthBox}>
-            {user && !user.isGuest ? (
+            {isAuthed && user ? (
               <div className={styles.drawerUserCard}>
                 <div className={styles.drawerUserInfo}>
                   <div className={styles.drawerAvatar}>
                     {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
                   </div>
                   <div className={styles.drawerUserDetails}>
-                    <span className={styles.drawerUserName}>{user.fullName || "CAT Aspirant"}</span>
+                    <span className={styles.drawerUserName}>{user.fullName || "CAT aspirant"}</span>
                     <span className={styles.drawerUserEmail}>{user.email}</span>
                   </div>
                 </div>
                 <div className={styles.drawerUserActions}>
-                  <Link
-                    href="/dashboard"
-                    onClick={closeDrawer}
-                    className={styles.drawerDashboardBtn}
-                  >
-                    Go to Dashboard
+                  <Link href="/dashboard" onClick={closeDrawer} className={styles.drawerDashboardBtn}>
+                    Go to dashboard
                   </Link>
                   <button
                     type="button"
@@ -618,7 +529,7 @@ export default function Navbar() {
                     }}
                     className={styles.drawerLogoutBtn}
                   >
-                    Sign Out
+                    Sign out
                   </button>
                 </div>
               </div>
@@ -626,9 +537,7 @@ export default function Navbar() {
               <div className={styles.drawerGuestCard}>
                 <div className={styles.drawerGuestHeader}>
                   <span className={styles.drawerGuestTitle}>Welcome to TechnoCAT</span>
-                  <span className={styles.drawerGuestSub}>
-                    Get 35 Full CAT Mocks, Video RAG & AI Mentorship
-                  </span>
+                  <span className={styles.drawerGuestSub}>35 full CAT mocks, video solutions and an AI mentor</span>
                 </div>
                 <div className={styles.drawerGuestBtns}>
                   <button
@@ -639,7 +548,7 @@ export default function Navbar() {
                     }}
                     className={styles.drawerLoginBtn}
                   >
-                    Login / Sign In
+                    Log in
                   </button>
                   <button
                     type="button"
@@ -649,14 +558,13 @@ export default function Navbar() {
                     }}
                     className={styles.drawerSignupBtn}
                   >
-                    Register Free
+                    Register free
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Primary Nav Accordions */}
           <div className={styles.drawerSection}>
             <span className={styles.drawerSectionTitle}>Navigation</span>
             <div className={styles.accordionGroup}>
@@ -672,60 +580,50 @@ export default function Navbar() {
                       aria-expanded={isExpanded}
                     >
                       <span className={styles.accordionTitle}>{cat.title}</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{
-                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                        }}
-                      >
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
+                      <ChevronDown
+                        size={17}
+                        strokeWidth={1.75}
+                        className={styles.chevron}
+                        style={{ transform: isExpanded ? "rotate(180deg)" : "none" }}
+                      />
                     </button>
 
-                    {isExpanded && (
-                      <div className={styles.accordionBody}>
-                        {cat.links.map((link) => (
-                          <Link
-                            key={link.label}
-                            href={link.href}
-                            onClick={(e) => handleNavLinkClick(e, link, cat.id, closeDrawer)}
-                            className={styles.accordionLink}
-                          >
-                            <div className={styles.accordionLinkText}>
-                              <span>{link.label}</span>
-                              {link.desc && (
-                                <span className={styles.accordionLinkDesc}>
-                                  {link.desc}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          className={styles.accordionClip}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: reduce ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <div className={styles.accordionBody}>
+                            {cat.links.map((link) => (
+                              <Link
+                                key={link.label}
+                                href={link.href}
+                                onClick={(e) => handleNavLinkClick(e, link, cat.id, closeDrawer)}
+                                className={styles.accordionLink}
+                              >
+                                <span className={styles.accordionLinkText}>
+                                  <span>{link.label}</span>
+                                  {link.desc && <span className={styles.accordionLinkDesc}>{link.desc}</span>}
                                 </span>
-                              )}
-                            </div>
-                            {link.badge && (
-                              <span className={styles.accordionBadge}>
-                                {link.badge}
-                              </span>
-                            )}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                                {link.badge && <span className={styles.accordionBadge}>{link.badge}</span>}
+                              </Link>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Free Tools Section */}
           <div className={styles.drawerSection}>
-            <span className={styles.drawerSectionTitle}>Free Preparation Tools</span>
+            <span className={styles.drawerSectionTitle}>Free preparation tools</span>
             <div className={styles.toolsList}>
               {UTILITY_LINKS.map((tool) => (
                 <Link
@@ -737,26 +635,13 @@ export default function Navbar() {
                   }}
                   className={styles.toolItem}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#2563EB"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
                   <span>{tool.label}</span>
+                  <ChevronRight size={16} strokeWidth={1.75} />
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Quick Action Footer Buttons in Drawer */}
           <div className={styles.drawerFooter}>
             <a
               href="https://chat.whatsapp.com"
@@ -764,18 +649,8 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className={styles.drawerWhatsappBtn}
             >
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                strokeWidth="0"
-                viewBox="0 0 512 512"
-                width="18"
-                height="18"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M260.062 32C138.605 32 40.134 129.701 40.134 250.232c0 41.23 11.532 79.79 31.559 112.687L32 480l121.764-38.682c31.508 17.285 67.745 27.146 106.298 27.146C381.535 468.464 480 370.749 480 250.232 480 129.701 381.535 32 260.062 32zm109.362 301.11c-5.174 12.827-28.574 24.533-38.899 25.072-10.314.547-10.608 7.994-66.84-16.434-56.225-24.434-90.052-83.844-92.719-87.67-2.669-3.812-21.78-31.047-20.749-58.455 1.038-27.413 16.047-40.346 21.404-45.725 5.351-5.387 11.486-6.352 15.232-6.413 4.428-.072 7.296-.132 10.573-.011 3.274.124 8.192-.685 12.45 10.639 4.256 11.323 14.443 39.153 15.746 41.989 1.302 2.839 2.108 6.126.102 9.771-2.012 3.653-3.042 5.935-5.961 9.083-2.935 3.148-6.174 7.042-8.792 9.449-2.92 2.665-5.97 5.572-2.9 11.269 3.068 5.693 13.653 24.356 29.779 39.736 20.725 19.771 38.598 26.329 44.098 29.317 5.515 3.004 8.806 2.67 12.226-.929 3.404-3.599 14.639-15.746 18.596-21.169 3.955-5.438 7.661-4.373 12.742-2.329 5.078 2.052 32.157 16.556 37.673 19.551 5.51 2.989 9.193 4.529 10.51 6.9 1.317 2.38.901 13.531-4.271 26.359z" />
-              </svg>
-              <span>Join WhatsApp Group (200K)</span>
+              <MessageCircle size={17} strokeWidth={1.75} />
+              <span>Join the WhatsApp group (200K)</span>
             </a>
 
             <Link
@@ -792,32 +667,14 @@ export default function Navbar() {
               }}
               className={styles.drawerDownloadBtn}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 15V3" />
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <path d="m7 10 5 5 5-5" />
-              </svg>
-              <span>Download TechnoCAT App</span>
+              <Download size={16} strokeWidth={1.75} />
+              <span>Download the TechnoCAT app</span>
             </Link>
           </div>
         </div>
       </aside>
 
-      <CardInfoModal
-        isOpen={!!modalData}
-        onClose={() => setModalData(null)}
-        data={modalData}
-      />
+      <CardInfoModal isOpen={!!modalData} onClose={() => setModalData(null)} data={modalData} />
     </>
   );
 }

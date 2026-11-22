@@ -2,12 +2,232 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "motion/react";
+import {
+  ArrowRight,
+  ChartColumn,
+  ClipboardList,
+  Clock3,
+  MessageSquareText,
+  Target,
+  WandSparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Doodle, EASE_OUT, GradientText, RevealGroup, RevealItem, SectionHead, SpotlightCard, type Tint, useReplay } from "@/components/landing/motion";
+import ui from "@/components/landing/ui.module.css";
 import styles from "./AiFeedbackLoop.module.css";
 
+const inView = { once: false, amount: 0.25 } as const;
+
+/* ---------- Step visuals ---------- */
+
+function MockVisual() {
+  const rv = useReplay();
+  const reduce = useReducedMotion();
+  return (
+    <div className={styles.visual} aria-hidden="true">
+      <div className={styles.mockBar}>
+        <span className={styles.mockTitle}>QA · Question 1 of 22</span>
+        <span className={`${ui.figure} ${styles.timer}`}>
+          <Clock3 size={13} strokeWidth={1.75} />
+          01:59:32
+        </span>
+      </div>
+      <div className={styles.mockBody}>
+        <div className={styles.options}>
+          {["A", "B", "C", "D"].map((opt, i) => (
+            <motion.div
+              key={opt}
+              className={`${styles.option} ${i === 1 ? styles.optionActive : ""}`}
+              initial={{ opacity: 0, x: reduce ? 0 : -6 }}
+              animate={rv ? { opacity: 1, x: 0 } : { opacity: 0, x: reduce ? 0 : -6 }}
+              transition={{ delay: reduce ? 0 : 0.25 + i * 0.07, duration: 0.45, ease: EASE_OUT }}
+            >
+              <span className={styles.optKey}>{opt}</span>
+              <span className={styles.optLine} style={{ width: `${[72, 58, 80, 46][i]}%` }} />
+            </motion.div>
+          ))}
+        </div>
+        <div className={styles.palette}>
+          {Array.from({ length: 15 }, (_, i) => (
+            <span
+              key={i}
+              className={`${styles.cell} ${i < 5 ? styles.cellDone : ""} ${i === 5 ? styles.cellNow : ""} ${i === 2 ? styles.cellMarked : ""}`}
+            >
+              {i + 1}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ERROR_CATS = [
+  { label: "Concept error", value: 32, color: "var(--data-coral)" },
+  { label: "Speed error", value: 26, color: "var(--data-amber)" },
+  { label: "Calculation error", value: 22, color: "var(--data-blue)" },
+  { label: "Question selection", value: 20, color: "var(--data-teal)" },
+];
+
+function AnalysisVisual() {
+  const rv = useReplay();
+  const reduce = useReducedMotion();
+  const r = 26;
+  const C = 2 * Math.PI * r;
+  let acc = 0;
+  return (
+    <div className={styles.visual} aria-hidden="true">
+      <div className={styles.visualHead}>
+        <span>Error analysis</span>
+        <span className={styles.visualTag}>Mock 12</span>
+      </div>
+      <div className={styles.analysisRow}>
+        <svg viewBox="0 0 72 72" className={styles.donut}>
+          <circle cx="36" cy="36" r={r} fill="none" stroke="var(--canvas)" strokeWidth="10" />
+          {ERROR_CATS.map((c, i) => {
+            const start = acc;
+            acc += c.value;
+            return (
+              <motion.circle
+                key={c.label}
+                cx="36"
+                cy="36"
+                r={r}
+                fill="none"
+                stroke={c.color}
+                strokeWidth="10"
+                strokeDasharray={`${(c.value / 100) * C - 2} ${C}`}
+                strokeDashoffset={-(start / 100) * C}
+                style={{ transformBox: "view-box", transformOrigin: "center", rotate: -90 }}
+                initial={{ opacity: 0, rotate: reduce ? -90 : -150 }}
+                animate={rv ? { opacity: 1, rotate: -90 } : { opacity: 0, rotate: reduce ? -90 : -150 }}
+                transition={{ delay: reduce ? 0 : 0.2 + i * 0.12, duration: 0.55, ease: EASE_OUT }}
+              />
+            );
+          })}
+          <text x="36" y="40" textAnchor="middle" className={styles.donutText}>
+            28
+          </text>
+        </svg>
+        <ul className={styles.cats}>
+          {ERROR_CATS.map((c) => (
+            <li key={c.label}>
+              <span className={styles.catDot} style={{ background: c.color }} />
+              <span className={styles.catLabel}>{c.label}</span>
+              <span className={`${ui.figure} ${styles.catVal}`}>{c.value}%</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+const PLAN_ITEMS: { label: string; Icon: LucideIcon; color: string }[] = [
+  { label: "Topic-wise practice", Icon: Target, color: "var(--data-coral)" },
+  { label: "Personalized quizzes", Icon: ClipboardList, color: "var(--data-blue)" },
+  { label: "Performance tracking", Icon: ChartColumn, color: "var(--data-emerald)" },
+  { label: "Smart recommendations", Icon: WandSparkles, color: "var(--data-violet)" },
+];
+
+function PlanVisual() {
+  const rv = useReplay();
+  const reduce = useReducedMotion();
+  const bars = [14, 22, 33, 47];
+  return (
+    <div className={styles.visual} aria-hidden="true">
+      <div className={styles.visualHead}>
+        <span>Your improvement plan</span>
+        <span className={styles.visualTag}>Weak topics</span>
+      </div>
+      <div className={styles.planRow}>
+        <ul className={styles.planList}>
+          {PLAN_ITEMS.map(({ label, Icon, color }) => (
+            <li key={label}>
+              <Icon size={14} strokeWidth={1.75} style={{ color }} />
+              {label}
+            </li>
+          ))}
+        </ul>
+        <svg viewBox="0 0 92 78" className={styles.planGraph}>
+          <defs>
+            <linearGradient id="planBarGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+            <linearGradient id="planLineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+          </defs>
+          {bars.map((h, i) => (
+            <motion.rect
+              key={i}
+              x={8 + i * 20}
+              y={72 - h}
+              width="12"
+              height={h}
+              rx="3"
+              fill={["#bfdbfe", "#93c5fd", "#60a5fa", "url(#planBarGrad)"][i]}
+              style={{ transformBox: "fill-box", transformOrigin: "bottom" }}
+              initial={{ scaleY: reduce ? 1 : 0 }}
+              animate={rv ? { scaleY: 1 } : { scaleY: reduce ? 1 : 0 }}
+              transition={{ delay: reduce ? 0 : 0.2 + i * 0.1, duration: 0.6, ease: EASE_OUT }}
+            />
+          ))}
+          <motion.path
+            d="M10 50 C 30 44, 54 30, 82 12"
+            fill="none"
+            stroke="url(#planLineGrad)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            initial={{ pathLength: reduce ? 1 : 0 }}
+            animate={rv ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
+            transition={{ delay: reduce ? 0 : 0.6, duration: 0.55, ease: EASE_OUT }}
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+const STEPS = [
+  {
+    n: "01",
+    tint: "blue" as Tint,
+    title: "Take a mock",
+    desc: "Attempt CAT-level questions in an interface that mirrors the real exam.",
+    href: "/browse?section=pyqs#pyq-section",
+    label: "Explore mock tests",
+    Visual: MockVisual,
+  },
+  {
+    n: "02",
+    tint: "violet" as Tint,
+    title: "AI analysis",
+    desc: "The analysis engine finds your weakest topics and the patterns where time goes to waste.",
+    href: "/intelligence/ai-analysis",
+    label: "View AI analysis",
+    Visual: AnalysisVisual,
+  },
+  {
+    n: "03",
+    tint: "teal" as Tint,
+    title: "Targeted improvement",
+    desc: "Sectional drills built around your weak areas, not a generic syllabus.",
+    href: "/topics",
+    label: "Start targeted practice",
+    Visual: PlanVisual,
+  },
+];
+
 export default function AiFeedbackLoop() {
+  const rv = useReplay();
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
+  const reduce = useReducedMotion();
 
   const handleCardClick = (destination: string) => {
     if (!user || user.isGuest) {
@@ -21,431 +241,138 @@ export default function AiFeedbackLoop() {
   };
 
   return (
-    <section className={styles.section}>
-      {/* Subtle Background Decorative Accents */}
-      <div className={styles.bgOrbLeft} aria-hidden="true" />
-      <div className={styles.bgDotGrid} aria-hidden="true" />
-      <div className={styles.bgSwirlRight} aria-hidden="true">
-        <svg width="140" height="70" viewBox="0 0 140 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M10 38C28 18 52 18 46 36C41 50 24 44 34 28C46 10 86 24 132 52"
-            stroke="#BAE6FD"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      <div className={styles.container}>
-        {/* Section Header */}
-        <div className={styles.header}>
-          <div className={styles.headingWrap}>
-            <span className={styles.sparkleLeft} aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <line x1="18" y1="6" x2="10" y2="2" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-                <line x1="14" y1="12" x2="4" y2="10" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-                <line x1="16" y1="18" x2="8" y2="20" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>
+    <>
+    <section className={styles.section} id="mock-loop">
+      <div className={ui.container}>
+        <SectionHead
+          eyebrow="How it works"
+          title={
+            <span className={styles.titleWrap}>
+              <Doodle kind="sparkle" className={`${styles.spark} ${styles.sparkL}`} color="var(--data-cyan)" />
+              The <GradientText>mock-to-mastery</GradientText> loop
+              <Doodle kind="sparkle" className={`${styles.spark} ${styles.sparkR}`} color="var(--data-cyan)" delay={0.55} />
             </span>
+          }
+          lede="Every test feeds the next step, so practice keeps adapting to your weak areas."
+          className={styles.head}
+        />
 
-            <h2 className={styles.heading}>
-              The Ultimate <span className={styles.highlight}>Mock-to-Mastery</span> Loop
-            </h2>
+        <div className={styles.loopWrap}>
+          {/* Connector line that draws across the three steps (desktop) */}
+          <svg className={styles.connector} viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
+            <motion.path
+              d="M 60 10 L 940 10"
+              stroke="var(--blue-300)"
+              strokeWidth="1.5"
+              strokeDasharray="4 6"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+              initial={{ pathLength: reduce ? 1 : 0 }}
+              animate={rv ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
+              transition={{ duration: 0.55, ease: EASE_OUT }}
+            />
+          </svg>
 
-            <span className={styles.sparkleRight} aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <line x1="6" y1="6" x2="14" y2="2" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-                <line x1="10" y1="12" x2="20" y2="10" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-                <line x1="8" y1="18" x2="16" y2="20" stroke="#0EA5E9" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>
-            </span>
-          </div>
-
-          <p className={styles.subheading}>
-            TechnoCAT is not just a mock series—it&apos;s a complete ecosystem that adapts to your weaknesses and guarantees improvement.
-          </p>
-        </div>
-
-        {/* 3 Connected Step Cards */}
-        <div className={styles.loopGrid}>
-          {/* ================= STEP 01: TAKE A MOCK ================= */}
-          <div
-            className={styles.stepCard}
-            onClick={() => handleCardClick("/browse?section=pyqs#pyq-section")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleCardClick("/browse?section=pyqs#pyq-section");
-              }
-            }}
-            title="Click to explore mock tests"
-          >
-            <div className={styles.badgeHalo}>
-              <div className={`${styles.stepNumber} ${styles.badgeBlue}`}>01</div>
-            </div>
-
-            <div className={styles.cardTextGroup}>
-              <h3 className={styles.stepTitle}>Take a Mock</h3>
-              <p className={styles.stepDesc}>
-                Attempt CAT-level questions in a highly accurate simulation environment.
-              </p>
-            </div>
-
-            {/* Internal Mock Interface Illustration */}
-            <div className={styles.visualCard}>
-              <div className={styles.mockTopBar}>
-                <span style={{ background: "#FB7185" }} />
-                <span style={{ background: "#FBBF24" }} />
-                <span style={{ background: "#34D399" }} />
-              </div>
-
-              <div className={styles.mockInterfaceBody}>
-                {/* Left: Timer + Options A, B, C, D */}
-                <div className={styles.mockLeftCol}>
-                  <div className={styles.mockTimerRow}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="9" />
-                      <polyline points="12 7 12 12 15 14" />
-                    </svg>
-                    <div className={styles.mockTimerText}>
-                      <span className={styles.mockTimerLabel}>Time Left</span>
-                      <span className={styles.mockTimerValue}>01:59:32</span>
-                    </div>
+          <RevealGroup className={styles.loopGrid} stagger={0.05}>
+            {STEPS.map((s) => (
+              <RevealItem key={s.n} className={styles.stepCell}>
+                <SpotlightCard
+                  tint={s.tint}
+                  className={styles.step}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={s.label}
+                  onClick={() => handleCardClick(s.href)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleCardClick(s.href);
+                    }
+                  }}
+                >
+                  <div className={styles.stepTop}>
+                    <span className={`step-badge ${styles.stepBadge}`} aria-label={`Step ${s.n}`}>
+                      {s.n}
+                    </span>
+                    <ArrowRight size={18} strokeWidth={1.75} className={styles.stepArrow} />
                   </div>
-
-                  <div className={styles.mockOptionsList}>
-                    {["A", "B", "C", "D"].map((opt, idx) => (
-                      <div key={opt} className={styles.mockOptionRow}>
-                        <span className={`${styles.mockOptionCircle} ${idx === 0 ? styles.mockOptionActive : ""}`}>
-                          {opt}
-                        </span>
-                        <div className={styles.mockOptionLines}>
-                          <span className={styles.mockLinePrimary} />
-                          <span className={styles.mockLineSecondary} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right: Question Number Grid + Submit Mock Button */}
-                <div className={styles.mockRightCol}>
-                  <div className={styles.questionPaletteGrid}>
-                    {Array.from({ length: 15 }, (_, i) => i + 1).map((num) => (
-                      <span
-                        key={num}
-                        className={`${styles.paletteCell} ${num === 1 ? styles.paletteCellActive : ""}`}
-                      >
-                        {num}
-                      </span>
-                    ))}
-                  </div>
-                  <div className={styles.submitMockPill}>Submit Mock</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Message Strip */}
-            <div className={`${styles.bottomMessage} ${styles.msgBlue}`}>
-              <span className={styles.msgIcon} aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <polyline points="12 7 12 12 15 15" />
-                </svg>
-              </span>
-              <span>Practice under real exam conditions.</span>
-            </div>
-          </div>
-
-          {/* ================= CONNECTOR 1 -> 2 ================= */}
-          <div className={styles.connectorWrap} aria-hidden="true">
-            <svg className={styles.connectorArc} viewBox="0 0 80 42" fill="none">
-              <path
-                d="M2 36 C 24 8, 56 8, 78 36"
-                stroke="#93C5FD"
-                strokeWidth="1.8"
-                strokeDasharray="4 4"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className={styles.connectorCircle}>
-              <svg className={styles.connectorArrowIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" />
-                <path d="m13 6 6 6-6 6" />
-              </svg>
-            </div>
-          </div>
-
-          {/* ================= STEP 02: AI ANALYSIS ================= */}
-          <div
-            className={styles.stepCard}
-            onClick={() => handleCardClick("/intelligence/ai-analysis")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleCardClick("/intelligence/ai-analysis");
-              }
-            }}
-            title="Click to view AI Analysis"
-          >
-            <div className={styles.badgeHalo}>
-              <div className={`${styles.stepNumber} ${styles.badgeCyan}`}>02</div>
-            </div>
-
-            <div className={styles.cardTextGroup}>
-              <h3 className={styles.stepTitle}>AI Analysis</h3>
-              <p className={styles.stepDesc}>
-                Our engine detects your weakest topics and tracks time-wasting patterns.
-              </p>
-            </div>
-
-            {/* Internal AI Analysis Illustration */}
-            <div className={styles.visualCard}>
-              <div className={styles.analysisCardInner}>
-                <div className={styles.analysisTopRow}>
-                  <span className={styles.analysisTitle}>Error Analysis</span>
-                  <div className={styles.aiChipBox}>
-                    <span>AI</span>
-                  </div>
-                </div>
-
-                <div className={styles.analysisContentRow}>
-                  {/* Donut Chart */}
-                  <div className={styles.donutContainer}>
-                    <svg viewBox="0 0 84 84" className={styles.donutSvg}>
-                      <circle cx="42" cy="42" r="27" fill="none" stroke="#EFF6FF" strokeWidth="12" />
-                      <circle
-                        cx="42"
-                        cy="42"
-                        r="27"
-                        fill="none"
-                        stroke="#3B82F6"
-                        strokeWidth="12"
-                        strokeDasharray="60 170"
-                        strokeDashoffset="0"
-                      />
-                      <circle
-                        cx="42"
-                        cy="42"
-                        r="27"
-                        fill="none"
-                        stroke="#34D399"
-                        strokeWidth="12"
-                        strokeDasharray="34 170"
-                        strokeDashoffset="-60"
-                      />
-                      <circle
-                        cx="42"
-                        cy="42"
-                        r="27"
-                        fill="none"
-                        stroke="#FBBF24"
-                        strokeWidth="12"
-                        strokeDasharray="28 170"
-                        strokeDashoffset="-94"
-                      />
-                      <circle
-                        cx="42"
-                        cy="42"
-                        r="27"
-                        fill="none"
-                        stroke="#FB7185"
-                        strokeWidth="12"
-                        strokeDasharray="48 170"
-                        strokeDashoffset="-122"
-                      />
-                    </svg>
-                  </div>
-
-                  {/* Error Categories */}
-                  <div className={styles.errorCategoryList}>
-                    <div className={styles.errorCatRow}>
-                      <span className={styles.catDot} style={{ background: "#FB7185" }} />
-                      <span>Concept Error</span>
-                    </div>
-                    <div className={styles.errorCatRow}>
-                      <span className={styles.catDot} style={{ background: "#FDBA74" }} />
-                      <span>Speed Error</span>
-                    </div>
-                    <div className={styles.errorCatRow}>
-                      <span className={styles.catDot} style={{ background: "#FBBF24" }} />
-                      <span>Calculation Error</span>
-                    </div>
-                    <div className={styles.errorCatRow}>
-                      <span className={styles.catDot} style={{ background: "#34D399" }} />
-                      <span>Question Selection</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Message Strip */}
-            <div className={`${styles.bottomMessage} ${styles.msgCyan}`}>
-              <span className={styles.msgIcon} aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18h6" />
-                  <path d="M10 22h4" />
-                  <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                </svg>
-              </span>
-              <span>Understand exactly where you lose marks.</span>
-            </div>
-          </div>
-
-          {/* ================= CONNECTOR 2 -> 3 ================= */}
-          <div className={styles.connectorWrap} aria-hidden="true">
-            <svg className={styles.connectorArc} viewBox="0 0 80 42" fill="none">
-              <path
-                d="M2 36 C 24 8, 56 8, 78 36"
-                stroke="#93C5FD"
-                strokeWidth="1.8"
-                strokeDasharray="4 4"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className={styles.connectorCircle}>
-              <svg className={styles.connectorArrowIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" />
-                <path d="m13 6 6 6-6 6" />
-              </svg>
-            </div>
-          </div>
-
-          {/* ================= STEP 03: TARGETED IMPROVEMENT ================= */}
-          <div
-            className={styles.stepCard}
-            onClick={() => handleCardClick("/topics")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleCardClick("/topics");
-              }
-            }}
-            title="Click to start targeted practice"
-          >
-            <div className={styles.badgeHalo}>
-              <div className={`${styles.stepNumber} ${styles.badgeTeal}`}>03</div>
-            </div>
-
-            <div className={styles.cardTextGroup}>
-              <h3 className={styles.stepTitle}>Targeted Improvement</h3>
-              <p className={styles.stepDesc}>
-                Get customized sectional drills focused purely on your weak areas.
-              </p>
-            </div>
-
-            {/* Internal Improvement Plan Illustration */}
-            <div className={styles.visualCard}>
-              <div className={styles.planCardInner}>
-                <div className={styles.planTopRow}>
-                  <span className={styles.planTitle}>Your Improvement Plan</span>
-                  <span className={styles.weakTopicsPill}>Weak Topics ▾</span>
-                </div>
-
-                <div className={styles.planBodyRow}>
-                  {/* Left: 4 Plan Features */}
-                  <div className={styles.planItemsList}>
-                    <div className={styles.planItem}>
-                      <span className={styles.planItemIcon} style={{ background: "#FFE4E6", color: "#F43F5E" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
-                      </span>
-                      <span>Topic-wise Practice</span>
-                    </div>
-                    <div className={styles.planItem}>
-                      <span className={styles.planItemIcon} style={{ background: "#E0F2FE", color: "#0284C7" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
-                      </span>
-                      <span>Personalized Quizzes</span>
-                    </div>
-                    <div className={styles.planItem}>
-                      <span className={styles.planItemIcon} style={{ background: "#D1FAE5", color: "#059669" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                      </span>
-                      <span>Performance Tracking</span>
-                    </div>
-                    <div className={styles.planItem}>
-                      <span className={styles.planItemIcon} style={{ background: "#EDE9FE", color: "#7C3AED" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                      </span>
-                      <span>Smart Recommendations</span>
-                    </div>
-                  </div>
-
-                  {/* Right: Upward Progress Bars & Curve */}
-                  <div className={styles.planGraphBox}>
-                    <svg viewBox="0 0 92 78" className={styles.planGraphSvg}>
-                      <path
-                        d="M10 48 C 30 42, 54 28, 80 10"
-                        fill="none"
-                        stroke="#2563EB"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <polyline
-                        points="73 9 81 9 80 17"
-                        fill="none"
-                        stroke="#2563EB"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <rect x="10" y="58" width="11" height="14" rx="2.5" fill="#DBEAFE" />
-                      <rect x="29" y="50" width="11" height="22" rx="2.5" fill="#BFDBFE" />
-                      <rect x="48" y="39" width="11" height="33" rx="2.5" fill="#93C5FD" />
-                      <rect x="67" y="25" width="11" height="47" rx="2.5" fill="#60A5FA" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Message Strip */}
-            <div className={`${styles.bottomMessage} ${styles.msgTeal}`}>
-              <span className={styles.msgIcon} aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                  <polyline points="17 6 23 6 23 12" />
-                </svg>
-              </span>
-              <span>Turn your weak areas into strong ones.</span>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Doubt Solver Banner */}
-        <div className={styles.aiTutorBanner}>
-          <div className={styles.aiTutorContent}>
-            <h3 className={styles.aiTutorTitle}>24x7 Instant AI Doubt Solver</h3>
-            <p className={styles.aiTutorDesc}>
-              Stuck on a tricky DILR set or a tough Quant question? Our Chat Tutor breaks down any problem step-by-step, anytime.
-            </p>
-            <button
-              className={styles.demoBtn}
-              onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
-            >
-              Try Chat Tutor Demo
-            </button>
-          </div>
-          <div
-            className={styles.aiTutorMockup}
-            onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
-            style={{ cursor: "pointer" }}
-            title="Click to open AI Doubt Tutor"
-          >
-            <div className={styles.chatBubbleUser}>How to solve Q.4 efficiently?</div>
-            <div className={styles.chatBubbleAi}>
-              <strong>Chat Tutor:</strong> Notice that (x+2) and (x-3) are inversely proportional...
-            </div>
-          </div>
+                  <h3 className={styles.stepTitle}>{s.title}</h3>
+                  <p className={styles.stepDesc}>{s.desc}</p>
+                  <s.Visual />
+                </SpotlightCard>
+              </RevealItem>
+            ))}
+          </RevealGroup>
         </div>
       </div>
     </section>
+
+    {/* Chat tutor banner: its own band so each part reads as one screen */}
+    <section className={styles.tutorSection} aria-label="Chat tutor">
+      <div className={ui.container}>
+        <RevealGroup className={styles.tutor} stagger={0.05}>
+          <div className={styles.tutorText}>
+            <RevealItem>
+              <span className={styles.tutorEyebrow}>
+                <MessageSquareText size={16} strokeWidth={1.75} />
+                Chat tutor, available 24x7
+              </span>
+            </RevealItem>
+            <RevealItem>
+              <h3 className={styles.tutorTitle}>Instant AI doubt solver</h3>
+            </RevealItem>
+            <RevealItem>
+              <p className={styles.tutorDesc}>Stuck on a DILR set or a quant question? Get a step-by-step breakdown.</p>
+            </RevealItem>
+            <RevealItem>
+              <button
+                type="button"
+                className={`${ui.btn} ${ui.btnLight}`}
+                onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
+              >
+                Try the chat tutor demo
+                <ArrowRight size={18} strokeWidth={1.75} data-arrow />
+              </button>
+            </RevealItem>
+          </div>
+
+          <div
+            className={styles.chat}
+            onClick={() => handleCardClick("/topics/qa-quantitative-ability")}
+            title="Open the AI doubt tutor"
+          >
+            <motion.div
+              className={styles.bubbleUser}
+              initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+              animate={rv ? { opacity: 1, y: 0 } : { opacity: 0, y: reduce ? 0 : 10 }}
+              transition={{ duration: 0.45, ease: EASE_OUT, delay: 0.2 }}
+            >
+              How do I solve Q.4 efficiently?
+            </motion.div>
+            <motion.div
+              className={styles.typing}
+              initial={{ opacity: 0 }}
+              animate={rv ? { opacity: reduce ? 0 : [0, 1, 1, 0] } : { opacity: 0 }}
+              transition={{ duration: 0.55, times: [0, 0.15, 0.85, 1], delay: 0.7 }}
+              aria-hidden="true"
+            >
+              <span />
+              <span />
+              <span />
+            </motion.div>
+            <motion.div
+              className={styles.bubbleAi}
+              initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+              animate={rv ? { opacity: 1, y: 0 } : { opacity: 0, y: reduce ? 0 : 10 }}
+              transition={{ duration: 0.5, ease: EASE_OUT, delay: reduce ? 0.2 : 1.9 }}
+            >
+              <span className={styles.bubbleName}>Chat tutor</span>
+              Notice that (x+2) and (x−3) are inversely proportional. Set their product to a constant k, then…
+            </motion.div>
+          </div>
+        </RevealGroup>
+      </div>
+    </section>
+    </>
   );
 }
