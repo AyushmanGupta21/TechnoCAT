@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import styles from "./intelligence.module.css";
 import Image from "next/image";
@@ -9,21 +9,168 @@ import { useAuth } from "@/context/AuthContext";
 import AIMentorDrawer from "@/components/AIMentorDrawer";
 import BrandLogo from "@/components/BrandLogo";
 import type { StudentMetrics } from "@/lib/metrics/types";
+import type { ChallengeData, ChallengeTask, ChallengeTaskIcon } from "@/lib/challenge";
 
-interface ChallengeData {
-  startDate: string;
-  currentDay: number;
-  completedDays: number;
-  totalDays: number;
-  days: {
-    day: number;
-    date: string;
-    status: 'completed' | 'incomplete' | 'today' | 'upcoming';
-    title: string;
-    desc: string;
-    tasks: { name: string; done: boolean }[];
-    progress: { tasksDone: number; tasksTotal: number };
-  }[];
+function formatChallengeDate(ymd: string): string {
+  const parts = ymd.split("-").map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return ymd;
+  const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+function renderTaskStatusIcon(task: ChallengeTask, size = 20) {
+  if (task.done || task.status === "completed") {
+    return (
+      <span
+        title="Completed automatically"
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          borderRadius: "50%",
+          background: "#ECFDF5",
+          border: "1.5px solid #10B981",
+          color: "#10B981",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <svg width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (task.status === "upcoming") {
+    return (
+      <span
+        title="Upcoming task"
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          borderRadius: "50%",
+          background: "#F8FAFC",
+          border: "1.5px solid #CBD5E1",
+          color: "#94A3B8",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <svg width={Math.round(size * 0.55)} height={Math.round(size * 0.55)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <polyline points="12 7 12 12 15 14" />
+        </svg>
+      </span>
+    );
+  }
+
+  // Not completed (today pending or past missed) -> red cross
+  return (
+    <span
+      title={task.status === "missed" ? "Not completed (missed)" : "Not completed yet"}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: "50%",
+        background: "#FEF2F2",
+        border: "1.5px solid #EF4444",
+        color: "#EF4444",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <svg width={Math.round(size * 0.55)} height={Math.round(size * 0.55)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </span>
+  );
+}
+
+const TASK_ICON_THEME: Record<ChallengeTaskIcon, { bg: string; color: string }> = {
+  mock: { bg: "#EFF6FF", color: "#2563EB" },
+  analysis: { bg: "#F5F3FF", color: "#7C3AED" },
+  lesson: { bg: "#ECFDF5", color: "#059669" },
+  quiz: { bg: "#FFF7ED", color: "#EA580C" },
+  study: { bg: "#F0F9FF", color: "#0284C7" },
+  planner: { bg: "#FEFCE8", color: "#CA8A04" },
+  mentor: { bg: "#EEF2FF", color: "#4F46E5" },
+  mistakes: { bg: "#FEF2F2", color: "#DC2626" },
+  community: { bg: "#F0FDFA", color: "#0D9488" },
+};
+
+function renderTaskCategoryIcon(icon: ChallengeTaskIcon) {
+  const theme = TASK_ICON_THEME[icon] ?? TASK_ICON_THEME.mock;
+  return (
+    <div style={{ background: theme.bg, color: theme.color, borderRadius: "12px", padding: "12px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {icon === "mock" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+      )}
+      {icon === "analysis" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      )}
+      {icon === "lesson" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+      )}
+      {icon === "quiz" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+      )}
+      {icon === "study" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      )}
+      {icon === "planner" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      )}
+      {icon === "mentor" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      )}
+      {icon === "mistakes" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      )}
+      {icon === "community" && (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      )}
+    </div>
+  );
 }
 
 type ComponentKey = "concepts" | "accuracy" | "speed" | "consistency";
@@ -227,6 +374,20 @@ export default function IntelligenceHubPage() {
     }
   }, [activeFlowStep]);
 
+  const refreshChallenge = useCallback(async () => {
+    try {
+      const chalRes = await fetch("/api/intelligence/challenge");
+      if (chalRes.ok) {
+        const text = await chalRes.text();
+        if (text && text.trim().length > 0) {
+          setChallengeData(JSON.parse(text) as ChallengeData);
+        }
+      }
+    } catch {
+      // Ignore transient refresh errors
+    }
+  }, []);
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -265,6 +426,25 @@ export default function IntelligenceHubPage() {
     };
     fetchDashboard();
   }, [user?.id, authLoading]);
+
+  // Auto-refresh challenge checklist when returning to the page/tab after completing tasks
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void refreshChallenge();
+      }
+    };
+    const handleFocus = () => {
+      void refreshChallenge();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [authLoading, user, refreshChallenge]);
 
   // CAT Readiness: the single breakdown, straight from /api/me/metrics.
   const readinessScore = metrics?.readiness.score ?? null;
@@ -1539,13 +1719,16 @@ export default function IntelligenceHubPage() {
                 <>
                   <div className={styles.challengeHeaderRow}>
                     <div>
-                      <h3 className={styles.challengeTitle}>Your 7-Day CAT Challenge</h3>
+                      <h3 className={styles.challengeTitle}>
+                        Your 7-Day CAT Challenge
+                        {challengeData.cycleNumber > 1 ? ` · Week ${challengeData.cycleNumber}` : ""}
+                      </h3>
                       <p className={styles.challengeSubtitle} style={{fontSize: '14px', color: '#64748B', marginTop: '4px'}}>
-                        Your personalized CAT improvement journey starts today.
+                        Fresh daily goals with automatic progress verification. Click any day to inspect its checklist.
                       </p>
                     </div>
                     {challengeData.completedDays === 7 ? (
-                      <div className={styles.challengeCta} style={{background: '#10B981'}}>
+                      <div className={styles.challengeCta} style={{background: '#10B981', color: '#FFFFFF', marginTop: 0}}>
                         7-Day Journey Completed!
                       </div>
                     ) : (
@@ -1561,107 +1744,157 @@ export default function IntelligenceHubPage() {
                   </div>
                   
                   <div className={styles.timeline}>
-                    {challengeData.days.map((d) => (
-                      <div 
-                        key={d.day} 
-                        onClick={() => setSelectedChallengeDay(d.day)}
-                        className={`${styles.timelineDay} ${d.status === 'completed' ? styles.dayCompleted : d.status === 'today' ? styles.dayToday : d.status === 'incomplete' ? styles.dayIncomplete : styles.dayUpcoming}`}
-                        style={{ cursor: 'pointer', opacity: (d.status === 'upcoming' || d.status === 'incomplete') ? 0.7 : 1 }}
-                      >
-                        <div className={styles.dayCircle} style={{
-                          borderColor: d.status === 'incomplete' ? '#FCA5A5' : '',
-                          background: d.status === 'incomplete' ? '#FEF2F2' : ''
-                        }}>
-                          {d.status === 'completed' ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          ) : d.status === 'today' ? (
-                            <span className={styles.dayDot}></span>
-                          ) : d.status === 'incomplete' ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                          ) : null}
+                    {challengeData.days.map((d) => {
+                      const isToday = d.day === challengeData.currentDay;
+                      return (
+                        <div
+                          key={d.day}
+                          onClick={() => setSelectedChallengeDay(d.day)}
+                          title={`Day ${d.day}: ${d.title} (${d.progress.tasksDone}/${d.progress.tasksTotal} done)`}
+                          className={`${styles.timelineDay} ${d.status === 'completed' ? styles.dayCompleted : d.status === 'today' ? styles.dayToday : d.status === 'incomplete' ? styles.dayIncomplete : styles.dayUpcoming}`}
+                          style={{ cursor: 'pointer', opacity: d.status === 'upcoming' ? 0.65 : 1 }}
+                        >
+                          <div className={styles.dayCircle} style={{
+                            borderColor: d.status === 'incomplete' ? '#FCA5A5' : d.status === 'completed' ? '#10B981' : '',
+                            background: d.status === 'incomplete' ? '#FEF2F2' : d.status === 'completed' ? '#10B981' : ''
+                          }}>
+                            {d.status === 'completed' ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            ) : d.status === 'today' ? (
+                              <span className={styles.dayDot}></span>
+                            ) : d.status === 'incomplete' ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            ) : null}
+                          </div>
+                          <span className={styles.dayLabel} style={{
+                            color: d.status === 'incomplete' ? '#EF4444' : d.status === 'completed' ? '#059669' : '',
+                            fontWeight: isToday ? '700' : '600'
+                          }}>
+                            {isToday ? "Today" : `Day ${d.day}`}
+                          </span>
                         </div>
-                        <span className={styles.dayLabel} style={{
-                          color: d.status === 'incomplete' ? '#EF4444' : '',
-                          fontWeight: d.status === 'today' ? 'bold' : 'normal'
-                        }}>
-                          {d.status === 'today' ? "Today" : `Day ${d.day}`}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
-                  
-                    
-                    {/* Static Today's Challenge Summary Card */}
-                    {(() => {
-                      const todayInfo = challengeData.days.find((d: any) => d.status === 'today') || challengeData.days.find((d: any) => d.day === challengeData.currentDay);
-                      if (!todayInfo) return null;
-                      const isComplete = todayInfo.progress.tasksDone === todayInfo.progress.tasksTotal;
+                  {/* Today's Challenge Summary Card */}
+                  {(() => {
+                    const todayInfo =
+                      challengeData.days.find((d) => d.day === challengeData.currentDay) ||
+                      challengeData.days.find((d) => d.status === "today");
+                    if (!todayInfo) return null;
+                    const isComplete = todayInfo.progress.tasksDone === todayInfo.progress.tasksTotal;
 
-                      return (
-                        <div className={styles.challengeDetailCard} style={{
-                          marginTop: '24px',
-                          padding: '24px 32px',
-                          background: '#F8FAFC',
-                          borderRadius: '16px',
-                          border: '1px solid #E2E8F0',
-                          position: 'relative',
-                          cursor: 'pointer'
-                        }} onClick={() => setSelectedChallengeDay(todayInfo.day)}>
-                          <div style={{marginBottom: '12px'}}>
-                            <h4 style={{fontSize: '16px', fontWeight: '700', color: '#0F172A', margin: 0}}>
-                              Today's Focus: <span style={{color: '#2563EB'}}>{todayInfo.title}</span>
-                            </h4>
-                          </div>
-                          
-                          <p style={{fontSize: '14px', color: '#475569', marginBottom: '24px'}}>{todayInfo.desc}</p>
-                          
-                          <div style={{fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
-                            TASKS PROGRESS ({todayInfo.progress.tasksDone} / {todayInfo.progress.tasksTotal})
-                          </div>
-                          <ul style={{listStyle: 'none', padding: 0, margin: '0 0 24px 0'}}>
-                            {todayInfo.tasks.map((t: any, idx: number) => (
-                              <li key={idx} style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', fontSize: '14px', color: '#334155'}}>
-                                {t.done ? (
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                ) : (
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle></svg>
-                                )}
-                                <span style={{textDecoration: t.done ? 'line-through' : 'none', opacity: t.done ? 0.7 : 1}}>{t.name}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedChallengeDay(todayInfo.day); }} style={{
-                            position: 'absolute',
-                            bottom: '24px',
-                            right: '32px',
-                            background: 'transparent',
-                            color: '#2563EB',
-                            border: '1px solid #BFDBFE',
-                            padding: '10px 20px',
-                            borderRadius: '8px',
+                    return (
+                      <div className={styles.challengeDetailCard} style={{
+                        marginTop: '24px',
+                        padding: '24px 28px',
+                        background: '#F8FAFC',
+                        borderRadius: '16px',
+                        border: '1px solid #E2E8F0',
+                        position: 'relative',
+                        cursor: 'pointer'
+                      }} onClick={() => setSelectedChallengeDay(todayInfo.day)}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '10px'}}>
+                          <h4 style={{fontSize: '16px', fontWeight: '700', color: '#0F172A', margin: 0}}>
+                            Day {todayInfo.day} Focus: <span style={{color: '#2563EB'}}>{todayInfo.title}</span>
+                          </h4>
+                          <span style={{
+                            fontSize: '11px',
                             fontWeight: '600',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'background 0.2s'
+                            color: '#0369A1',
+                            background: '#E0F2FE',
+                            padding: '4px 10px',
+                            borderRadius: '999px'
                           }}>
+                            Auto-verified Checklist
+                          </span>
+                        </div>
+                        
+                        <p style={{fontSize: '14px', color: '#475569', margin: '0 0 20px 0', lineHeight: 1.5}}>{todayInfo.desc}</p>
+                        
+                        <div style={{fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                          TASKS PROGRESS ({todayInfo.progress.tasksDone} / {todayInfo.progress.tasksTotal})
+                        </div>
+                        <ul style={{listStyle: 'none', padding: 0, margin: '0 0 20px 0', display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                          {todayInfo.tasks.map((t) => (
+                            <li key={t.id} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '12px',
+                              padding: '10px 14px',
+                              background: '#FFFFFF',
+                              borderRadius: '12px',
+                              border: `1px solid ${t.done ? '#A7F3D0' : '#FECACA'}`,
+                              fontSize: '14px',
+                              color: '#334155'
+                            }}>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0}}>
+                                {renderTaskStatusIcon(t, 22)}
+                                <span style={{
+                                  fontWeight: 500,
+                                  textDecoration: t.done ? 'line-through' : 'none',
+                                  color: t.done ? '#64748B' : '#0F172A'
+                                }}>
+                                  {t.name}
+                                </span>
+                              </div>
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                padding: '3px 9px',
+                                borderRadius: '999px',
+                                flexShrink: 0,
+                                background: t.done ? '#ECFDF5' : '#FEF2F2',
+                                color: t.done ? '#059669' : '#DC2626'
+                              }}>
+                                {t.done ? "Done" : "Not done"}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+                          <span style={{fontSize: '12px', color: '#64748B'}}>
+                            Tip: Click any day circle above to view other days&apos; tasks.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setSelectedChallengeDay(todayInfo.day); }}
+                            style={{
+                              background: isComplete ? '#ECFDF5' : '#FFFFFF',
+                              color: isComplete ? '#059669' : '#2563EB',
+                              border: `1px solid ${isComplete ? '#A7F3D0' : '#BFDBFE'}`,
+                              padding: '10px 18px',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'background 0.2s'
+                            }}
+                          >
                             {isComplete ? (
                               <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                Challenge Completed
+                                Today&apos;s Challenge Completed
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                   <polyline points="20 6 9 17 4 12" />
                                 </svg>
                               </span>
-                            ) : "Start Today's Challenge"}
-                            {!isComplete && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>}
+                            ) : (
+                              <>
+                                <span>Start Today&apos;s Challenge</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>
+                              </>
+                            )}
                           </button>
                         </div>
-                      );
-                    })()}
+                      </div>
+                    );
+                  })()}
                 </>
               ) : (
                 <div style={{padding: '40px', textAlign: 'center', color: '#94A3B8', fontSize: '14px'}}>
@@ -1711,45 +1944,73 @@ export default function IntelligenceHubPage() {
                 }}>
                   
                   {(() => {
-                    const dayInfo = challengeData.days.find((d: any) => d.day === selectedChallengeDay);
+                    const dayInfo = challengeData.days.find((d) => d.day === selectedChallengeDay);
                     if (!dayInfo) return null;
-                    
-                    const isCompleted = dayInfo.progress.tasksDone === dayInfo.progress.tasksTotal;
-                    const task1 = dayInfo.tasks[0];
-                    const task2 = dayInfo.tasks[1];
-  
+
+                    const isToday = dayInfo.day === challengeData.currentDay;
+                    const isCompleted = dayInfo.status === "completed";
+                    const isMissedDay = dayInfo.status === "incomplete";
+                    const isUpcoming = dayInfo.status === "upcoming";
+                    const nextPendingTask = dayInfo.tasks.find((t) => !t.done);
+
+                    const statusBadgeStyle = isCompleted
+                      ? { bg: "#ECFDF5", color: "#059669", label: "Completed" }
+                      : isMissedDay
+                        ? { bg: "#FEF2F2", color: "#DC2626", label: "Missed" }
+                        : isUpcoming
+                          ? { bg: "#F1F5F9", color: "#64748B", label: "Upcoming" }
+                          : { bg: "#EFF6FF", color: "#2563EB", label: "In Progress" };
+
                     return (
                       <div style={{display: "flex", flexDirection: "column", height: "100%"}}>
                         {/* Header (Fixed) */}
                         <header className="challenge-header" style={{padding: "24px 32px", borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', flexShrink: 0}}>
-                          <button className={styles.panelClose} style={{position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748B'}} onClick={() => setSelectedChallengeDay(null)}>&times;</button>
+                          <button type="button" className={styles.panelClose} style={{position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748B'}} onClick={() => setSelectedChallengeDay(null)} aria-label="Close challenge drawer">&times;</button>
                           
                           <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-                            
                             <div>
-                              <h2 style={{fontSize: '20px', fontWeight: '700', color: '#0F172A', margin: 0}}>Today's Challenge</h2>
-                              <p style={{fontSize: '14px', color: '#64748B', margin: '4px 0 0 0'}}>Day {dayInfo.day} of 7</p>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap'}}>
+                                <h2 style={{fontSize: '20px', fontWeight: '700', color: '#0F172A', margin: 0}}>
+                                  {isToday ? "Today's Challenge" : `Day ${dayInfo.day} Challenge`}
+                                </h2>
+                                <span style={{
+                                  fontSize: '11px',
+                                  fontWeight: '700',
+                                  padding: '3px 10px',
+                                  borderRadius: '999px',
+                                  background: statusBadgeStyle.bg,
+                                  color: statusBadgeStyle.color
+                                }}>
+                                  {statusBadgeStyle.label}
+                                </span>
+                              </div>
+                              <p style={{fontSize: '14px', color: '#64748B', margin: '4px 0 0 0'}}>
+                                Day {dayInfo.day} of 7
+                                {challengeData.cycleNumber > 1 ? ` · Week ${challengeData.cycleNumber}` : ""}
+                              </p>
                             </div>
                           </div>
                           
                           <div style={{background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginRight: '32px'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                              <span style={{fontSize: '13px', fontWeight: '700', color: '#0F172A'}}>{new Date(challengeData.startDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</span>
+                              <span style={{fontSize: '13px', fontWeight: '700', color: '#0F172A'}}>{formatChallengeDate(dayInfo.date)}</span>
                             </div>
-                            <span style={{fontSize: '10px', color: '#94A3B8'}}>Started</span>
+                            <span style={{fontSize: '10px', color: '#94A3B8'}}>Challenge Date</span>
                           </div>
                         </header>
                         {/* Scrollable Content */}
                         <main className="challenge-content" style={{flexGrow: 1, overflowY: "auto", padding: '24px 32px'}}>
                           
-                          {/* Today's Focus Card */}
-                          <div style={{background: '#F8FAFC', borderRadius: '20px', padding: '24px', marginBottom: '32px'}}>
+                          {/* Day Focus Card */}
+                          <div style={{background: '#F8FAFC', borderRadius: '20px', padding: '24px', marginBottom: '28px'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px'}}>
                               <div style={{background: '#D1FAE5', color: '#059669', borderRadius: '50%', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                               </div>
-                              <span style={{fontSize: '14px', fontWeight: '700', color: '#0F172A'}}>Today's Focus</span>
+                              <span style={{fontSize: '14px', fontWeight: '700', color: '#0F172A'}}>
+                                {isToday ? "Today's Focus" : `Day ${dayInfo.day} Focus`}
+                              </span>
                             </div>
                             
                             <h3 style={{fontSize: '20px', fontWeight: '700', color: '#2563EB', margin: '0 0 12px 0'}}>{dayInfo.title}</h3>
@@ -1758,112 +2019,154 @@ export default function IntelligenceHubPage() {
                             <div style={{borderTop: '1px solid #E2E8F0', paddingTop: '16px', display: 'flex', gap: '12px'}}>
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="3" style={{flexShrink: 0, marginTop: '2px'}}><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 -1 8 1 8z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h2c0 7-1 8 1 8z"></path></svg>
                               <div style={{flexGrow: 1}}>
-                                <p style={{fontSize: '14px', fontStyle: 'italic', color: '#3B82F6', margin: '0 0 8px 0'}}>"Track your progress, learn from your mistakes, and come back stronger."</p>
+                                <p style={{fontSize: '14px', fontStyle: 'italic', color: '#3B82F6', margin: '0 0 8px 0'}}>&ldquo;{dayInfo.quote}&rdquo;</p>
                                 <p style={{fontSize: '13px', color: '#3B82F6', textAlign: 'right', margin: 0}}>— TechnoCAT</p>
                               </div>
                             </div>
                           </div>
   
                           {/* Tasks Section */}
-                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px'}}>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap', marginBottom: '16px'}}>
                             <h3 style={{fontSize: '16px', fontWeight: '700', color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px'}}>
                               Tasks ({dayInfo.progress.tasksDone} / {dayInfo.progress.tasksTotal})
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                             </h3>
-                            <span style={{fontSize: '13px', color: '#64748B'}}>Complete both tasks to finish Day {dayInfo.day}</span>
+                            <span style={{fontSize: '12px', color: '#64748B'}}>
+                              {isUpcoming
+                                ? `Unlocks on ${formatChallengeDate(dayInfo.date)}`
+                                : `Complete all ${dayInfo.progress.tasksTotal} tasks to finish Day ${dayInfo.day}`}
+                            </span>
                           </div>
                           
-                          <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                            {/* Task 1 */}
-                            {task1 && (
-                              <Link href={task1.done ? "#" : "/dashboard"} style={{textDecoration: 'none', color: 'inherit'}}>
-                                <div style={{background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '20px', display: 'flex', gap: '20px', alignItems: 'center', transition: 'border-color 0.2s, box-shadow 0.2s', borderColor: task1.done ? '#10B981' : '#E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)'}}>
-                                  
-                                  {/* Check circle */}
+                          <div style={{display: 'flex', flexDirection: 'column', gap: '14px'}}>
+                            {dayInfo.tasks.map((task) => {
+                              const borderColor = task.done
+                                ? "#10B981"
+                                : task.status === "upcoming"
+                                  ? "#E2E8F0"
+                                  : "#FCA5A5";
+
+                              const taskPill = task.done
+                                ? { bg: "#ECFDF5", color: "#059669", text: "Done" }
+                                : task.status === "missed"
+                                  ? { bg: "#FEF2F2", color: "#DC2626", text: "Missed" }
+                                  : task.status === "upcoming"
+                                    ? { bg: "#F1F5F9", color: "#64748B", text: "Upcoming" }
+                                    : { bg: "#FEF2F2", color: "#DC2626", text: "Not done" };
+
+                              const cardInner = (
+                                <div style={{
+                                  background: '#FFFFFF',
+                                  border: `1.5px solid ${borderColor}`,
+                                  borderRadius: '16px',
+                                  padding: '18px 20px',
+                                  display: 'flex',
+                                  gap: '16px',
+                                  alignItems: 'center',
+                                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                                  opacity: isUpcoming ? 0.72 : 1,
+                                }}>
+                                  {/* Auto-checked status circle (check or cross) */}
                                   <div style={{flexShrink: 0}}>
-                                    {task1.done ? (
-                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                    ) : (
-                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle></svg>
-                                    )}
+                                    {renderTaskStatusIcon(task, 26)}
                                   </div>
                                   
-                                  {/* Icon Block */}
-                                  <div style={{background: '#EFF6FF', borderRadius: '12px', padding: '12px', flexShrink: 0}}>
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                  </div>
+                                  {/* Category Icon Block */}
+                                  {renderTaskCategoryIcon(task.icon)}
                                   
-                                  <div style={{flexGrow: 1}}>
-                                    <h5 style={{fontSize: '15px', fontWeight: '700', color: '#0F172A', margin: '0 0 4px 0'}}>{task1.name}</h5>
-                                    <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 12px 0'}}>Attempt and submit a full-length CAT mock test.</p>
-                                    <div style={{display: 'flex', gap: '8px'}}>
-                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ~ 2 hours
+                                  <div style={{flexGrow: 1, minWidth: 0}}>
+                                    <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px'}}>
+                                      <h5 style={{
+                                        fontSize: '15px',
+                                        fontWeight: '700',
+                                        color: task.done ? '#475569' : '#0F172A',
+                                        textDecoration: task.done ? 'line-through' : 'none',
+                                        margin: 0
+                                      }}>
+                                        {task.name}
+                                      </h5>
+                                      <span style={{
+                                        fontSize: '11px',
+                                        fontWeight: '700',
+                                        padding: '2px 8px',
+                                        borderRadius: '999px',
+                                        background: taskPill.bg,
+                                        color: taskPill.color,
+                                        flexShrink: 0
+                                      }}>
+                                        {taskPill.text}
                                       </span>
-                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> All sections
+                                    </div>
+                                    <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 10px 0', lineHeight: 1.45}}>
+                                      {task.description}
+                                    </p>
+                                    <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
+                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {task.duration}
+                                      </span>
+                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}>
+                                        {task.tag}
                                       </span>
                                     </div>
                                   </div>
                                   
-                                  <div style={{flexShrink: 0, paddingLeft: '8px'}}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                  </div>
-                                </div>
-                              </Link>
-                            )}
-                            
-                            {/* Task 2 */}
-                            {task2 && (
-                              <Link href={task2.done ? "#" : (task1.done ? "/intelligence/ai-analysis" : "#")} style={{textDecoration: 'none', pointerEvents: (!task1.done && !task2.done) ? 'none' : 'auto', opacity: (!task1.done && !task2.done) ? 0.6 : 1, color: 'inherit'}}>
-                                <div style={{background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '20px', display: 'flex', gap: '20px', alignItems: 'center', transition: 'border-color 0.2s, box-shadow 0.2s', borderColor: task2.done ? '#10B981' : '#E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)'}}>
-                                  
-                                  {/* Check circle */}
-                                  <div style={{flexShrink: 0}}>
-                                    {task2.done ? (
-                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                    ) : (
-                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle></svg>
-                                    )}
-                                  </div>
-                                  
-                                  {/* Icon Block */}
-                                  <div style={{background: '#F5F3FF', borderRadius: '12px', padding: '12px', flexShrink: 0}}>
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                                  </div>
-                                  
-                                  <div style={{flexGrow: 1}}>
-                                    <h5 style={{fontSize: '15px', fontWeight: '700', color: '#0F172A', margin: '0 0 4px 0'}}>{task2.name}</h5>
-                                    <p style={{fontSize: '13px', color: '#64748B', margin: '0 0 12px 0'}}>Review your performance, check detailed analysis and identify weak areas.</p>
-                                    <div style={{display: 'flex', gap: '8px'}}>
-                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ~ 10-15 mins
-                                      </span>
-                                      <span style={{fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Analysis
-                                      </span>
+                                  {!isUpcoming && !task.done && isToday && (
+                                    <div style={{flexShrink: 0, paddingLeft: '4px'}}>
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                     </div>
-                                  </div>
-                                  
-                                  <div style={{flexShrink: 0, paddingLeft: '8px'}}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                  </div>
+                                  )}
                                 </div>
-                              </Link>
-                            )}
+                              );
+
+                              if (isUpcoming || !isToday) {
+                                return <div key={task.id}>{cardInner}</div>;
+                              }
+
+                              if (task.action === "open-mentor") {
+                                return (
+                                  <button
+                                    key={task.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedChallengeDay(null);
+                                      setIsMentorDrawerOpen(true);
+                                    }}
+                                    style={{
+                                      all: "unset",
+                                      display: "block",
+                                      width: "100%",
+                                      cursor: "pointer",
+                                      textAlign: "left",
+                                    }}
+                                  >
+                                    {cardInner}
+                                  </button>
+                                );
+                              }
+
+                              return (
+                                <Link
+                                  key={task.id}
+                                  href={task.href}
+                                  style={{textDecoration: 'none', color: 'inherit', display: 'block'}}
+                                >
+                                  {cardInner}
+                                </Link>
+                              );
+                            })}
                           </div>
 
                           {/* Motivation Card */}
-                          <div style={{background: '#ECFDF5', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px'}}>
+                          <div style={{background: '#ECFDF5', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '28px'}}>
                             <div>
                               <h4 style={{fontSize: '15px', fontWeight: '700', color: '#065F46', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px'}}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Complete today's challenge to:
+                                Complete today&apos;s challenge to:
                               </h4>
                               <ul style={{listStyle: 'none', padding: 0, margin: 0, fontSize: '14px', color: '#065F46', display: 'flex', flexDirection: 'column', gap: '8px'}}>
                                 <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg> Improve your CAT readiness</li>
-                                <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg> Unlock tomorrow's challenge</li>
-                                <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg> Build a consistent study habit</li>
+                                <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg> Build an unbroken 7-day streak</li>
+                                <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg> Master every CAT prep habit</li>
                               </ul>
                             </div>
                             <div style={{textAlign: 'center', flexShrink: 0, paddingLeft: '16px', borderLeft: '1px solid #D1FAE5'}}>
@@ -1884,35 +2187,101 @@ export default function IntelligenceHubPage() {
                         </main>
                         {/* Bottom CTA (Fixed at bottom) */}
                         <footer className="challenge-footer" style={{padding: "24px 32px", borderTop: '1px solid #F1F5F9', background: '#FFFFFF', flexShrink: 0}}>
-                          <Link 
-                            href={isCompleted ? '/intelligence' : (task1.done ? '/intelligence/ai-analysis' : '/browse')}
-                            style={{
-                              display: 'flex', 
-                              justifyContent: 'center', 
-                              alignItems: 'center', 
-                              gap: '8px', 
-                              background: isCompleted ? '#F1F5F9' : '#2563EB', 
-                              color: isCompleted ? '#475569' : '#FFFFFF', 
-                              padding: '16px', 
-                              borderRadius: '16px', 
-                              fontWeight: '700', 
-                              fontSize: '16px', 
-                              textDecoration: 'none',
-                              transition: 'background 0.2s',
-                              cursor: isCompleted ? 'default' : 'pointer'
-                            }}
-                          >
-                            {isCompleted ? (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                Challenge Completed
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              </span>
-                            ) : (task1.done ? "Continue Analysis" : "Start Today's Challenge")}
-                            {!isCompleted && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>}
-                          </Link>
-                          <p style={{fontSize: '12px', color: '#94A3B8', margin: '12px 0 0 0', textAlign: 'center'}}>You'll be redirected to the relevant section. Your progress will be tracked automatically.</p>
+                          {isCompleted ? (
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#ECFDF5',
+                                color: '#059669',
+                                border: '1px solid #A7F3D0',
+                                padding: '16px',
+                                borderRadius: '16px',
+                                fontWeight: '700',
+                                fontSize: '16px',
+                              }}
+                            >
+                              <span>Day {dayInfo.day} Completed</span>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          ) : !isToday ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedChallengeDay(challengeData.currentDay)}
+                              style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#2563EB',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                padding: '16px',
+                                borderRadius: '16px',
+                                fontWeight: '700',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span>Jump to Today&apos;s Challenge (Day {challengeData.currentDay})</span>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </button>
+                          ) : nextPendingTask?.action === "open-mentor" ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedChallengeDay(null);
+                                setIsMentorDrawerOpen(true);
+                              }}
+                              style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#2563EB',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                padding: '16px',
+                                borderRadius: '16px',
+                                fontWeight: '700',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span>Start: {nextPendingTask.name}</span>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </button>
+                          ) : (
+                            <Link
+                              href={nextPendingTask?.href || "/topics"}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#2563EB',
+                                color: '#FFFFFF',
+                                padding: '16px',
+                                borderRadius: '16px',
+                                fontWeight: '700',
+                                fontSize: '16px',
+                                textDecoration: 'none',
+                                transition: 'background 0.2s',
+                              }}
+                            >
+                              <span>{nextPendingTask ? `Start: ${nextPendingTask.name}` : "Start Today's Challenge"}</span>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 12 19 12"></polyline><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </Link>
+                          )}
+                          <p style={{fontSize: '12px', color: '#94A3B8', margin: '12px 0 0 0', textAlign: 'center'}}>
+                            Tasks are verified automatically from your real activity—marked with a checkmark once completed, or a cross if not completed.
+                          </p>
                         </footer>
                       </div>
                     );
@@ -1924,7 +2293,10 @@ export default function IntelligenceHubPage() {
         {/* Ask AI Mentor Right-Side Drawer */}
         <AIMentorDrawer
           isOpen={isMentorDrawerOpen}
-          onClose={() => setIsMentorDrawerOpen(false)}
+          onClose={() => {
+            setIsMentorDrawerOpen(false);
+            void refreshChallenge();
+          }}
           userName={user?.fullName}
           userId={user?.id}
           readinessData={mentorReadiness}

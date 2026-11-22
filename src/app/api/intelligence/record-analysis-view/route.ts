@@ -8,6 +8,9 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+    if (session.isDemo) {
+      return NextResponse.json({ success: true });
+    }
     const userId = session.userId;
 
     // Table: db/migrations/0002_intelligence_and_community_tables.sql

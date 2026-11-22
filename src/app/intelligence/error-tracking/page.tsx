@@ -70,6 +70,8 @@ export default function ErrorTrackingPage() {
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   useEffect(() => {
+    // Opening Error Tracking counts toward the 7-day challenge's mistake audit / analysis task.
+    fetch("/api/intelligence/record-analysis-view", { method: "POST" }).catch(() => {});
     (async () => {
       try {
         const res = await fetch("/api/me/metrics");
