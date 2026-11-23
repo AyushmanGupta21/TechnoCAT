@@ -153,7 +153,7 @@ export async function POST(
       }
       if (session.isDemo) {
         return NextResponse.json(
-          { error: "Demo showcase account is protected and cannot change passwords." },
+          { error: "Password changes are turned off for this shared account." },
           { status: 403 }
         );
       }
@@ -203,7 +203,7 @@ export async function POST(
       }
       if (session.isDemo) {
         return NextResponse.json(
-          { error: "Demo showcase accounts cannot be deleted as they are shared sandbox environments." },
+          { error: "This shared account cannot be deleted." },
           { status: 403 }
         );
       }

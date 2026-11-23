@@ -177,3 +177,6 @@
 @media (max-width: 760px) {
   .readinessBox { padding: 18px; }
 }
+
+/* When stretched to match a taller neighbour, spread the spacing evenly */
+.readinessBox { justify-content: space-between; }

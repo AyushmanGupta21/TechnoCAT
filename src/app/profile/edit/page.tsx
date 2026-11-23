@@ -262,12 +262,6 @@ export default function EditProfilePage() {
                   Keep your name, contact details and CAT target up to date so your reports and plans stay personal.
                 </p>
               </div>
-              {isDemo && (
-                <span className={styles.demoPill}>
-                  <span className={styles.demoDot} aria-hidden="true" />
-                  Demo showcase account
-                </span>
-              )}
             </div>
           </Reveal>
         </div>

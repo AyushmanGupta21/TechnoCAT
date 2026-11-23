@@ -211,10 +211,10 @@ export function getDemoNotifications(): ServerNotification[] {
   const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
   const day = new Date().toISOString().slice(0, 10);
   const items: Omit<ServerNotification, "isSample">[] = [
-    { id: `demo-task-today-${day}`, type: "task", category: "learning", title: "3 study tasks due today", desc: "Next up: Percentages speed drill and 2 more. (Sample)", createdAt: ago(15), actionUrl: "/dashboard", actionLabel: "View Tasks", priority: "normal" },
-    { id: "demo-live-dilr", type: "live_class", category: "learning", title: "Upcoming live class: DILR Games & Tournaments", desc: "Starts today 7:30 PM IST with TechnoCAT Faculty. (Sample)", createdAt: ago(60), actionUrl: "/dashboard", actionLabel: "View", priority: "normal" },
-    { id: "demo-attempt-pyq", type: "mock", category: "mocks", title: "Result: CAT 2024 Slot 1 · VARC", desc: "You scored 72% — passed. (Sample)", createdAt: ago(180), actionUrl: "/analytics", actionLabel: "View Analytics", priority: "normal" },
-    { id: "demo-points", type: "points", category: "learning", title: "+20 points earned", desc: "Awarded for passing a module quiz. (Sample)", createdAt: ago(60 * 26), actionUrl: "/analytics", actionLabel: "View Standing", priority: "low" },
+    { id: `demo-task-today-${day}`, type: "task", category: "learning", title: "3 study tasks due today", desc: "Next up: Percentages speed drill and 2 more.", createdAt: ago(15), actionUrl: "/dashboard", actionLabel: "View Tasks", priority: "normal" },
+    { id: "demo-live-dilr", type: "live_class", category: "learning", title: "Upcoming live class: DILR Games & Tournaments", desc: "Starts today 7:30 PM IST with TechnoCAT Faculty.", createdAt: ago(60), actionUrl: "/dashboard", actionLabel: "View", priority: "normal" },
+    { id: "demo-attempt-pyq", type: "mock", category: "mocks", title: "Result: CAT 2024 Slot 1 · VARC", desc: "You scored 72% — passed.", createdAt: ago(180), actionUrl: "/analytics", actionLabel: "View Analytics", priority: "normal" },
+    { id: "demo-points", type: "points", category: "learning", title: "+20 points earned", desc: "Awarded for passing a module quiz.", createdAt: ago(60 * 26), actionUrl: "/analytics", actionLabel: "View Standing", priority: "low" },
   ];
   return items.map((n) => ({ ...n, isSample: true }));
 }

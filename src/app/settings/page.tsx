@@ -219,7 +219,7 @@ function SettingsContent() {
     if (isDemo) {
       setPasswordFeedback({
         type: "error",
-        message: "Notice: Demo accounts cannot change passwords. Please register or sign in to your personal account.",
+        message: "Password changes are turned off for this shared account. Sign in to your personal account to change a password.",
       });
       return;
     }
@@ -254,7 +254,7 @@ function SettingsContent() {
       return;
     }
     if (isDemo) {
-      alert("Notice: Demo accounts cannot be deleted as they are shared sandbox showcase environments.");
+      alert("This shared account cannot be deleted.");
       setShowDeleteModal(false);
       setDeleteConfirmationText("");
       return;
@@ -307,12 +307,6 @@ function SettingsContent() {
                 </p>
               </div>
               <div className={styles.heroActions}>
-                {isDemo && (
-                  <span className={styles.demoChip}>
-                    <span className={styles.demoDot} aria-hidden="true" />
-                    Demo showcase account
-                  </span>
-                )}
                 <Link href="/profile/edit" className={styles.heroBtn}>
                   <UserPen size={16} strokeWidth={2} />
                   Edit profile

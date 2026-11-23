@@ -663,175 +663,165 @@ export default function DashboardPage() {
       <AppNav />
 
       <main className={styles.page}>
-        {/* ===== PAGE HEADER ===== */}
-        <Reveal className={styles.pageHeader} y={16}>
-          <span className={styles.headerWatermark} aria-hidden="true" suppressHydrationWarning>{todayDay}</span>
-          <div className={styles.headerText}>
-            <p className={styles.headerDate}>
-              <span className={styles.liveDot} aria-hidden="true" />
-              <span suppressHydrationWarning>{todayLabel || " "}</span>
-            </p>
-            <h1 className={styles.pageTitle}>
-              Today&apos;s{" "}
-              <span className={styles.titleAccent}>
-                <GradientText>plan</GradientText>
-                <Doodle kind="underline" className={styles.titleUnderline} color="var(--data-cyan)" strokeWidth={3} delay={0.45} />
-              </span>
-            </h1>
-            <p className={styles.pageSubtitle}>Your tasks, progress and next step for today, {firstName}.</p>
-          </div>
-          <Link href="/browse" className={styles.primaryBtn}>
-            <Plus size={18} strokeWidth={2.25} aria-hidden="true" />
-            Browse topics
-          </Link>
-        </Reveal>
+        {/* Dashboard: banner and stats across the top, then a main column (learning) and a right column (at a glance).
+            On tablets and phones the cards stack in a set order (see .o* classes). */}
+        <div className={styles.layout}>
+          {/* ===== PAGE HEADER ===== */}
+          <Reveal className={`${styles.pageHeader} ${styles.oHero}`} y={16}>
+            <span className={styles.headerWatermark} aria-hidden="true" suppressHydrationWarning>{todayDay}</span>
+            <div className={styles.headerText}>
+              <p className={styles.headerDate}>
+                <span className={styles.liveDot} aria-hidden="true" />
+                <span suppressHydrationWarning>{todayLabel || " "}</span>
+              </p>
+              <h1 className={styles.pageTitle}>
+                Today&apos;s{" "}
+                <span className={styles.titleAccent}>
+                  <GradientText>plan</GradientText>
+                  <Doodle kind="underline" className={styles.titleUnderline} color="var(--data-cyan)" strokeWidth={3} delay={0.45} />
+                </span>
+              </h1>
+              <p className={styles.pageSubtitle}>Your tasks, progress and next step for today, {firstName}.</p>
+            </div>
+            <Link href="/browse" className={styles.primaryBtn}>
+              <Plus size={18} strokeWidth={2.25} aria-hidden="true" />
+              Browse topics
+            </Link>
+          </Reveal>
 
-        {/* ===== TODAY'S FOCUS: the one place for guidance (tasks, streak, next step) ===== */}
-        <Reveal delay={0.04}>
-          <AiMotivationWidget
-            firstName={firstName}
-            metrics={metrics}
-            isLoading={metricsLoading}
-            nextStep={metrics ? recommendedNextStep(metrics) : undefined}
-          />
-        </Reveal>
+          {metricsError && !metricsLoading && (
+            <p className={`${styles.metricsErrorNote} ${styles.oError}`} role="status">{metricsError}</p>
+          )}
 
-        {metricsError && !metricsLoading && (
-          <p className={styles.metricsErrorNote} role="status">{metricsError}</p>
-        )}
+          {/* ===== STAT ROW: headline numbers that link to the detailed pages ===== */}
+          <RevealGroup className={`${styles.statRow} ${styles.oStats}`}>
+            {/* Readiness -> Intelligence Hub */}
+            <RevealItem className={styles.statItem}>
+              <Link href="/intelligence" className={`glass-card ${styles.statCard}`} data-tint="blue" title="See the readiness breakdown in the Intelligence Hub">
+                <span className={styles.statLabel}>
+                  <Gauge size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconBlue} />
+                  CAT readiness
+                </span>
+                <div className={styles.statBody}>
+                  <div className={styles.statMain}>
+                    {kpiPending ? (
+                      <span className={styles.statValue}>—</span>
+                    ) : readinessScore !== null ? (
+                      <span className={styles.statValue}>
+                        <CountUp to={readinessScore} />
+                        <span className={styles.statUnit}>/100</span>
+                      </span>
+                    ) : (
+                      <span className={styles.statValueEmpty}>Not yet</span>
+                    )}
+                    <span className={styles.statCaption}>
+                      {!kpiPending && readinessScore === null ? "Take a timed test to unlock" : "Coverage, accuracy, pace, consistency"}
+                    </span>
+                  </div>
+                  <svg className={styles.ring} viewBox="0 0 40 40" aria-hidden="true">
+                    <circle cx="20" cy="20" r="17" className={styles.ringTrack} />
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r="17"
+                      className={styles.ringFill}
+                      strokeDasharray={RING}
+                      strokeDashoffset={RING * (1 - (readinessScore ?? 0) / 100)}
+                    />
+                  </svg>
+                </div>
+              </Link>
+            </RevealItem>
 
-        {/* ===== STAT ROW: headline numbers that link to the detailed pages ===== */}
-        <RevealGroup className={styles.statRow}>
-          {/* Readiness -> Intelligence Hub */}
-          <RevealItem className={styles.statItem}>
-            <Link href="/intelligence" className={`glass-card ${styles.statCard}`} data-tint="blue" title="See the readiness breakdown in the Intelligence Hub">
-              <span className={styles.statLabel}>
-                <Gauge size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconBlue} />
-                CAT readiness
-              </span>
-              <div className={styles.statBody}>
+            {/* Study time this week -> My Analytics */}
+            <RevealItem className={styles.statItem}>
+              <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="teal" title="See your study time in My Analytics">
+                <span className={styles.statLabel}>
+                  <Clock size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconTeal} />
+                  Study time · 7 days
+                </span>
+                <div className={styles.statBody}>
+                  <div className={styles.statMain}>
+                    <span className={styles.statValue}>{kpiPending ? "—" : formatDuration(metrics.studyTime.last7DaysSeconds)}</span>
+                    <span className={styles.statCaption}>
+                      {kpiPending ? "Learning + practice" : `${formatDuration(metrics.studyTime.todaySeconds)} today`}
+                    </span>
+                  </div>
+                  <div className={styles.miniBars} aria-hidden="true">
+                    {(weekTotals.length ? weekTotals : [0, 0, 0, 0, 0, 0, 0]).map((v, i, arr) => (
+                      <span
+                        key={i}
+                        className={`${styles.miniBar} ${i === arr.length - 1 ? styles.miniBarToday : ""}`}
+                        style={{ height: `${Math.max(8, Math.round((v / weekMax) * 100))}%` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </Link>
+            </RevealItem>
+
+            {/* Points -> My Analytics */}
+            <RevealItem className={styles.statItem}>
+              <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="amber" title="See how you earned your points in My Analytics">
+                <span className={styles.statLabel}>
+                  <Trophy size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconAmber} />
+                  Total points
+                </span>
                 <div className={styles.statMain}>
-                  {kpiPending ? (
-                    <span className={styles.statValue}>—</span>
-                  ) : readinessScore !== null ? (
-                    <span className={styles.statValue}>
-                      <CountUp to={readinessScore} />
-                      <span className={styles.statUnit}>/100</span>
+                  <span className={styles.statValue}>
+                    {kpiPending ? "—" : <CountUp to={metrics.points.total} />}
+                    {!kpiPending && <span className={styles.statUnit}>XP</span>}
+                  </span>
+                  {latestPoints ? (
+                    <span className={styles.pointsChip} title={latestPoints.reason}>
+                      <span className={styles.pointsChipValue}>+{latestPoints.points}</span>
+                      <span className={styles.pointsChipReason}>{latestPoints.reason}</span>
                     </span>
                   ) : (
-                    <span className={styles.statValueEmpty}>Not yet</span>
+                    <span className={styles.statCaption}>Earn XP from lessons and quizzes</span>
                   )}
-                  <span className={styles.statCaption}>
-                    {!kpiPending && readinessScore === null ? "Take a timed test to unlock" : "Coverage, accuracy, pace, consistency"}
-                  </span>
                 </div>
-                <svg className={styles.ring} viewBox="0 0 40 40" aria-hidden="true">
-                  <circle cx="20" cy="20" r="17" className={styles.ringTrack} />
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="17"
-                    className={styles.ringFill}
-                    strokeDasharray={RING}
-                    strokeDashoffset={RING * (1 - (readinessScore ?? 0) / 100)}
-                  />
-                </svg>
-              </div>
-            </Link>
-          </RevealItem>
+              </Link>
+            </RevealItem>
 
-          {/* Study time this week -> My Analytics */}
-          <RevealItem className={styles.statItem}>
-            <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="teal" title="See your study time in My Analytics">
-              <span className={styles.statLabel}>
-                <Clock size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconTeal} />
-                Study time · 7 days
-              </span>
-              <div className={styles.statBody}>
+            {/* Syllabus lessons completed -> My Topics */}
+            <RevealItem className={styles.statItem}>
+              <Link href="/topics" className={`glass-card ${styles.statCard}`} data-tint="violet" title="Open My Topics">
+                <span className={styles.statLabel}>
+                  <BookOpen size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconViolet} />
+                  Syllabus coverage
+                </span>
                 <div className={styles.statMain}>
-                  <span className={styles.statValue}>{kpiPending ? "—" : formatDuration(metrics.studyTime.last7DaysSeconds)}</span>
+                  <span className={styles.statValue}>
+                    {kpiPending ? "—" : syllabusLessonsDone}
+                    {!kpiPending && <span className={styles.statUnit}>/ {metrics.courses.syllabusLessons} lessons</span>}
+                  </span>
+                  <div className={styles.coverageBar} aria-hidden="true">
+                    {syllabusBySection.map((s) => (
+                      <span
+                        key={s.key}
+                        className={`${styles.coverageSeg} ${styles[`seg${s.key}`]}`}
+                        style={{ width: `${(s.done / syllabusTotal) * 100}%` }}
+                      />
+                    ))}
+                  </div>
                   <span className={styles.statCaption}>
-                    {kpiPending ? "Learning + practice" : `${formatDuration(metrics.studyTime.todaySeconds)} today`}
+                    {kpiPending
+                      ? "QA · DILR · VARC"
+                      : `${syllabusPercent}% · ${metrics.courses.inProgress} in progress, ${metrics.courses.completed} done`}
                   </span>
                 </div>
-                <div className={styles.miniBars} aria-hidden="true">
-                  {(weekTotals.length ? weekTotals : [0, 0, 0, 0, 0, 0, 0]).map((v, i, arr) => (
-                    <span
-                      key={i}
-                      className={`${styles.miniBar} ${i === arr.length - 1 ? styles.miniBarToday : ""}`}
-                      style={{ height: `${Math.max(8, Math.round((v / weekMax) * 100))}%` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </Link>
-          </RevealItem>
+              </Link>
+            </RevealItem>
+          </RevealGroup>
 
-          {/* Points -> My Analytics */}
-          <RevealItem className={styles.statItem}>
-            <Link href="/analytics" className={`glass-card ${styles.statCard}`} data-tint="amber" title="See how you earned your points in My Analytics">
-              <span className={styles.statLabel}>
-                <Trophy size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconAmber} />
-                Total points
-              </span>
-              <div className={styles.statMain}>
-                <span className={styles.statValue}>
-                  {kpiPending ? "—" : <CountUp to={metrics.points.total} />}
-                  {!kpiPending && <span className={styles.statUnit}>XP</span>}
-                </span>
-                {latestPoints ? (
-                  <span className={styles.pointsChip} title={latestPoints.reason}>
-                    <span className={styles.pointsChipValue}>+{latestPoints.points}</span>
-                    <span className={styles.pointsChipReason}>{latestPoints.reason}</span>
-                  </span>
-                ) : (
-                  <span className={styles.statCaption}>Earn XP from lessons and quizzes</span>
-                )}
-              </div>
-            </Link>
-          </RevealItem>
+          {/* MAIN: continue learning, today's schedule, study performance, upcoming classes */}
+          <div className={styles.mainCol}>
+            <Reveal className={styles.oCont}>
+              <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
+            </Reveal>
 
-          {/* Syllabus lessons completed -> My Topics */}
-          <RevealItem className={styles.statItem}>
-            <Link href="/topics" className={`glass-card ${styles.statCard}`} data-tint="violet" title="Open My Topics">
-              <span className={styles.statLabel}>
-                <BookOpen size={16} strokeWidth={2} aria-hidden="true" className={styles.statIconViolet} />
-                Syllabus coverage
-              </span>
-              <div className={styles.statMain}>
-                <span className={styles.statValue}>
-                  {kpiPending ? "—" : syllabusLessonsDone}
-                  {!kpiPending && <span className={styles.statUnit}>/ {metrics.courses.syllabusLessons} lessons</span>}
-                </span>
-                <div className={styles.coverageBar} aria-hidden="true">
-                  {syllabusBySection.map((s) => (
-                    <span
-                      key={s.key}
-                      className={`${styles.coverageSeg} ${styles[`seg${s.key}`]}`}
-                      style={{ width: `${(s.done / syllabusTotal) * 100}%` }}
-                    />
-                  ))}
-                </div>
-                <span className={styles.statCaption}>
-                  {kpiPending
-                    ? "QA · DILR · VARC"
-                    : `${syllabusPercent}% · ${metrics.courses.inProgress} in progress, ${metrics.courses.completed} done`}
-                </span>
-              </div>
-            </Link>
-          </RevealItem>
-        </RevealGroup>
-
-        {/* ===== CONTINUE LEARNING (featured) ===== */}
-        <Reveal className={styles.sectionGap}>
-          <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
-        </Reveal>
-
-        {/* ===== TWO-COLUMN GRID ===== */}
-        <div className={styles.dashboardGrid}>
-          {/* LEFT: schedule, study performance, upcoming classes */}
-          <div className={styles.dashboardCol}>
-            <Reveal>
+            <Reveal className={styles.oSchedule}>
               <DailyStudySchedule
                 selectedMonthIndex={selectedMonthIndex}
                 selectedYear={selectedYear}
@@ -846,7 +836,7 @@ export default function DashboardPage() {
             </Reveal>
 
             {/* Study performance: last 7 days (metrics.studyTime.daily) + weekly summary */}
-            <Reveal>
+            <Reveal className={styles.oPerf}>
               <section className={`glass-card ${styles.card}`} data-tint="teal">
                 <div className={styles.cardHeader}>
                   <h2 className={styles.cardTitle}>Study performance</h2>
@@ -908,11 +898,10 @@ export default function DashboardPage() {
             </Reveal>
 
             {/* Upcoming live classes (published by staff) */}
-            <Reveal>
+            <Reveal className={styles.oClasses}>
               <section className={`glass-card ${styles.card}`} data-tint="blue">
                 <div className={styles.cardHeader}>
                   <h2 className={styles.cardTitle}>Upcoming classes</h2>
-                  {announcements?.isSample && <span className={styles.mutedChip}>Sample data</span>}
                 </div>
                 <div className={styles.agendaList}>
                   {upcomingAgenda.length === 0 ? (
@@ -977,11 +966,22 @@ export default function DashboardPage() {
                 </div>
               </section>
             </Reveal>
+
           </div>
 
-          {/* RIGHT: calendar, percentile, leaderboard, notices */}
-          <div className={styles.dashboardCol}>
-            <Reveal>
+          {/* RIGHT: today's focus, calendar, percentile, leaderboard, notices */}
+          <aside className={styles.railCol} aria-label="Today at a glance">
+            {/* ===== TODAY'S FOCUS: the one place for guidance (tasks, streak, next step) ===== */}
+            <Reveal className={styles.oFocus} delay={0.04}>
+              <AiMotivationWidget
+                firstName={firstName}
+                metrics={metrics}
+                isLoading={metricsLoading}
+                nextStep={metrics ? recommendedNextStep(metrics) : undefined}
+              />
+            </Reveal>
+
+            <Reveal className={styles.oCalendar}>
               <StudyCalendarWidget
                 selectedMonthIndex={selectedMonthIndex}
                 onSelectMonthIndex={setSelectedMonthIndex}
@@ -994,16 +994,16 @@ export default function DashboardPage() {
             </Reveal>
 
             {/* Estimated percentile + readiness status; full breakdown lives in /intelligence */}
-            <Reveal>
+            <Reveal className={styles.oPercentile}>
               <CatReadinessWidget metrics={metrics} isLoading={metricsLoading} />
             </Reveal>
 
-            <Reveal>
+            <Reveal className={styles.oLeaderboard}>
               <LeaderboardWidget />
             </Reveal>
 
             {/* CAT prep notices */}
-            <Reveal>
+            <Reveal className={styles.oNotices}>
               <section className={`glass-card ${styles.card}`} data-tint="amber">
                 <div className={styles.cardHeader}>
                   <div className={styles.titleGroup}>
@@ -1079,7 +1079,8 @@ export default function DashboardPage() {
                 )}
               </section>
             </Reveal>
-          </div>
+
+          </aside>
         </div>
       </main>
 

@@ -53,7 +53,6 @@ export default function LeaderboardWidget() {
       <div className={styles.widgetHeader}>
         <div className={styles.titleGroup}>
           <h2 className={styles.title}>Leaderboard</h2>
-          {board?.isSample && <span className={styles.sampleBadge}>Sample data</span>}
         </div>
         <div role="tablist" aria-label="Leaderboard period" className={styles.tabs}>
           {(["week", "all"] as LeaderboardPeriod[]).map((p) => (

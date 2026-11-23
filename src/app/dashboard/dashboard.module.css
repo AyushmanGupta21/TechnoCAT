@@ -15,9 +15,9 @@
 }
 
 .page {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 32px 24px 72px;
+  padding: 32px 32px 80px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -37,8 +37,8 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 30px 34px 30px 38px;
-  border-radius: 24px;
+  padding: 22px 26px 22px 32px;
+  border-radius: 22px;
   border: 1px solid rgba(37, 99, 235, 0.14);
   background:
     radial-gradient(120% 140% at 100% 0%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0) 46%),
@@ -61,12 +61,12 @@
 /* Outlined day number sitting behind the content */
 .headerWatermark {
   position: absolute;
-  right: 220px;
-  bottom: -34px;
+  right: 210px;
+  bottom: -30px;
   z-index: -1;
   font-family: var(--ff-display);
   font-weight: 900;
-  font-size: 180px;
+  font-size: 148px;
   line-height: 1;
   letter-spacing: -0.02em;
   color: transparent;
@@ -84,8 +84,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 14px;
-  padding: 6px 12px;
+  margin: 0 0 12px;
+  padding: 5px 11px;
   border-radius: 8px;
   border: 1px solid rgba(37, 99, 235, 0.16);
   background: rgba(255, 255, 255, 0.75);
@@ -110,7 +110,7 @@
   margin: 0;
   font-family: var(--ff-display);
   font-weight: 900;
-  font-size: clamp(36px, 4.4vw, 60px);
+  font-size: clamp(32px, 3.2vw, 48px);
   line-height: 0.98;
   letter-spacing: 0.005em;
   text-transform: uppercase;
@@ -131,8 +131,8 @@
 }
 
 .pageSubtitle {
-  margin: 18px 0 0;
-  font-size: 16px;
+  margin: 14px 0 0;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--ink-2);
 }
@@ -182,7 +182,7 @@
 .statRow {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .statItem {
@@ -358,24 +358,43 @@
 .segDILR { background: var(--data-teal); }
 .segVARC { background: var(--data-violet); }
 
-.sectionGap {
-  margin-top: 4px;
-}
-
-/* ---------- Main grid ---------- */
-.dashboardGrid {
+/* ---------- Layout ----------
+   Banner + stats across the top; below, a main column (learning) and a right column (at a glance).
+   Cards keep their natural height: no stretching, generous gaps. */
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 32px;
+  row-gap: 28px;
   align-items: start;
-  margin-top: 4px;
+}
+.oHero,
+.oError,
+.oStats {
+  grid-column: 1 / -1;
 }
 
-.dashboardCol {
+.mainCol,
+.railCol {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   min-width: 0;
+  container-type: inline-size;
+}
+
+/* Each card slot is a size container so widgets adapt to the space they get */
+.oFocus,
+.oCalendar,
+.oCont,
+.oPercentile,
+.oSchedule,
+.oPerf,
+.oLeaderboard,
+.oClasses,
+.oNotices {
+  min-width: 0;
+  container-type: inline-size;
 }
 
 /* ---------- Card shell (page-owned cards) ---------- */
@@ -1155,12 +1174,66 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1180px) {
+/* Study performance stacks its chart and weekly panel when its slot is narrow */
+@container (max-width: 640px) {
+  .studyStatBody { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .weekPanel { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--line); }
+}
+/* Upcoming class rows wrap when their slot is narrow */
+@container (max-width: 620px) {
+  .agendaItem { flex-wrap: wrap; }
+  .agendaTitle { white-space: normal; overflow: visible; }
+  .agendaRight { width: 100%; justify-content: space-between; padding-left: 18px; }
+}
+
+@media (max-width: 1320px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 24px; row-gap: 24px; }
+  .mainCol, .railCol { gap: 24px; }
+}
+
+/* Below laptop width the two columns dissolve; cards are placed in a set order */
+@media (max-width: 1080px) {
+  .mainCol, .railCol { display: contents; }
   .statRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 1024px) {
-  .dashboardGrid { grid-template-columns: minmax(0, 1fr); }
+/* Tablets: two-column grid; wide cards span both columns, paired cards end level */
+@media (min-width: 700px) and (max-width: 1080px) {
+  .layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+  .oHero, .oError, .oStats, .oFocus, .oCont, .oSchedule, .oPerf, .oPercentile { grid-column: 1 / -1; }
+  .oHero { order: 1; }
+  .oError { order: 2; }
+  .oStats { order: 3; }
+  .oFocus { order: 4; }
+  .oCont { order: 5; }
+  .oSchedule { order: 6; }
+  .oPerf { order: 7; }
+  .oCalendar { order: 8; }      /* calendar | leaderboard: similar heights */
+  .oLeaderboard { order: 9; }
+  .oPercentile { order: 10; }
+  .oClasses { order: 11; }      /* classes | notices */
+  .oNotices { order: 12; }
+  .oCalendar, .oLeaderboard, .oClasses, .oNotices { display: flex; flex-direction: column; }
+  .oCalendar > *, .oLeaderboard > *, .oClasses > *, .oNotices > * { flex: 1; }
+  .oNotices > section { display: flex; flex-direction: column; }
+  .oNotices .noticeFoot { margin-top: auto; }
+}
+
+/* Phones: one column, most useful first */
+@media (max-width: 699px) {
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 18px; }
+  .oHero { order: 1; }
+  .oFocus { order: 2; }
+  .oError { order: 3; }
+  .oStats { order: 4; }
+  .oCont { order: 5; }
+  .oSchedule { order: 6; }
+  .oCalendar { order: 7; }
+  .oPerf { order: 8; }
+  .oPercentile { order: 9; }
+  .oClasses { order: 10; }
+  .oLeaderboard { order: 11; }
+  .oNotices { order: 12; }
 }
 
 @media (max-width: 760px) {
@@ -1171,7 +1244,6 @@
   .studyStatBody { grid-template-columns: minmax(0, 1fr); }
   .weekPanel { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--line); }
   .card { padding: 18px; }
-  .dashboardGrid, .dashboardCol { gap: 16px; }
   .agendaItem { flex-wrap: wrap; }
   .agendaRight { width: 100%; justify-content: space-between; padding-left: 18px; }
   .agendaModalMetaGrid { grid-template-columns: minmax(0, 1fr); }

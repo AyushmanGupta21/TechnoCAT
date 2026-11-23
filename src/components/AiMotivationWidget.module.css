@@ -156,3 +156,29 @@
     gap: 6px;
   }
 }
+
+/* Narrow column (dashboard overview rail): stack the streak under the message */
+@container (max-width: 560px) {
+  .widgetContainer {
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+  }
+  .streakBox {
+    min-width: 0;
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: 0;
+    border-top: 1px solid rgba(59, 130, 246, 0.18);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .messageContent { font-size: 14.5px; }
+  .nextStep { flex-direction: column; gap: 6px; }
+}
+@container (max-width: 560px) {
+  /* when stretched next to a taller card, keep the streak at the bottom */
+  .streakBox { margin-top: auto; }
+}

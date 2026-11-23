@@ -713,3 +713,19 @@
 @media (prefers-reduced-motion: reduce) {
   .taskCard:hover { transform: none; }
 }
+
+/* Narrow column (dashboard split row): same stacking as small screens */
+@container (max-width: 600px) {
+  .scheduleBox { padding: 20px; }
+  .actionsArea { width: 100%; justify-content: space-between; }
+  .schedulerTop { flex-direction: column; }
+  .schedulerLoadBadge { align-items: flex-start; }
+}
+@container (max-width: 440px) {
+  .leftDetails { flex-direction: column; gap: 6px; }
+  .timeCol { flex-direction: row; align-items: baseline; gap: 8px; width: auto; }
+  .backlogDrawerHeader { flex-direction: column; align-items: flex-start; }
+  .backlogItem { flex-direction: column; align-items: stretch; }
+  .pullTaskBtn { align-self: flex-start; }
+  .stepperWrap { width: 100%; justify-content: space-between; }
+}

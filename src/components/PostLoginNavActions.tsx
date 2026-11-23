@@ -448,11 +448,6 @@ export default function PostLoginNavActions() {
                         <div className={styles.notifContent}>
                           <div className={styles.notifHeaderRow}>
                             <h4 className={styles.notifTitle}>{notif.title}</h4>
-                            {notif.isSample && (
-                              <span className={styles.sampleTag} title="Sample notification shown on the demo account">
-                                Sample
-                              </span>
-                            )}
                             {notif.priority === "urgent" && <span className={styles.priorityUrgentTag}>Alert</span>}
                           </div>
                           <p className={styles.notifDesc}>{notif.desc}</p>

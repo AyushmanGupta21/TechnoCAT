@@ -1771,7 +1771,7 @@ export default function MockVivaPrepPage() {
             <div className={styles.roundHeadLeft}>
               <h2 className={styles.sectionTitle}>Or practise question by question</h2>
               <p className={styles.sectionSubtitle}>
-                Prefer one question at a time? Pick a category for a timed session with sample questions, recordings and expert pointers.
+                Prefer one question at a time? Pick a category for a timed session with practice questions, recordings and expert pointers.
               </p>
             </div>
             <button
@@ -2092,7 +2092,7 @@ export default function MockVivaPrepPage() {
                             <div className={styles.modelAnswerBox}>
                               <div className={styles.modelAnswerTitle}>
                                 <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
-                                Sample strong answer
+                                Model answer
                               </div>
                               <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
                             </div>
@@ -2579,7 +2579,7 @@ export default function MockVivaPrepPage() {
                     </div>
                     <div>
                       <div className={styles.timelineHelperTitle}>Not sure which round to start?</div>
-                      <div className={styles.timelineHelperSub}>Explore round-wise tips, sample questions and strategies.</div>
+                      <div className={styles.timelineHelperSub}>Explore round-wise tips, practice questions and strategies.</div>
                     </div>
                   </div>
                   <span className={styles.questionChevron}>
