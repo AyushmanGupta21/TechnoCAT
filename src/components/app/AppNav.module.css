@@ -1,6 +1,12 @@
+.spacer {
+  height: 88px;
+  flex-shrink: 0;
+}
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 900;
   background: rgba(255, 255, 255, 0.78);
   -webkit-backdrop-filter: saturate(1.6) blur(14px);
@@ -18,7 +24,7 @@
   max-width: 1320px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 76px;
+  height: 88px;
   display: flex;
   align-items: center;
   gap: 28px;
@@ -90,13 +96,13 @@
 
 .scrim {
   position: fixed;
-  inset: 76px 0 0 0;
+  inset: 88px 0 0 0;
   background: rgba(12, 23, 48, 0.32);
   z-index: 899;
 }
 .drawer {
   position: fixed;
-  top: 76px;
+  top: 88px;
   left: 0;
   right: 0;
   z-index: 901;
@@ -139,13 +145,15 @@
 @media (max-width: 1023px) {
   .links { display: none; }
   .menuBtn { display: inline-flex; }
-  .inner { height: 64px; gap: 8px; padding: 0 12px; }
-  .scrim { inset: 64px 0 0 0; }
-  .drawer { top: 64px; }
-  .logo :global(img) { height: 44px !important; width: auto !important; }
+  .inner { height: 68px; gap: 8px; padding: 0 12px; }
+  .spacer { height: 68px; }
+  .scrim { inset: 68px 0 0 0; }
+  .drawer { top: 68px; }
+  .logo :global(img) { height: 54px !important; width: auto !important; }
 }
 
 /* Hidden while a timed exam is open */
-:global(body.exam-active) .header {
+:global(body.exam-active) .header,
+:global(body.exam-active) .spacer {
   visibility: hidden;
 }

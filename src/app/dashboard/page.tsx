@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import AppNav from "@/components/app/AppNav";
-import { Reveal, RevealGroup, RevealItem, CountUp, GradientText } from "@/components/landing/motion";
+import { Reveal, RevealGroup, RevealItem, CountUp, GradientText, Doodle } from "@/components/landing/motion";
 import AiMotivationWidget from "@/components/AiMotivationWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import ContinueLearningWidget from "@/components/ContinueLearningWidget";
@@ -254,10 +254,12 @@ export default function DashboardPage() {
     setSelectedMonthIndex(now.getMonth());
     setSelectedYear(now.getFullYear());
     setSelectedDay(now.getDate());
+    setTodayDay(String(now.getDate()).padStart(2, "0"));
     setTodayLabel(now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
   }, []);
   // Header date, set on the client so server and client markup match.
   const [todayLabel, setTodayLabel] = useState("");
+  const [todayDay, setTodayDay] = useState("");
 
   const [announcements, setAnnouncements] = useState<Announcements | null>(null);
   const [visitedNoticeIds, setVisitedNoticeIds] = useState<string[]>([]);
@@ -663,13 +665,18 @@ export default function DashboardPage() {
       <main className={styles.page}>
         {/* ===== PAGE HEADER ===== */}
         <Reveal className={styles.pageHeader} y={16}>
+          <span className={styles.headerWatermark} aria-hidden="true" suppressHydrationWarning>{todayDay}</span>
           <div className={styles.headerText}>
             <p className={styles.headerDate}>
               <span className={styles.liveDot} aria-hidden="true" />
               <span suppressHydrationWarning>{todayLabel || " "}</span>
             </p>
             <h1 className={styles.pageTitle}>
-              Today&apos;s <GradientText>plan</GradientText>
+              Today&apos;s{" "}
+              <span className={styles.titleAccent}>
+                <GradientText>plan</GradientText>
+                <Doodle kind="underline" className={styles.titleUnderline} color="var(--data-cyan)" strokeWidth={3} delay={0.45} />
+              </span>
             </h1>
             <p className={styles.pageSubtitle}>Your tasks, progress and next step for today, {firstName}.</p>
           </div>

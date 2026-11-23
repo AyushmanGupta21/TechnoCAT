@@ -45,6 +45,9 @@ export default function AppNav() {
   }, [open]);
 
   return (
+    <>
+    {/* Spacer keeps page content below the fixed bar */}
+    <div className={styles.spacer} aria-hidden="true" />
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`} data-app-chrome>
       <nav className={styles.inner} aria-label="Main">
         <button
@@ -58,7 +61,7 @@ export default function AppNav() {
         </button>
 
         <Link href="/dashboard" className={styles.logo} aria-label="TechnoCAT dashboard">
-          <BrandLogo height={56} />
+          <BrandLogo height={72} />
         </Link>
 
         <div className={styles.links}>
@@ -93,5 +96,6 @@ export default function AppNav() {
         </>
       )}
     </header>
+    </>
   );
 }

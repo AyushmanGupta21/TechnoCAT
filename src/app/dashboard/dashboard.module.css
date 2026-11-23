@@ -28,16 +28,55 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Page header ---------- */
+/* ---------- Page header: a designed hero band ---------- */
 .pageHeader {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding-bottom: 4px;
+  padding: 30px 34px 30px 38px;
+  border-radius: 24px;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0) 46%),
+    radial-gradient(90% 120% at 0% 100%, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 55%),
+    linear-gradient(135deg, #ffffff 0%, #f3f7ff 60%, #eaf2ff 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 18px 40px -28px rgba(29, 78, 216, 0.35);
+}
+/* Left accent rail */
+.pageHeader::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22px;
+  bottom: 22px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--grad-accent);
+}
+
+/* Outlined day number sitting behind the content */
+.headerWatermark {
+  position: absolute;
+  right: 220px;
+  bottom: -34px;
+  z-index: -1;
+  font-family: var(--ff-display);
+  font-weight: 900;
+  font-size: 180px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(37, 99, 235, 0.13);
+  pointer-events: none;
+  user-select: none;
 }
 
 .headerText {
+  position: relative;
   min-width: 0;
 }
 
@@ -45,12 +84,17 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 10px;
+  margin: 0 0 14px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  background: rgba(255, 255, 255, 0.75);
   font-family: var(--ff-mono);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1e3a8a;
   font-variant-numeric: tabular-nums;
 }
 
@@ -65,17 +109,30 @@
 .pageTitle {
   margin: 0;
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(30px, 3.4vw, 44px);
-  line-height: 1.04;
-  letter-spacing: 0.01em;
+  font-weight: 900;
+  font-size: clamp(36px, 4.4vw, 60px);
+  line-height: 0.98;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   color: var(--ink);
 }
 
+.titleAccent {
+  position: relative;
+  display: inline-block;
+}
+.titleUnderline {
+  position: absolute;
+  left: -2%;
+  right: -4%;
+  bottom: -0.2em;
+  width: 106%;
+  height: 0.28em;
+}
+
 .pageSubtitle {
-  margin: 10px 0 0;
-  font-size: 15px;
+  margin: 18px 0 0;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--ink-2);
 }
@@ -1108,7 +1165,8 @@
 
 @media (max-width: 760px) {
   .page { padding: 22px 16px 56px; gap: 16px; }
-  .pageHeader { flex-direction: column; align-items: stretch; gap: 16px; }
+  .pageHeader { flex-direction: column; align-items: stretch; gap: 18px; padding: 22px 18px 22px 22px; border-radius: 18px; }
+  .headerWatermark { right: -8px; bottom: auto; top: -18px; font-size: 120px; }
   .primaryBtn { align-self: flex-start; }
   .studyStatBody { grid-template-columns: minmax(0, 1fr); }
   .weekPanel { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--line); }
