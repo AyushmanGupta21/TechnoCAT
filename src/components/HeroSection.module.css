@@ -20,9 +20,9 @@
 }
 
 .container {
-  max-width: 1240px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-pad);
 }
 
 .grid {
@@ -232,9 +232,9 @@
   border-bottom: 1px solid var(--line);
 }
 .stripInner {
-  max-width: 1240px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 14px var(--page-pad);
 }
 .stripCard {
   display: flex;

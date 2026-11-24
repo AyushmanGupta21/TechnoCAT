@@ -16,12 +16,9 @@
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
-}
-@media (max-width: 480px) {
-  .container { padding: 0 18px; }
+  padding: 0 var(--page-pad);
 }
 
 /* ---------- Buttons ---------- */

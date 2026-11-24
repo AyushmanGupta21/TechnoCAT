@@ -7,6 +7,9 @@
 }
 
 :root {
+  /* Shared page width: landing sections, both navbars and app pages line up on the same edges */
+  --page-max: 1440px;
+  --page-pad: clamp(16px, 2.4vw, 32px);
   /* Primary Blue */
   --primary: #0ea5e9;
   --primary-dark: #0284c7;

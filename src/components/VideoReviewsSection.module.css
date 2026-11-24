@@ -63,11 +63,17 @@
 
 /* ---------- Track ---------- */
 .trackOuter {
+  /* Same edges as the rest of the page: the carousel is clipped evenly on both sides */
   width: 100%;
-  overflow: hidden;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
 }
 .track {
-  --gutter: max(24px, calc((100% - 1200px) / 2 + 24px));
+  --gutter: 0px;
+  /* soft fade at the right edge hints that more reviews follow */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
   display: flex;
   gap: 20px;
   overflow-x: auto;
@@ -92,7 +98,6 @@
 }
 @media (max-width: 480px) {
   .track {
-    --gutter: 18px;
     gap: 14px;
   }
 }

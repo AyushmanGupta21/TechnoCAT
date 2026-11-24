@@ -21,9 +21,9 @@
 }
 
 .inner {
-  max-width: 1320px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-pad);
   height: 88px;
   display: flex;
   align-items: center;
