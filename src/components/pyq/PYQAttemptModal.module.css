@@ -327,6 +327,29 @@
 .lockoutWarningDesc strong { color: var(--ink); }
 .lockoutWarningDesc .lockedText { color: #be123c; }
 
+/* Exam interface choice */
+.modeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--blue-25);
+  border: 1px solid var(--blue-100);
+}
+.modeText { display: flex; flex-direction: column; gap: 3px; flex: 1 1 240px; min-width: 0; }
+.modeLabel {
+  font-family: var(--ff-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.modeHint { font-size: 13px; line-height: 1.5; color: var(--ink-3); }
+
 /* Footer */
 .briefingFooter {
   padding: 14px 24px;
@@ -397,4 +420,30 @@
   .briefingFooter { padding: 12px 16px; }
   .cancelBtn { flex: 0 0 auto; }
   .startBtn { flex: 1; }
+}
+
+/* ---------- Wide screens: two-column briefing so everything fits above the start button ----------
+   Left: paper facts, exam interface choice, attempt status. Right: scoring rules, proctoring rules. */
+@media (min-width: 960px) {
+  .briefingBox { max-width: 1000px; }
+  .briefingBody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: 20px;
+    row-gap: 14px;
+  }
+  .statGrid { grid-column: 1; grid-row: 1; }
+  .modeRow { grid-column: 1; grid-row: 2; }
+  .lockoutWarning { grid-column: 1; grid-row: 3; }
+  .rulesSection { grid-column: 2; grid-row: 1 / span 2; }
+  .proctorNotice { grid-column: 2; grid-row: 3; }
+  .statVal { font-size: 26px; }
+  .ruleItem { padding: 9px 0; }
+}
+/* Shorter laptop screens: trim vertical spacing */
+@media (min-width: 960px) and (max-height: 820px) {
+  .briefingHeader { padding: 16px 24px 14px; }
+  .briefingBody { padding: 16px 24px; }
+  .briefingFooter { padding: 12px 24px; }
 }

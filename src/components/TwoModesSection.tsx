@@ -8,6 +8,7 @@ import styles from "./TwoModesSection.module.css";
 import ui from "@/components/landing/ui.module.css";
 import { GradientText, RevealGroup, RevealItem, SectionHead, SpotlightCard, EASE_OUT, useReplay } from "@/components/landing/motion";
 import { useAuth } from "@/context/AuthContext";
+import { useExamMode, type ExamMode } from "@/lib/examMode";
 
 // One data colour per checklist item (accents only)
 const CHECK_COLORS = ["var(--data-blue)", "var(--data-teal)", "var(--data-violet)", "var(--data-amber)"];
@@ -32,7 +33,10 @@ export default function TwoModesSection() {
   const { user, openAuthModal } = useAuth();
   const reduce = useReducedMotion();
 
-  const handleModeClick = (e: React.MouseEvent) => {
+  const [, setExamMode] = useExamMode();
+  // Remember the chosen interface so the next timed attempt opens in it (switchable any time in the exam).
+  const handleModeClick = (mode: ExamMode) => (e: React.MouseEvent) => {
+    setExamMode(mode);
     if (!user || user.isGuest) {
       e.preventDefault();
       openAuthModal("signin");
@@ -68,7 +72,7 @@ export default function TwoModesSection() {
                   <h3 className={styles.cardTitle}>Classic mode</h3>
                   <p className={styles.cardSub}>Mode 01 · the real CAT experience</p>
                 </div>
-                <Link href="/browse" onClick={handleModeClick} className={`${ui.btn} ${ui.btnSecondary} ${ui.btnSm} ${styles.tryBtn}`}>
+                <Link href="/browse#pyq-section" onClick={handleModeClick("classic")} className={`${ui.btn} ${ui.btnSecondary} ${ui.btnSm} ${styles.tryBtn}`}>
                   Try now
                   <ArrowRight size={16} strokeWidth={1.75} data-arrow />
                 </Link>
@@ -145,7 +149,7 @@ export default function TwoModesSection() {
                   <h3 className={styles.cardTitle}>Modern mode</h3>
                   <p className={styles.cardSub}>Mode 02 · the TechnoCAT interface</p>
                 </div>
-                <Link href="/intelligence" onClick={handleModeClick} className={`${ui.btn} ${ui.btnLight} ${ui.btnSm} ${styles.tryBtn}`}>
+                <Link href="/browse#pyq-section" onClick={handleModeClick("modern")} className={`${ui.btn} ${ui.btnLight} ${ui.btnSm} ${styles.tryBtn}`}>
                   Try now
                   <ArrowRight size={16} strokeWidth={1.75} data-arrow />
                 </Link>

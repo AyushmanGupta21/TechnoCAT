@@ -192,3 +192,27 @@
   border: 1px solid var(--line);
   box-shadow: var(--elev-1);
 }
+
+/* Long display equations scroll inside their own line instead of widening the page */
+.mdContainer :global(.katex-display) {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  margin: 12px 0;
+}
+
+.mdContainer img { max-width: 100%; }
+
+.lightboxCloseBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring), var(--elev-3);
+}
+
+@media (max-width: 640px) {
+  .imageWrapper { padding: 8px; margin: 14px 0; }
+  .mdTable th,
+  .mdTable td { padding: 8px 10px; }
+  .lightboxOverlay { padding: 12px; }
+  .lightboxCloseBtn { top: 8px; right: 8px; width: 44px; height: 44px; }
+}

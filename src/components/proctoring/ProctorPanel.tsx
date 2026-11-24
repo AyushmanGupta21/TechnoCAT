@@ -4,6 +4,8 @@ import React from "react";
 import styles from "./Proctoring.module.css";
 import type { ProctorStatus } from "./useProctoring";
 import { CircleAlert, Cpu, ScanFace, TriangleAlert, Video } from "lucide-react";
+import ExamModeToggle from "../exam/ExamModeToggle";
+import { useExamMode } from "@/lib/examMode";
 
 const STATUS_LABEL: Record<ProctorStatus, string> = {
   idle: "Proctoring off",
@@ -27,13 +29,14 @@ interface ProctorPanelProps {
 
 /** Small live camera preview in the corner of the exam with the current proctoring status. */
 export default function ProctorPanel({ status, liveHint, videoRef, proctored }: ProctorPanelProps) {
+  const [examMode] = useExamMode();
   const showVideo = proctored && (status === "loading" || status === "active" || status === "ready");
   const tone =
     status === "active" ? (liveHint ? styles.toneWarn : styles.toneOk) : status === "loading" ? styles.toneInfo : styles.toneOff;
 
   return (
     <div
-      className={styles.panel}
+      className={`${styles.panel} ${examMode === "classic" ? styles.panelClassic : ""} ${showVideo ? "" : styles.panelCompact}`}
       title="Camera frames are analysed on this device only; no video is uploaded. Automatic detection reduces cheating but is not perfect."
       aria-live="polite"
     >
@@ -67,6 +70,7 @@ interface ProctorConsentProps {
 export function ProctorConsent({ status, onEnable, onStartWithout, onCancel }: ProctorConsentProps) {
   const denied = status === "denied";
   const requesting = status === "requesting";
+  const [examMode] = useExamMode();
   return (
     <div className={styles.consentOverlay}>
       <div className={styles.consentCard} role="dialog" aria-modal="true" aria-labelledby="proctor-consent-title">
@@ -108,6 +112,20 @@ export function ProctorConsent({ status, onEnable, onStartWithout, onCancel }: P
             </span>
           </li>
         </ul>
+
+        {/* Exam interface: switchable here and at any time during the exam */}
+        <div className={styles.consentMode}>
+          <div className={styles.consentModeText}>
+            <span className={styles.consentModeLabel}>Exam interface</span>
+            <span className={styles.consentModeHint}>
+              {examMode === "classic"
+                ? "Classic mirrors the CAT computer-based test layout."
+                : "Modern is the focused TechnoCAT layout."}{" "}
+              You can switch any time from the top bar.
+            </span>
+          </div>
+          <ExamModeToggle />
+        </div>
 
         {denied && (
           <div className={styles.consentWarn}>

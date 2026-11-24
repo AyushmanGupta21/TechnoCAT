@@ -291,7 +291,8 @@ section { width: 100%; }
 }
 
 /* While a timed exam is open, hide page nav bars so they can't cover the exam header/timer */
-body.exam-active header {
+/* Hide only the site navbar during an exam (the exam screen has its own <header> top bar) */
+body.exam-active [data-app-chrome] {
   visibility: hidden !important;
 }
 

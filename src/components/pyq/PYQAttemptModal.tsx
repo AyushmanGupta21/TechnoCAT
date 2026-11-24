@@ -14,6 +14,8 @@ import {
 } from "@/data/pyqData";
 import { ArrowRight, Clock, FileText, Lock, ShieldAlert, Target, X } from "lucide-react";
 import styles from "./PYQAttemptModal.module.css";
+import ExamModeToggle from "@/components/exam/ExamModeToggle";
+import { useExamMode } from "@/lib/examMode";
 
 interface PYQAttemptModalProps {
   isOpen: boolean;
@@ -42,6 +44,8 @@ export default function PYQAttemptModal({
   // straight into the exam it would look like a new attempt and auto-start it.
   const [examAttemptNumber, setExamAttemptNumber] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
+  // Exam interface preference (presentation only; shared with the exam screen).
+  const [examMode] = useExamMode();
 
   useEffect(() => {
     setMounted(true);
@@ -236,6 +240,20 @@ export default function PYQAttemptModal({
               <span className={styles.statVal}>{maxPossibleMarks}</span>
               <span className={styles.statLbl}>Marks available</span>
             </div>
+          </div>
+
+          {/* Exam interface (switchable any time during the exam) */}
+          <div className={styles.modeRow}>
+            <div className={styles.modeText}>
+              <span className={styles.modeLabel}>Exam interface</span>
+              <span className={styles.modeHint}>
+                {examMode === "classic"
+                  ? "Classic mirrors the CAT computer-based test layout, so practice feels like exam day."
+                  : "Modern is the focused TechnoCAT layout, built for clarity."}{" "}
+                Switch any time, even mid-exam.
+              </span>
+            </div>
+            <ExamModeToggle />
           </div>
 
           {/* Official Scoring Scheme */}

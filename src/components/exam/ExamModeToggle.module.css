@@ -1,0 +1,60 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(12, 23, 48, 0.06);
+  border: 1px solid rgba(12, 23, 48, 0.08);
+}
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2, #3c4a63);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.option:hover {
+  color: var(--ink, #0c1730);
+}
+.active {
+  background: #fff;
+  color: var(--blue-700, #1d4ed8);
+  box-shadow: 0 1px 2px rgba(12, 23, 48, 0.12);
+}
+.option:focus-visible {
+  outline: 2px solid var(--blue-500, #3b6cf0);
+  outline-offset: 1px;
+}
+
+/* On dark exam headers */
+.dark {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.dark .option {
+  color: rgba(255, 255, 255, 0.82);
+}
+.dark .option:hover {
+  color: #fff;
+}
+.dark .active {
+  background: #fff;
+  color: #0c1730;
+}
+
+@media (max-width: 480px) {
+  .option {
+    padding: 0 9px;
+    font-size: 12px;
+  }
+}

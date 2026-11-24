@@ -17,10 +17,13 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Eye,
+  EyeOff,
   FileX,
+  LayoutGrid,
   Lightbulb,
   Play,
   ShieldCheck,
@@ -50,6 +53,10 @@ export default function PYQStudyModal({
   const [filterType, setFilterType] = useState<"ALL" | "MCQ" | "TITA">("ALL");
   const [isBlurred, setIsBlurred] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Presentation-only state: revealed solutions, navigator drawer (tablet/phone), collapsed passage (narrow)
+  const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
+  const [navOpen, setNavOpen] = useState(false);
+  const [passageCollapsed, setPassageCollapsed] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -186,6 +193,9 @@ export default function PYQStudyModal({
   const titaCleanAnswer = isTITA ? extractTITAAnswer(currentQ.correct_answer) : "";
   const recommendation = findRecommendedLessonForPYQ(currentQ);
   const sectionMeta = SECTION_METADATA[section];
+  const showSolution = revealed.has(currentQ.id);
+  const hasPassage = Boolean(currentQ.context);
+  const viewedCount = questions.filter((q) => revealed.has(q.id)).length;
 
   // Filter questions for sidebar navigator
   const filteredQuestions = questions.filter((q) => {
@@ -200,6 +210,20 @@ export default function PYQStudyModal({
     router.push(`/topics/${recommendation.topicId}?lesson=${recommendation.lessonId}`);
   };
 
+  const toggleSolution = () => {
+    setRevealed((prev) => {
+      const next = new Set(prev);
+      if (next.has(currentQ.id)) next.delete(currentQ.id);
+      else next.add(currentQ.id);
+      return next;
+    });
+  };
+
+  const goTo = (idx: number) => {
+    setCurrentIdx(idx);
+    setNavOpen(false);
+  };
+
   return createPortal(
     <div
       className={styles.overlay}
@@ -207,7 +231,13 @@ export default function PYQStudyModal({
       onCopy={(e) => e.preventDefault()}
       onCut={(e) => e.preventDefault()}
     >
-      <div className={styles.modalBox} data-sec={section}>
+      <div
+        className={styles.modalBox}
+        data-sec={section}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pyq-study-title"
+      >
         {/* Anti-screenshot & Tab Switching Blur Overlay */}
         {isBlurred && (
           <div className={styles.blurredContainer}>
@@ -237,6 +267,7 @@ export default function PYQStudyModal({
               className={styles.backBtn}
               onClick={onClose}
               title="Back to papers"
+              aria-label="Back to papers"
             >
               <ArrowLeft size={16} aria-hidden="true" />
               <span>Back</span>
@@ -244,19 +275,28 @@ export default function PYQStudyModal({
             <div className={styles.headerText}>
               <div className={styles.studyBadge}>
                 <span className={styles.secMarker} aria-hidden="true" />
-                <span>Study mode</span>
+                <span>Study mode · CAT {year} · {slot}</span>
               </div>
-              <h2 className={styles.headerTitle}>
-                CAT {year} · {slot} · {sectionMeta?.title || section}
+              <h2 id="pyq-study-title" className={styles.headerTitle}>
+                <span className={styles.titleShort}>{section}</span>
+                <span className={styles.titleLong}>{sectionMeta?.title || section}</span>
               </h2>
             </div>
           </div>
 
           <div className={styles.headerRight}>
-            <span className={styles.progressInfo}>
-              <strong>{String(currentIdx + 1).padStart(2, "0")}</strong>
-              <span>/ {questions.length}</span>
-            </span>
+            <button
+              type="button"
+              className={styles.navToggleBtn}
+              onClick={() => setNavOpen((v) => !v)}
+              aria-expanded={navOpen}
+              aria-controls="pyq-study-nav"
+              aria-label={`Questions, ${currentIdx + 1} of ${questions.length}`}
+            >
+              <LayoutGrid size={16} aria-hidden="true" />
+              <span className={styles.navToggleText}>Questions</span>
+              <span className={styles.navToggleCount}>{currentIdx + 1}/{questions.length}</span>
+            </button>
             <button
               type="button"
               className={styles.closeBtn}
@@ -277,17 +317,41 @@ export default function PYQStudyModal({
 
         {/* Main Split Layout */}
         <div className={styles.mainLayout}>
-          {/* Left Sidebar Navigator */}
-          <aside className={styles.sidebar}>
+          {navOpen && (
+            <div
+              className={styles.navScrim}
+              onClick={() => setNavOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Left Navigator (drawer on tablet / phone) */}
+          <aside
+            id="pyq-study-nav"
+            className={`${styles.sidebar} ${navOpen ? styles.sidebarOpen : ""}`}
+            aria-label="Question navigator"
+          >
             <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarTitle}>
-                Questions <span>{questions.length}</span>
+              <div className={styles.sidebarTitleRow}>
+                <div className={styles.sidebarTitle}>
+                  <span className={styles.secMarker} aria-hidden="true" />
+                  Questions <span>{questions.length}</span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.drawerClose}
+                  onClick={() => setNavOpen(false)}
+                  aria-label="Close question list"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
               </div>
-              <div className={styles.filterChips}>
+              <div className={styles.filterChips} role="group" aria-label="Filter by question type">
                 <button
                   type="button"
                   className={`${styles.filterChip} ${filterType === "ALL" ? styles.filterChipActive : ""}`}
                   onClick={() => setFilterType("ALL")}
+                  aria-pressed={filterType === "ALL"}
                 >
                   All
                 </button>
@@ -295,6 +359,7 @@ export default function PYQStudyModal({
                   type="button"
                   className={`${styles.filterChip} ${filterType === "MCQ" ? styles.filterChipActive : ""}`}
                   onClick={() => setFilterType("MCQ")}
+                  aria-pressed={filterType === "MCQ"}
                 >
                   MCQ
                 </button>
@@ -302,6 +367,7 @@ export default function PYQStudyModal({
                   type="button"
                   className={`${styles.filterChip} ${filterType === "TITA" ? styles.filterChipActive : ""}`}
                   onClick={() => setFilterType("TITA")}
+                  aria-pressed={filterType === "TITA"}
                 >
                   TITA
                 </button>
@@ -312,19 +378,27 @@ export default function PYQStudyModal({
               {filteredQuestions.map((q) => {
                 const origIdx = questions.findIndex((item) => item.id === q.id);
                 const isActive = origIdx === currentIdx;
+                const isViewed = revealed.has(q.id);
                 return (
                   <button
                     type="button"
                     key={q.id}
-                    className={`${styles.qListItem} ${isActive ? styles.qListItemActive : ""}`}
-                    onClick={() => setCurrentIdx(origIdx)}
+                    className={`${styles.qListItem} ${isActive ? styles.qListItemActive : ""} ${isViewed ? styles.qListItemViewed : ""}`}
+                    onClick={() => goTo(origIdx)}
                     aria-current={isActive ? "true" : undefined}
+                    aria-label={`Question ${q.question_number}, ${q.type}${isViewed ? ", solution viewed" : ""}${isActive ? ", current" : ""}`}
                     title={`Question ${q.question_number} · ${q.type}`}
                   >
                     <span className={styles.qListNumber}>{q.question_number}</span>
-                    <span className={`${styles.qListType} ${q.type === "MCQ" ? styles.typeMCQ : styles.typeTITA}`}>
-                      {q.type}
-                    </span>
+                    <span
+                      className={`${styles.qListType} ${q.type === "MCQ" ? styles.typeMCQ : styles.typeTITA}`}
+                      aria-hidden="true"
+                    />
+                    {isViewed && (
+                      <span className={styles.qListViewed} aria-hidden="true">
+                        <Check size={9} strokeWidth={3.5} />
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -333,113 +407,151 @@ export default function PYQStudyModal({
             <div className={styles.legend}>
               <span><i className={styles.legendMcq} /> MCQ</span>
               <span><i className={styles.legendTita} /> TITA</span>
+              <span><i className={styles.legendViewed} /> Solution viewed <b>{viewedCount}</b></span>
             </div>
           </aside>
 
-          {/* Right Question & Explanation Area */}
+          {/* Question & Solution Area */}
           <main className={styles.contentArea} ref={contentRef}>
-            {/* Context / Reading Passage Block */}
-            {currentQ.context && (
-              <div className={styles.passageBlock}>
-                <div className={styles.passageHeader}>
-                  <BookOpen size={15} aria-hidden="true" />
-                  <span>Passage / data set</span>
-                </div>
-                <div className={styles.passageBody}>
-                  <PYQMarkdownViewer content={currentQ.context} />
-                </div>
-              </div>
-            )}
-
-            {/* Question Meta */}
-            <div className={styles.qMetaRow}>
-              <div className={styles.qTagGroup}>
-                <span className={styles.qNumBadge}>Q{currentQ.question_number}</span>
-                <span className={`${styles.qTypeTag} ${isTITA ? styles.typeTITA : styles.typeMCQ}`}>
-                  {isTITA ? "TITA · type in the answer" : "MCQ · multiple choice"}
-                </span>
-                {recommendation?.concept && (
-                  <span className={styles.qConceptBadge}>{recommendation.concept}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Question Text */}
-            <div className={styles.questionText}>
-              <PYQMarkdownViewer content={currentQ.question} />
-            </div>
-
-            {/* Options or TITA Answer */}
-            {!isTITA ? (
-              <div className={styles.optionsGrid}>
-                {currentQ.options.map((opt, optIdx) => {
-                  const isCorrect = optIdx === correctOptionIdx;
-                  return (
-                    <div
-                      key={optIdx}
-                      className={`${styles.optionCard} ${isCorrect ? styles.optionCardCorrect : ""}`}
+            <div className={`${styles.reading} ${hasPassage ? styles.readingWithPassage : ""}`}>
+              {/* Context / Reading Passage Block */}
+              {currentQ.context && (
+                <section
+                  className={`${styles.passageBlock} ${passageCollapsed ? styles.passageCollapsed : ""}`}
+                  aria-label="Passage or data set"
+                >
+                  <div className={styles.passageHeader}>
+                    <span className={styles.passageHeading}>
+                      <BookOpen size={15} aria-hidden="true" />
+                      <span>Passage / data set</span>
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.passageToggle}
+                      onClick={() => setPassageCollapsed((v) => !v)}
+                      aria-expanded={!passageCollapsed}
                     >
-                      <div className={styles.optionLeft}>
-                        <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                        <div className={styles.optionText}><MathText text={opt} /></div>
-                      </div>
-                      {isCorrect && (
-                        <span className={styles.correctTag}>
-                          <Check size={13} strokeWidth={3} aria-hidden="true" />
-                          <span>Correct</span>
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className={styles.titaAnswerBox}>
-                <div className={styles.titaAnswerLeft}>
-                  <span className={styles.titaAnswerLabel}>
-                    <Check size={14} strokeWidth={3} aria-hidden="true" />
-                    <span>Official answer</span>
-                  </span>
-                  <span className={styles.titaAnswerVal}><MathText text={titaCleanAnswer || "Key-in answer"} /></span>
-                </div>
-                <span className={styles.titaAnswerNote}>
-                  No negative marking for TITA
-                </span>
-              </div>
-            )}
+                      <span>{passageCollapsed ? "Show passage" : "Hide passage"}</span>
+                      <ChevronDown size={15} aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className={styles.passageBody} key={currentQ.id}>
+                    <PYQMarkdownViewer content={currentQ.context} />
+                  </div>
+                </section>
+              )}
 
-            {/* Curriculum Lesson Recommendation */}
-            {recommendation && (
-              <div className={`glass-card ${styles.recBanner}`} data-tint="teal">
-                <div className={styles.recLeft}>
-                  <span className={styles.recHeading}>
-                    <Play size={13} aria-hidden="true" />
-                    <span>Related lesson</span>
-                  </span>
-                  <span className={styles.recTitle}>{recommendation.lessonTitle}</span>
-                  <span className={styles.recSubtitle}>
-                    {recommendation.topicTitle} · core theory and shortcuts
-                  </span>
+              <div className={styles.questionColumn}>
+                {/* Question Meta */}
+                <div className={styles.qMetaRow}>
+                  <div className={styles.qTagGroup}>
+                    <span className={styles.qNumBadge}>Q{currentQ.question_number}</span>
+                    <span className={`${styles.qTypeTag} ${isTITA ? styles.typeTITA : styles.typeMCQ}`}>
+                      {isTITA ? "TITA · type in the answer" : "MCQ · multiple choice"}
+                    </span>
+                    {recommendation?.concept && (
+                      <span className={styles.qConceptBadge}>{recommendation.concept}</span>
+                    )}
+                  </div>
                 </div>
+
+                {/* Question Text */}
+                <div className={styles.questionText}>
+                  <PYQMarkdownViewer content={currentQ.question} />
+                </div>
+
+                {/* Options */}
+                {!isTITA && (
+                  <div className={styles.optionsGrid}>
+                    {currentQ.options.map((opt, optIdx) => {
+                      const isCorrect = showSolution && optIdx === correctOptionIdx;
+                      return (
+                        <div
+                          key={optIdx}
+                          className={`${styles.optionCard} ${isCorrect ? styles.optionCardCorrect : ""}`}
+                        >
+                          <div className={styles.optionLeft}>
+                            <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
+                            <div className={styles.optionText}><MathText text={opt} /></div>
+                          </div>
+                          {isCorrect && (
+                            <span className={styles.correctTag}>
+                              <Check size={13} strokeWidth={3} aria-hidden="true" />
+                              <span>Correct</span>
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Solution toggle */}
                 <button
                   type="button"
-                  className={styles.recActionBtn}
-                  onClick={handleGoToLesson}
+                  className={`${styles.solutionToggle} ${showSolution ? styles.solutionToggleOn : ""}`}
+                  onClick={toggleSolution}
+                  aria-expanded={showSolution}
+                  aria-controls="pyq-study-solution"
                 >
-                  Watch lesson
-                  <ArrowRight size={15} aria-hidden="true" />
+                  {showSolution ? <EyeOff size={17} aria-hidden="true" /> : <Lightbulb size={17} aria-hidden="true" />}
+                  <span>{showSolution ? "Hide solution" : isTITA ? "Show answer & solution" : "Show solution"}</span>
                 </button>
-              </div>
-            )}
 
-            {/* Step-by-Step Explanation */}
-            <div className={styles.explanationBox}>
-              <div className={styles.explanationTitle}>
-                <Lightbulb size={16} aria-hidden="true" />
-                <span>Step-by-step solution</span>
-              </div>
-              <div className={styles.explanationText}>
-                <PYQMarkdownViewer content={currentQ.explanation} />
+                {/* Solution panel */}
+                {showSolution && (
+                  <div id="pyq-study-solution" className={styles.solutionPanel}>
+                    {isTITA && (
+                      <div className={styles.titaAnswerBox}>
+                        <div className={styles.titaAnswerLeft}>
+                          <span className={styles.titaAnswerLabel}>
+                            <Check size={14} strokeWidth={3} aria-hidden="true" />
+                            <span>Official answer</span>
+                          </span>
+                          <span className={styles.titaAnswerVal}><MathText text={titaCleanAnswer || "Key-in answer"} /></span>
+                        </div>
+                        <span className={styles.titaAnswerNote}>
+                          No negative marking for TITA
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Step-by-Step Explanation */}
+                    <div className={styles.explanationBox}>
+                      <div className={styles.explanationTitle}>
+                        <Lightbulb size={16} aria-hidden="true" />
+                        <span>Step-by-step solution</span>
+                      </div>
+                      <div className={styles.explanationText}>
+                        <PYQMarkdownViewer content={currentQ.explanation} />
+                      </div>
+                    </div>
+
+                    {/* Curriculum Lesson Recommendation */}
+                    {recommendation && (
+                      <div className={`glass-card ${styles.recBanner}`} data-tint="teal">
+                        <div className={styles.recLeft}>
+                          <span className={styles.recHeading}>
+                            <Play size={13} aria-hidden="true" />
+                            <span>Related lesson</span>
+                          </span>
+                          <span className={styles.recTitle}>{recommendation.lessonTitle}</span>
+                          <span className={styles.recSubtitle}>
+                            {recommendation.topicTitle} · core theory and shortcuts
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.recActionBtn}
+                          onClick={handleGoToLesson}
+                        >
+                          Watch lesson
+                          <ArrowRight size={15} aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </main>
@@ -456,6 +568,11 @@ export default function PYQStudyModal({
             <ChevronLeft size={16} aria-hidden="true" />
             Previous
           </button>
+
+          <span className={styles.footerCount} aria-label={`Question ${currentIdx + 1} of ${questions.length}`}>
+            <strong>{String(currentIdx + 1).padStart(2, "0")}</strong>
+            <span>/ {questions.length}</span>
+          </span>
 
           <button
             type="button"

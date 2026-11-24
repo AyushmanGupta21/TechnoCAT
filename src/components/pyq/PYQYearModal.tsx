@@ -13,12 +13,13 @@ import PYQStudyModal from "./PYQStudyModal";
 import PYQAttemptModal from "./PYQAttemptModal";
 import {
   BookOpen,
-  ChartColumn,
   Check,
   Circle,
   CircleCheck,
   Clock,
   FileText,
+  FileX,
+  History,
   Lock,
   Play,
   ShieldCheck,
@@ -33,13 +34,7 @@ interface PYQYearModalProps {
   onClose: () => void;
 }
 
-const ALL_SLOTS = ["Slot 1", "Slot 2", "Slot 3"];
 const ALL_SECTIONS: Array<"VARC" | "DILR" | "QUANT"> = ["VARC", "DILR", "QUANT"];
-const SECTION_TINT: Record<"VARC" | "DILR" | "QUANT", "blue" | "teal" | "violet"> = {
-  VARC: "blue",
-  DILR: "teal",
-  QUANT: "violet",
-};
 
 export default function PYQYearModal({
   isOpen,
@@ -48,9 +43,8 @@ export default function PYQYearModal({
 }: PYQYearModalProps) {
   const router = useRouter();
 
-  // Filters
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  // Slot tab (one slot shown at a time)
+  const [activeSlot, setActiveSlot] = useState<string>("");
 
   // Sub-modals state
   const [studyModalTarget, setStudyModalTarget] = useState<{
@@ -147,9 +141,9 @@ export default function PYQYearModal({
   const yearInfo = useMemo(() => PYQ_YEARS.find((y) => y.year === year), [year]);
   const availableSlots = useMemo(() => yearInfo?.slots || ["Slot 1", "Slot 2", "Slot 3"], [yearInfo]);
 
-  // Clean slot filters if current selected slot is not in available slots
+  // Keep the active slot tab valid for this year's available slots
   useEffect(() => {
-    setSelectedSlots((prev) => prev.filter((s) => availableSlots.includes(s)));
+    setActiveSlot((prev) => (availableSlots.includes(prev) ? prev : availableSlots[0] || ""));
   }, [availableSlots]);
 
   // Generate valid section-slot cards for available slots only
@@ -176,16 +170,21 @@ export default function PYQYearModal({
     return list;
   }, [year, availableSlots]);
 
-  // Filter cards
-  const filteredCards = useMemo(() => {
-    return allCards.filter((card) => {
-      const matchSub =
-        selectedSubjects.length === 0 || selectedSubjects.includes(card.section);
-      const matchSlot =
-        selectedSlots.length === 0 || selectedSlots.includes(card.slot);
-      return matchSub && matchSlot;
+  // Sections of the active slot
+  const slotCards = useMemo(
+    () => allCards.filter((card) => card.slot === activeSlot),
+    [allCards, activeSlot]
+  );
+
+  const slotQuestionTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    availableSlots.forEach((slot) => {
+      totals[slot] = allCards
+        .filter((c) => c.slot === slot)
+        .reduce((sum, c) => sum + c.info.totalCount, 0);
     });
-  }, [allCards, selectedSubjects, selectedSlots]);
+    return totals;
+  }, [allCards, availableSlots]);
 
   // Check if any subject is locked to display weak area checklist
   const lockedSubject = useMemo(() => {
@@ -200,19 +199,21 @@ export default function PYQYearModal({
     router.push(`/topics/${topicId}?lesson=${lessonId}`);
   };
 
-  const toggleSubjectFilter = (sub: string) => {
-    setSelectedSubjects((prev) =>
-      prev.includes(sub) ? prev.filter((s) => s !== sub) : [...prev, sub]
-    );
-  };
-
-  const toggleSlotFilter = (slot: string) => {
-    setSelectedSlots((prev) =>
-      prev.includes(slot) ? prev.filter((s) => s !== slot) : [...prev, slot]
-    );
+  const handleTabKey = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    const next =
+      e.key === "ArrowRight"
+        ? (idx + 1) % availableSlots.length
+        : (idx - 1 + availableSlots.length) % availableSlots.length;
+    setActiveSlot(availableSlots[next]);
+    const tabs = e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("[role='tab']");
+    tabs?.[next]?.focus();
   };
 
   if (!mounted || !isOpen) return null;
+
+  const isMockYear = year === 2024;
 
   return createPortal(
     <div
@@ -221,27 +222,30 @@ export default function PYQYearModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={styles.modalBox}>
+      <div
+        className={`${styles.modalBox} ${attemptModalTarget || studyModalTarget ? styles.modalBoxBehind : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pyq-year-title"
+      >
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <div className={styles.badgeRow}>
-              <span className={styles.yearBadge}>
-                {year === 2024 ? "TechnoCAT 6.0 full mock" : `CAT ${year} archive`}
+            <span className={styles.eyebrow}>
+              {isMockYear ? "TechnoCAT 6.0 full mock" : `CAT ${year} archive`}
+              <span className={styles.eyebrowMeta}>
+                {isMockYear ? "Free all-India live simulation" : "Official question papers"}
               </span>
-              <span className={styles.badgeMeta}>
-                {year === 2024 ? "Free all-India live simulation · 3 slots" : "Official question papers"}
-              </span>
-            </div>
-            <h2 className={styles.headerTitle}>
-              {year === 2024 ? (
+            </span>
+            <h2 id="pyq-year-title" className={styles.headerTitle}>
+              {isMockYear ? (
                 <>TechnoCAT 6.0 full mock <span className="text-gradient">(CAT {year})</span></>
               ) : (
-                <>CAT <span className="text-gradient">{year}</span> previous year papers</>
+                <>CAT <span className="text-gradient">{year}</span> question papers</>
               )}
             </h2>
             <p className={styles.headerSubtitle}>
-              {availableSlots.length} slots × 3 sections. Read solutions in study mode or sit a timed, proctored attempt.
+              {availableSlots.length} slots × 3 sections. Pick a slot, then read a section with solutions or sit it as a timed, proctored attempt.
             </p>
           </div>
 
@@ -256,62 +260,27 @@ export default function PYQYearModal({
           </button>
         </div>
 
-        {/* Filter Controls Bar */}
-        <div className={styles.filterBar}>
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Section</span>
-            <button
-              type="button"
-              className={`${styles.filterChip} ${
-                selectedSubjects.length === 0 ? styles.filterChipActive : ""
-              }`}
-              onClick={() => setSelectedSubjects([])}
-            >
-              All
-            </button>
-            {ALL_SECTIONS.map((sec) => {
-              const isActive = selectedSubjects.includes(sec);
-              const isLocked = sectionStats[sec]?.isLocked;
-              return (
-                <button
-                  key={sec}
-                  type="button"
-                  className={`${styles.filterChip} ${
-                    isActive ? styles.filterChipActive : ""
-                  }`}
-                  onClick={() => toggleSubjectFilter(sec)}
-                >
-                  <span className={styles.secDot} data-sec={sec} aria-hidden="true" />
-                  <span>{sec}</span>
-                  {isLocked && <Lock size={12} aria-label="Locked" />}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Slot</span>
-            <button
-              type="button"
-              className={`${styles.filterChip} ${
-                selectedSlots.length === 0 ? styles.filterChipActive : ""
-              }`}
-              onClick={() => setSelectedSlots([])}
-            >
-              All
-            </button>
-            {availableSlots.map((slot) => {
-              const isActive = selectedSlots.includes(slot);
+        {/* Slot tabs */}
+        <div className={styles.tabBar}>
+          <div className={styles.tabs} role="tablist" aria-label="Exam slot">
+            {availableSlots.map((slot, idx) => {
+              const isActive = slot === activeSlot;
+              const total = slotQuestionTotals[slot] || 0;
               return (
                 <button
                   key={slot}
                   type="button"
-                  className={`${styles.filterChip} ${
-                    isActive ? styles.filterChipActive : ""
-                  }`}
-                  onClick={() => toggleSlotFilter(slot)}
+                  role="tab"
+                  id={`pyq-slot-tab-${idx}`}
+                  aria-selected={isActive}
+                  aria-controls="pyq-slot-panel"
+                  tabIndex={isActive ? 0 : -1}
+                  className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
+                  onClick={() => setActiveSlot(slot)}
+                  onKeyDown={(e) => handleTabKey(e, idx)}
                 >
-                  {slot}
+                  <span className={styles.tabLabel}>{slot}</span>
+                  <span className={styles.tabMeta}>{total > 0 ? `${total} Qs` : "No paper"}</span>
                 </button>
               );
             })}
@@ -400,126 +369,147 @@ export default function PYQYearModal({
             </div>
           )}
 
-          {/* Cards Grid */}
-          <div className={styles.cardsGrid}>
-            {filteredCards.map(({ slot, section, info }) => {
-              const meta = SECTION_METADATA[section];
-              const stat = sectionStats[section];
-              const isLocked = stat?.isLocked;
-              const attemptsCount = stat?.attemptsCount || 0;
+          {/* Sections of the active slot */}
+          <div
+            id="pyq-slot-panel"
+            role="tabpanel"
+            aria-labelledby={`pyq-slot-tab-${Math.max(0, availableSlots.indexOf(activeSlot))}`}
+            className={styles.sectionList}
+          >
+            {slotCards.length === 0 ? (
+              <div className={styles.slotEmpty}>
+                <span className={styles.slotEmptyIcon} aria-hidden="true">
+                  <FileX size={20} />
+                </span>
+                <h3>No questions archived for {activeSlot}</h3>
+                <p>This slot&rsquo;s paper isn&rsquo;t in the archive yet. Try another slot.</p>
+              </div>
+            ) : (
+              slotCards.map(({ slot, section, info }) => {
+                const meta = SECTION_METADATA[section];
+                const stat = sectionStats[section];
+                const isLocked = stat?.isLocked;
+                const attemptsCount = stat?.attemptsCount || 0;
+                const slotAttempts = attemptsData.filter(
+                  (a) => a.section?.toUpperCase() === section && a.slot === slot
+                );
+                const lastSlotAttempt = slotAttempts[0];
 
-              return (
-                <div
-                  key={`${slot}-${section}`}
-                  className={`glass-card ${styles.sectionCard} ${isLocked ? styles.sectionCardLocked : ""}`}
-                  data-tint={SECTION_TINT[section]}
-                  data-sec={section}
-                >
-                  {/* Card Header */}
-                  <div className={styles.cardHeader}>
-                    <span className={styles.slotBadge}>{slot}</span>
-                    <span className={styles.yearChip}>CAT {year}</span>
-                  </div>
-
-                  {/* Subject Name */}
-                  <div className={styles.cardSubjectRow}>
-                    <span className={styles.subjectIcon} aria-hidden="true" />
-                    <div>
-                      <h3 className={styles.subjectTitle}>{section}</h3>
-                      <span className={styles.subjectFull}>{meta.title}</span>
+                return (
+                  <article
+                    key={`${slot}-${section}`}
+                    className={`${styles.sectionRow} ${isLocked ? styles.sectionRowLocked : ""}`}
+                    data-sec={section}
+                  >
+                    {/* Identity */}
+                    <div className={styles.rowIdentity}>
+                      <span className={styles.secBar} aria-hidden="true" />
+                      <div className={styles.rowTitleWrap}>
+                        <h3 className={styles.rowTitle}>{section}</h3>
+                        <span className={styles.rowSubtitle}>{meta.title}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Specs */}
-                  <div className={styles.cardSpecs}>
-                    <span className={styles.specItem}>
-                      <Clock size={13} aria-hidden="true" />
-                      {info.durationMinutes} min
-                    </span>
-                    <span className={styles.specItem}>
-                      <FileText size={13} aria-hidden="true" />
-                      {info.totalCount} Qs
-                    </span>
-                    <span className={styles.specItem}>
-                      {info.mcqCount} MCQ + {info.titaCount} TITA
-                    </span>
-                  </div>
+                    {/* Specs */}
+                    <dl className={styles.rowSpecs}>
+                      <div className={styles.spec}>
+                        <dt><FileText size={13} aria-hidden="true" /><span>Questions</span></dt>
+                        <dd>{info.totalCount}</dd>
+                      </div>
+                      <div className={styles.spec}>
+                        <dt><Clock size={13} aria-hidden="true" /><span>Time</span></dt>
+                        <dd>{info.durationMinutes}<small> min</small></dd>
+                      </div>
+                      <div className={styles.spec}>
+                        <dt><span>MCQ · TITA</span></dt>
+                        <dd>{info.mcqCount}<small> · </small>{info.titaCount}</dd>
+                      </div>
+                    </dl>
 
-                  {/* Attempts meter + status */}
-                  <div className={styles.statusBadgeRow}>
-                    <div className={styles.meterRow}>
-                      <span className={styles.meterLabel}>Attempts</span>
-                      <span className={styles.meter} aria-label={`${attemptsCount} of 3 attempts used`}>
-                        {[0, 1, 2].map((i) => (
-                          <span
-                            key={i}
-                            className={`${styles.meterSeg} ${i < attemptsCount ? (isLocked ? styles.meterSegLocked : styles.meterSegOn) : ""}`}
-                          />
-                        ))}
-                      </span>
-                      <span className={styles.meterVal}>{Math.min(attemptsCount, 3)}/3</span>
-                    </div>
-                    {isLocked ? (
-                      <span className={`${styles.statusBadge} ${styles.statusLocked}`}>
-                        <Lock size={13} aria-hidden="true" />
-                        <span>Section locked · finish the checklist</span>
-                      </span>
-                    ) : attemptsCount > 0 ? (
-                      <span className={`${styles.statusBadge} ${styles.statusAttempted}`}>
-                        <Check size={13} aria-hidden="true" />
-                        <span>
-                          Best <strong>{stat.bestScore}</strong> marks · <strong>{stat.bestPercentage}%</strong>
+                    {/* Status */}
+                    <div className={styles.rowStatus}>
+                      <div className={styles.meterRow}>
+                        <span className={styles.meterLabel}>Attempts</span>
+                        <span className={styles.meter} aria-label={`${attemptsCount} of 3 ${section} attempts used`}>
+                          {[0, 1, 2].map((i) => (
+                            <span
+                              key={i}
+                              className={`${styles.meterSeg} ${i < attemptsCount ? (isLocked ? styles.meterSegLocked : styles.meterSegOn) : ""}`}
+                            />
+                          ))}
                         </span>
-                      </span>
-                    ) : (
-                      <span className={`${styles.statusBadge} ${styles.statusNotAttempted}`}>
-                        <Circle size={12} aria-hidden="true" />
-                        <span>Not attempted yet</span>
-                      </span>
-                    )}
-                  </div>
+                        <span className={styles.meterVal}>{Math.min(attemptsCount, 3)}/3</span>
+                      </div>
+                      {isLocked ? (
+                        <span className={`${styles.statusBadge} ${styles.statusLocked}`}>
+                          <Lock size={13} aria-hidden="true" />
+                          <span>Locked · finish the checklist</span>
+                        </span>
+                      ) : lastSlotAttempt ? (
+                        <span className={`${styles.statusBadge} ${styles.statusAttempted}`}>
+                          <Check size={13} aria-hidden="true" />
+                          <span>
+                            Last here <strong>{lastSlotAttempt.score}</strong>/{lastSlotAttempt.total} · <strong>{lastSlotAttempt.percentage}%</strong>
+                          </span>
+                        </span>
+                      ) : attemptsCount > 0 ? (
+                        <span className={`${styles.statusBadge} ${styles.statusAttempted}`}>
+                          <Check size={13} aria-hidden="true" />
+                          <span>
+                            Best <strong>{stat.bestScore}</strong> marks · <strong>{stat.bestPercentage}%</strong>
+                          </span>
+                        </span>
+                      ) : (
+                        <span className={`${styles.statusBadge} ${styles.statusNotAttempted}`}>
+                          <Circle size={12} aria-hidden="true" />
+                          <span>Not attempted yet</span>
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Card Action Buttons */}
-                  <div className={styles.cardActions}>
-                    <button
-                      type="button"
-                      className={styles.btnStudy}
-                      onClick={() => info.totalCount > 0 && setStudyModalTarget({ slot, section })}
-                      disabled={info.totalCount === 0}
-                      title={info.totalCount === 0 ? "No questions available for this slot" : "Read questions, options and full solutions"}
-                    >
-                      <BookOpen size={15} aria-hidden="true" />
-                      <span>Study PYQ</span>
-                    </button>
+                    {/* Actions */}
+                    <div className={styles.rowActions}>
+                      <button
+                        type="button"
+                        className={styles.btnStudy}
+                        onClick={() => info.totalCount > 0 && setStudyModalTarget({ slot, section })}
+                        disabled={info.totalCount === 0}
+                        title={info.totalCount === 0 ? "No questions available for this slot" : "Read questions, options and full solutions"}
+                      >
+                        <BookOpen size={16} aria-hidden="true" />
+                        <span>Read with solutions</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      className={styles.btnAttempt}
-                      onClick={() => setAttemptModalTarget({ slot, section })}
-                      disabled={isLocked}
-                      title={
-                        isLocked
-                          ? "Section is locked. Complete the weak-area checklist to unlock."
-                          : "Take a timed, proctored attempt under CAT conditions"
-                      }
-                    >
-                      {isLocked ? <Lock size={15} aria-hidden="true" /> : <Target size={15} aria-hidden="true" />}
-                      <span>Attempt</span>
-                    </button>
+                      <button
+                        type="button"
+                        className={styles.btnAttempt}
+                        onClick={() => setAttemptModalTarget({ slot, section })}
+                        disabled={isLocked}
+                        title={
+                          isLocked
+                            ? "Section is locked. Complete the weak-area checklist to unlock."
+                            : "Take a timed, proctored attempt under CAT conditions"
+                        }
+                      >
+                        {isLocked ? <Lock size={16} aria-hidden="true" /> : <Target size={16} aria-hidden="true" />}
+                        <span>Timed attempt</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      className={styles.btnAnalytics}
-                      onClick={() => setAnalyticsTarget({ slot, section })}
-                      title="View past attempts"
-                      aria-label="View past attempts"
-                    >
-                      <ChartColumn size={16} aria-hidden="true" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                      <button
+                        type="button"
+                        className={styles.btnAnalytics}
+                        onClick={() => setAnalyticsTarget({ slot, section })}
+                        title="View past attempts"
+                        aria-label={`View past ${section} attempts`}
+                      >
+                        <History size={17} aria-hidden="true" />
+                        <span className={styles.btnAnalyticsText}>Past attempts</span>
+                      </button>
+                    </div>
+                  </article>
+                );
+              })
+            )}
           </div>
         </div>
 

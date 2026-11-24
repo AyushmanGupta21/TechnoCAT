@@ -9,9 +9,11 @@ import styles from "./ModuleQuizModal.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
 import ProctorPanel, { ProctorConsent } from "./proctoring/ProctorPanel";
+import ExamModeToggle from "./exam/ExamModeToggle";
+import { useExamMode } from "@/lib/examMode";
 import {
-  ArrowLeft, ArrowRight, Award, BookOpen, Calculator, ChartColumn, Check, Circle, Clock, Delete,
-  Eraser, FileText, Flag, Keyboard, Lightbulb, ListChecks, Lock, Play, RotateCcw, Send, ShieldCheck,
+  ArrowLeft, ArrowRight, Award, BookOpen, Calculator, ChartColumn, Check, ChevronDown, Circle, Clock, Delete,
+  Eraser, FileText, Flag, Keyboard, LayoutGrid, Lightbulb, ListChecks, Lock, Play, RotateCcw, Send, ShieldCheck,
   Target, Timer, TriangleAlert, Trophy, X, Zap,
 } from "lucide-react";
 import {
@@ -80,8 +82,8 @@ export default function ModuleQuizModal({
   const [isSubmitted, setIsSubmitted] = useState(initialReviewMode);
   const [analysis, setAnalysis] = useState<QuizAnalysis | null>(initialAnalysis || null);
 
-  // Post-submission solutions filter: "all" | "wrong" | "correct"
-  const [reviewFilter, setReviewFilter] = useState<"all" | "wrong" | "correct">("all");
+  // Post-submission solutions filter (display only)
+  const [reviewFilter, setReviewFilter] = useState<"all" | "wrong" | "skipped" | "marked" | "correct">("all");
   // Confirmation modal before finalizing manual submission
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   // Auto submission notification modal (timeout or cheat strikes)
@@ -111,6 +113,12 @@ export default function ModuleQuizModal({
   // Question palette (UI only): which questions were opened and which are marked for review.
   const [visitedSet, setVisitedSet] = useState<Set<number>>(() => new Set([0]));
   const [markedSet, setMarkedSet] = useState<Set<number>>(() => new Set());
+
+  // Presentation only: Classic/Modern interface (shared, per device) + responsive drawers.
+  // Switching mode never touches answers, timer, palette state or proctoring.
+  const [examMode] = useExamMode();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [passageOpen, setPassageOpen] = useState(false);
 
   useEffect(() => {
     const loadPrefs = () => {
@@ -703,18 +711,10 @@ export default function ModuleQuizModal({
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // Filter questions for the solution review screen
-  const filteredQuestions = questions.filter((q, idx) => {
-    const isCorrect = checkQuestionCorrect(q, idx);
-    if (reviewFilter === "wrong") return !isCorrect;
-    if (reviewFilter === "correct") return isCorrect;
-    return true;
-  });
-
-
-  // ---- Display-only derived values (palette + results charts) ----
+  // ---- Display-only derived values (palette + results) ----
+  type PaletteState = "answered" | "notAnswered" | "marked" | "answeredMarked" | "notVisited";
   const isAnsweredIdx = (idx: number) => selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== "";
-  const paletteState = (idx: number): "answered" | "notAnswered" | "marked" | "answeredMarked" | "notVisited" => {
+  const paletteState = (idx: number): PaletteState => {
     const answered = isAnsweredIdx(idx);
     const marked = markedSet.has(idx);
     if (answered && marked) return "answeredMarked";
@@ -730,13 +730,22 @@ export default function ModuleQuizModal({
     },
     { answered: 0, notAnswered: 0, marked: 0, answeredMarked: 0, notVisited: 0 }
   );
-  const PALETTE_CLASS: Record<ReturnType<typeof paletteState>, string> = {
+  const PALETTE_CLASS: Record<PaletteState, string> = {
     answered: styles.qPillAnswered,
     notAnswered: styles.qPillNotAnswered,
     marked: styles.qPillMarked,
     answeredMarked: styles.qPillAnsweredMarked,
-    notVisited: "",
+    notVisited: styles.qPillNotVisited,
   };
+  const PALETTE_LABEL: Record<PaletteState, string> = {
+    answered: "Answered",
+    notAnswered: "Not answered",
+    notVisited: "Not visited",
+    marked: "Marked for review",
+    answeredMarked: "Answered & marked for review",
+  };
+  const LEGEND_ORDER: PaletteState[] = ["answered", "notAnswered", "notVisited", "marked", "answeredMarked"];
+
   const isCurrentMarked = markedSet.has(currentIdx);
   const toggleMarkCurrent = () =>
     setMarkedSet((prev) => {
@@ -745,10 +754,22 @@ export default function ModuleQuizModal({
       else next.add(currentIdx);
       return next;
     });
+  // "Mark for review & next": marks the current question and moves to the next one.
+  const markForReviewAndNext = () => {
+    setMarkedSet((prev) => (prev.has(currentIdx) ? prev : new Set(prev).add(currentIdx)));
+    setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1));
+  };
+  const goToQuestion = (idx: number) => {
+    setCurrentIdx(idx);
+    setPaletteOpen(false);
+  };
 
   const correctCount = questions.filter((q, idx) => checkQuestionCorrect(q, idx)).length;
   const skippedCount = questions.filter((_q, idx) => !isAnsweredIdx(idx)).length;
   const wrongCount = Math.max(0, questions.length - correctCount - skippedCount);
+  const attemptedCount = questions.length - skippedCount;
+  const accuracyPct = attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 100) : 0;
+  const markedReviewCount = questions.filter((_q, idx) => markedSet.has(idx)).length;
   const totalQ = questions.length || 1;
   const RING_R = 52;
   const RING_C = 2 * Math.PI * RING_R;
@@ -759,15 +780,51 @@ export default function ModuleQuizModal({
   ];
   let ringOffset = 0;
 
+  const REVIEW_FILTERS = [
+    { key: "all", label: "All", count: questions.length },
+    { key: "wrong", label: "Wrong", count: wrongCount },
+    { key: "skipped", label: "Skipped", count: skippedCount },
+    { key: "marked", label: "Marked", count: markedReviewCount },
+    { key: "correct", label: "Correct", count: correctCount },
+  ] as const;
+  const reviewItems = questions
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ q, idx }) => {
+      const correct = checkQuestionCorrect(q, idx);
+      switch (reviewFilter) {
+        case "wrong":
+          return isAnsweredIdx(idx) && !correct;
+        case "skipped":
+          return !isAnsweredIdx(idx);
+        case "marked":
+          return markedSet.has(idx);
+        case "correct":
+          return correct;
+        default:
+          return true;
+      }
+    });
+
+  const isPyq = attemptContext?.kind === "pyq";
+  const cutoffPct = scoringScheme === "cat" ? 50 : 70;
   const kickerLabel = initialReviewMode
     ? `Report card · attempt ${attemptNumber}`
-    : attemptContext?.kind === "pyq"
+    : isPyq
       ? "CAT past paper · timed section"
       : isGrandQuiz
         ? "Grand comprehensive quiz"
         : "Compulsory module quiz";
   const timerTone =
     timeLeft < 120 ? styles.timerDanger : examPrefs.timerAlerts && timeLeft <= 300 && timeLeft > 0 ? styles.timerPulseWarning : "";
+
+  // Presentation: the results screen always uses the Modern design.
+  const classic = examMode === "classic" && !isSubmitted;
+  const sectionLabel = attemptContext?.section || (isGrandQuiz ? "Grand quiz" : "Module quiz");
+  const candidateName = user?.fullName?.trim() || "Candidate";
+  const candidateInitial = candidateName.charAt(0).toUpperCase();
+  const isCurrentTita = currentQ ? currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 : false;
+  const timeTakenSeconds = analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft);
+  const pad2 = (n: number) => String(n).padStart(2, "0");
 
   const resetForInModalRetake = () => {
     setIsSubmitted(false);
@@ -782,6 +839,7 @@ export default function ModuleQuizModal({
     setProctorAlert(null);
     setShowSubmitConfirm(false);
     setAutoSubmitNotice(null);
+    setPaletteOpen(false);
   };
 
   const modalContent = (
@@ -794,9 +852,10 @@ export default function ModuleQuizModal({
       onDragStart={(e) => e.preventDefault()}
     >
       <div
-        className={`${styles.modalBox} ${isSubmitted ? styles.modalBoxResult : ""} ${
-          examPrefs.highContrast ? styles.highContrastExam : ""
-        }`}
+        className={`${styles.modalBox} ${classic ? styles.classic : styles.modern} ${
+          isSubmitted ? styles.modalBoxResult : ""
+        } ${examPrefs.highContrast ? styles.highContrastExam : ""}`}
+        data-exam-mode={classic ? "classic" : "modern"}
       >
         {/* Webcam proctoring consent step (timer starts only after this) */}
         {showProctorConsent && (
@@ -830,77 +889,109 @@ export default function ModuleQuizModal({
           </div>
         )}
 
-        {/* Header */}
-        <div className={styles.modalHeader}>
-          <div className={styles.headerLeft}>
+        {/* Top bar: paper name · proctoring · interface toggle · tools · timer */}
+        <header className={styles.topBar}>
+          <div className={styles.topBarTitle}>
             <span className={isGrandQuiz ? styles.grandQuizBadge : styles.quizBadge}>
               {initialReviewMode ? (
-                <ChartColumn size={14} />
+                <ChartColumn size={13} aria-hidden="true" />
               ) : isGrandQuiz ? (
-                <Award size={14} />
+                <Award size={13} aria-hidden="true" />
               ) : (
-                <FileText size={14} />
+                <FileText size={13} aria-hidden="true" />
               )}
               {kickerLabel}
             </span>
-            <h2 className={styles.modalTitle}>{title}</h2>
+            <h2 className={styles.modalTitle} title={title}>
+              {title}
+            </h2>
           </div>
 
-          <div className={styles.headerRight}>
-            {!isSubmitted && examPrefs.ionCalculator && (
+          {!isSubmitted ? (
+            <div className={styles.topBarTools}>
+              <span
+                className={`${styles.proctorChip} ${strikes > 0 ? styles.proctorChipStrike : ""}`}
+                title="Proctoring strikes: each strike deducts 1 mark; 3 strikes auto-submit the exam."
+              >
+                {strikes > 0 ? (
+                  <TriangleAlert size={14} strokeWidth={2.4} aria-hidden="true" />
+                ) : (
+                  <ShieldCheck size={14} aria-hidden="true" />
+                )}
+                <span className={styles.proctorChipText}>{proctored ? "Proctored" : "Unproctored"}</span>
+                <span className={styles.srOnly}>, strikes</span>
+                <b>{strikes}/3</b>
+              </span>
+              <ExamModeToggle tone={classic ? "dark" : "light"} className={styles.modeToggle} />
+              {examPrefs.ionCalculator && (
+                <button
+                  type="button"
+                  className={`${styles.toolBtn} ${styles.calcToolBtn} ${showCalculator ? styles.toolBtnOn : ""}`}
+                  onClick={() => setShowCalculator((prev) => !prev)}
+                  title="On-screen calculator"
+                  aria-label={showCalculator ? "Hide calculator" : "Show calculator"}
+                  aria-pressed={showCalculator}
+                >
+                  <Calculator size={16} aria-hidden="true" />
+                  <span className={styles.toolBtnText}>Calculator</span>
+                </button>
+              )}
               <button
                 type="button"
-                className={`${styles.calculatorToggleBtn} ${showCalculator ? styles.calculatorToggleOn : ""}`}
-                onClick={() => setShowCalculator((prev) => !prev)}
-                title="TCS iON on-screen calculator"
+                className={`${styles.toolBtn} ${styles.questionsBtn}`}
+                onClick={() => setPaletteOpen(true)}
+                aria-expanded={paletteOpen}
+                aria-controls="exam-question-palette"
               >
-                <Calculator size={16} />
-                <span>{showCalculator ? "Hide calculator" : "Calculator"}</span>
+                <LayoutGrid size={16} aria-hidden="true" />
+                <span className={styles.toolBtnText}>Questions</span>
+                <b className={styles.questionsBtnCount}>
+                  {answeredCount}/{questions.length}
+                </b>
               </button>
-            )}
-            {onBackToAttempts && isSubmitted && (
-              <button
-                type="button"
-                className={styles.backToAttemptsBtn}
-                onClick={onBackToAttempts}
-                title="Back to all attempts"
-              >
-                <ArrowLeft size={16} />
-                <span>Back to attempts</span>
-              </button>
-            )}
-            {!isSubmitted && (
               <div
                 className={`${styles.timerBadge} ${timerTone}`}
                 title={timeLeft <= 300 && examPrefs.timerAlerts ? "Under 5 minutes remaining" : "Time remaining"}
                 role="timer"
-                aria-label="Time remaining"
+                aria-live="off"
+                aria-label={`Time left ${formatTimer(timeLeft)}`}
               >
-                <Timer size={16} strokeWidth={2.2} />
+                <Timer size={16} strokeWidth={2.2} className={styles.timerIcon} aria-hidden="true" />
                 <span className={styles.timerLabel}>Time left</span>
                 <span className={styles.timerValue}>{formatTimer(timeLeft)}</span>
               </div>
-            )}
-            {!isSubmitted ? (
-              <div className={styles.examLockedBadge} title="Exam in progress. You must submit your quiz before closing.">
-                <Lock size={14} />
+              <div className={styles.examLockedBadge} title="Exam in progress. You must submit before closing.">
+                <Lock size={14} aria-hidden="true" />
                 <span>Locked</span>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <div className={styles.topBarTools}>
+              {onBackToAttempts && (
+                <button
+                  type="button"
+                  className={styles.toolBtn}
+                  onClick={onBackToAttempts}
+                  title="Back to all attempts"
+                >
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  <span className={styles.toolBtnText}>Back to attempts</span>
+                </button>
+              )}
               <button className={styles.closeBtn} onClick={handleSafeClose} title="Close report" aria-label="Close report">
                 <X size={20} />
               </button>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+        </header>
 
-        {/* TCS iON Popover Calculator */}
+        {/* On-screen calculator */}
         {showCalculator && !isSubmitted && examPrefs.ionCalculator && (
           <div className={styles.calcModalOverlay}>
             <div className={styles.calcHeader}>
               <span className={styles.calcTitle}>
                 <Keyboard size={14} />
-                TCS iON calculator
+                Calculator
               </span>
               <button
                 type="button"
@@ -944,661 +1035,815 @@ export default function ModuleQuizModal({
         )}
 
         {!isSubmitted ? (
-          <div className={styles.examLayout}>
-            <div className={styles.examMain}>
-              {/* Question Tracker & Rules Bar */}
-              <div className={styles.questionTracker}>
-                <div className={styles.trackerLeft}>
-                  <span className={styles.qNumber}>
-                    Question <strong>{String(currentIdx + 1).padStart(2, "0")}</strong>
-                    <span className={styles.qOf}>/ {String(questions.length).padStart(2, "0")}</span>
-                  </span>
-                  {currentQ.type === "TITA" ? (
-                    <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>
-                  ) : (
-                    <span className={`${styles.typeChip} ${styles.typeChipMcq}`}>MCQ</span>
-                  )}
-                  {currentQ.isOutsideContext && <span className={styles.outsideTag}>CAT applied problem</span>}
-                </div>
-                <div className={styles.trackerRight}>
-                  {strikes > 0 && (
-                    <span className={styles.strikeChip}>
-                      <TriangleAlert size={13} strokeWidth={2.4} />
-                      Strikes <strong>{strikes}/3</strong>
-                    </span>
-                  )}
-                  {!isGrandQuiz && (
-                    <span className={styles.attemptChip}>
-                      Attempt <strong>{attemptNumber}/{maxAttempts}</strong>
-                    </span>
-                  )}
-                  <span className={styles.cutoffNotice}>
-                    <Target size={13} />
-                    {scoringScheme === "cat" ? (
-                      <>
-                        Marks <b className={styles.markPlus}>+3</b> <b className={styles.markMinus}>−1</b>
-                        <span className={styles.markNote}>TITA +3 / 0</span>
-                      </>
-                    ) : (
-                      "70% cutoff to pass"
-                    )}
+          <>
+            {classic ? (
+              /* Classic: flat section tab strip */
+              <div className={styles.sectionBar}>
+                <div className={styles.sectionTabs} role="tablist" aria-label="Sections">
+                  <span role="tab" aria-selected="true" className={`${styles.sectionTab} ${styles.sectionTabActive}`}>
+                    {sectionLabel}
                   </span>
                 </div>
-              </div>
-
-              {/* Question Body (NEVER shows right/wrong or explanation during active quiz) */}
-              <div className={`${styles.bodyContent} ${currentQ.context ? styles.bodySplit : ""}`}>
-                {currentQ.context && (
-                  <div className={styles.passageContainer}>
-                    <div className={styles.passageHeader}>
-                      <BookOpen size={15} />
-                      <span>Passage / caselet</span>
-                    </div>
-                    <div className={styles.passageText}>
-                      <PYQMarkdownViewer content={currentQ.context} />
-                    </div>
-                  </div>
-                )}
-
-                <div className={styles.questionPane}>
-                  <div className={styles.questionMeta}>
-                    <span className={styles.conceptBadge}>{currentQ.concept}</span>
-                  </div>
-
-                  <div className={styles.questionTitle}>
-                    <PYQMarkdownViewer content={currentQ.q} />
-                  </div>
-
-                  {currentQ.type === "TITA" || !currentQ.options || currentQ.options.length === 0 ? (
-                    <div className={styles.titaContainer}>
-                      <div className={styles.titaLabel}>
-                        <span className={styles.titaLabelMain}>
-                          <Keyboard size={15} />
-                          Type in the answer
-                        </span>
-                        <span className={styles.titaSubtext}>
-                          Enter a number or the exact text. No negative marks for TITA in CAT.
-                        </span>
-                      </div>
-                      <div className={styles.titaInputWrapper}>
-                        <input
-                          type="text"
-                          className={styles.titaInput}
-                          placeholder="Your answer"
-                          value={selectedAnswers[currentIdx] !== undefined ? String(selectedAnswers[currentIdx]) : ""}
-                          onChange={(e) => handleSetTITAAnswer(e.target.value)}
-                        />
-                        {selectedAnswers[currentIdx] !== undefined && selectedAnswers[currentIdx] !== "" && (
-                          <button
-                            type="button"
-                            onClick={() => handleSetTITAAnswer("")}
-                            className={styles.titaClearBtn}
-                            title="Clear answer"
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.optionsGrid} role="radiogroup" aria-label="Answer options">
-                      {currentQ.options.map((optText, optIdx) => {
-                        const isSelected = selectedAnswers[currentIdx] === optIdx;
-                        return (
-                          <div
-                            key={optIdx}
-                            role="radio"
-                            aria-checked={isSelected}
-                            tabIndex={0}
-                            onClick={() => handleSelectOption(optIdx)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                handleSelectOption(optIdx);
-                              }
-                            }}
-                            className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
-                          >
-                            <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
-                            <div className={styles.optionText}><MathText text={optText} /></div>
-                            {isSelected && <Check size={16} strokeWidth={2.6} className={styles.optionTick} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Footer Controls */}
-              <div className={styles.modalFooter}>
-                <div className={styles.footerGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.navActionBtn} ${isCurrentMarked ? styles.btnMarkOn : styles.btnMark}`}
-                    onClick={toggleMarkCurrent}
-                    aria-pressed={isCurrentMarked}
-                  >
-                    <Flag size={15} />
-                    <span>{isCurrentMarked ? "Marked" : "Mark for review"}</span>
-                  </button>
-                  {isAnsweredIdx(currentIdx) && (
-                    <button
-                      type="button"
-                      className={`${styles.navActionBtn} ${styles.btnGhost}`}
-                      onClick={() => handleSetTITAAnswer("")}
-                    >
-                      <Eraser size={15} />
-                      <span>Clear response</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className={styles.footerGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.navActionBtn} ${styles.btnSecondary}`}
-                    onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-                    disabled={currentIdx === 0}
-                  >
-                    <ArrowLeft size={15} />
-                    <span>Previous</span>
-                  </button>
-                  {!isLastQuestion ? (
-                    <button
-                      type="button"
-                      className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                      onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-                    >
-                      <span>Save &amp; next</span>
-                      <ArrowRight size={15} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className={`${styles.navActionBtn} ${styles.btnSubmit}`}
-                      onClick={() => setShowSubmitConfirm(true)}
-                    >
-                      <span>Submit quiz</span>
-                      <Send size={15} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Question palette */}
-            <aside
-              className={`${styles.paletteAside} ${proctored ? styles.paletteAsideCam : ""}`}
-              aria-label="Question palette"
-            >
-              <div className={styles.paletteHead}>
-                <span className={styles.paletteTitle}>Question palette</span>
-                <span className={styles.paletteProgress}>
-                  <strong>{answeredCount}</strong>/{questions.length}
+                <span className={styles.sectionBarInfo}>
+                  Answered <b>{answeredCount}</b> of <b>{questions.length}</b>
                 </span>
               </div>
-              <div className={styles.paletteMeter} aria-hidden="true">
+            ) : (
+              /* Modern: slim progress bar */
+              <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-label="Questions answered"
+                aria-valuemin={0}
+                aria-valuemax={questions.length}
+                aria-valuenow={answeredCount}
+              >
                 <span style={{ width: `${(answeredCount / totalQ) * 100}%` }} />
-              </div>
-
-              <div className={`${styles.pillsRow} ${examPrefs.compactPalette ? styles.compactPillsRow : ""}`}>
-                {questions.map((q, idx) => {
-                  const isCurrent = idx === currentIdx;
-                  const state = paletteState(idx);
-                  return (
-                    <button
-                      key={q.id || idx}
-                      type="button"
-                      onClick={() => setCurrentIdx(idx)}
-                      aria-current={isCurrent ? "true" : undefined}
-                      aria-label={`Question ${idx + 1}`}
-                      className={`${styles.qPill} ${PALETTE_CLASS[state]} ${isCurrent ? styles.qPillActive : ""}`}
-                    >
-                      {idx + 1}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <ul className={styles.legend}>
-                <li><span className={`${styles.legendSwatch} ${styles.qPillAnswered}`} />Answered<b>{paletteCounts.answered}</b></li>
-                <li><span className={`${styles.legendSwatch} ${styles.qPillNotAnswered}`} />Not answered<b>{paletteCounts.notAnswered}</b></li>
-                <li><span className={`${styles.legendSwatch} ${styles.qPillMarked}`} />Marked<b>{paletteCounts.marked}</b></li>
-                <li><span className={`${styles.legendSwatch} ${styles.qPillAnsweredMarked}`} />Answered &amp; marked<b>{paletteCounts.answeredMarked}</b></li>
-                <li><span className={styles.legendSwatch} />Not visited<b>{paletteCounts.notVisited}</b></li>
-                <li><span className={`${styles.legendSwatch} ${styles.legendCurrent}`} />Current</li>
-              </ul>
-
-              <button type="button" className={styles.asideSubmitBtn} onClick={() => setShowSubmitConfirm(true)}>
-                <Send size={15} />
-                Submit quiz
-              </button>
-            </aside>
-          </div>
-        ) : (
-          /* Result, Diagnostics & Comprehensive Solutions Review (ONLY AFTER SUBMISSION) */
-          <div className={`${styles.bodyContent} ${styles.resultContainer}`}>
-            <div className={styles.resultHero}>
-              {/* Featured score card */}
-              <div className={`${styles.scoreFeature} ${analysis?.passed ? styles.trophyPass : styles.trophyFail}`}>
-                <div className={styles.resultTrophy}>
-                  {analysis?.passed ? <Trophy size={18} /> : <TriangleAlert size={18} />}
-                  <span>{analysis?.passed ? "Passed" : "Cutoff not met"}</span>
-                </div>
-                <h3 className={styles.resultHeading}>
-                  {analysis?.passed
-                    ? isGrandQuiz
-                      ? "Course mastered"
-                      : "Module passed"
-                    : "Cutoff not met (70% required)"}
-                </h3>
-                <div className={styles.scoreBanner}>
-                  <div className={styles.scoreMetricMain}>
-                    <span className={styles.scoreVal}>{analysis?.score}</span>
-                    <span className={styles.scoreOutOf}>/ {analysis?.total}</span>
-                  </div>
-                  <span className={styles.scoreLbl}>{strikes > 0 ? "Final score" : scoringScheme === "cat" ? "Score" : "Correct answers"}</span>
-                </div>
-                <p className={styles.resultSubheading}>
-                  {analysis?.passed
-                    ? isGrandQuiz
-                      ? "You have completed the CAT grand comprehensive assessment."
-                      : "You have mastered this module. The next module is now unlocked."
-                    : `You scored ${analysis?.percentage}%. You need at least 70% to unlock the next module.`}
-                </p>
-                <div className={styles.scoreFootRow}>
-                  {strikes > 0 && (
-                    <>
-                      <span className={styles.scoreMetric}>
-                        <b>{rawScore !== null ? rawScore : analysis?.score}</b> raw
-                      </span>
-                      <span className={`${styles.scoreMetric} ${styles.scoreMetricPenalty}`}>
-                        <b>−{strikes}</b> penalty
-                      </span>
-                    </>
-                  )}
-                  <span className={styles.scoreMetric}>
-                    <b>{analysis?.percentage}%</b> accuracy
-                  </span>
-                  {analysis?.passed && (
-                    <span className={styles.xpAwardBadge}>+{isGrandQuiz ? 100 : 50} XP</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Accuracy chart */}
-              <div className={`glass-card ${styles.accuracyCard}`} data-tint="teal">
-                <div className={styles.cardKicker}>Accuracy breakdown</div>
-                <div className={styles.accuracyBody}>
-                  <svg className={styles.ring} viewBox="0 0 132 132" role="img" aria-label={`${correctCount} correct, ${wrongCount} wrong, ${skippedCount} skipped`}>
-                    <circle cx="66" cy="66" r={RING_R} fill="none" stroke="#eef2f8" strokeWidth="14" />
-                    {ringSegments.map((seg) => {
-                      const len = (seg.value / totalQ) * RING_C;
-                      const el = (
-                        <circle
-                          key={seg.key}
-                          cx="66"
-                          cy="66"
-                          r={RING_R}
-                          fill="none"
-                          stroke={seg.color}
-                          strokeWidth="14"
-                          strokeDasharray={`${len} ${RING_C - len}`}
-                          strokeDashoffset={-ringOffset}
-                          transform="rotate(-90 66 66)"
-                        />
-                      );
-                      ringOffset += len;
-                      return seg.value > 0 ? el : null;
-                    })}
-                    <text x="66" y="64" textAnchor="middle" className={styles.ringValue}>
-                      {Math.round((correctCount / totalQ) * 100)}%
-                    </text>
-                    <text x="66" y="82" textAnchor="middle" className={styles.ringLabel}>
-                      correct
-                    </text>
-                  </svg>
-                  <ul className={styles.ringLegend}>
-                    <li><span style={{ background: "var(--data-emerald)" }} />Correct<b>{correctCount}</b></li>
-                    <li><span style={{ background: "var(--data-coral)" }} />Wrong<b>{wrongCount}</b></li>
-                    <li><span style={{ background: "#d3dbe8" }} />Skipped<b>{skippedCount}</b></li>
-                  </ul>
-                </div>
-                <div className={styles.qStrip} aria-hidden="true">
-                  {questions.map((q, idx) => (
-                    <span
-                      key={q.id || idx}
-                      className={
-                        checkQuestionCorrect(q, idx)
-                          ? styles.qStripCorrect
-                          : isAnsweredIdx(idx)
-                            ? styles.qStripWrong
-                            : styles.qStripSkipped
-                      }
-                      title={`Q${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Proctoring Penalty Notice Banner (If any strikes incurred) */}
-            {strikes > 0 && (
-              <div className={styles.penaltyNoticeBanner}>
-                <div className={styles.penaltyNoticeTitle}>
-                  <TriangleAlert size={15} />
-                  <span>Proctoring penalty applied (−{strikes} mark{strikes > 1 ? "s" : ""})</span>
-                </div>
-                <div className={styles.penaltyNoticeDesc}>
-                  You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam (screenshot, tab switching or webcam proctoring).
-                  A penalty of <strong>−{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
-                </div>
               </div>
             )}
 
-            {/* Time & Proctoring Analytics */}
-            <div className={styles.analyticsGrid}>
-              <div className={`glass-card ${styles.analyticsCard}`} data-tint="blue">
-                <span className={styles.analyticsLbl}>
-                  <Clock size={14} />
-                  Time taken
-                </span>
-                <span className={styles.analyticsVal}>
-                  {formatTimer(analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft))}
-                </span>
-              </div>
-              <div className={`glass-card ${styles.analyticsCard}`} data-tint="violet">
-                <span className={styles.analyticsLbl}>
-                  <Zap size={14} />
-                  Avg speed
-                </span>
-                <span className={styles.analyticsVal}>
-                  {Math.max(
-                    1,
-                    Math.round(
-                      (analysis?.timeTakenSeconds || Math.max(1, initialDuration - timeLeft)) /
-                        (questions.length || 1)
-                    )
-                  )}
-                  <small>s / Q</small>
-                </span>
-              </div>
-              <div className={`glass-card ${styles.analyticsCard}`} data-tint={strikes > 0 ? "coral" : "teal"}>
-                <span className={styles.analyticsLbl}>
-                  <ShieldCheck size={14} />
-                  Proctoring
-                </span>
-                <span className={`${styles.analyticsVal} ${strikes > 0 ? styles.analyticsStrike : styles.analyticsPass}`}>
-                  {strikes > 0 ? `−${strikes} mark${strikes > 1 ? "s" : ""}` : "Clean"}
-                </span>
-              </div>
-              <div className={`glass-card ${styles.analyticsCard}`} data-tint="amber">
-                <span className={styles.analyticsLbl}>
-                  <Target size={14} />
-                  Benchmark
-                </span>
-                <span className={`${styles.analyticsVal} ${analysis?.passed ? styles.analyticsPass : styles.analyticsStrike}`}>
-                  {analysis?.passed ? "Passed" : "70% cutoff"}
-                  {analysis?.passed && <Check size={16} strokeWidth={3} />}
-                </span>
-              </div>
-            </div>
+            <div className={styles.examLayout}>
+              <div className={styles.examMain}>
+                {/* Question header */}
+                <div className={styles.qHeader}>
+                  <div className={styles.qHeaderLeft}>
+                    <span className={styles.qNumber}>
+                      {classic ? (
+                        <>
+                          Question No. <strong>{currentIdx + 1}</strong>
+                        </>
+                      ) : (
+                        <>
+                          Question <strong>{pad2(currentIdx + 1)}</strong>
+                          <span className={styles.qOf}>/ {pad2(questions.length)}</span>
+                        </>
+                      )}
+                    </span>
+                    {currentQ.type === "TITA" ? (
+                      <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>
+                    ) : (
+                      <span className={`${styles.typeChip} ${styles.typeChipMcq}`}>MCQ</span>
+                    )}
+                    {currentQ.isOutsideContext && <span className={styles.outsideTag}>CAT applied problem</span>}
+                  </div>
+                  <div className={styles.qHeaderRight}>
+                    {!isGrandQuiz && (
+                      <span className={styles.attemptChip}>
+                        Attempt <strong>{attemptNumber}/{maxAttempts}</strong>
+                      </span>
+                    )}
+                    <span className={styles.cutoffNotice}>
+                      <Target size={13} aria-hidden="true" />
+                      {scoringScheme === "cat" ? (
+                        <>
+                          Marks <b className={styles.markPlus}>+3</b> <b className={styles.markMinus}>−1</b>
+                          <span className={styles.markNote}>TITA +3 / 0</span>
+                        </>
+                      ) : (
+                        "70% cutoff to pass"
+                      )}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Concept Diagnosis & Prescribed Rewatches (If Failed) */}
-            {!analysis?.passed && analysis && (
-              <>
-                {attemptNumber >= maxAttempts && (
-                  <div className={styles.lockoutBanner}>
-                    <div className={styles.lockoutTitle}>
-                      <Lock size={17} />
-                      <span>Attempt limit reached ({maxAttempts} of {maxAttempts})</span>
+                {/* Question body (never shows right/wrong or explanation during the exam) */}
+                <div className={`${styles.qBody} ${currentQ.context ? styles.qBodySplit : ""}`}>
+                  {currentQ.context && (
+                    <section className={styles.passage} aria-label="Passage">
+                      <button
+                        type="button"
+                        className={styles.passageToggle}
+                        onClick={() => setPassageOpen((prev) => !prev)}
+                        aria-expanded={passageOpen}
+                      >
+                        <BookOpen size={15} aria-hidden="true" />
+                        <span>{passageOpen ? "Hide passage" : "Show passage"}</span>
+                        <ChevronDown
+                          size={16}
+                          aria-hidden="true"
+                          className={`${styles.passageChevron} ${passageOpen ? styles.passageChevronOpen : ""}`}
+                        />
+                      </button>
+                      <div className={styles.passageHeader}>
+                        <BookOpen size={15} aria-hidden="true" />
+                        <span>{classic ? "Directions / passage" : "Passage"}</span>
+                      </div>
+                      <div className={`${styles.passageText} ${passageOpen ? "" : styles.passageCollapsed}`}>
+                        <PYQMarkdownViewer content={currentQ.context} />
+                      </div>
+                    </section>
+                  )}
+
+                  <div className={styles.questionPane}>
+                    {currentQ.concept && (
+                      <div className={styles.questionMeta}>
+                        <span className={styles.conceptBadge}>{currentQ.concept}</span>
+                      </div>
+                    )}
+
+                    <div className={styles.questionTitle}>
+                      <PYQMarkdownViewer content={currentQ.q} />
                     </div>
-                    <p className={styles.lockoutDesc}>
-                      You have used all 3 attempts. Re-watch the recommended lectures below, then refresh your
-                      attempts.
-                    </p>
-                    {onResetAttemptsAfterRewatch && (
-                      <button type="button" className={styles.resetAttemptsBtn} onClick={onResetAttemptsAfterRewatch}>
-                        <Check size={15} strokeWidth={2.6} />
-                        I have re-watched the lectures — reset attempts
+
+                    {isCurrentTita ? (
+                      <div className={styles.titaContainer}>
+                        <div className={styles.titaLabel}>
+                          <span className={styles.titaLabelMain}>
+                            <Keyboard size={15} aria-hidden="true" />
+                            Type in the answer
+                          </span>
+                          <span className={styles.titaSubtext}>
+                            Enter a number or the exact text. No negative marks for TITA in CAT.
+                          </span>
+                        </div>
+                        <div className={styles.titaInputWrapper}>
+                          <input
+                            type="text"
+                            className={styles.titaInput}
+                            placeholder="Your answer"
+                            aria-label="Your answer"
+                            value={selectedAnswers[currentIdx] !== undefined ? String(selectedAnswers[currentIdx]) : ""}
+                            onChange={(e) => handleSetTITAAnswer(e.target.value)}
+                          />
+                          {selectedAnswers[currentIdx] !== undefined && selectedAnswers[currentIdx] !== "" && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetTITAAnswer("")}
+                              className={styles.titaClearBtn}
+                              title="Clear answer"
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.optionsGrid} role="radiogroup" aria-label="Answer options">
+                        {currentQ.options.map((optText, optIdx) => {
+                          const isSelected = selectedAnswers[currentIdx] === optIdx;
+                          return (
+                            <div
+                              key={optIdx}
+                              role="radio"
+                              aria-checked={isSelected}
+                              tabIndex={0}
+                              onClick={() => handleSelectOption(optIdx)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  handleSelectOption(optIdx);
+                                }
+                              }}
+                              className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
+                            >
+                              <div className={styles.optionKey}>{OPTION_LETTERS[optIdx]}</div>
+                              <div className={styles.optionText}><MathText text={optText} /></div>
+                              {isSelected && <Check size={16} strokeWidth={2.6} className={styles.optionTick} />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {!classic && !isCurrentTita && (
+                      <p className={styles.kbdHint}>
+                        <kbd>Tab</kbd> to move between options · <kbd>Enter</kbd> or <kbd>Space</kbd> to select
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom action bar */}
+                <div className={styles.actionBar}>
+                  <div className={styles.actionGroup}>
+                    {isCurrentMarked ? (
+                      <button
+                        type="button"
+                        className={`${styles.navActionBtn} ${styles.btnMarkOn} ${styles.actMark}`}
+                        onClick={toggleMarkCurrent}
+                        aria-pressed={true}
+                        title="Remove the review mark from this question"
+                      >
+                        <Flag size={15} aria-hidden="true" />
+                        <span className={styles.lblLong}>Unmark review</span>
+                        <span className={styles.lblShort}>Unmark</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`${styles.navActionBtn} ${styles.btnMark} ${styles.actMark}`}
+                        onClick={markForReviewAndNext}
+                        title="Mark this question for review and go to the next one"
+                      >
+                        <Flag size={15} aria-hidden="true" />
+                        <span className={styles.lblLong}>Mark for review &amp; next</span>
+                        <span className={styles.lblShort}>Mark</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnGhost} ${styles.actClear}`}
+                      onClick={() => handleSetTITAAnswer("")}
+                      disabled={!isAnsweredIdx(currentIdx)}
+                      aria-label="Clear response"
+                      title="Clear response"
+                    >
+                      <Eraser size={15} aria-hidden="true" />
+                      <span className={styles.lblLong}>Clear response</span>
+                    </button>
+                  </div>
+
+                  <div className={styles.actionGroup}>
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnSecondary} ${styles.actPrev}`}
+                      onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
+                      disabled={currentIdx === 0}
+                      aria-label="Previous question"
+                      title="Previous question"
+                    >
+                      <ArrowLeft size={15} aria-hidden="true" />
+                      <span className={styles.lblLong}>Previous</span>
+                    </button>
+                    {!isLastQuestion ? (
+                      <button
+                        type="button"
+                        className={`${styles.navActionBtn} ${styles.btnPrimary} ${styles.actNext}`}
+                        onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
+                      >
+                        <span>Save &amp; next</span>
+                        <ArrowRight size={15} aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`${styles.navActionBtn} ${styles.btnSubmit} ${styles.actNext}`}
+                        onClick={() => setShowSubmitConfirm(true)}
+                      >
+                        <span>Submit</span>
+                        <Send size={15} aria-hidden="true" />
                       </button>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Question palette (column on desktop, drawer on tablet/phone) */}
+              <aside
+                id="exam-question-palette"
+                className={`${styles.paletteAside} ${proctored ? styles.paletteAsideCam : ""} ${
+                  paletteOpen ? styles.paletteOpen : ""
+                }`}
+                aria-label="Question palette"
+              >
+                <div className={styles.drawerHead}>
+                  <span className={styles.paletteTitle}>Questions</span>
+                  <button
+                    type="button"
+                    className={styles.drawerClose}
+                    onClick={() => setPaletteOpen(false)}
+                    aria-label="Close question palette"
+                  >
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                </div>
+
+                {classic && (
+                  <div className={styles.candidate}>
+                    <span className={styles.candidateAvatar} aria-hidden="true">
+                      {candidateInitial}
+                    </span>
+                    <div className={styles.candidateText}>
+                      <span>Candidate</span>
+                      <strong>{candidateName}</strong>
+                    </div>
+                  </div>
                 )}
 
-                <div className={`glass-card ${styles.aiDiagnosisCard}`} data-tint="violet">
-                  <div className={styles.aiCardHeader}>
-                    <ListChecks size={18} className={styles.aiIconBox} />
-                    <h4 className={styles.aiCardTitle}>Concepts to review</h4>
-                  </div>
+                <div className={styles.paletteHead}>
+                  <span className={styles.paletteTitle}>{classic ? sectionLabel : "Question palette"}</span>
+                  <span className={styles.paletteProgress}>
+                    <strong>{answeredCount}</strong>/{questions.length}
+                  </span>
+                </div>
+                <div className={styles.paletteMeter} aria-hidden="true">
+                  <span style={{ width: `${(answeredCount / totalQ) * 100}%` }} />
+                </div>
 
-                  <div className={styles.missedTopicsList}>
-                    {analysis.missedConcepts.map((item, idx) => (
-                      <div key={idx} className={styles.missedTopicItem}>
-                        <div>
-                          <strong>{item.concept}</strong>: {item.explanation}
-                        </div>
-                      </div>
+                <ul className={styles.legend} aria-label="Palette legend">
+                  {LEGEND_ORDER.map((state) => (
+                    <li key={state}>
+                      <span className={`${styles.legendSwatch} ${PALETTE_CLASS[state]}`} aria-hidden="true">
+                        <span className={styles.legendSwatchCount}>{paletteCounts[state]}</span>
+                      </span>
+                      <span className={styles.legendLabel}>{PALETTE_LABEL[state]}</span>
+                      <b className={styles.legendCount}>{paletteCounts[state]}</b>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className={`${styles.pillsRow} ${examPrefs.compactPalette ? styles.compactPillsRow : ""}`}>
+                  {questions.map((q, idx) => {
+                    const isCurrent = idx === currentIdx;
+                    const state = paletteState(idx);
+                    return (
+                      <button
+                        key={q.id || idx}
+                        type="button"
+                        onClick={() => goToQuestion(idx)}
+                        aria-current={isCurrent ? "true" : undefined}
+                        aria-label={`Question ${idx + 1}: ${PALETTE_LABEL[state]}${isCurrent ? " (current)" : ""}`}
+                        title={PALETTE_LABEL[state]}
+                        className={`${styles.qPill} ${PALETTE_CLASS[state]} ${isCurrent ? styles.qPillActive : ""}`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button type="button" className={styles.asideSubmitBtn} onClick={() => setShowSubmitConfirm(true)}>
+                  <Send size={15} aria-hidden="true" />
+                  Submit
+                </button>
+              </aside>
+              {paletteOpen && (
+                <div className={styles.drawerBackdrop} onClick={() => setPaletteOpen(false)} aria-hidden="true" />
+              )}
+            </div>
+          </>
+        ) : (
+          /* Results, diagnostics & solutions review (only after submission) — Modern design */
+          <div className={styles.resultScroll}>
+            <div className={styles.resultContainer}>
+              {/* Score summary */}
+              <section className={styles.resultHero} aria-label="Score summary">
+                <div className={`${styles.scoreFeature} ${analysis?.passed ? styles.trophyPass : styles.trophyFail}`}>
+                  <div className={styles.resultTrophy}>
+                    {analysis?.passed ? <Trophy size={16} aria-hidden="true" /> : <TriangleAlert size={16} aria-hidden="true" />}
+                    <span>{analysis?.passed ? "Passed" : "Cutoff not met"}</span>
+                  </div>
+                  <h3 className={styles.resultHeading}>
+                    {analysis?.passed
+                      ? isGrandQuiz
+                        ? "Course mastered"
+                        : isPyq
+                          ? "Strong attempt"
+                          : "Module passed"
+                      : `Cutoff not met (${cutoffPct}% required)`}
+                  </h3>
+                  <div className={styles.scoreBanner}>
+                    <div className={styles.scoreMetricMain}>
+                      <span className={styles.scoreVal}>{analysis?.score}</span>
+                      <span className={styles.scoreOutOf}>/ {analysis?.total}</span>
+                    </div>
+                    <span className={styles.scoreLbl}>
+                      {strikes > 0 ? "Final score" : scoringScheme === "cat" ? "Score" : "Correct answers"}
+                    </span>
+                  </div>
+                  <p className={styles.resultSubheading}>
+                    {isPyq
+                      ? `You scored ${analysis?.score} of ${analysis?.total} marks (${analysis?.percentage}%).`
+                      : analysis?.passed
+                        ? isGrandQuiz
+                          ? "You have completed the CAT grand comprehensive assessment."
+                          : "You have mastered this module. The next module is now unlocked."
+                        : `You scored ${analysis?.percentage}%. You need at least ${cutoffPct}% to unlock the next module.`}
+                  </p>
+                  <div className={styles.scoreFootRow}>
+                    {strikes > 0 && (
+                      <>
+                        <span className={styles.scoreMetric}>
+                          <b>{rawScore !== null ? rawScore : analysis?.score}</b> raw
+                        </span>
+                        <span className={`${styles.scoreMetric} ${styles.scoreMetricPenalty}`}>
+                          <b>−{strikes}</b> penalty
+                        </span>
+                      </>
+                    )}
+                    <span className={styles.scoreMetric}>
+                      <b>{analysis?.percentage}%</b> of max
+                    </span>
+                    {analysis?.passed && <span className={styles.xpAwardBadge}>+{isGrandQuiz ? 100 : 50} XP</span>}
+                  </div>
+                </div>
+
+                <div className={`glass-card ${styles.accuracyCard}`} data-tint="teal">
+                  <div className={styles.cardKicker}>Answer breakdown</div>
+                  <div className={styles.accuracyBody}>
+                    <svg
+                      className={styles.ring}
+                      viewBox="0 0 132 132"
+                      role="img"
+                      aria-label={`${correctCount} correct, ${wrongCount} wrong, ${skippedCount} skipped`}
+                    >
+                      <circle cx="66" cy="66" r={RING_R} fill="none" stroke="#eef2f8" strokeWidth="14" />
+                      {ringSegments.map((seg) => {
+                        const len = (seg.value / totalQ) * RING_C;
+                        const el = (
+                          <circle
+                            key={seg.key}
+                            cx="66"
+                            cy="66"
+                            r={RING_R}
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth="14"
+                            strokeDasharray={`${len} ${RING_C - len}`}
+                            strokeDashoffset={-ringOffset}
+                            transform="rotate(-90 66 66)"
+                          />
+                        );
+                        ringOffset += len;
+                        return seg.value > 0 ? el : null;
+                      })}
+                      <text x="66" y="64" textAnchor="middle" className={styles.ringValue}>
+                        {Math.round((correctCount / totalQ) * 100)}%
+                      </text>
+                      <text x="66" y="82" textAnchor="middle" className={styles.ringLabel}>
+                        correct
+                      </text>
+                    </svg>
+                    <ul className={styles.ringLegend}>
+                      <li><span style={{ background: "var(--data-emerald)" }} />Correct<b>{correctCount}</b></li>
+                      <li><span style={{ background: "var(--data-coral)" }} />Wrong<b>{wrongCount}</b></li>
+                      <li><span style={{ background: "#d3dbe8" }} />Skipped<b>{skippedCount}</b></li>
+                    </ul>
+                  </div>
+                  <div className={styles.qStrip} aria-hidden="true">
+                    {questions.map((q, idx) => (
+                      <span
+                        key={q.id || idx}
+                        className={
+                          checkQuestionCorrect(q, idx)
+                            ? styles.qStripCorrect
+                            : isAnsweredIdx(idx)
+                              ? styles.qStripWrong
+                              : styles.qStripSkipped
+                        }
+                        title={`Q${idx + 1}`}
+                      />
                     ))}
                   </div>
+                </div>
+              </section>
 
-                  {analysis.recommendedLessons.length > 0 && (
-                    <div className={styles.recommendedLecturesSection}>
-                      <div className={styles.recHeading}>Recommended lectures to re-watch</div>
-                      <div className={styles.recLecturesList}>
-                        {analysis.recommendedLessons.map((rec) => (
-                          <div key={rec.lessonId} className={styles.recLectureRow}>
-                            <div>
-                              <div className={styles.recLectureTitle}>
-                                <Play size={13} />
-                                {rec.lessonTitle}
-                              </div>
-                              <span className={styles.recLectureReason}>{rec.reason}</span>
-                            </div>
-                            {onSelectLessonToRewatch && (
-                              <button
-                                type="button"
-                                className={styles.watchRecBtn}
-                                onClick={() => {
-                                  onSelectLessonToRewatch(rec.lessonId);
-                                  onClose();
-                                }}
-                              >
-                                Watch lecture
-                                <ArrowRight size={14} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
+              {/* KPI row */}
+              <section className={styles.analyticsGrid} aria-label="Attempt statistics">
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint="blue">
+                  <span className={styles.analyticsLbl}>
+                    <ListChecks size={14} aria-hidden="true" />
+                    Attempted
+                  </span>
+                  <span className={styles.analyticsVal}>
+                    {attemptedCount}
+                    <small>/ {questions.length}</small>
+                  </span>
+                </div>
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint="teal">
+                  <span className={styles.analyticsLbl}>
+                    <Check size={14} aria-hidden="true" />
+                    Correct · wrong
+                  </span>
+                  <span className={styles.analyticsVal}>
+                    <span className={styles.analyticsPass}>{correctCount}</span>
+                    <small>·</small>
+                    <span className={styles.analyticsStrike}>{wrongCount}</span>
+                  </span>
+                </div>
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint="violet">
+                  <span className={styles.analyticsLbl}>
+                    <Target size={14} aria-hidden="true" />
+                    Accuracy
+                  </span>
+                  <span className={styles.analyticsVal}>
+                    {accuracyPct}
+                    <small>%</small>
+                  </span>
+                </div>
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint="blue">
+                  <span className={styles.analyticsLbl}>
+                    <Clock size={14} aria-hidden="true" />
+                    Time taken
+                  </span>
+                  <span className={styles.analyticsVal}>{formatTimer(timeTakenSeconds)}</span>
+                </div>
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint="amber">
+                  <span className={styles.analyticsLbl}>
+                    <Zap size={14} aria-hidden="true" />
+                    Avg per question
+                  </span>
+                  <span className={styles.analyticsVal}>
+                    {Math.max(1, Math.round(timeTakenSeconds / (questions.length || 1)))}
+                    <small>s</small>
+                  </span>
+                </div>
+                <div className={`glass-card ${styles.analyticsCard}`} data-tint={strikes > 0 ? "coral" : "teal"}>
+                  <span className={styles.analyticsLbl}>
+                    <ShieldCheck size={14} aria-hidden="true" />
+                    Proctoring
+                  </span>
+                  <span className={`${styles.analyticsVal} ${strikes > 0 ? styles.analyticsStrike : styles.analyticsPass}`}>
+                    {strikes > 0 ? `−${strikes} mark${strikes > 1 ? "s" : ""}` : "Clean"}
+                  </span>
+                </div>
+              </section>
+
+              {/* Proctoring penalty notice (if any strikes incurred) */}
+              {strikes > 0 && (
+                <div className={styles.penaltyNoticeBanner}>
+                  <div className={styles.penaltyNoticeTitle}>
+                    <TriangleAlert size={15} aria-hidden="true" />
+                    <span>Proctoring penalty applied (−{strikes} mark{strikes > 1 ? "s" : ""})</span>
+                  </div>
+                  <div className={styles.penaltyNoticeDesc}>
+                    You incurred <strong>{strikes} proctoring warning{strikes > 1 ? "s" : ""}</strong> during this exam (screenshot, tab switching or webcam proctoring).
+                    A penalty of <strong>−{strikes} mark{strikes > 1 ? "s" : ""}</strong> was deducted from your raw score ({rawScore !== null ? rawScore : analysis?.score} → {analysis?.score}).
+                  </div>
+                </div>
+              )}
+
+              {/* Concept diagnosis & prescribed rewatches (if failed) */}
+              {!analysis?.passed && analysis && (
+                <>
+                  {attemptNumber >= maxAttempts && (
+                    <div className={styles.lockoutBanner}>
+                      <div className={styles.lockoutTitle}>
+                        <Lock size={17} aria-hidden="true" />
+                        <span>Attempt limit reached ({maxAttempts} of {maxAttempts})</span>
                       </div>
+                      <p className={styles.lockoutDesc}>
+                        You have used all 3 attempts. Re-watch the recommended lectures below, then refresh your
+                        attempts.
+                      </p>
+                      {onResetAttemptsAfterRewatch && (
+                        <button type="button" className={styles.resetAttemptsBtn} onClick={onResetAttemptsAfterRewatch}>
+                          <Check size={15} strokeWidth={2.6} />
+                          I have re-watched the lectures — reset attempts
+                        </button>
+                      )}
                     </div>
                   )}
-                </div>
-              </>
-            )}
 
-            {/* FULL POST-SUBMISSION SOLUTIONS & EXPLANATIONS SECTION */}
-            <div className={styles.solutionsSection}>
-              <div className={styles.solutionsHeader}>
-                <h4 className={styles.solutionsTitle}>Solutions &amp; explanations</h4>
-                <div className={styles.filterTabs} role="tablist">
-                  <button
-                    type="button"
-                    className={`${styles.filterTabBtn} ${reviewFilter === "all" ? styles.filterTabBtnActive : ""}`}
-                    onClick={() => setReviewFilter("all")}
-                  >
-                    All <b>{questions.length}</b>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.filterTabBtn} ${reviewFilter === "wrong" ? styles.filterTabBtnActive : ""}`}
-                    onClick={() => setReviewFilter("wrong")}
-                  >
-                    Incorrect <b>{questions.filter((q, idx) => selectedAnswers[idx] !== q.answer).length}</b>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.filterTabBtn} ${reviewFilter === "correct" ? styles.filterTabBtnActive : ""}`}
-                    onClick={() => setReviewFilter("correct")}
-                  >
-                    Correct <b>{questions.filter((q, idx) => selectedAnswers[idx] === q.answer).length}</b>
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.reviewList}>
-                {filteredQuestions.map((q) => {
-                  const originalIdx = questions.findIndex((orig) => orig.id === q.id);
-                  const userChoice = selectedAnswers[originalIdx];
-                  const isUserCorrect = checkQuestionCorrect(q, originalIdx);
-                  const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
-                  const isSkipped = userChoice === undefined || userChoice === null || userChoice === "";
-
-                  return (
-                    <div
-                      key={q.id}
-                      className={`${styles.reviewCard} ${
-                        isUserCorrect ? styles.reviewCardCorrect : isSkipped ? styles.reviewCardSkipped : styles.reviewCardWrong
-                      }`}
-                    >
-                      <div className={styles.reviewCardHeader}>
-                        <div className={styles.reviewCardHeadLeft}>
-                          <span className={styles.reviewQNum}>Q{String(originalIdx + 1).padStart(2, "0")}</span>
-                          <span className={styles.conceptBadge}>{q.concept}</span>
-                          {isTITA && <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>}
-                        </div>
-                        {isUserCorrect ? (
-                          <span className={styles.reviewStatusBadgeCorrect}>
-                            <Check size={13} strokeWidth={2.8} />
-                            Correct {scoringScheme === "cat" ? <b>+3</b> : null}
-                          </span>
-                        ) : isSkipped ? (
-                          <span className={styles.reviewStatusBadgeSkipped}>
-                            <Circle size={11} strokeWidth={2.6} />
-                            Unattempted <b>0</b>
-                          </span>
-                        ) : (
-                          <span className={styles.reviewStatusBadgeWrong}>
-                            <X size={13} strokeWidth={2.8} />
-                            Incorrect {scoringScheme === "cat" ? <b>{isTITA ? "0" : "−1"}</b> : null}
-                          </span>
-                        )}
-                      </div>
-
-                      {q.context && (
-                        <div className={`${styles.passageContainer} ${styles.passageReview}`}>
-                          <div className={styles.passageHeader}>
-                            <BookOpen size={14} />
-                            <span>Passage</span>
-                          </div>
-                          <div className={styles.passageText}>
-                            <PYQMarkdownViewer content={q.context} />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className={styles.reviewQuestionText}>
-                        <PYQMarkdownViewer content={q.q} />
-                      </div>
-
-                      {isTITA ? (
-                        <div className={styles.titaReviewBlock}>
-                          <div className={styles.titaReviewRow}>
-                            <span className={styles.titaReviewLabel}>Your answer</span>
-                            <span className={`${styles.titaUserVal} ${isUserCorrect ? styles.titaUserValCorrect : styles.titaUserValWrong}`}>
-                              {userChoice !== undefined && userChoice !== "" ? String(userChoice) : "Unattempted"}
-                            </span>
-                          </div>
-                          <div className={styles.titaReviewRow}>
-                            <span className={styles.titaReviewLabel}>Correct answer</span>
-                            <span className={styles.titaCorrectVal}>
-                              <MathText text={q.titaAnswer || q.explanation.slice(0, 80)} />
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.reviewOptionsList}>
-                          {q.options.map((opt, optIdx) => {
-                            const isSelectedByUser = userChoice === optIdx;
-                            const isActualCorrect = q.answer === optIdx;
-
-                            let rowClass = styles.reviewOptionItem;
-                            let tag = null;
-
-                            if (isSelectedByUser && isActualCorrect) {
-                              rowClass += ` ${styles.reviewOptSelectedCorrect}`;
-                              tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
-                                  <Check size={12} strokeWidth={2.8} />
-                                  Your answer
-                                </span>
-                              );
-                            } else if (isSelectedByUser && !isActualCorrect) {
-                              rowClass += ` ${styles.reviewOptSelectedWrong}`;
-                              tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>
-                                  <X size={12} strokeWidth={2.8} />
-                                  Your answer
-                                </span>
-                              );
-                            } else if (isActualCorrect) {
-                              rowClass += ` ${styles.reviewOptCorrectAnswer}`;
-                              tag = (
-                                <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
-                                  <Check size={12} strokeWidth={2.8} />
-                                  Correct answer
-                                </span>
-                              );
-                            }
-
-                            return (
-                              <div key={optIdx} className={rowClass}>
-                                <div className={styles.reviewOptMain}>
-                                  <span className={styles.reviewOptKey}>{OPTION_LETTERS[optIdx]}</span>
-                                  <span><MathText text={opt} /></span>
-                                </div>
-                                {tag}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* Step-by-Step Explanation Callout */}
-                      <div className={styles.explanationCallout}>
-                        <div className={styles.explanationTitle}>
-                          <Lightbulb size={15} />
-                          Explanation &amp; shortcut
-                        </div>
-                        <div>
-                          <PYQMarkdownViewer content={q.explanation} />
-                        </div>
-                      </div>
+                  <div className={`glass-card ${styles.aiDiagnosisCard}`} data-tint="violet">
+                    <div className={styles.aiCardHeader}>
+                      <ListChecks size={18} className={styles.aiIconBox} aria-hidden="true" />
+                      <h4 className={styles.aiCardTitle}>Concepts to review</h4>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className={styles.resultActions}>
-              {onBackToAttempts && (
-                <button
-                  type="button"
-                  className={`${styles.navActionBtn} ${styles.btnBackToAttempts}`}
-                  onClick={onBackToAttempts}
-                  title="Return to the list of all past attempts"
-                >
-                  <ArrowLeft size={15} />
-                  Back to all attempts
-                </button>
+                    <div className={styles.missedTopicsList}>
+                      {analysis.missedConcepts.map((item, idx) => (
+                        <div key={idx} className={styles.missedTopicItem}>
+                          <div>
+                            <strong>{item.concept}</strong>: {item.explanation}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {analysis.recommendedLessons.length > 0 && (
+                      <div className={styles.recommendedLecturesSection}>
+                        <div className={styles.recHeading}>Recommended lectures to re-watch</div>
+                        <div className={styles.recLecturesList}>
+                          {analysis.recommendedLessons.map((rec) => (
+                            <div key={rec.lessonId} className={styles.recLectureRow}>
+                              <div>
+                                <div className={styles.recLectureTitle}>
+                                  <Play size={13} aria-hidden="true" />
+                                  {rec.lessonTitle}
+                                </div>
+                                <span className={styles.recLectureReason}>{rec.reason}</span>
+                              </div>
+                              {onSelectLessonToRewatch && (
+                                <button
+                                  type="button"
+                                  className={styles.watchRecBtn}
+                                  onClick={() => {
+                                    onSelectLessonToRewatch(rec.lessonId);
+                                    onClose();
+                                  }}
+                                >
+                                  Watch lecture
+                                  <ArrowRight size={14} aria-hidden="true" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
-              {analysis?.passed ? (
-                <>
+
+              {/* Question-by-question review */}
+              <section className={styles.solutionsSection} aria-labelledby="exam-review-title">
+                <div className={styles.solutionsHeader}>
+                  <h4 id="exam-review-title" className={styles.solutionsTitle}>
+                    Question review
+                  </h4>
+                  <div className={styles.filterTabs} role="group" aria-label="Filter questions">
+                    {REVIEW_FILTERS.map((f) => (
+                      <button
+                        key={f.key}
+                        type="button"
+                        className={`${styles.filterTabBtn} ${reviewFilter === f.key ? styles.filterTabBtnActive : ""}`}
+                        onClick={() => setReviewFilter(f.key)}
+                        aria-pressed={reviewFilter === f.key}
+                      >
+                        {f.label} <b>{f.count}</b>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.reviewList}>
+                  {reviewItems.length === 0 && (
+                    <p className={styles.reviewEmpty}>No questions in this view.</p>
+                  )}
+                  {reviewItems.map(({ q, idx: originalIdx }) => {
+                    const userChoice = selectedAnswers[originalIdx];
+                    const isUserCorrect = checkQuestionCorrect(q, originalIdx);
+                    const isTITA = q.type === "TITA" || !q.options || q.options.length === 0;
+                    const isSkipped = userChoice === undefined || userChoice === null || userChoice === "";
+                    const userLetter = !isTITA && typeof userChoice === "number" ? OPTION_LETTERS[userChoice] : null;
+                    const correctLetter = !isTITA && q.answer >= 0 ? OPTION_LETTERS[q.answer] : null;
+
+                    return (
+                      <article
+                        key={q.id || originalIdx}
+                        className={`${styles.reviewCard} ${
+                          isUserCorrect ? styles.reviewCardCorrect : isSkipped ? styles.reviewCardSkipped : styles.reviewCardWrong
+                        }`}
+                      >
+                        <div className={styles.reviewCardHeader}>
+                          <div className={styles.reviewCardHeadLeft}>
+                            <span className={styles.reviewQNum}>Q{pad2(originalIdx + 1)}</span>
+                            {q.concept && <span className={styles.conceptBadge}>{q.concept}</span>}
+                            {isTITA && <span className={`${styles.typeChip} ${styles.typeChipTita}`}>TITA</span>}
+                            {markedSet.has(originalIdx) && (
+                              <span className={styles.reviewMarkedTag}>
+                                <Flag size={11} aria-hidden="true" />
+                                Marked
+                              </span>
+                            )}
+                          </div>
+                          {isUserCorrect ? (
+                            <span className={styles.reviewStatusBadgeCorrect}>
+                              <Check size={13} strokeWidth={2.8} aria-hidden="true" />
+                              Correct {scoringScheme === "cat" ? <b>+3</b> : null}
+                            </span>
+                          ) : isSkipped ? (
+                            <span className={styles.reviewStatusBadgeSkipped}>
+                              <Circle size={11} strokeWidth={2.6} aria-hidden="true" />
+                              Skipped <b>0</b>
+                            </span>
+                          ) : (
+                            <span className={styles.reviewStatusBadgeWrong}>
+                              <X size={13} strokeWidth={2.8} aria-hidden="true" />
+                              Wrong {scoringScheme === "cat" ? <b>{isTITA ? "0" : "−1"}</b> : null}
+                            </span>
+                          )}
+                        </div>
+
+                        {q.context && (
+                          <details className={styles.reviewPassage}>
+                            <summary>
+                              <BookOpen size={14} aria-hidden="true" />
+                              Passage
+                              <ChevronDown size={15} aria-hidden="true" className={styles.reviewPassageChevron} />
+                            </summary>
+                            <div className={styles.passageText}>
+                              <PYQMarkdownViewer content={q.context} />
+                            </div>
+                          </details>
+                        )}
+
+                        <div className={styles.reviewQuestionText}>
+                          <PYQMarkdownViewer content={q.q} />
+                        </div>
+
+                        <div className={styles.answerCompare}>
+                          <div className={styles.answerCell}>
+                            <span className={styles.answerCellLbl}>Your answer</span>
+                            <span
+                              className={`${styles.answerCellVal} ${
+                                isSkipped ? styles.answerSkipped : isUserCorrect ? styles.answerRight : styles.answerWrong
+                              }`}
+                            >
+                              {isSkipped ? "Not answered" : isTITA ? String(userChoice) : userLetter}
+                            </span>
+                          </div>
+                          <div className={styles.answerCell}>
+                            <span className={styles.answerCellLbl}>Correct answer</span>
+                            <span className={`${styles.answerCellVal} ${styles.answerRight}`}>
+                              {isTITA ? <MathText text={q.titaAnswer || q.explanation.slice(0, 80)} /> : correctLetter ?? "—"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {!isTITA && (
+                          <div className={styles.reviewOptionsList}>
+                            {q.options.map((opt, optIdx) => {
+                              const isSelectedByUser = userChoice === optIdx;
+                              const isActualCorrect = q.answer === optIdx;
+
+                              let rowClass = styles.reviewOptionItem;
+                              let tag = null;
+
+                              if (isSelectedByUser && isActualCorrect) {
+                                rowClass += ` ${styles.reviewOptSelectedCorrect}`;
+                                tag = (
+                                  <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
+                                    <Check size={12} strokeWidth={2.8} aria-hidden="true" />
+                                    Your answer
+                                  </span>
+                                );
+                              } else if (isSelectedByUser && !isActualCorrect) {
+                                rowClass += ` ${styles.reviewOptSelectedWrong}`;
+                                tag = (
+                                  <span className={`${styles.reviewOptTag} ${styles.tagUserWrong}`}>
+                                    <X size={12} strokeWidth={2.8} aria-hidden="true" />
+                                    Your answer
+                                  </span>
+                                );
+                              } else if (isActualCorrect) {
+                                rowClass += ` ${styles.reviewOptCorrectAnswer}`;
+                                tag = (
+                                  <span className={`${styles.reviewOptTag} ${styles.tagCorrect}`}>
+                                    <Check size={12} strokeWidth={2.8} aria-hidden="true" />
+                                    Correct answer
+                                  </span>
+                                );
+                              }
+
+                              return (
+                                <div key={optIdx} className={rowClass}>
+                                  <div className={styles.reviewOptMain}>
+                                    <span className={styles.reviewOptKey}>{OPTION_LETTERS[optIdx]}</span>
+                                    <span><MathText text={opt} /></span>
+                                  </div>
+                                  {tag}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Solution */}
+                        <div className={styles.explanationCallout}>
+                          <div className={styles.explanationTitle}>
+                            <Lightbulb size={15} aria-hidden="true" />
+                            Solution
+                          </div>
+                          <div>
+                            <PYQMarkdownViewer content={q.explanation} />
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Next steps */}
+              <div className={styles.resultActions}>
+                {onBackToAttempts && (
                   <button
                     type="button"
-                    className={`${styles.navActionBtn} ${styles.btnRetakeScore}`}
+                    className={`${styles.navActionBtn} ${styles.btnBackToAttempts}`}
+                    onClick={onBackToAttempts}
+                    title="Return to the list of all past attempts"
+                  >
+                    <ArrowLeft size={15} aria-hidden="true" />
+                    Back to all attempts
+                  </button>
+                )}
+                {analysis?.passed ? (
+                  <>
+                    <button
+                      type="button"
+                      className={`${styles.navActionBtn} ${styles.btnRetakeScore}`}
+                      onClick={() => {
+                        if (onRetake) {
+                          onRetake();
+                        } else {
+                          resetForInModalRetake();
+                        }
+                      }}
+                    >
+                      <RotateCcw size={15} aria-hidden="true" />
+                      Retake with fresh questions
+                    </button>
+                    <button type="button" className={`${styles.navActionBtn} ${styles.btnPrimary}`} onClick={handleSafeClose}>
+                      Continue learning
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </button>
+                  </>
+                ) : attemptNumber < maxAttempts ? (
+                  <button
+                    type="button"
+                    className={`${styles.navActionBtn} ${styles.btnPrimary}`}
                     onClick={() => {
                       if (onRetake) {
                         onRetake();
@@ -1607,39 +1852,20 @@ export default function ModuleQuizModal({
                       }
                     }}
                   >
-                    <RotateCcw size={15} />
-                    Retake with fresh questions
+                    <RotateCcw size={15} aria-hidden="true" />
+                    Retake with fresh questions (attempt {attemptNumber + 1} of {maxAttempts})
                   </button>
-                  <button type="button" className={`${styles.navActionBtn} ${styles.btnPrimary}`} onClick={handleSafeClose}>
-                    Continue learning
-                    <ArrowRight size={15} />
+                ) : (
+                  <button type="button" className={`${styles.navActionBtn} ${styles.btnSecondary}`} onClick={handleSafeClose}>
+                    Close &amp; review videos
                   </button>
-                </>
-              ) : attemptNumber < maxAttempts ? (
-                <button
-                  type="button"
-                  className={`${styles.navActionBtn} ${styles.btnPrimary}`}
-                  onClick={() => {
-                    if (onRetake) {
-                      onRetake();
-                    } else {
-                      resetForInModalRetake();
-                    }
-                  }}
-                >
-                  <RotateCcw size={15} />
-                  Retake with fresh questions (attempt {attemptNumber + 1} of {maxAttempts})
-                </button>
-              ) : (
-                <button type="button" className={`${styles.navActionBtn} ${styles.btnSecondary}`} onClick={handleSafeClose}>
-                  Close &amp; review videos
-                </button>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Submission Re-verification Confirmation Dialog */}
+        {/* Submission confirmation */}
         {showSubmitConfirm && (
           <div className={styles.confirmOverlay} onClick={() => setShowSubmitConfirm(false)}>
             <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -1683,7 +1909,7 @@ export default function ModuleQuizModal({
           </div>
         )}
 
-        {/* Auto Submission Notification Modal (Timeout or Proctoring Violation) */}
+        {/* Auto submission notification (timeout or proctoring violation) */}
         {autoSubmitNotice && (
           <div className={styles.confirmOverlay} onClick={() => setAutoSubmitNotice(null)}>
             <div

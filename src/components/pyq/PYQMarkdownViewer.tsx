@@ -302,8 +302,11 @@ export default function PYQMarkdownViewer({ content, className = "" }: PYQMarkdo
         <ol key={`ol-${blockIdx}`} className={styles.mdList}>
           {lines.map((item, iIdx) => {
             const cleanText = item.replace(/^\d+[\.\)]\s+/, "");
+            // Keep the number written in the source: items split by blank lines become separate lists,
+            // which would otherwise all restart at 1 (e.g. odd-sentence-out questions answered by number).
+            const sourceNumber = parseInt(item, 10);
             return (
-              <li key={iIdx} className={styles.mdListItem}>
+              <li key={iIdx} className={styles.mdListItem} value={Number.isFinite(sourceNumber) ? sourceNumber : undefined}>
                 {parseInline(cleanText)}
               </li>
             );
