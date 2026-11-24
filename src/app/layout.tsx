@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -15,10 +15,10 @@ const satoshi = localFont({
   variable: "--font-sans",
   display: "swap",
 });
-// Roboto (Apache 2.0, same heading face as Techno India University) for headlines; self-hosted by next/font.
-const display = Roboto({
+// Plus Jakarta Sans (OFL) for headlines; self-hosted by next/font. 800 is its heaviest weight (900 requests map to it).
+const display = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["500", "700", "900"],
+  weight: ["500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });

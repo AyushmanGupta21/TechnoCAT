@@ -1,4 +1,4 @@
-/* Fonts are self-hosted with next/font in src/app/layout.tsx (Satoshi = --font-sans, Roboto = --font-display, JetBrains Mono = --font-mono). */
+/* Fonts are self-hosted with next/font in src/app/layout.tsx (Satoshi = --font-sans, Plus Jakarta Sans = --font-display, JetBrains Mono = --font-mono). */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -217,7 +217,7 @@ ul { list-style: none; }
 /* Global transitions */
 .transition-all { transition: all 0.3s ease; }
 
-/* Bebas Neue for headings */
+/* Legacy class name: display font for headings */
 .bebas { font-family: var(--ff-display); }
 
 /* Max width container */
@@ -393,6 +393,6 @@ body.exam-active header {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 18px -8px rgba(37, 99, 235, 0.7);
 }
 
-/* Landing headings: Roboto Bold, uppercase */
-main.landing h1, main.landing h2 { font-weight: 700 !important; letter-spacing: 0.01em !important; text-transform: uppercase; line-height: 1.08; }
-main.landing h3 { font-weight: 700 !important; letter-spacing: 0.02em !important; text-transform: uppercase; }
+/* Landing headings: Plus Jakarta Sans ExtraBold, uppercase */
+main.landing h1, main.landing h2 { font-weight: 800 !important; letter-spacing: -0.01em !important; text-transform: uppercase; line-height: 1.06; }
+main.landing h3 { font-weight: 800 !important; letter-spacing: 0 !important; text-transform: uppercase; }
