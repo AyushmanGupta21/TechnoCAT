@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -15,10 +15,11 @@ const satoshi = localFont({
   variable: "--font-sans",
   display: "swap",
 });
-// Plus Jakarta Sans (OFL) for headlines; self-hosted by next/font. 800 is its heaviest weight (900 requests map to it).
-const display = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+// Plus Jakarta Sans (SIL OFL 1.1) for headlines: variable font (weights 200–800, Latin subset) self-hosted from
+// src/app/fonts. Loaded locally because the next/font/google loader for this family fails on Vercel builds.
+// 800 is its heaviest weight (900 requests map to it).
+const display = localFont({
+  src: [{ path: "./fonts/PlusJakartaSans-Variable.woff2", weight: "200 800", style: "normal" }],
   variable: "--font-display",
   display: "swap",
 });
