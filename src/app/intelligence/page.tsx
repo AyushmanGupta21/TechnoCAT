@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import styles from "./intelligence.module.css";
 import { useAuth } from "@/context/AuthContext";
-import AIMentorDrawer from "@/components/AIMentorDrawer";
+import AIMentorDrawer from "@/components/intelligence/AIMentorDrawer";
 import AppNav from "@/components/app/AppNav";
 import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { CountUp, GradientText, Reveal, RevealGroup, RevealItem, SpotlightCard, type Tint } from "@/components/landing/motion";

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./AuthModal.module.css";
-import BrandLogo from "@/components/BrandLogo";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 export default function AuthModal() {
   const {

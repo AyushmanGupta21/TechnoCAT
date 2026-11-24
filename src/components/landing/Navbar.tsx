@@ -8,7 +8,7 @@ import CardInfoModal, { CardInfoData } from "./CardInfoModal";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronDown, ChevronRight, Download, LayoutDashboard, Menu, MessageCircle, UserRound, X } from "lucide-react";
 import styles from "./Navbar.module.css";
-import BrandLogo from "@/components/BrandLogo";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 interface SubLink {
   label: string;

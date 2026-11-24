@@ -28,8 +28,8 @@ import {
 import AppNav from "@/components/app/AppNav";
 import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { Reveal, RevealGroup, RevealItem, CountUp, type Tint } from "@/components/landing/motion";
-import MetricInspectorModal, { type MetricId } from "@/components/MetricInspectorModal";
-import TopicQuizModal from "@/components/TopicQuizModal";
+import MetricInspectorModal, { type MetricId } from "@/components/intelligence/MetricInspectorModal";
+import TopicQuizModal from "@/components/exam/TopicQuizModal";
 import type { StudentMetrics, SectionKey, TestRecord, ConceptStat } from "@/lib/metrics/types";
 import {
   ResponsiveContainer,

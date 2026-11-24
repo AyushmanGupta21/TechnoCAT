@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import BrandLogo from "@/components/BrandLogo";
-import PostLoginNavActions from "@/components/PostLoginNavActions";
+import BrandLogo from "@/components/shared/BrandLogo";
+import PostLoginNavActions from "@/components/app/PostLoginNavActions";
 import StickyColumns from "./StickyColumns";
 import styles from "./AppNav.module.css";
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import ModuleQuizModal from "@/components/ModuleQuizModal";
+import ModuleQuizModal from "@/components/exam/ModuleQuizModal";
 import { ModuleQuestion, QuizAnalysis } from "@/data/moduleQuizData";
 import {
   getPYQQuestions,

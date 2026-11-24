@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./Footer.module.css";
-import BrandLogo from "@/components/BrandLogo";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { ArrowUpRight } from "lucide-react";
 import { GradientText, Reveal } from "@/components/landing/motion";
 import ui from "@/components/landing/ui.module.css";

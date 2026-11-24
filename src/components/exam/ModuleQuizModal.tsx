@@ -4,12 +4,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ModuleQuestion, evaluateQuiz, evaluateCATQuiz, QuizAnalysis } from "@/data/moduleQuizData";
 import { notifyQuizCompleted } from "@/services/notificationService";
-import PYQMarkdownViewer, { MathText } from "./pyq/PYQMarkdownViewer";
+import PYQMarkdownViewer, { MathText } from "../pyq/PYQMarkdownViewer";
 import styles from "./ModuleQuizModal.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { submitQuizAttempt, type QuizAttemptContext } from "@/services/quizAttemptService";
-import ProctorPanel, { ProctorConsent } from "./proctoring/ProctorPanel";
-import ExamModeToggle from "./exam/ExamModeToggle";
+import ProctorPanel, { ProctorConsent } from "../proctoring/ProctorPanel";
+import ExamModeToggle from "./ExamModeToggle";
 import { useExamMode } from "@/lib/examMode";
 import {
   ArrowLeft, ArrowRight, Award, BookOpen, Calculator, ChartColumn, Check, ChevronDown, Circle, Clock, Delete,
@@ -21,7 +21,7 @@ import {
   logProctorEvent,
   newAttemptKey,
   type ProctorKind,
-} from "./proctoring/useProctoring";
+} from "../proctoring/useProctoring";
 
 interface ModuleQuizModalProps {
   isOpen: boolean;

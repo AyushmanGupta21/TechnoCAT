@@ -35,14 +35,14 @@ import AppNav from "@/components/app/AppNav";
 import BackLink from "@/components/app/BackLink";
 import PageHeader from "@/components/app/PageHeader";
 import { Reveal } from "@/components/landing/motion";
-import TopicQuizModal from "@/components/TopicQuizModal";
-import ModuleQuizModal from "@/components/ModuleQuizModal";
-import AiAdvisorCard, { ModuleProgressItem, QuizReportCardData } from "@/components/AiAdvisorCard";
+import TopicQuizModal from "@/components/exam/TopicQuizModal";
+import ModuleQuizModal from "@/components/exam/ModuleQuizModal";
+import AiAdvisorCard, { ModuleProgressItem, QuizReportCardData } from "@/components/topics/AiAdvisorCard";
 import { useParams, useRouter } from "next/navigation";
 import { TOPICS_DATA, getTopicById, Lesson, TopicModule } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
-import VideoAskPanel from "@/components/VideoAskPanel";
-import QuizViewer from "@/components/QuizViewer";
+import VideoAskPanel from "@/components/topics/VideoAskPanel";
+import QuizViewer from "@/components/exam/QuizViewer";
 import { getLessonKnowledge } from "@/data/videoPortions";
 import {
   getModuleQuiz,

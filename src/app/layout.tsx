@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -23,9 +22,10 @@ const display = localFont({
   variable: "--font-display",
   display: "swap",
 });
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+// JetBrains Mono (SIL OFL 1.1) for figures, timers and scores: variable font (weights 100–800, Latin subset).
+// Self-hosted for the same reason: builds never depend on downloading fonts from Google.
+const mono = localFont({
+  src: [{ path: "./fonts/JetBrainsMono-Variable.woff2", weight: "100 800", style: "normal" }],
   variable: "--font-mono",
   display: "swap",
 });
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/context/AuthContext";
-import AuthModal from "@/components/AuthModal";
+import AuthModal from "@/components/shared/AuthModal";
 
 export default function RootLayout({
   children,

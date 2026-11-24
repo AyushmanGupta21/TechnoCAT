@@ -64,9 +64,15 @@
 - **Strategy Builder**: Custom study pace recommendations based on target percentile and exam date proximity.
 - **Community Hub**: Collaborative doubt solving with 580+ 99%ilers and peer aspirants.
 
-### 3. Dual Exam Simulation Modes
-- **Classic Mode** (`/browse`): Exact 1:1 replica of the official TCS iON CAT testing console (palette, timer, question states) for true exam acclimatization.
-- **Modern Mode** (`/intelligence`): Distraction-free, responsive UI with real-time AI assistance, bookmarking, and post-test analytics.
+### 3. Dual Exam Interfaces (Classic & Modern)
+Every timed test (CAT past papers, module quizzes, lesson quizzes) can be taken in either interface and
+switched at any time, even mid-exam, without losing answers, timer or marks. The choice is remembered per
+device (`src/lib/examMode.ts`, `src/components/exam/ExamModeToggle.tsx`).
+- **Classic**: mirrors the CAT computer-based-test layout: section tabs, "Time left" box, candidate block,
+  five-state question palette with legend, *Mark for review & next / Clear response / Save & next*.
+- **Modern**: the focused TechnoCAT layout: progress bar, larger question text, passage beside the question.
+- **Both**: webcam proctoring with strikes, tablet palette drawer, phone action bar, and a results screen
+  with a filterable question-by-question review.
 
 ### 4. Dynamic Readiness Meter & Analytics (`/analytics`, `/dashboard`)
 - **Holistic Score Algorithm**: Calculates overall exam readiness (0–100%) synthesized from:
@@ -97,7 +103,8 @@
 | **Database** | [Supabase](https://supabase.com/) Postgres via `pg` | Server-side connection pool (transaction pooler); RLS locks the public Data API |
 | **Auth** | Custom (bcrypt + signed session cookie) | `src/lib/auth/session.ts`, HMAC-signed `technocat_session` cookie, rate-limited login |
 | **AI** | NVIDIA NIM | Lesson chat, AI Mentor, Speak & Assess feedback (with local fallbacks) |
-| **Styling** | CSS Modules | Co-located with each page/component |
+| **Styling** | CSS Modules + design tokens | Co-located with each page/component; tokens and utilities in `src/app/globals.css` |
+| **Type & motion** | Self-hosted fonts, `motion`, `lenis`, `lucide-react` | Plus Jakarta Sans (headings), Satoshi (body), JetBrains Mono (figures) in `src/app/fonts`; reveal animations, smooth scroll, icons |
 | **Charts** | [Recharts 3](https://recharts.org/) | Study performance and analytics charts |
 
 ---
@@ -115,26 +122,43 @@ iQuanta-CAT-Mock/
 │   └── lib/db-env.mjs       # shared env loading + connection config for scripts
 ├── public/
 │   ├── brand/               # Official TechnoCAT logo, emblem and original artwork
-│   ├── community/           # Community page illustrations
-│   └── pyq/                 # CAT previous-year-paper assets
+│   ├── community/           # Community avatars
+│   └── pyq/                 # CAT previous-year-paper assets (question images)
 ├── src/
 │   ├── app/                 # App Router pages and API route handlers
 │   │   ├── api/             # Backend endpoints (see API table below)
 │   │   ├── dashboard/  analytics/  browse/  topics/  mock-viva-prep/
 │   │   ├── intelligence/    # Intelligence Hub + ai-analysis, error-tracking, b-school-predictor,
-│   │   │                    #   learning-community (server actions in actions.ts)
+│   │   │                    #   learning-community
 │   │   ├── profile/edit/  settings/
+│   │   ├── fonts/           # Self-hosted woff2 fonts (no build-time font downloads)
 │   │   ├── icon.png  apple-icon.png   # favicon / app icon (Techno India Group emblem)
-│   │   └── layout.tsx  page.tsx  globals.css
-│   ├── components/          # Reusable UI (BrandLogo, Navbar, Footer, AuthModal, widgets, pyq/…)
+│   │   └── layout.tsx  page.tsx  globals.css   # root layout, landing page, design tokens
+│   ├── components/          # UI grouped by feature
+│   │   ├── app/             # Signed-in shell: AppNav, PageHeader, BackLink, StickyColumns, PostLoginNavActions
+│   │   ├── landing/         # Landing sections, Navbar, Footer, motion primitives, SmoothScroll
+│   │   ├── dashboard/       # Dashboard widgets (schedule, calendar, readiness, leaderboard, charts)
+│   │   ├── exam/            # Exam engine (ModuleQuizModal), lesson quizzes, Classic/Modern toggle
+│   │   ├── pyq/             # Past papers: year cards, year picker, study mode, attempt briefing, markdown/maths
+│   │   ├── proctoring/      # Webcam proctoring panel + hook
+│   │   ├── topics/          # Lesson page helpers (video Q&A panel, study advisor)
+│   │   ├── intelligence/    # AI mentor drawer, metric inspector
+│   │   ├── viva/            # Speak & Assess live AI viva
+│   │   └── shared/          # BrandLogo, AuthModal
 │   ├── context/             # AuthContext (client session state + route guard)
 │   ├── data/                # Static curriculum, question banks, PYQ data
+│   ├── hooks/               # Shared React hooks
 │   ├── lib/
+│   │   ├── ai/              # NVIDIA NIM client
 │   │   ├── auth/            # session.ts (signed cookies), rateLimit.ts
+│   │   ├── metrics/         # Readiness / percentile computation
+│   │   ├── pyq/  quiz/  viva/   # Feature logic (PYQ locks, quiz generation, live viva config)
 │   │   ├── db.ts            # pg pool + data-access helpers
 │   │   ├── demo.ts          # DEMO_EMAIL / isDemoEmail(): the showcase account
-│   │   └── …                # communityModeration.ts, nameUtils.ts
-│   └── services/            # Client-side services (notifications, quiz cache)
+│   │   ├── examMode.ts      # Classic / Modern exam interface preference
+│   │   └── …                # communityModeration.ts, nameUtils.ts, notifications.ts
+│   └── services/            # Client-side services (notifications, quiz attempts, quiz cache)
+├── tests/e2e/               # End-to-end checks: npm run test:e2e (against a running server)
 ├── .env.example             # Every environment variable the app needs
 └── AGENTS.md                # Notes for AI coding agents (Next.js 16 specifics)
 ```
@@ -158,10 +182,13 @@ requires a valid session cookie and returns `401` otherwise.
 | `/api/dashboard` | `GET`, `POST`, `PATCH` | Dashboard aggregate; create / toggle study tasks |
 | `/api/topics/enroll`, `/api/topics/progress` | `POST` · `GET`, `POST` | Topic enrollment and lesson progress |
 | `/api/pyq/attempts` | `GET`, `POST`, `PATCH` | Previous-year-paper attempts and section locks |
-| `/api/intelligence/*` | various | 7-day challenge, analysis views, error tracking, AI Mentor |
-| `/api/ai-analysis` | `GET` | Mock analysis |
+| `/api/quiz/attempts`, `/api/quiz/generate`, `/api/quiz/questions` | `POST` · `POST` · `GET` | Quiz attempts, AI practice-quiz generation, question banks |
+| `/api/me/metrics` | `GET` | Readiness, percentile and study metrics for the signed-in user |
+| `/api/intelligence/*` | various | 7-day challenge, analysis views, AI Mentor |
+| `/api/notifications`, `/api/announcements`, `/api/leaderboard`, `/api/activity` | various | Notification feed, notices, leaderboard, study-time tracking |
+| `/api/proctoring` | `POST` | Proctoring strike events |
 | `/api/chat` | `POST` | Lesson assistant |
-| `/api/mock-viva` | `POST` | Speak & Assess answer feedback |
+| `/api/mock-viva`, `/api/mock-viva/live` | `POST` | Speak & Assess answer feedback and the live AI viva |
 
 ---
 
