@@ -19,6 +19,7 @@ import {
 import styles from "./ai-analysis.module.css";
 import AppNav from "@/components/app/AppNav";
 import BackLink from "@/components/app/BackLink";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { Reveal, RevealGroup, RevealItem, SpotlightCard, GradientText, CountUp, type Tint } from "@/components/landing/motion";
 import {
   LineChart, Line, ComposedChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
@@ -98,20 +99,16 @@ function pyqPace(tests: TestRecord[]): number | null {
 
 function PageHead({ children }: { children?: React.ReactNode }) {
   return (
-    <Reveal className={styles.head}>
+    <div className={styles.head}>
       <BackLink href="/intelligence" label="Back to Intelligence Hub" />
-      <div className={styles.headRow}>
-        <div className={styles.headText}>
-          <h1 className={styles.title}>
-            Your CAT performance, <GradientText>explained</GradientText>
-          </h1>
-          <p className={styles.lede}>
-            Built from your recorded tests: scores, accuracy, pace and every wrong answer, so you can see exactly where you are losing marks.
-          </p>
-        </div>
-        {children && <div className={styles.headActions}>{children}</div>}
-      </div>
-    </Reveal>
+      <PageHeader
+        eyebrow="Performance analysis"
+        title="Your CAT performance,"
+        accent="explained"
+        subtitle="Built from your recorded tests: scores, accuracy, pace and every wrong answer, so you can see exactly where you are losing marks."
+        actions={children}
+      />
+    </div>
   );
 }
 
@@ -367,10 +364,10 @@ export default function PerformanceAnalysisPage() {
       <AppNav />
       <main className={styles.main}>
         <PageHead>
-          <a href="#mistake-section" onClick={(e) => scrollToId(e, "mistake-section")} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <a href="#mistake-section" onClick={(e) => scrollToId(e, "mistake-section")} className={pageHeaderStyles.primaryAction}>
             View my weaknesses <ArrowDown size={16} aria-hidden="true" />
           </a>
-          <a href="#where-you-stand" onClick={(e) => scrollToId(e, "where-you-stand")} className={`${styles.btn} ${styles.btnSecondary}`}>
+          <a href="#where-you-stand" onClick={(e) => scrollToId(e, "where-you-stand")} className={pageHeaderStyles.secondaryAction}>
             Explore full analysis
           </a>
         </PageHead>
@@ -495,8 +492,11 @@ export default function PerformanceAnalysisPage() {
           </RevealItem>
         </RevealGroup>
 
+        {/* MAIN ANALYSIS (left) + MISTAKES & PLAN (right rail) */}
+        <div className={styles.layout}>
+        <div data-sticky-col className={styles.mainCol}>
         {/* WHERE YOU STAND */}
-        <section id="where-you-stand" className={styles.section}>
+        <section id="where-you-stand" className={`${styles.section} ${styles.oStand}`}>
           <Reveal className={styles.sectionHead}>
             <div>
               <h2 className={styles.sectionTitle}>Where you <GradientText>stand</GradientText></h2>
@@ -645,7 +645,7 @@ export default function PerformanceAnalysisPage() {
         </section>
 
         {/* CONCEPT HEAT STRIP */}
-        <section className={styles.section} aria-labelledby="heat-title">
+        <section className={`${styles.section} ${styles.oHeat}`} aria-labelledby="heat-title">
           <Reveal className={`glass-card ${styles.heatCard}`} data-tint="violet">
             <div className={styles.chartHead}>
               <div>
@@ -688,8 +688,7 @@ export default function PerformanceAnalysisPage() {
         </section>
 
         {/* JOURNEY & SECTION COMPARISON */}
-        <RevealGroup className={styles.dualGrid}>
-          <RevealItem className={`glass-card ${styles.chartCard}`} data-tint="blue">
+          <Reveal className={`glass-card ${styles.chartCard} ${styles.oJourney}`} data-tint="blue">
             <div className={styles.chartHead}>
               <div>
                 <h3 className={styles.cardTitle}>Your PYQ score trend</h3>
@@ -738,9 +737,9 @@ export default function PerformanceAnalysisPage() {
                 </p>
               </div>
             </div>
-          </RevealItem>
+          </Reveal>
 
-          <RevealItem className={`glass-card ${styles.chartCard}`} data-tint="teal">
+          <Reveal className={`glass-card ${styles.chartCard} ${styles.oCompare}`} data-tint="teal">
             <div className={styles.chartHead}>
               <div>
                 <h3 className={styles.cardTitle}>Accuracy vs pace by section</h3>
@@ -775,13 +774,13 @@ export default function PerformanceAnalysisPage() {
                 <div className={styles.statLine}><span>CAT pace</span><strong>~{bench}s/q</strong></div>
               </div>
             </div>
-          </RevealItem>
-        </RevealGroup>
+          </Reveal>
+        </div>
 
-        {/* LOWER ANALYTICS */}
-        <RevealGroup className={styles.lowerGrid} id="mistake-section">
+        {/* RIGHT RAIL: mistakes, opportunities, action plan */}
+        <aside data-sticky-col className={styles.railCol} aria-label="Mistakes and action plan">
           {/* Mistakes map */}
-          <RevealItem className={`glass-card ${styles.lowerCard}`} data-tint="coral">
+          <Reveal className={`glass-card ${styles.lowerCard} ${styles.oMistakes}`} data-tint="coral" id="mistake-section">
             <h3 className={styles.cardTitle}>Mistakes map</h3>
             <p className={styles.cardSub}>
               {totalMistakes > 0 ? `Your ${plural(totalMistakes, "most recent wrong answer")}, by section and concept` : "Wrong answers from your tests, by section and concept"}
@@ -829,10 +828,10 @@ export default function PerformanceAnalysisPage() {
               </>
             )}
             <Link href="/intelligence/error-tracking" className={styles.textLink}>View all mistakes <ArrowRight size={15} aria-hidden="true" /></Link>
-          </RevealItem>
+          </Reveal>
 
           {/* Opportunities */}
-          <RevealItem className={`glass-card ${styles.lowerCard}`} data-tint="amber">
+          <Reveal className={`glass-card ${styles.lowerCard} ${styles.oOpp}`} data-tint="amber">
             <h3 className={styles.cardTitle}>Where can you gain marks?</h3>
             <p className={styles.cardSub}>Recorded losses you can recover</p>
             <div className={styles.oppList}>
@@ -867,10 +866,10 @@ export default function PerformanceAnalysisPage() {
                 <div className={styles.emptyState}>No recorded losses yet. Attempt a full PYQ section to find your opportunities.</div>
               )}
             </div>
-          </RevealItem>
+          </Reveal>
 
           {/* Action Plan */}
-          <RevealItem className={`glass-card ${styles.lowerCard}`} data-tint="blue" id="action-plan">
+          <Reveal className={`glass-card ${styles.lowerCard} ${styles.oPlan}`} data-tint="blue" id="action-plan">
             <h3 className={styles.cardTitle}>Your next-mock action plan</h3>
             <p className={styles.cardSub}>Three steps built from your weakest area</p>
             <ol className={styles.planList}>
@@ -888,8 +887,9 @@ export default function PerformanceAnalysisPage() {
             <Link href={plan[0]?.href ?? "/browse#pyq-section"} className={`${styles.btn} ${styles.btnPrimary} ${styles.btnBlock}`}>
               Start step 1 <ArrowRight size={16} aria-hidden="true" />
             </Link>
-          </RevealItem>
-        </RevealGroup>
+          </Reveal>
+        </aside>
+        </div>
 
         {/* FOOTER */}
         <footer className={styles.footNote}>

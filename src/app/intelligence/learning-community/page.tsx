@@ -48,6 +48,7 @@ import { useAuth } from "@/context/AuthContext";
 import { resolveStudentName, sanitizeAvatarUrl } from "@/lib/nameUtils";
 import AppNav from "@/components/app/AppNav";
 import BackLink from "@/components/app/BackLink";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { Reveal, RevealGroup, RevealItem, SpotlightCard, CountUp, GradientText } from "@/components/landing/motion";
 import styles from "./learning-community.module.css";
 import {
@@ -1720,25 +1721,23 @@ export default function LearningCommunityPage() {
     <div className={styles.pageWrapper}>
       <AppNav />
 
-      <div className={styles.container}>
-        {/* Page header */}
-        <Reveal className={styles.pageHeader}>
-          <div className={styles.pageHeaderText}>
-            <BackLink href="/intelligence" label="Back to Intelligence Hub" />
-            <h1 className={styles.pageTitle}>
-              Learning <GradientText>community</GradientText>
-            </h1>
-            <p className={styles.pageSubtitle}>
-              Ask doubts, share strategies and learn from other CAT aspirants&apos; preparation.
-            </p>
-          </div>
-          <button type="button" className={styles.primaryBtn} onClick={() => handleOpenCreateModal()}>
-            <SquarePen size={18} strokeWidth={2} aria-hidden="true" />
-            <span>Start a discussion</span>
-          </button>
-        </Reveal>
+      <div className={styles.page}>
+        <BackLink href="/intelligence" label="Back to Intelligence Hub" />
 
-        {/* Mobile / tablet: views and categories as horizontal chips */}
+        <PageHeader
+          className={styles.header}
+          title="Learning"
+          accent="community"
+          subtitle="Ask doubts, share strategies and learn from other CAT aspirants' preparation."
+          actions={
+            <button type="button" className={pageHeaderStyles.primaryAction} onClick={() => handleOpenCreateModal()}>
+              <SquarePen size={18} strokeWidth={2} aria-hidden="true" />
+              <span>Start a discussion</span>
+            </button>
+          }
+        />
+
+        {/* Below laptop width: views and categories fold into a horizontal chip toolbar */}
         <div className={styles.mobileChips} role="toolbar" aria-label="Browse discussions">
           {sidebarNavItems.map((item) => {
             const Icon = item.icon;
@@ -1780,7 +1779,7 @@ export default function LearningCommunityPage() {
 
         <main className={styles.layout}>
           {/* Left: views + categories */}
-          <aside className={styles.leftCol} aria-label="Community navigation">
+          <aside data-sticky-col className={styles.leftCol} aria-label="Community navigation">
             <div className={styles.navList}>
               {sidebarNavItems.map((item) => {
                 const Icon = item.icon;
@@ -1841,7 +1840,7 @@ export default function LearningCommunityPage() {
           </aside>
 
           {/* Centre: composer, filters, feed */}
-          <section className={styles.feedCol} aria-label="Discussions">
+          <section data-sticky-col className={styles.feedCol} aria-label="Discussions">
             <Reveal delay={0.05} className={styles.composerLayer}>
               <div className={`glass-card ${styles.composer}`} data-tint="blue">
                 <div className={styles.composerTop}>
@@ -2380,7 +2379,7 @@ export default function LearningCommunityPage() {
           </section>
 
           {/* Right: stats, contributors, guidelines */}
-          <aside className={styles.rightCol} aria-label="Community insights">
+          <aside data-sticky-col className={styles.rightCol} aria-label="Community insights">
             <RevealGroup className={styles.rightStack}>
               <RevealItem>
                 <section className={styles.pulseCard} aria-labelledby="community-stats-title">

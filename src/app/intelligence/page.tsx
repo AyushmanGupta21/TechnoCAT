@@ -31,6 +31,7 @@ import styles from "./intelligence.module.css";
 import { useAuth } from "@/context/AuthContext";
 import AIMentorDrawer from "@/components/AIMentorDrawer";
 import AppNav from "@/components/app/AppNav";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { CountUp, GradientText, Reveal, RevealGroup, RevealItem, SpotlightCard, type Tint } from "@/components/landing/motion";
 import type { StudentMetrics } from "@/lib/metrics/types";
 import type { ChallengeData, ChallengeTask, ChallengeTaskIcon } from "@/lib/challenge";
@@ -660,214 +661,24 @@ export default function IntelligenceHubPage() {
     <div className={styles.page}>
       <AppNav />
 
-      {/* ===== PAGE HEADER ===== */}
-      <header className={styles.pageHeader}>
-        <div className={styles.container}>
-          <RevealGroup className={styles.pageHeaderRow}>
-            <div className={styles.pageHeaderText}>
-              <RevealItem>
-                <h1 className={styles.pageTitle}>
-                  Intelligence <GradientText>hub</GradientText>
-                </h1>
-              </RevealItem>
-              <RevealItem>
-                <p className={styles.pageSubtitle}>
-                  Your readiness, mistakes and next steps, worked out from your own tests and study time.
-                </p>
-              </RevealItem>
-            </div>
-            <RevealItem className={styles.pageActions}>
-              <a href="#readiness-meter" className={`${styles.btn} ${styles.btnSecondary}`}>
+      <main className={styles.shell}>
+        <PageHeader
+          title="Intelligence"
+          accent="hub"
+          subtitle="Your readiness, mistakes and next steps, worked out from your own tests and study time."
+          actions={
+            <>
+              <a href="#readiness-meter" className={pageHeaderStyles.secondaryAction}>
                 <Gauge size={18} aria-hidden="true" />
                 <span>See readiness</span>
               </a>
-              <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setIsMentorDrawerOpen(true)}>
+              <button type="button" className={pageHeaderStyles.primaryAction} onClick={() => setIsMentorDrawerOpen(true)}>
                 <MessageCircle size={18} aria-hidden="true" />
                 <span>Ask the AI mentor</span>
               </button>
-            </RevealItem>
-          </RevealGroup>
-        </div>
-      </header>
-
-      {/* ===== MAIN CONTENT ===== */}
-      <main className={`${styles.container} ${styles.main}`}>
-
-        {/* EXPLORE TOOLS */}
-        <section className={styles.section} aria-labelledby="tools-title">
-          <Reveal className={styles.sectionHead}>
-            <h2 id="tools-title" className={styles.sectionTitle}>
-              Explore your <GradientText>tools</GradientText>
-            </h2>
-            <p className={styles.sectionLede}>Everything you need to understand your CAT preparation better.</p>
-          </Reveal>
-
-          <RevealGroup className={styles.toolGrid}>
-            {TOOLS.map((t) => {
-              const V = t.Vignette;
-              return (
-                <RevealItem key={t.href} className={styles.toolCell}>
-                  <SpotlightCard tint={t.tint} className={styles.toolCard}>
-                    <Link href={t.href} className={styles.toolLink}>
-                      <div className={styles.toolVisual} aria-hidden="true">
-                        <V />
-                      </div>
-                      <div className={styles.toolBody}>
-                        <h3 className={styles.toolTitle}>{t.title}</h3>
-                        <p className={styles.toolDesc}>{t.desc}</p>
-                        <ul className={styles.toolChips}>
-                          {t.chips.map((c) => (
-                            <li key={c.label}>
-                              <span className={styles.chipDot} style={{ background: c.color }} />
-                              {c.label}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <span className={styles.toolCta}>
-                        {t.cta}
-                        <ArrowUpRight size={16} aria-hidden="true" className={styles.toolArrow} />
-                      </span>
-                    </Link>
-                  </SpotlightCard>
-                </RevealItem>
-              );
-            })}
-          </RevealGroup>
-        </section>
-
-        {/* IMPROVEMENT LOOP */}
-        <section className={styles.section} aria-labelledby="flow-title">
-          <Reveal className={styles.sectionHead}>
-            <h2 id="flow-title" className={styles.sectionTitle}>Your CAT improvement loop</h2>
-            <p className={styles.sectionLede}>Six steps, repeated after every mock. Open a step for guidance and the next action.</p>
-          </Reveal>
-
-          <RevealGroup className={styles.flowTrack}>
-            {FLOW_STEPS_CONFIG.map((step) => {
-              const isActive = activeFlowStep === step.id;
-              return (
-                <RevealItem key={step.id} className={styles.flowCell}>
-                  <button
-                    type="button"
-                    className={`${styles.flowStep} ${isActive ? styles.flowStepActive : ""}`}
-                    style={{ "--step": step.themeColor, "--step-bg": step.badgeBg } as React.CSSProperties}
-                    onClick={() => setActiveFlowStep(step.id)}
-                    aria-label={`Step ${step.id}: ${step.label}. Open details`}
-                  >
-                    <span className={styles.flowNum}>{String(step.id).padStart(2, "0")}</span>
-                    <span className={styles.flowLabel}>{step.label}</span>
-                    <span className={styles.flowShort}>{step.shortDesc}</span>
-                    <ChevronRight size={16} className={styles.flowChevron} aria-hidden="true" />
-                  </button>
-                </RevealItem>
-              );
-            })}
-          </RevealGroup>
-
-          {/* Step details modal */}
-          {activeFlowStep !== null && (() => {
-            const currentStep = FLOW_STEPS_CONFIG.find((s) => s.id === activeFlowStep) || FLOW_STEPS_CONFIG[0];
-            const prevStepId = currentStep.id === 1 ? FLOW_STEPS_CONFIG.length : currentStep.id - 1;
-            const nextStepId = currentStep.id === FLOW_STEPS_CONFIG.length ? 1 : currentStep.id + 1;
-
-            return (
-              <div
-                className={styles.modalOverlay}
-                onClick={() => setActiveFlowStep(null)}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="flow-step-modal-title"
-              >
-                <div
-                  className={styles.modalCard}
-                  style={{ "--step": currentStep.themeColor, "--step-bg": currentStep.badgeBg } as React.CSSProperties}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className={styles.modalHeader}>
-                    <div className={styles.modalHeaderLeft}>
-                      <span className={styles.modalStepBadge}>Step {currentStep.id} of 6</span>
-                      <span className={styles.modalShort}>{currentStep.shortDesc}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.iconBtn}
-                      onClick={() => setActiveFlowStep(null)}
-                      aria-label="Close step details"
-                    >
-                      <X size={18} aria-hidden="true" />
-                    </button>
-                  </div>
-
-                  <div className={styles.modalBody}>
-                    <span className={styles.modalKicker}>{currentStep.label}</span>
-                    <h3 id="flow-step-modal-title" className={styles.modalTitle}>{currentStep.title}</h3>
-                    <p className={styles.modalText}>{currentStep.description}</p>
-
-                    <div className={styles.tipsBox}>
-                      <div className={styles.tipsTitle}>
-                        <Info size={16} aria-hidden="true" />
-                        <span>Key focus &amp; tips</span>
-                      </div>
-                      <ul className={styles.tipsList}>
-                        {currentStep.tips.map((tip, tIdx) => (
-                          <li key={tIdx}>
-                            <span className={styles.tipBullet} aria-hidden="true">
-                              <Check size={12} strokeWidth={3} />
-                            </span>
-                            <span>{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className={styles.modalFooter}>
-                    <div className={styles.modalNav}>
-                      <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setActiveFlowStep(prevStepId)} title="Previous step">
-                        Prev
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.btn} ${styles.btnGhost}`}
-                        onClick={() => setActiveFlowStep(nextStepId)}
-                        title={currentStep.id === 6 ? "Loop back to step 1" : "Next step"}
-                      >
-                        {currentStep.id === 6 ? (
-                          <>
-                            Loop to 1 <RotateCcw size={14} aria-hidden="true" />
-                          </>
-                        ) : (
-                          "Next"
-                        )}
-                      </button>
-                    </div>
-
-                    {currentStep.ctaHref.startsWith("#") ? (
-                      <button
-                        type="button"
-                        className={`${styles.btn} ${styles.btnStep}`}
-                        onClick={() => {
-                          setActiveFlowStep(null);
-                          const target = document.querySelector(currentStep.ctaHref);
-                          target?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                      >
-                        <span>{currentStep.ctaText}</span>
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </button>
-                    ) : (
-                      <Link href={currentStep.ctaHref} className={`${styles.btn} ${styles.btnStep}`} onClick={() => setActiveFlowStep(null)}>
-                        <span>{currentStep.ctaText}</span>
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </section>
+            </>
+          }
+        />
 
         {/* CAT READINESS METER */}
         <section id="readiness-meter" className={styles.section} aria-labelledby="readiness-title">
@@ -1041,251 +852,437 @@ export default function IntelligenceHubPage() {
               </Reveal>
             </div>
           )}
-
-          {selectedInsight && metrics && components && weights && (() => {
-            const c = READINESS_COMPONENTS.find((x) => x.key === selectedInsight);
-            const v = components[selectedInsight];
-            if (!c || v === null) return null;
-            const held = pointsHeldBack(selectedInsight);
-            const syllabusDone = metrics.courses.topics
-              .filter((t) => SYLLABUS_TOPIC_IDS.includes(t.topicId))
-              .reduce((s, t) => s + t.lessonsCompleted, 0);
-            return (
-              <>
-                <div className={styles.scrim} onClick={() => setSelectedInsight(null)} />
-                <aside className={styles.sidePanel} role="dialog" aria-modal="true" aria-label={`${c.label} details`}>
-                  <div className={styles.sideHead}>
-                    <span className={styles.sideSwatch} style={{ background: c.color }} />
-                    <div className={styles.sideTitleArea}>
-                      <h4 className={styles.sideTitle}>{c.label}</h4>
-                      <span className={styles.sideWeight}>Weight {Math.round(weights[c.key] * 100)}%</span>
-                    </div>
-                    <button type="button" className={styles.iconBtn} onClick={() => setSelectedInsight(null)} aria-label="Close">
-                      <X size={18} aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div className={styles.sideBody}>
-                    <p className={styles.sideDesc}>{c.definition}</p>
-                    <div className={styles.sideScore}>
-                      <span className={styles.sideScoreNum}>{Math.round(v)}</span>
-                      <span className={styles.sideScoreOf}>/100</span>
-                      <div className={styles.componentBar}>
-                        <span style={{ width: `${v}%`, background: c.color }} />
-                      </div>
-                    </div>
-
-                    <h5 className={styles.sideSub}>Where you are</h5>
-                    <ul className={styles.sideList}>
-                      <li>Your {c.label.toLowerCase()} score is {Math.round(v)}/100.</li>
-                      {c.key === "concepts" && (
-                        <li>{syllabusDone} of {metrics.courses.syllabusLessons} syllabus lessons completed.</li>
-                      )}
-                      {c.key === "accuracy" && (
-                        <li>{metrics.accuracy.correct} correct out of {metrics.accuracy.attempted} answered in timed tests.</li>
-                      )}
-                      {c.key === "speed" && metrics.speed.secondsPerQuestion !== null && (
-                        <li>You average {metrics.speed.secondsPerQuestion} s per answered question; CAT pace is about {metrics.speed.benchmarkSecondsPerQuestion} s.</li>
-                      )}
-                      {c.key === "consistency" && (
-                        <li>You studied on {metrics.consistency.activeDaysLast14} of the last 14 days.</li>
-                      )}
-                      {held !== null && held > 0 && (
-                        <li>Raising it to 100 would add about {held} point{held === 1 ? "" : "s"} to your readiness.</li>
-                      )}
-                    </ul>
-
-                    <h5 className={`${styles.sideSub} ${styles.sideSubGood}`}>How to improve</h5>
-                    <ul className={`${styles.sideList} ${styles.sideListCheck}`}>
-                      <li>{c.improve.text}</li>
-                    </ul>
-
-                    <Link href={c.improve.href} className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setSelectedInsight(null)}>
-                      {c.improve.cta}
-                      <ArrowRight size={16} aria-hidden="true" />
-                    </Link>
-                  </div>
-                </aside>
-              </>
-            );
-          })()}
         </section>
 
-        {/* 7-DAY CHALLENGE */}
-        <section className={styles.section} aria-labelledby="challenge-title">
-          {challengeData ? (
-            <>
-              <Reveal className={`${styles.sectionHead} ${styles.sectionHeadRow}`}>
-                <div>
-                  <h2 id="challenge-title" className={styles.sectionTitle}>
-                    Your 7-day CAT challenge
-                    {challengeData.cycleNumber > 1 ? <span className={styles.weekTag}> · Week {challengeData.cycleNumber}</span> : ""}
-                  </h2>
-                  <p className={styles.sectionLede}>Fresh daily goals, checked automatically against your activity. Open any day to see its checklist.</p>
-                </div>
-                {challengeData.completedDays === 7 ? (
-                  <span className={styles.journeyDone}>
-                    <Trophy size={16} aria-hidden="true" /> 7-day journey completed
-                  </span>
-                ) : (
-                  <span className={styles.journeyProgress}>
-                    <span className={styles.mono}>{challengeData.completedDays} / {challengeData.totalDays}</span> days complete
-                    <span className={styles.journeyBar}>
-                      <span style={{ width: `${(challengeData.completedDays / 7) * 100}%` }} />
-                    </span>
-                  </span>
-                )}
-              </Reveal>
-
-              <RevealGroup className={styles.strip}>
-                {challengeData.days.map((d) => {
-                  const isToday = d.day === challengeData.currentDay;
-                  const stateClass =
-                    d.status === "completed"
-                      ? styles.dayCompleted
-                      : d.status === "today"
-                        ? styles.dayToday
-                        : d.status === "incomplete"
-                          ? styles.dayIncomplete
-                          : styles.dayUpcoming;
-                  const pct = d.progress.tasksTotal > 0 ? (d.progress.tasksDone / d.progress.tasksTotal) * 100 : 0;
-                  return (
-                    <RevealItem key={d.day} className={styles.stripCell}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedChallengeDay(d.day)}
-                        title={`Day ${d.day}: ${d.title} (${d.progress.tasksDone}/${d.progress.tasksTotal} done)`}
-                        className={`${styles.day} ${stateClass}`}
-                      >
-                        <span className={styles.dayLabel}>{isToday ? "Today" : `Day ${d.day}`}</span>
-                        <span className={styles.dayCircle} aria-hidden="true">
-                          {d.status === "completed" ? (
-                            <Check size={16} strokeWidth={3} />
-                          ) : d.status === "today" ? (
-                            <span className={styles.dayDot} />
-                          ) : d.status === "incomplete" ? (
-                            <X size={16} strokeWidth={3} />
-                          ) : (
-                            <span className={styles.dayNum}>{d.day}</span>
-                          )}
-                        </span>
-                        <span className={styles.dayProgress}>
-                          <span style={{ width: `${pct}%` }} />
-                        </span>
-                        <span className={styles.dayCount}>
-                          {d.progress.tasksDone}/{d.progress.tasksTotal}
-                        </span>
-                      </button>
-                    </RevealItem>
-                  );
-                })}
-              </RevealGroup>
-
-              {/* Today's challenge summary */}
-              {(() => {
-                const todayInfo =
-                  challengeData.days.find((d) => d.day === challengeData.currentDay) ||
-                  challengeData.days.find((d) => d.status === "today");
-                if (!todayInfo) return null;
-                const isComplete = todayInfo.progress.tasksDone === todayInfo.progress.tasksTotal;
-
-                return (
-                  <Reveal>
-                    <div className={`glass-card ${styles.todayCard}`} data-tint="blue" onClick={() => setSelectedChallengeDay(todayInfo.day)}>
-                      <div className={styles.todayHead}>
-                        <div>
-                          <span className={styles.kicker}>Day {todayInfo.day} focus</span>
-                          <h3 className={styles.todayTitle}>{todayInfo.title}</h3>
-                        </div>
-                        <span className={styles.autoTag}>
-                          <ListChecks size={14} aria-hidden="true" /> Auto-verified checklist
-                        </span>
-                      </div>
-
-                      <p className={styles.todayDesc}>{todayInfo.desc}</p>
-
-                      <div className={styles.todayTasksHead}>
-                        Tasks progress <span className={styles.mono}>({todayInfo.progress.tasksDone} / {todayInfo.progress.tasksTotal})</span>
-                      </div>
-                      <ul className={styles.todayTasks}>
-                        {todayInfo.tasks.map((t) => (
-                          <li key={t.id} className={t.done ? styles.todayTaskDone : ""}>
-                            <span className={styles.todayTaskLeft}>
-                              {renderTaskStatusIcon(t, 22)}
-                              <span className={styles.todayTaskName}>{t.name}</span>
-                            </span>
-                            <span className={`${styles.pill} ${t.done ? styles.pillDone : styles.pillMissed}`}>{t.done ? "Done" : "Not done"}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className={styles.todayFoot}>
-                        <span className={styles.todayTip}>Tip: open any day above to view its tasks.</span>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setSelectedChallengeDay(todayInfo.day); }}
-                          className={`${styles.btn} ${isComplete ? styles.btnDone : styles.btnPrimary}`}
-                        >
-                          {isComplete ? (
-                            <>
-                              Today&apos;s challenge completed
-                              <Check size={16} strokeWidth={2.5} aria-hidden="true" />
-                            </>
-                          ) : (
-                            <>
-                              <span>Start today&apos;s challenge</span>
-                              <ArrowRight size={16} aria-hidden="true" />
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </Reveal>
-                );
-              })()}
-            </>
-          ) : (
-            <div className={styles.readinessLoading}>
-              <p>Loading your journey...</p>
-            </div>
-          )}
-        </section>
-
-        {/* QUICK ACTIONS */}
-        <section className={`${styles.section} ${styles.sectionLast}`} aria-labelledby="actions-title">
+        {/* YOUR TOOLS */}
+        <section className={styles.section} aria-labelledby="tools-title">
           <Reveal className={styles.sectionHead}>
-            <h2 id="actions-title" className={styles.sectionTitle}>Quick actions</h2>
+            <h2 id="tools-title" className={styles.sectionTitle}>
+              Your <GradientText>tools</GradientText>
+            </h2>
+            <p className={styles.sectionLede}>Everything you need to understand your CAT preparation better.</p>
           </Reveal>
-          <RevealGroup className={styles.actionGrid}>
-            <RevealItem>
-              <Link href="/browse#pyq-section" className={`${styles.actionCard} ${styles.actionPrimary}`}>
-                <FileText size={18} aria-hidden="true" />
-                <span>Start a mock</span>
-                <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
-              </Link>
-            </RevealItem>
-            <RevealItem>
-              <Link href="/analytics" className={styles.actionCard}>
-                <BarChart3 size={18} style={{ color: "var(--data-teal)" }} aria-hidden="true" />
-                <span>View my analytics</span>
-                <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
-              </Link>
-            </RevealItem>
-            <RevealItem>
-              <button type="button" onClick={() => setIsMentorDrawerOpen(true)} className={styles.actionCard}>
-                <MessageCircle size={18} style={{ color: "var(--data-violet)" }} aria-hidden="true" />
-                <span>Ask the AI mentor</span>
-                <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
-              </button>
-            </RevealItem>
-            <RevealItem>
-              <Link href="/intelligence/error-tracking" className={styles.actionCard}>
-                <ClipboardList size={18} style={{ color: "var(--data-coral)" }} aria-hidden="true" />
-                <span>Review mistakes</span>
-                <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
-              </Link>
-            </RevealItem>
+
+          <RevealGroup className={styles.toolGrid}>
+            {TOOLS.map((t) => {
+              const V = t.Vignette;
+              return (
+                <RevealItem key={t.href} className={styles.toolCell}>
+                  <SpotlightCard tint={t.tint} className={styles.toolCard}>
+                    <Link href={t.href} className={styles.toolLink}>
+                      <div className={styles.toolVisual} aria-hidden="true">
+                        <V />
+                      </div>
+                      <div className={styles.toolBody}>
+                        <h3 className={styles.toolTitle}>{t.title}</h3>
+                        <p className={styles.toolDesc}>{t.desc}</p>
+                        <ul className={styles.toolChips}>
+                          {t.chips.map((c) => (
+                            <li key={c.label}>
+                              <span className={styles.chipDot} style={{ background: c.color }} />
+                              {c.label}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <span className={styles.toolCta}>
+                        {t.cta}
+                        <ArrowUpRight size={16} aria-hidden="true" className={styles.toolArrow} />
+                      </span>
+                    </Link>
+                  </SpotlightCard>
+                </RevealItem>
+              );
+            })}
           </RevealGroup>
         </section>
+
+        {/* WORK AREA: challenge (main) + quick actions and improvement loop (right column) */}
+        <div className={styles.work}>
+          <div data-sticky-col className={styles.workMain}>
+            {/* 7-DAY CHALLENGE */}
+            <section className={styles.section} aria-labelledby="challenge-title">
+              {challengeData ? (
+                <>
+                  <Reveal className={`${styles.sectionHead} ${styles.sectionHeadRow}`}>
+                    <div>
+                      <h2 id="challenge-title" className={styles.sectionTitle}>
+                        Your 7-day CAT challenge
+                        {challengeData.cycleNumber > 1 ? <span className={styles.weekTag}> · Week {challengeData.cycleNumber}</span> : ""}
+                      </h2>
+                      <p className={styles.sectionLede}>Fresh daily goals, checked automatically against your activity. Open any day to see its checklist.</p>
+                    </div>
+                    {challengeData.completedDays === 7 ? (
+                      <span className={styles.journeyDone}>
+                        <Trophy size={16} aria-hidden="true" /> 7-day journey completed
+                      </span>
+                    ) : (
+                      <span className={styles.journeyProgress}>
+                        <span className={styles.mono}>{challengeData.completedDays} / {challengeData.totalDays}</span> days complete
+                        <span className={styles.journeyBar}>
+                          <span style={{ width: `${(challengeData.completedDays / 7) * 100}%` }} />
+                        </span>
+                      </span>
+                    )}
+                  </Reveal>
+
+                  <RevealGroup className={styles.strip}>
+                    {challengeData.days.map((d) => {
+                      const isToday = d.day === challengeData.currentDay;
+                      const stateClass =
+                        d.status === "completed"
+                          ? styles.dayCompleted
+                          : d.status === "today"
+                            ? styles.dayToday
+                            : d.status === "incomplete"
+                              ? styles.dayIncomplete
+                              : styles.dayUpcoming;
+                      const pct = d.progress.tasksTotal > 0 ? (d.progress.tasksDone / d.progress.tasksTotal) * 100 : 0;
+                      return (
+                        <RevealItem key={d.day} className={styles.stripCell}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedChallengeDay(d.day)}
+                            title={`Day ${d.day}: ${d.title} (${d.progress.tasksDone}/${d.progress.tasksTotal} done)`}
+                            className={`${styles.day} ${stateClass}`}
+                          >
+                            <span className={styles.dayLabel}>{isToday ? "Today" : `Day ${d.day}`}</span>
+                            <span className={styles.dayCircle} aria-hidden="true">
+                              {d.status === "completed" ? (
+                                <Check size={16} strokeWidth={3} />
+                              ) : d.status === "today" ? (
+                                <span className={styles.dayDot} />
+                              ) : d.status === "incomplete" ? (
+                                <X size={16} strokeWidth={3} />
+                              ) : (
+                                <span className={styles.dayNum}>{d.day}</span>
+                              )}
+                            </span>
+                            <span className={styles.dayProgress}>
+                              <span style={{ width: `${pct}%` }} />
+                            </span>
+                            <span className={styles.dayCount}>
+                              {d.progress.tasksDone}/{d.progress.tasksTotal}
+                            </span>
+                          </button>
+                        </RevealItem>
+                      );
+                    })}
+                  </RevealGroup>
+
+                  {/* Today's challenge summary */}
+                  {(() => {
+                    const todayInfo =
+                      challengeData.days.find((d) => d.day === challengeData.currentDay) ||
+                      challengeData.days.find((d) => d.status === "today");
+                    if (!todayInfo) return null;
+                    const isComplete = todayInfo.progress.tasksDone === todayInfo.progress.tasksTotal;
+
+                    return (
+                      <Reveal>
+                        <div className={`glass-card ${styles.todayCard}`} data-tint="blue" onClick={() => setSelectedChallengeDay(todayInfo.day)}>
+                          <div className={styles.todayHead}>
+                            <div>
+                              <span className={styles.kicker}>Day {todayInfo.day} focus</span>
+                              <h3 className={styles.todayTitle}>{todayInfo.title}</h3>
+                            </div>
+                            <span className={styles.autoTag}>
+                              <ListChecks size={14} aria-hidden="true" /> Auto-verified checklist
+                            </span>
+                          </div>
+
+                          <p className={styles.todayDesc}>{todayInfo.desc}</p>
+
+                          <div className={styles.todayTasksHead}>
+                            Tasks progress <span className={styles.mono}>({todayInfo.progress.tasksDone} / {todayInfo.progress.tasksTotal})</span>
+                          </div>
+                          <ul className={styles.todayTasks}>
+                            {todayInfo.tasks.map((t) => (
+                              <li key={t.id} className={t.done ? styles.todayTaskDone : ""}>
+                                <span className={styles.todayTaskLeft}>
+                                  {renderTaskStatusIcon(t, 22)}
+                                  <span className={styles.todayTaskName}>{t.name}</span>
+                                </span>
+                                <span className={`${styles.pill} ${t.done ? styles.pillDone : styles.pillMissed}`}>{t.done ? "Done" : "Not done"}</span>
+                              </li>
+                            ))}
+                          </ul>
+
+                          <div className={styles.todayFoot}>
+                            <span className={styles.todayTip}>Tip: open any day above to view its tasks.</span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setSelectedChallengeDay(todayInfo.day); }}
+                              className={`${styles.btn} ${isComplete ? styles.btnDone : styles.btnPrimary}`}
+                            >
+                              {isComplete ? (
+                                <>
+                                  Today&apos;s challenge completed
+                                  <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                                </>
+                              ) : (
+                                <>
+                                  <span>Start today&apos;s challenge</span>
+                                  <ArrowRight size={16} aria-hidden="true" />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </Reveal>
+                    );
+                  })()}
+                </>
+              ) : (
+                <div className={styles.readinessLoading}>
+                  <p>Loading your journey...</p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div data-sticky-col className={styles.workRail}>
+            {/* QUICK ACTIONS */}
+            <section className={`${styles.section} ${styles.cq}`} aria-labelledby="actions-title">
+              <Reveal className={styles.sectionHead}>
+                <h2 id="actions-title" className={styles.sectionTitle}>Quick actions</h2>
+              </Reveal>
+              <RevealGroup className={styles.actionGrid}>
+                <RevealItem>
+                  <Link href="/browse#pyq-section" className={`${styles.actionCard} ${styles.actionPrimary}`}>
+                    <FileText size={18} aria-hidden="true" />
+                    <span>Start a mock</span>
+                    <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
+                  </Link>
+                </RevealItem>
+                <RevealItem>
+                  <Link href="/analytics" className={styles.actionCard}>
+                    <BarChart3 size={18} style={{ color: "var(--data-teal)" }} aria-hidden="true" />
+                    <span>View my analytics</span>
+                    <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
+                  </Link>
+                </RevealItem>
+                <RevealItem>
+                  <button type="button" onClick={() => setIsMentorDrawerOpen(true)} className={styles.actionCard}>
+                    <MessageCircle size={18} style={{ color: "var(--data-violet)" }} aria-hidden="true" />
+                    <span>Ask the AI mentor</span>
+                    <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
+                  </button>
+                </RevealItem>
+                <RevealItem>
+                  <Link href="/intelligence/error-tracking" className={styles.actionCard}>
+                    <ClipboardList size={18} style={{ color: "var(--data-coral)" }} aria-hidden="true" />
+                    <span>Review mistakes</span>
+                    <ArrowRight size={16} className={styles.actionArrow} aria-hidden="true" />
+                  </Link>
+                </RevealItem>
+              </RevealGroup>
+            </section>
+
+          </div>
+        </div>
+
+        {/* IMPROVEMENT LOOP: full width below the challenge row (3 x 2 grid on desktop) */}
+        <section className={`${styles.section} ${styles.cq}`} aria-labelledby="flow-title">
+          <Reveal className={styles.sectionHead}>
+            <h2 id="flow-title" className={styles.sectionTitle}>Your CAT improvement loop</h2>
+            <p className={styles.sectionLede}>Six steps, repeated after every mock. Open a step for guidance and the next action.</p>
+          </Reveal>
+
+          <RevealGroup className={styles.flowTrack}>
+            {FLOW_STEPS_CONFIG.map((step) => {
+              const isActive = activeFlowStep === step.id;
+              return (
+                <RevealItem key={step.id} className={styles.flowCell}>
+                  <button
+                    type="button"
+                    className={`${styles.flowStep} ${isActive ? styles.flowStepActive : ""}`}
+                    style={{ "--step": step.themeColor, "--step-bg": step.badgeBg } as React.CSSProperties}
+                    onClick={() => setActiveFlowStep(step.id)}
+                    aria-label={`Step ${step.id}: ${step.label}. Open details`}
+                  >
+                    <span className={styles.flowNum}>{String(step.id).padStart(2, "0")}</span>
+                    <span className={styles.flowLabel}>{step.label}</span>
+                    <span className={styles.flowShort}>{step.shortDesc}</span>
+                    <ChevronRight size={16} className={styles.flowChevron} aria-hidden="true" />
+                  </button>
+                </RevealItem>
+              );
+            })}
+          </RevealGroup>
+        </section>
+
+
+        {/* Step details modal */}
+        {activeFlowStep !== null && (() => {
+          const currentStep = FLOW_STEPS_CONFIG.find((s) => s.id === activeFlowStep) || FLOW_STEPS_CONFIG[0];
+          const prevStepId = currentStep.id === 1 ? FLOW_STEPS_CONFIG.length : currentStep.id - 1;
+          const nextStepId = currentStep.id === FLOW_STEPS_CONFIG.length ? 1 : currentStep.id + 1;
+
+          return (
+            <div
+              className={styles.modalOverlay}
+              onClick={() => setActiveFlowStep(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="flow-step-modal-title"
+            >
+              <div
+                className={styles.modalCard}
+                style={{ "--step": currentStep.themeColor, "--step-bg": currentStep.badgeBg } as React.CSSProperties}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className={styles.modalHeader}>
+                  <div className={styles.modalHeaderLeft}>
+                    <span className={styles.modalStepBadge}>Step {currentStep.id} of 6</span>
+                    <span className={styles.modalShort}>{currentStep.shortDesc}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.iconBtn}
+                    onClick={() => setActiveFlowStep(null)}
+                    aria-label="Close step details"
+                  >
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className={styles.modalBody}>
+                  <span className={styles.modalKicker}>{currentStep.label}</span>
+                  <h3 id="flow-step-modal-title" className={styles.modalTitle}>{currentStep.title}</h3>
+                  <p className={styles.modalText}>{currentStep.description}</p>
+
+                  <div className={styles.tipsBox}>
+                    <div className={styles.tipsTitle}>
+                      <Info size={16} aria-hidden="true" />
+                      <span>Key focus &amp; tips</span>
+                    </div>
+                    <ul className={styles.tipsList}>
+                      {currentStep.tips.map((tip, tIdx) => (
+                        <li key={tIdx}>
+                          <span className={styles.tipBullet} aria-hidden="true">
+                            <Check size={12} strokeWidth={3} />
+                          </span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className={styles.modalFooter}>
+                  <div className={styles.modalNav}>
+                    <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setActiveFlowStep(prevStepId)} title="Previous step">
+                      Prev
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.btn} ${styles.btnGhost}`}
+                      onClick={() => setActiveFlowStep(nextStepId)}
+                      title={currentStep.id === 6 ? "Loop back to step 1" : "Next step"}
+                    >
+                      {currentStep.id === 6 ? (
+                        <>
+                          Loop to 1 <RotateCcw size={14} aria-hidden="true" />
+                        </>
+                      ) : (
+                        "Next"
+                      )}
+                    </button>
+                  </div>
+
+                  {currentStep.ctaHref.startsWith("#") ? (
+                    <button
+                      type="button"
+                      className={`${styles.btn} ${styles.btnStep}`}
+                      onClick={() => {
+                        setActiveFlowStep(null);
+                        const target = document.querySelector(currentStep.ctaHref);
+                        target?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <span>{currentStep.ctaText}</span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <Link href={currentStep.ctaHref} className={`${styles.btn} ${styles.btnStep}`} onClick={() => setActiveFlowStep(null)}>
+                      <span>{currentStep.ctaText}</span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Readiness component detail panel */}
+        {selectedInsight && metrics && components && weights && (() => {
+          const c = READINESS_COMPONENTS.find((x) => x.key === selectedInsight);
+          const v = components[selectedInsight];
+          if (!c || v === null) return null;
+          const held = pointsHeldBack(selectedInsight);
+          const syllabusDone = metrics.courses.topics
+            .filter((t) => SYLLABUS_TOPIC_IDS.includes(t.topicId))
+            .reduce((s, t) => s + t.lessonsCompleted, 0);
+          return (
+            <>
+              <div className={styles.scrim} onClick={() => setSelectedInsight(null)} />
+              <aside className={styles.sidePanel} role="dialog" aria-modal="true" aria-label={`${c.label} details`}>
+                <div className={styles.sideHead}>
+                  <span className={styles.sideSwatch} style={{ background: c.color }} />
+                  <div className={styles.sideTitleArea}>
+                    <h4 className={styles.sideTitle}>{c.label}</h4>
+                    <span className={styles.sideWeight}>Weight {Math.round(weights[c.key] * 100)}%</span>
+                  </div>
+                  <button type="button" className={styles.iconBtn} onClick={() => setSelectedInsight(null)} aria-label="Close">
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                </div>
+                <div className={styles.sideBody}>
+                  <p className={styles.sideDesc}>{c.definition}</p>
+                  <div className={styles.sideScore}>
+                    <span className={styles.sideScoreNum}>{Math.round(v)}</span>
+                    <span className={styles.sideScoreOf}>/100</span>
+                    <div className={styles.componentBar}>
+                      <span style={{ width: `${v}%`, background: c.color }} />
+                    </div>
+                  </div>
+
+                  <h5 className={styles.sideSub}>Where you are</h5>
+                  <ul className={styles.sideList}>
+                    <li>Your {c.label.toLowerCase()} score is {Math.round(v)}/100.</li>
+                    {c.key === "concepts" && (
+                      <li>{syllabusDone} of {metrics.courses.syllabusLessons} syllabus lessons completed.</li>
+                    )}
+                    {c.key === "accuracy" && (
+                      <li>{metrics.accuracy.correct} correct out of {metrics.accuracy.attempted} answered in timed tests.</li>
+                    )}
+                    {c.key === "speed" && metrics.speed.secondsPerQuestion !== null && (
+                      <li>You average {metrics.speed.secondsPerQuestion} s per answered question; CAT pace is about {metrics.speed.benchmarkSecondsPerQuestion} s.</li>
+                    )}
+                    {c.key === "consistency" && (
+                      <li>You studied on {metrics.consistency.activeDaysLast14} of the last 14 days.</li>
+                    )}
+                    {held !== null && held > 0 && (
+                      <li>Raising it to 100 would add about {held} point{held === 1 ? "" : "s"} to your readiness.</li>
+                    )}
+                  </ul>
+
+                  <h5 className={`${styles.sideSub} ${styles.sideSubGood}`}>How to improve</h5>
+                  <ul className={`${styles.sideList} ${styles.sideListCheck}`}>
+                    <li>{c.improve.text}</li>
+                  </ul>
+
+                  <Link href={c.improve.href} className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setSelectedInsight(null)}>
+                    {c.improve.cta}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                </div>
+              </aside>
+            </>
+          );
+        })()}
 
         {/* SLIDE-OUT PANEL for the challenge */}
         {selectedChallengeDay !== null && challengeData && (

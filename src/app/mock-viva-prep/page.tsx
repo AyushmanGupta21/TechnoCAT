@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
 import styles from "./mock-viva-prep.module.css";
 import { useSpeechTranscription } from "@/hooks/useSpeechTranscription";
 import {
@@ -40,6 +39,7 @@ import {
   Zap,
 } from "lucide-react";
 import AppNav from "@/components/app/AppNav";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
 import { GradientText, Reveal, RevealGroup, RevealItem } from "@/components/landing/motion";
 import LiveViva, { type LiveVivaTypeMeta } from "@/components/viva/LiveViva";
 
@@ -1263,6 +1263,11 @@ function computeSpeechMetrics(transcript: string, durationSeconds: number, longP
   return { durationSeconds: duration, wordCount, wordsPerMinute, fillerCount, longPauses };
 }
 
+// Smooth-scroll to a section on this page (header actions).
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 type AnswerMode = "audio" | "text";
 type ActiveDrawer = "questions" | "rounds" | "timed" | null;
 
@@ -1615,139 +1620,28 @@ export default function MockVivaPrepPage() {
     <div className={styles.pageWrapper}>
       <AppNav />
 
-      {/* ===== PAGE HEADER ===== */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroInner}>
-          <RevealGroup className={styles.heroLeft} stagger={0.06}>
-            <RevealItem>
-              <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-                <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
-                <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
-                <span className={styles.breadcrumbCurrent}>Speak &amp; Assess</span>
-              </nav>
-            </RevealItem>
-            <RevealItem>
-              <h1 className={styles.heroTitle}>
-                Speak up. <GradientText>Assess yourself.</GradientText> Walk in confident.
-              </h1>
-            </RevealItem>
-            <RevealItem>
-              <p className={styles.heroSubtitle}>
-                Answer real IIM-style interview questions out loud, play back your recording and get AI feedback — across HR, academics, current affairs and stress rounds.
-              </p>
-            </RevealItem>
-            <RevealItem>
-              <div className={styles.heroActions}>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  onClick={() => document.getElementById("live-viva")?.scrollIntoView({ behavior: "smooth" })}
-                >
-                  <Video size={17} strokeWidth={2} aria-hidden="true" />
-                  <span>Start a live viva</span>
-                </button>
-                <a
-                  href="#checklist"
-                  className={styles.btnSecondary}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                >
-                  <ListChecks size={17} strokeWidth={2} aria-hidden="true" />
-                  <span>Prep checklist</span>
-                </a>
-              </div>
-            </RevealItem>
-          </RevealGroup>
+      <main className={styles.page}>
+        {/* ===== PAGE HEADER ===== */}
+        <PageHeader
+          eyebrow="Speak & Assess"
+          title="Speak up."
+          accent="Assess yourself."
+          subtitle="Answer real IIM-style interview questions out loud, play back your recording and get AI feedback — across HR, academics, current affairs and stress rounds."
+          actions={
+            <>
+              <button type="button" className={pageHeaderStyles.primaryAction} onClick={() => scrollToSection("live-viva")}>
+                <Video size={17} strokeWidth={2} aria-hidden="true" />
+                <span>Start a live viva</span>
+              </button>
+              <button type="button" className={pageHeaderStyles.secondaryAction} onClick={() => scrollToSection("interview-rounds")}>
+                <ListChecks size={17} strokeWidth={2} aria-hidden="true" />
+                <span>Practise questions</span>
+              </button>
+            </>
+          }
+        />
 
-          {/* ===== PREP AT A GLANCE ===== */}
-          <Reveal delay={0.12} className={styles.prepGlanceWrap}>
-            <div className={`glass-card ${styles.prepGlancePanel}`} data-tint="blue">
-              <div className={styles.glanceHeader}>
-                <h3 className={styles.glanceTitle}>Your prep at a glance</h3>
-                <p className={styles.glanceSubtitle}>Everything you need for interview readiness.</p>
-              </div>
-
-              <div className={styles.glanceCardsList}>
-                <button
-                  type="button"
-                  className={`${styles.statCard} ${activeDrawer === "questions" ? styles.statCardActive : ""}`}
-                  style={{ "--stat": "var(--data-blue)" } as React.CSSProperties}
-                  onClick={() => setActiveDrawer("questions")}
-                  title="Explore 68+ curated interview questions"
-                >
-                  <span className={styles.statBar} aria-hidden="true" />
-                  <span className={styles.statValue}>68+</span>
-                  <span className={styles.statTextCol}>
-                    <span className={styles.statLabel}>Curated interview questions</span>
-                    <span className={styles.statHint}>Browse by category</span>
-                  </span>
-                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.statCard} ${activeDrawer === "rounds" ? styles.statCardActive : ""}`}
-                  style={{ "--stat": "var(--data-emerald)" } as React.CSSProperties}
-                  onClick={() => {
-                    setSelectedRoundDetailId(null);
-                    setActiveDrawer("rounds");
-                  }}
-                  title="Explore 6 interview round categories"
-                >
-                  <span className={styles.statBar} aria-hidden="true" />
-                  <span className={styles.statValue}>6</span>
-                  <span className={styles.statTextCol}>
-                    <span className={styles.statLabel}>Interview round categories</span>
-                    <span className={styles.statHint}>What each round tests</span>
-                  </span>
-                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.statCard} ${activeDrawer === "timed" ? styles.statCardActive : ""}`}
-                  style={{ "--stat": "var(--data-amber)" } as React.CSSProperties}
-                  onClick={() => setActiveDrawer("timed")}
-                  title="Start timed response practice"
-                >
-                  <span className={styles.statBar} aria-hidden="true" />
-                  <span className={`${styles.statValue} ${styles.statValueSm}`}>
-                    <Timer size={20} strokeWidth={2} aria-hidden="true" />
-                  </span>
-                  <span className={styles.statTextCol}>
-                    <span className={styles.statLabel}>Timed response practice</span>
-                    <span className={styles.statHint}>30s, 60s or 120s answers</span>
-                  </span>
-                  <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
-                </button>
-              </div>
-
-              <ol className={styles.flowContainer} aria-label="How it works">
-                <li className={styles.flowStep} title="Practice real interview questions">
-                  <span className={styles.flowStepCircle}>01</span>
-                  <span className={styles.flowStepText}>Practice</span>
-                </li>
-                <li className={styles.flowLine} aria-hidden="true" />
-                <li className={styles.flowStep} title="Review tips and feedback">
-                  <span className={styles.flowStepCircle}>02</span>
-                  <span className={styles.flowStepText}>Review</span>
-                </li>
-                <li className={styles.flowLine} aria-hidden="true" />
-                <li className={styles.flowStep} title="Improve with AI feedback">
-                  <span className={styles.flowStepCircle}>03</span>
-                  <span className={styles.flowStepText}>Improve</span>
-                </li>
-              </ol>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ===== CONTENT ===== */}
-      <div className={styles.contentWrapper}>
-        {/* LIVE VIVA (featured) */}
+        {/* ===== LIVE VIVA (featured, full width) ===== */}
         <section id="live-viva" className={styles.roundSection} aria-labelledby="live-viva-title">
           <Reveal className={styles.sectionHead}>
             <span className={styles.sectionKicker}>
@@ -1765,479 +1659,568 @@ export default function MockVivaPrepPage() {
           </Reveal>
         </section>
 
-        {/* CATEGORIES (question-by-question practice) */}
-        <section id="interview-rounds" className={styles.roundSection}>
-          <Reveal className={styles.roundSectionHead}>
-            <div className={styles.roundHeadLeft}>
-              <h2 className={styles.sectionTitle}>Or practise question by question</h2>
-              <p className={styles.sectionSubtitle}>
-                Prefer one question at a time? Pick a category for a timed session with practice questions, recordings and expert pointers.
-              </p>
-            </div>
-            <button
-              type="button"
-              className={styles.btnViewAllRounds}
-              onClick={() => {
-                setSelectedRoundDetailId(null);
-                setActiveDrawer("rounds");
-              }}
-              title="Explore all 6 interview round categories in detail"
-            >
-              <span>View all rounds</span>
-              <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
-            </button>
-          </Reveal>
-
-          <RevealGroup className={styles.catGrid} stagger={0.06}>
-            {CATEGORIES.map((cat) => (
-              <RevealItem key={cat.id} className={styles.catItem}>
+        {/* ===== MAIN COLUMN (practice) + RIGHT COLUMN (tools, checklist) ===== */}
+        <div className={styles.layout}>
+          <div data-sticky-col className={styles.mainCol}>
+            <section id="interview-rounds" className={styles.roundSection}>
+              <Reveal className={styles.roundSectionHead}>
+                <div className={styles.roundHeadLeft}>
+                  <h2 className={styles.sectionTitle}>Practise question by question</h2>
+                  <p className={styles.sectionSubtitle}>
+                    Pick a category for a timed, one-question-at-a-time session with recordings, expert pointers and feedback.
+                  </p>
+                </div>
                 <button
                   type="button"
-                  className={`glass-card ${styles.catCard} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
-                  data-tint="blue"
-                  style={{ "--tint": CAT_TINT[cat.id] ?? "59 130 246", "--cat": cat.color } as React.CSSProperties}
-                  onClick={() => startPractice(cat.id)}
-                  title={`Practice ${cat.title}`}
+                  className={styles.btnViewAllRounds}
+                  onClick={() => {
+                    setSelectedRoundDetailId(null);
+                    setActiveDrawer("rounds");
+                  }}
+                  title="Explore all 6 interview round categories in detail"
                 >
-                  <span className={styles.catCardTop}>
-                    <span className={styles.catIcon} aria-hidden="true">{cat.icon}</span>
-                    <span className={styles.catQuestionBadge}>
-                      <strong>{cat.questions.length}</strong> questions
-                    </span>
-                  </span>
-                  <span className={styles.catTitle}>{cat.title}</span>
-                  <span className={styles.catDesc}>{cat.desc}</span>
-                  <span className={styles.catFooter}>
-                    <span className={styles.catTags} aria-hidden="true">
-                      {Array.from(new Set(cat.questions.map((q) => q.tag)))
-                        .slice(0, 3)
-                        .map((tag) => (
-                          <span key={tag} className={styles.catTag}>{tag}</span>
-                        ))}
-                    </span>
-                    <span className={styles.catArrowCircle} aria-hidden="true">
-                      <ArrowRight size={14} strokeWidth={2.2} />
-                    </span>
-                  </span>
+                  <span>View all rounds</span>
+                  <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
                 </button>
-              </RevealItem>
-            ))}
-          </RevealGroup>
-        </section>
+              </Reveal>
 
-        {/* PRACTICE PANEL */}
-        <section ref={panelRef} className={styles.roundSection}>
-          <Reveal className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Practice session</h2>
-            <p className={styles.sectionSubtitle}>
-              Read the question, answer out loud and keep an eye on your response time.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.06}>
-            <div
-              className={`glass-card ${styles.qaPanel}`}
-              data-tint="blue"
-              style={activeCategory ? ({ "--tint": CAT_TINT[activeCategory.id] ?? "59 130 246", "--cat": activeCategory.color } as React.CSSProperties) : undefined}
-            >
-              {activeCategory && currentQuestion ? (
-                <>
-                  <div className={styles.qaHeader}>
-                    <div className={styles.qaHeaderLeft}>
-                      <span className={styles.qaHeaderIcon} aria-hidden="true">{activeCategory.icon}</span>
-                      <div>
-                        <div className={styles.qaHeaderTitle}>{activeCategory.title}</div>
-                        <div className={styles.qaHeaderSub}>Mock personal interview round</div>
-                      </div>
-                    </div>
-                    <div className={styles.qaTimerWrapper}>
-                      {activeTimedLimit && (
-                        <span className={styles.qaTimedModeBadge}>
-                          <Timer size={13} strokeWidth={2.2} aria-hidden="true" />
-                          {activeTimedLimit}s timed mode
+              <RevealGroup className={styles.catGrid} stagger={0.06}>
+                {CATEGORIES.map((cat) => (
+                  <RevealItem key={cat.id} className={styles.catItem}>
+                    <button
+                      type="button"
+                      className={`glass-card ${styles.catCard} ${activeCategoryId === cat.id ? styles.catCardActive : ""}`}
+                      data-tint="blue"
+                      style={{ "--tint": CAT_TINT[cat.id] ?? "59 130 246", "--cat": cat.color } as React.CSSProperties}
+                      onClick={() => startPractice(cat.id)}
+                      title={`Practice ${cat.title}`}
+                    >
+                      <span className={styles.catCardTop}>
+                        <span className={styles.catIcon} aria-hidden="true">{cat.icon}</span>
+                        <span className={styles.catQuestionBadge}>
+                          <strong>{cat.questions.length}</strong> questions
                         </span>
-                      )}
-                      <div
-                        className={`${styles.qaTimer} ${timerRunning ? styles.qaTimerRunning : ""} ${
-                          activeTimedLimit && elapsed >= activeTimedLimit ? styles.qaTimedWarning : ""
-                        }`}
-                      >
-                        <Clock size={15} strokeWidth={2.2} aria-hidden="true" />
-                        {formatTime(elapsed)} {activeTimedLimit ? `/ ${formatTime(activeTimedLimit)}` : ""}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.qaProgressStrip}>
-                    <div className={styles.qaProgressMeta}>
-                      <div className={styles.qaProgressCount}>
-                        <span className={styles.qaProgressNum}>Question {questionIndex + 1}</span>
-                        <span className={styles.qaProgressTotal}> of {activeCategory.questions.length}</span>
-                      </div>
-                      <span className={styles.qaProgressPercent}>
-                        {Math.round(((questionIndex + 1) / activeCategory.questions.length) * 100)}% completed
                       </span>
-                    </div>
-                    <div className={styles.qaProgressBar}>
-                      <div
-                        className={styles.qaProgressFill}
-                        style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.qaBody}>
-                    <div className={styles.qaQuestionCard}>
-                      <span className={styles.qaQuestionTag}>
-                        <HelpCircle size={13} strokeWidth={2.2} aria-hidden="true" />
-                        {currentQuestion.tag}
+                      <span className={styles.catTitle}>{cat.title}</span>
+                      <span className={styles.catDesc}>{cat.desc}</span>
+                      <span className={styles.catFooter}>
+                        <span className={styles.catTags} aria-hidden="true">
+                          {Array.from(new Set(cat.questions.map((q) => q.tag)))
+                            .slice(0, 3)
+                            .map((tag) => (
+                              <span key={tag} className={styles.catTag}>{tag}</span>
+                            ))}
+                        </span>
+                        <span className={styles.catArrowCircle} aria-hidden="true">
+                          <ArrowRight size={14} strokeWidth={2.2} />
+                        </span>
                       </span>
-                      <p className={styles.qaQuestionText}>{currentQuestion.question}</p>
-                    </div>
+                    </button>
+                  </RevealItem>
+                ))}
+              </RevealGroup>
+            </section>
 
-                    <div className={styles.qaTips}>
-                      <div className={styles.qaTipsTitle}>
-                        <Lightbulb size={16} strokeWidth={2} className={styles.qaTipsIcon} aria-hidden="true" />
-                        <span>How to answer this well</span>
+            {/* PRACTICE PANEL */}
+            <section ref={panelRef} className={styles.roundSection}>
+              <Reveal className={styles.sectionHead}>
+                <h2 className={styles.sectionTitle}>Practice session</h2>
+                <p className={styles.sectionSubtitle}>
+                  Read the question, answer out loud and keep an eye on your response time.
+                </p>
+              </Reveal>
+
+              <Reveal delay={0.06}>
+                <div
+                  className={`glass-card ${styles.qaPanel}`}
+                  data-tint="blue"
+                  style={activeCategory ? ({ "--tint": CAT_TINT[activeCategory.id] ?? "59 130 246", "--cat": activeCategory.color } as React.CSSProperties) : undefined}
+                >
+                  {activeCategory && currentQuestion ? (
+                    <>
+                      <div className={styles.qaHeader}>
+                        <div className={styles.qaHeaderLeft}>
+                          <span className={styles.qaHeaderIcon} aria-hidden="true">{activeCategory.icon}</span>
+                          <div>
+                            <div className={styles.qaHeaderTitle}>{activeCategory.title}</div>
+                            <div className={styles.qaHeaderSub}>Mock personal interview round</div>
+                          </div>
+                        </div>
+                        <div className={styles.qaTimerWrapper}>
+                          {activeTimedLimit && (
+                            <span className={styles.qaTimedModeBadge}>
+                              <Timer size={13} strokeWidth={2.2} aria-hidden="true" />
+                              {activeTimedLimit}s timed mode
+                            </span>
+                          )}
+                          <div
+                            className={`${styles.qaTimer} ${timerRunning ? styles.qaTimerRunning : ""} ${
+                              activeTimedLimit && elapsed >= activeTimedLimit ? styles.qaTimedWarning : ""
+                            }`}
+                          >
+                            <Clock size={15} strokeWidth={2.2} aria-hidden="true" />
+                            {formatTime(elapsed)} {activeTimedLimit ? `/ ${formatTime(activeTimedLimit)}` : ""}
+                          </div>
+                        </div>
                       </div>
-                      <ul className={styles.qaTipsList}>
-                        {currentQuestion.tips.map((tip, i) => (
-                          <li key={i}>
-                            <span className={styles.tipArrow} aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-                            <span>{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
 
-                    {/* ===== ANSWER AREA ===== */}
-                    <div className={styles.answerBlock}>
-                      <div className={styles.answerHead}>
-                        <div className={styles.answerTitle}>
-                          <Mic size={16} strokeWidth={2} className={styles.answerTitleIcon} aria-hidden="true" />
-                          <span>Your answer</span>
+                      <div className={styles.qaProgressStrip}>
+                        <div className={styles.qaProgressMeta}>
+                          <div className={styles.qaProgressCount}>
+                            <span className={styles.qaProgressNum}>Question {questionIndex + 1}</span>
+                            <span className={styles.qaProgressTotal}> of {activeCategory.questions.length}</span>
+                          </div>
+                          <span className={styles.qaProgressPercent}>
+                            {Math.round(((questionIndex + 1) / activeCategory.questions.length) * 100)}% completed
+                          </span>
                         </div>
-                        <div className={styles.answerModeToggle}>
-                          <button
-                            type="button"
-                            className={`${styles.modeBtn} ${answerMode === "audio" ? styles.modeBtnActive : ""}`}
-                            onClick={() => setAnswerMode("audio")}
-                          >
-                            <Mic size={14} strokeWidth={2.2} aria-hidden="true" />
-                            Record audio
-                          </button>
-                          <button
-                            type="button"
-                            className={`${styles.modeBtn} ${answerMode === "text" ? styles.modeBtnActive : ""}`}
-                            onClick={() => setAnswerMode("text")}
-                          >
-                            <PenLine size={14} strokeWidth={2.2} aria-hidden="true" />
-                            Type answer
-                          </button>
+                        <div className={styles.qaProgressBar}>
+                          <div
+                            className={styles.qaProgressFill}
+                            style={{ width: `${((questionIndex + 1) / activeCategory.questions.length) * 100}%` }}
+                          />
                         </div>
                       </div>
 
-                      {answerMode === "audio" && (
-                        <div className={styles.recorder}>
-                          <div className={`${styles.recordTime} ${isRecording ? styles.recordTimeLive : ""}`}>
-                            {formatTime(recordSeconds)}
-                          </div>
-                          <button
-                            type="button"
-                            className={`${styles.recordBtn} ${isRecording ? styles.recordBtnActive : ""}`}
-                            onClick={isRecording ? stopRecording : startRecording}
-                            aria-label={isRecording ? "Stop recording" : "Start recording"}
-                          >
-                            {isRecording ? (
-                              <Square size={22} strokeWidth={2} fill="currentColor" aria-hidden="true" />
-                            ) : (
-                              <Mic size={28} strokeWidth={2} aria-hidden="true" />
-                            )}
-                          </button>
-                          <div className={styles.recordHint}>
-                            {isRecording ? "Recording… tap to stop" : audioUrl ? "Recorded — play it back below" : "Tap the mic and answer out loud"}
-                          </div>
-                          {audioUrl && (
-                            <div className={styles.audioPlayback}>
-                              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                              <audio controls src={audioUrl} />
-                            </div>
-                          )}
-                          {recorderError && <div className={styles.recorderError}>{recorderError}</div>}
-                          {speech.error && <div className={styles.recorderError}>{speech.error}</div>}
-                          {speech.supported === false ? (
-                            <p className={styles.speechUnsupported}>
-                              Live transcription isn&apos;t supported in this browser — type your answer in the box below. You can still record and play back your answer.
-                            </p>
-                          ) : (
-                            <p className={styles.recorderNote}>
-                              Transcribed in your browser as you speak (en-IN) — review and fix any mis-heard words before requesting feedback. Your audio is never uploaded or stored by TechnoCAT; note that some browsers (e.g. Chrome) use their own online speech service to transcribe.
-                            </p>
-                          )}
+                      <div className={styles.qaBody}>
+                        <div className={styles.qaQuestionCard}>
+                          <span className={styles.qaQuestionTag}>
+                            <HelpCircle size={13} strokeWidth={2.2} aria-hidden="true" />
+                            {currentQuestion.tag}
+                          </span>
+                          <p className={styles.qaQuestionText}>{currentQuestion.question}</p>
                         </div>
-                      )}
-                      <>
-                        <textarea
-                          className={`${styles.answerTextarea} ${isRecording && speech.listening ? styles.answerTextareaLive : ""}`}
-                          placeholder={
-                            answerMode === "audio" && speech.supported
-                              ? isRecording
-                                ? "Listening… your words will appear here."
-                                : "Tap the mic and speak — your transcript will appear here for you to review and edit."
-                              : "Type your answer here as you would speak it in the interview…"
-                          }
-                          value={textAnswer}
-                          readOnly={isRecording && speech.listening}
-                          aria-label="Your answer"
-                          onChange={(e) => setTextAnswer(e.target.value)}
-                        />
-                        {answerMode === "audio" && speechMetrics && (
-                          <div className={styles.speechMetricsRow} aria-label="Speech metrics">
-                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-blue)" } as React.CSSProperties}>
-                              <strong>{formatTime(speechMetrics.durationSeconds)}</strong> spoken
-                            </span>
-                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-teal)" } as React.CSSProperties}>
-                              <strong>{speechMetrics.wordCount}</strong> words
-                            </span>
-                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
-                              <strong>{speechMetrics.wordsPerMinute}</strong> wpm
-                            </span>
-                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-amber)" } as React.CSSProperties}>
-                              <strong>{speechMetrics.fillerCount}</strong> fillers
-                            </span>
-                            <span className={styles.speechMetric} style={{ "--sm": "var(--data-coral)" } as React.CSSProperties}>
-                              <strong>{speechMetrics.longPauses}</strong> long pauses
-                            </span>
-                          </div>
-                        )}
-                        <div className={styles.answerFootRow}>
-                          <span className={styles.wordCounter}>{answerWordCount} words</span>
-                          <button
-                            type="button"
-                            className={styles.btnEvaluate}
-                            onClick={evaluateAnswer}
-                            disabled={isEvaluating || isRecording || !textAnswer.trim()}
-                          >
-                            {isEvaluating ? (
-                              <>
-                                <span className={styles.spinner} />
-                                Evaluating…
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
-                                Get AI feedback
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        {evalError && <div className={styles.recorderError}>{evalError}</div>}
-                      </>
-                    </div>
 
-                    {/* ===== FEEDBACK ===== */}
-                    {feedback && (
-                      <div className={styles.feedbackCard}>
-                        <div className={styles.feedbackTop}>
-                          <div className={styles.scoreRing}>
-                            <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
-                              <circle cx="38" cy="38" r="31" fill="none" stroke="rgba(12,23,48,0.07)" strokeWidth="8" />
-                              <circle
-                                cx="38"
-                                cy="38"
-                                r="31"
-                                fill="none"
-                                stroke={feedback.score >= 80 ? "var(--data-emerald)" : feedback.score >= 65 ? "var(--data-blue)" : "var(--data-amber)"}
-                                strokeWidth="8"
-                                strokeLinecap="round"
-                                strokeDasharray={2 * Math.PI * 31}
-                                strokeDashoffset={2 * Math.PI * 31 * (1 - feedback.score / 100)}
-                                transform="rotate(-90 38 38)"
-                              />
-                            </svg>
-                            <div className={styles.scoreRingVal}>{feedback.score}</div>
+                        <div className={styles.qaTips}>
+                          <div className={styles.qaTipsTitle}>
+                            <Lightbulb size={16} strokeWidth={2} className={styles.qaTipsIcon} aria-hidden="true" />
+                            <span>How to answer this well</span>
                           </div>
-                          <div className={styles.feedbackVerdict}>
-                            <span className={styles.feedbackVerdictLabel}>AI panel verdict</span>
-                            <span className={styles.feedbackVerdictText}>{feedback.verdict}</span>
-                            <span className={`${styles.feedbackSourceTag} ${feedback.source === "ai" ? styles.feedbackSourceAi : ""}`}>
-                              {feedback.source === "ai" ? "AI-evaluated" : "Rule-based estimate"}
-                            </span>
-                          </div>
+                          <ul className={styles.qaTipsList}>
+                            {currentQuestion.tips.map((tip, i) => (
+                              <li key={i}>
+                                <span className={styles.tipArrow} aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                                <span>{tip}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className={styles.feedbackBody}>
-                          <div className={`${styles.feedbackCol} ${styles.feedbackColGood}`}>
-                            <div className={styles.feedbackColTitle}>
-                              <CheckCircle2 size={16} strokeWidth={2.2} aria-hidden="true" />
-                              What worked
+
+                        {/* ===== ANSWER AREA ===== */}
+                        <div className={styles.answerBlock}>
+                          <div className={styles.answerHead}>
+                            <div className={styles.answerTitle}>
+                              <Mic size={16} strokeWidth={2} className={styles.answerTitleIcon} aria-hidden="true" />
+                              <span>Your answer</span>
                             </div>
-                            <ul className={`${styles.feedbackList} ${styles.strengthList}`}>
-                              {feedback.strengths.map((s, i) => (
-                                <li key={i}>{s}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div className={`${styles.feedbackCol} ${styles.feedbackColWarn}`}>
-                            <div className={styles.feedbackColTitle}>
-                              <TrendingUp size={16} strokeWidth={2.2} aria-hidden="true" />
-                              How to improve
+                            <div className={styles.answerModeToggle}>
+                              <button
+                                type="button"
+                                className={`${styles.modeBtn} ${answerMode === "audio" ? styles.modeBtnActive : ""}`}
+                                onClick={() => setAnswerMode("audio")}
+                              >
+                                <Mic size={14} strokeWidth={2.2} aria-hidden="true" />
+                                Record audio
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.modeBtn} ${answerMode === "text" ? styles.modeBtnActive : ""}`}
+                                onClick={() => setAnswerMode("text")}
+                              >
+                                <PenLine size={14} strokeWidth={2.2} aria-hidden="true" />
+                                Type answer
+                              </button>
                             </div>
-                            <ul className={`${styles.feedbackList} ${styles.improveList}`}>
-                              {feedback.improvements.map((s, i) => (
-                                <li key={i}>{s}</li>
-                              ))}
-                            </ul>
                           </div>
-                          {feedback.modelAnswer && (
-                            <div className={styles.modelAnswerBox}>
-                              <div className={styles.modelAnswerTitle}>
-                                <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
-                                Model answer
+
+                          {answerMode === "audio" && (
+                            <div className={styles.recorder}>
+                              <div className={`${styles.recordTime} ${isRecording ? styles.recordTimeLive : ""}`}>
+                                {formatTime(recordSeconds)}
                               </div>
-                              <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
+                              <button
+                                type="button"
+                                className={`${styles.recordBtn} ${isRecording ? styles.recordBtnActive : ""}`}
+                                onClick={isRecording ? stopRecording : startRecording}
+                                aria-label={isRecording ? "Stop recording" : "Start recording"}
+                              >
+                                {isRecording ? (
+                                  <Square size={22} strokeWidth={2} fill="currentColor" aria-hidden="true" />
+                                ) : (
+                                  <Mic size={28} strokeWidth={2} aria-hidden="true" />
+                                )}
+                              </button>
+                              <div className={styles.recordHint}>
+                                {isRecording ? "Recording… tap to stop" : audioUrl ? "Recorded — play it back below" : "Tap the mic and answer out loud"}
+                              </div>
+                              {audioUrl && (
+                                <div className={styles.audioPlayback}>
+                                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                  <audio controls src={audioUrl} />
+                                </div>
+                              )}
+                              {recorderError && <div className={styles.recorderError}>{recorderError}</div>}
+                              {speech.error && <div className={styles.recorderError}>{speech.error}</div>}
+                              {speech.supported === false ? (
+                                <p className={styles.speechUnsupported}>
+                                  Live transcription isn&apos;t supported in this browser — type your answer in the box below. You can still record and play back your answer.
+                                </p>
+                              ) : (
+                                <p className={styles.recorderNote}>
+                                  Transcribed in your browser as you speak (en-IN) — review and fix any mis-heard words before requesting feedback. Your audio is never uploaded or stored by TechnoCAT; note that some browsers (e.g. Chrome) use their own online speech service to transcribe.
+                                </p>
+                              )}
                             </div>
                           )}
-                          {feedback.delivery && (
-                            <div className={styles.deliveryBox}>
-                              <div className={styles.modelAnswerTitle}>
-                                <AudioLines size={16} strokeWidth={2} aria-hidden="true" />
-                                Delivery
-                                <span className={styles.deliveryTag}>Transcribed in your browser</span>
-                              </div>
-                              <div className={styles.speechMetricsRow}>
-                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
-                                  <strong>{feedback.delivery.wordsPerMinute}</strong> wpm
-                                </span>
+                          <>
+                            <textarea
+                              className={`${styles.answerTextarea} ${isRecording && speech.listening ? styles.answerTextareaLive : ""}`}
+                              placeholder={
+                                answerMode === "audio" && speech.supported
+                                  ? isRecording
+                                    ? "Listening… your words will appear here."
+                                    : "Tap the mic and speak — your transcript will appear here for you to review and edit."
+                                  : "Type your answer here as you would speak it in the interview…"
+                              }
+                              value={textAnswer}
+                              readOnly={isRecording && speech.listening}
+                              aria-label="Your answer"
+                              onChange={(e) => setTextAnswer(e.target.value)}
+                            />
+                            {answerMode === "audio" && speechMetrics && (
+                              <div className={styles.speechMetricsRow} aria-label="Speech metrics">
                                 <span className={styles.speechMetric} style={{ "--sm": "var(--data-blue)" } as React.CSSProperties}>
-                                  <strong>{feedback.delivery.paceVerdict}</strong>
+                                  <strong>{formatTime(speechMetrics.durationSeconds)}</strong> spoken
+                                </span>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-teal)" } as React.CSSProperties}>
+                                  <strong>{speechMetrics.wordCount}</strong> words
+                                </span>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
+                                  <strong>{speechMetrics.wordsPerMinute}</strong> wpm
                                 </span>
                                 <span className={styles.speechMetric} style={{ "--sm": "var(--data-amber)" } as React.CSSProperties}>
-                                  <strong>{feedback.delivery.fillerCount}</strong> filler words
+                                  <strong>{speechMetrics.fillerCount}</strong> fillers
+                                </span>
+                                <span className={styles.speechMetric} style={{ "--sm": "var(--data-coral)" } as React.CSSProperties}>
+                                  <strong>{speechMetrics.longPauses}</strong> long pauses
                                 </span>
                               </div>
-                              {feedback.delivery.notes.length > 0 && (
-                                <ul className={styles.feedbackList}>
-                                  {feedback.delivery.notes.map((n, i) => (
-                                    <li key={i}>{n}</li>
+                            )}
+                            <div className={styles.answerFootRow}>
+                              <span className={styles.wordCounter}>{answerWordCount} words</span>
+                              <button
+                                type="button"
+                                className={styles.btnEvaluate}
+                                onClick={evaluateAnswer}
+                                disabled={isEvaluating || isRecording || !textAnswer.trim()}
+                              >
+                                {isEvaluating ? (
+                                  <>
+                                    <span className={styles.spinner} />
+                                    Evaluating…
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
+                                    Get AI feedback
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                            {evalError && <div className={styles.recorderError}>{evalError}</div>}
+                          </>
+                        </div>
+
+                        {/* ===== FEEDBACK ===== */}
+                        {feedback && (
+                          <div className={styles.feedbackCard}>
+                            <div className={styles.feedbackTop}>
+                              <div className={styles.scoreRing}>
+                                <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+                                  <circle cx="38" cy="38" r="31" fill="none" stroke="rgba(12,23,48,0.07)" strokeWidth="8" />
+                                  <circle
+                                    cx="38"
+                                    cy="38"
+                                    r="31"
+                                    fill="none"
+                                    stroke={feedback.score >= 80 ? "var(--data-emerald)" : feedback.score >= 65 ? "var(--data-blue)" : "var(--data-amber)"}
+                                    strokeWidth="8"
+                                    strokeLinecap="round"
+                                    strokeDasharray={2 * Math.PI * 31}
+                                    strokeDashoffset={2 * Math.PI * 31 * (1 - feedback.score / 100)}
+                                    transform="rotate(-90 38 38)"
+                                  />
+                                </svg>
+                                <div className={styles.scoreRingVal}>{feedback.score}</div>
+                              </div>
+                              <div className={styles.feedbackVerdict}>
+                                <span className={styles.feedbackVerdictLabel}>AI panel verdict</span>
+                                <span className={styles.feedbackVerdictText}>{feedback.verdict}</span>
+                                <span className={`${styles.feedbackSourceTag} ${feedback.source === "ai" ? styles.feedbackSourceAi : ""}`}>
+                                  {feedback.source === "ai" ? "AI-evaluated" : "Rule-based estimate"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className={styles.feedbackBody}>
+                              <div className={`${styles.feedbackCol} ${styles.feedbackColGood}`}>
+                                <div className={styles.feedbackColTitle}>
+                                  <CheckCircle2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                                  What worked
+                                </div>
+                                <ul className={`${styles.feedbackList} ${styles.strengthList}`}>
+                                  {feedback.strengths.map((s, i) => (
+                                    <li key={i}>{s}</li>
                                   ))}
                                 </ul>
+                              </div>
+                              <div className={`${styles.feedbackCol} ${styles.feedbackColWarn}`}>
+                                <div className={styles.feedbackColTitle}>
+                                  <TrendingUp size={16} strokeWidth={2.2} aria-hidden="true" />
+                                  How to improve
+                                </div>
+                                <ul className={`${styles.feedbackList} ${styles.improveList}`}>
+                                  {feedback.improvements.map((s, i) => (
+                                    <li key={i}>{s}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                              {feedback.modelAnswer && (
+                                <div className={styles.modelAnswerBox}>
+                                  <div className={styles.modelAnswerTitle}>
+                                    <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
+                                    Model answer
+                                  </div>
+                                  <p className={styles.modelAnswerText}>{feedback.modelAnswer}</p>
+                                </div>
                               )}
-                              <p className={styles.deliveryCaveat}>
-                                Pace and filler counts are computed from your browser&apos;s transcript and recording time; speech engines often drop fillers like &ldquo;um&rdquo;, so treat them as a lower bound.
-                              </p>
+                              {feedback.delivery && (
+                                <div className={styles.deliveryBox}>
+                                  <div className={styles.modelAnswerTitle}>
+                                    <AudioLines size={16} strokeWidth={2} aria-hidden="true" />
+                                    Delivery
+                                    <span className={styles.deliveryTag}>Transcribed in your browser</span>
+                                  </div>
+                                  <div className={styles.speechMetricsRow}>
+                                    <span className={styles.speechMetric} style={{ "--sm": "var(--data-violet)" } as React.CSSProperties}>
+                                      <strong>{feedback.delivery.wordsPerMinute}</strong> wpm
+                                    </span>
+                                    <span className={styles.speechMetric} style={{ "--sm": "var(--data-blue)" } as React.CSSProperties}>
+                                      <strong>{feedback.delivery.paceVerdict}</strong>
+                                    </span>
+                                    <span className={styles.speechMetric} style={{ "--sm": "var(--data-amber)" } as React.CSSProperties}>
+                                      <strong>{feedback.delivery.fillerCount}</strong> filler words
+                                    </span>
+                                  </div>
+                                  {feedback.delivery.notes.length > 0 && (
+                                    <ul className={styles.feedbackList}>
+                                      {feedback.delivery.notes.map((n, i) => (
+                                        <li key={i}>{n}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                  <p className={styles.deliveryCaveat}>
+                                    Pace and filler counts are computed from your browser&apos;s transcript and recording time; speech engines often drop fillers like &ldquo;um&rdquo;, so treat them as a lower bound.
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </div>
+                        )}
+
+                        <div className={styles.qaActions}>
+                          <div className={styles.qaActionsLeft}>
+                            <button className={styles.btnGhost} onClick={() => setTimerRunning((r) => !r)}>
+                              {timerRunning ? (
+                                <>
+                                  <Pause size={14} strokeWidth={2.4} aria-hidden="true" />
+                                  Pause timer
+                                </>
+                              ) : (
+                                <>
+                                  <Play size={14} strokeWidth={2.4} aria-hidden="true" />
+                                  Resume timer
+                                </>
+                              )}
+                            </button>
+                            <button className={styles.btnGhost} onClick={prevQuestion} disabled={questionIndex === 0}>
+                              <ArrowLeft size={14} strokeWidth={2.4} aria-hidden="true" />
+                              Previous
+                            </button>
+                          </div>
+                          <button className={styles.btnNext} onClick={nextQuestion}>
+                            {questionIndex < activeCategory.questions.length - 1 ? "Next question" : "Restart round"}
+                            <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
+                          </button>
                         </div>
                       </div>
-                    )}
-
-                    <div className={styles.qaActions}>
-                      <div className={styles.qaActionsLeft}>
-                        <button className={styles.btnGhost} onClick={() => setTimerRunning((r) => !r)}>
-                          {timerRunning ? (
-                            <>
-                              <Pause size={14} strokeWidth={2.4} aria-hidden="true" />
-                              Pause timer
-                            </>
-                          ) : (
-                            <>
-                              <Play size={14} strokeWidth={2.4} aria-hidden="true" />
-                              Resume timer
-                            </>
-                          )}
-                        </button>
-                        <button className={styles.btnGhost} onClick={prevQuestion} disabled={questionIndex === 0}>
-                          <ArrowLeft size={14} strokeWidth={2.4} aria-hidden="true" />
-                          Previous
-                        </button>
+                    </>
+                  ) : (
+                    <div className={styles.qaEmpty}>
+                      <div className={styles.qaEmptyVisual} aria-hidden="true">
+                        {[0.35, 0.7, 0.5, 0.9, 0.6, 0.4, 0.75, 0.55, 0.3].map((h, i) => (
+                          <span key={i} style={{ height: `${Math.round(h * 100)}%` }} />
+                        ))}
                       </div>
-                      <button className={styles.btnNext} onClick={nextQuestion}>
-                        {questionIndex < activeCategory.questions.length - 1 ? "Next question" : "Restart round"}
-                        <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
+                      <div className={styles.qaEmptyTitle}>No active session yet</div>
+                      <p className={styles.qaEmptyDesc}>
+                        Pick a category above, or open timed practice, to start answering questions with a timer and expert tips.
+                      </p>
+                      <button type="button" className={styles.btnGhost} onClick={() => setActiveDrawer("timed")}>
+                        <Timer size={15} strokeWidth={2.2} aria-hidden="true" />
+                        Start timed practice
                       </button>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <div className={styles.qaEmpty}>
-                  <div className={styles.qaEmptyVisual} aria-hidden="true">
-                    {[0.35, 0.7, 0.5, 0.9, 0.6, 0.4, 0.75, 0.55, 0.3].map((h, i) => (
-                      <span key={i} style={{ height: `${Math.round(h * 100)}%` }} />
-                    ))}
-                  </div>
-                  <div className={styles.qaEmptyTitle}>No active session yet</div>
-                  <p className={styles.qaEmptyDesc}>
-                    Pick a category above, or open timed practice, to start answering questions with a timer and expert tips.
-                  </p>
-                  <button type="button" className={styles.btnGhost} onClick={() => setActiveDrawer("timed")}>
-                    <Timer size={15} strokeWidth={2.2} aria-hidden="true" />
-                    Start timed practice
-                  </button>
+                  )}
                 </div>
-              )}
-            </div>
-          </Reveal>
-        </section>
+              </Reveal>
+            </section>
+          </div>
 
-        {/* CHECKLIST */}
-        <section id="checklist" className={styles.roundSection}>
-          <Reveal className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Your self-assessment checklist</h2>
-            <p className={styles.sectionSubtitle}>
-              Tick these off as you prepare — a solid process beats last-minute cramming.
-            </p>
-          </Reveal>
-          <RevealGroup className={styles.checklistGrid} stagger={0.07}>
-            {Object.entries(CHECKLIST).map(([groupKey, group], gi) => {
-              const doneCount = group.items.filter((_, i) => checkedItems[`${groupKey}-${i}`]).length;
-              return (
-                <RevealItem key={groupKey}>
-                  <div
-                    className={`glass-card ${styles.checkCard}`}
-                    data-tint={gi === 0 ? "blue" : "teal"}
-                    style={{ "--chk": gi === 0 ? "var(--data-blue)" : "var(--data-emerald)" } as React.CSSProperties}
-                  >
-                    <div className={styles.checkHead}>
-                      <span className={styles.checkHeadTitle}>{group.title}</span>
-                      <span className={styles.checkCount}>
-                        <strong>{doneCount}</strong>/{group.items.length}
+          <aside data-sticky-col className={styles.railCol} aria-label="Prep tools and checklist">
+            {/* PREP AT A GLANCE */}
+            <section className={styles.roundSection} aria-labelledby="prep-glance-title">
+              <Reveal className={styles.sectionHead}>
+                <h2 id="prep-glance-title" className={styles.sectionTitle}>Prep at a glance</h2>
+                <p className={styles.sectionSubtitle}>Question bank, round guide and timed drills.</p>
+              </Reveal>
+              <Reveal delay={0.06} className={styles.prepGlanceWrap}>
+                <div className={`glass-card ${styles.prepGlancePanel}`} data-tint="blue">
+                  <div className={styles.glanceCardsList}>
+                    <button
+                      type="button"
+                      className={`${styles.statCard} ${activeDrawer === "questions" ? styles.statCardActive : ""}`}
+                      style={{ "--stat": "var(--data-blue)" } as React.CSSProperties}
+                      onClick={() => setActiveDrawer("questions")}
+                      title="Explore 68+ curated interview questions"
+                    >
+                      <span className={styles.statBar} aria-hidden="true" />
+                      <span className={styles.statValue}>68+</span>
+                      <span className={styles.statTextCol}>
+                        <span className={styles.statLabel}>Curated interview questions</span>
+                        <span className={styles.statHint}>Browse by category</span>
                       </span>
-                    </div>
-                    <div className={styles.checkProgress} aria-hidden="true">
-                      <span style={{ width: `${(doneCount / group.items.length) * 100}%` }} />
-                    </div>
-                    {group.items.map((item, i) => {
-                      const key = `${groupKey}-${i}`;
-                      const done = checkedItems[key];
-                      return (
-                        <div
-                          key={key}
-                          className={styles.checkItem}
-                          onClick={() => toggleCheck(key)}
-                          role="checkbox"
-                          aria-checked={Boolean(done)}
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === " " || e.key === "Enter") {
-                              e.preventDefault();
-                              toggleCheck(key);
-                            }
-                          }}
-                        >
-                          <div className={`${styles.checkBox} ${done ? styles.checkBoxChecked : ""}`}>
-                            {done && <Check size={12} strokeWidth={3.5} aria-hidden="true" />}
-                          </div>
-                          <span className={`${styles.checkText} ${done ? styles.checkTextDone : ""}`}>{item}</span>
-                        </div>
-                      );
-                    })}
+                      <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.statCard} ${activeDrawer === "rounds" ? styles.statCardActive : ""}`}
+                      style={{ "--stat": "var(--data-emerald)" } as React.CSSProperties}
+                      onClick={() => {
+                        setSelectedRoundDetailId(null);
+                        setActiveDrawer("rounds");
+                      }}
+                      title="Explore 6 interview round categories"
+                    >
+                      <span className={styles.statBar} aria-hidden="true" />
+                      <span className={styles.statValue}>6</span>
+                      <span className={styles.statTextCol}>
+                        <span className={styles.statLabel}>Interview round categories</span>
+                        <span className={styles.statHint}>What each round tests</span>
+                      </span>
+                      <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.statCard} ${activeDrawer === "timed" ? styles.statCardActive : ""}`}
+                      style={{ "--stat": "var(--data-amber)" } as React.CSSProperties}
+                      onClick={() => setActiveDrawer("timed")}
+                      title="Start timed response practice"
+                    >
+                      <span className={styles.statBar} aria-hidden="true" />
+                      <span className={`${styles.statValue} ${styles.statValueSm}`}>
+                        <Timer size={20} strokeWidth={2} aria-hidden="true" />
+                      </span>
+                      <span className={styles.statTextCol}>
+                        <span className={styles.statLabel}>Timed response practice</span>
+                        <span className={styles.statHint}>30s, 60s or 120s answers</span>
+                      </span>
+                      <ChevronRight size={18} className={styles.statChevron} aria-hidden="true" />
+                    </button>
                   </div>
-                </RevealItem>
-              );
-            })}
-          </RevealGroup>
-        </section>
-      </div>
+
+                  <ol className={styles.flowContainer} aria-label="How it works">
+                    <li className={styles.flowStep} title="Practice real interview questions">
+                      <span className={styles.flowStepCircle}>01</span>
+                      <span className={styles.flowStepText}>Practice</span>
+                    </li>
+                    <li className={styles.flowLine} aria-hidden="true" />
+                    <li className={styles.flowStep} title="Review tips and feedback">
+                      <span className={styles.flowStepCircle}>02</span>
+                      <span className={styles.flowStepText}>Review</span>
+                    </li>
+                    <li className={styles.flowLine} aria-hidden="true" />
+                    <li className={styles.flowStep} title="Improve with AI feedback">
+                      <span className={styles.flowStepCircle}>03</span>
+                      <span className={styles.flowStepText}>Improve</span>
+                    </li>
+                  </ol>
+                </div>
+              </Reveal>
+            </section>
+
+            {/* CHECKLIST */}
+            <section id="checklist" className={styles.roundSection}>
+              <Reveal className={styles.sectionHead}>
+                <h2 className={styles.sectionTitle}>Self-assessment checklist</h2>
+                <p className={styles.sectionSubtitle}>
+                  Tick these off as you prepare — a solid process beats last-minute cramming.
+                </p>
+              </Reveal>
+              <RevealGroup className={styles.checklistGrid} stagger={0.07}>
+                {Object.entries(CHECKLIST).map(([groupKey, group], gi) => {
+                  const doneCount = group.items.filter((_, i) => checkedItems[`${groupKey}-${i}`]).length;
+                  return (
+                    <RevealItem key={groupKey}>
+                      <div
+                        className={`glass-card ${styles.checkCard}`}
+                        data-tint={gi === 0 ? "blue" : "teal"}
+                        style={{ "--chk": gi === 0 ? "var(--data-blue)" : "var(--data-emerald)" } as React.CSSProperties}
+                      >
+                        <div className={styles.checkHead}>
+                          <span className={styles.checkHeadTitle}>{group.title}</span>
+                          <span className={styles.checkCount}>
+                            <strong>{doneCount}</strong>/{group.items.length}
+                          </span>
+                        </div>
+                        <div className={styles.checkProgress} aria-hidden="true">
+                          <span style={{ width: `${(doneCount / group.items.length) * 100}%` }} />
+                        </div>
+                        {group.items.map((item, i) => {
+                          const key = `${groupKey}-${i}`;
+                          const done = checkedItems[key];
+                          return (
+                            <div
+                              key={key}
+                              className={styles.checkItem}
+                              onClick={() => toggleCheck(key)}
+                              role="checkbox"
+                              aria-checked={Boolean(done)}
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === " " || e.key === "Enter") {
+                                  e.preventDefault();
+                                  toggleCheck(key);
+                                }
+                              }}
+                            >
+                              <div className={`${styles.checkBox} ${done ? styles.checkBoxChecked : ""}`}>
+                                {done && <Check size={12} strokeWidth={3.5} aria-hidden="true" />}
+                              </div>
+                              <span className={`${styles.checkText} ${done ? styles.checkTextDone : ""}`}>{item}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </RevealItem>
+                  );
+                })}
+              </RevealGroup>
+            </section>
+          </aside>
+        </div>
+      </main>
 
       {/* =========================================================================
           DRAWER 1: CURATED VIVA QUESTIONS (Question Explorer)

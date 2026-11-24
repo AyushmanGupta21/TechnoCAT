@@ -11,7 +11,8 @@ import {
   Search,
 } from "lucide-react";
 import AppNav from "@/components/app/AppNav";
-import { Reveal, RevealGroup, RevealItem, GradientText, SpotlightCard, type Tint } from "@/components/landing/motion";
+import PageHeader from "@/components/app/PageHeader";
+import { Reveal, RevealGroup, RevealItem, SpotlightCard, type Tint } from "@/components/landing/motion";
 import { TOPICS_DATA } from "@/data/topicsData";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_ENROLLED_TOPIC_IDS } from "@/lib/demo";
@@ -348,24 +349,15 @@ export default function BrowsePage() {
     <div className={styles.browseWrapper}>
       <AppNav />
 
-      {/* ===== PAGE HEADER + SEARCH ===== */}
-      <section className={styles.heroSection}>
-        <div className={styles.container}>
-          <Reveal className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <span className={styles.kicker}>
-                <span className={styles.kickerLine} aria-hidden="true" />
-                Course library
-              </span>
-              <h1 className={styles.heroTitle}>
-                What do you want to <GradientText>learn today?</GradientText>
-              </h1>
-              <p className={styles.heroSubtitle}>
-                The complete CAT curriculum, from Quant to VARC, with past papers and full mocks below.
-              </p>
-            </div>
-
-            <div className={styles.heroSide}>
+      <main className={styles.page}>
+        {/* ===== PAGE HEADER: title + search and library stats ===== */}
+        <PageHeader
+          eyebrow="Course library"
+          title="What do you want to"
+          accent="learn today?"
+          subtitle="The complete CAT curriculum, from Quant to VARC, with past papers and full mocks below."
+          aside={
+            <div className={styles.headerAside}>
               <label className={styles.searchBox}>
                 <Search className={styles.searchIcon} size={18} aria-hidden="true" />
                 <input
@@ -392,17 +384,16 @@ export default function BrowsePage() {
                 </div>
               </dl>
             </div>
-          </Reveal>
-        </div>
-      </section>
+          }
+        />
 
-      {/* ===== MAIN CONTENT ===== */}
-      <main className={`${styles.mainContent} ${styles.container}`}>
-        {/* Categories (only show if not searching) */}
+        {/* ===== BROWSE BY SECTION (hidden while searching) ===== */}
         {!searchQuery && (
-          <section className={styles.categorySection} aria-label="Browse by category">
+          <section className={styles.section} aria-labelledby="browse-sections-title">
             <div className={styles.sectionHeadRow}>
-              <h2 className={styles.sectionTitle}>Browse by section</h2>
+              <h2 id="browse-sections-title" className={styles.sectionTitle}>
+                Browse by section
+              </h2>
               <button
                 type="button"
                 className={styles.viewAllBtn}
@@ -458,55 +449,64 @@ export default function BrowsePage() {
           </section>
         )}
 
-        {/* PYQ Search Match Banner */}
-        {matchesPYQ && (
-          <Reveal className={`glass-card ${styles.pyqSearchResultBanner}`} data-tint="amber">
-            <div className={styles.pyqSearchLeft}>
-              <span className={styles.pyqSearchBadge}>
-                <FileText size={14} aria-hidden="true" /> Past paper found
-              </span>
-              <h3 className={styles.pyqSearchTitle}>CAT 2024 official question papers</h3>
-              <p className={styles.pyqSearchDesc}>
-                Authentic questions across Slot 1, Slot 2 &amp; Slot 3. Covers VARC, DILR and Quantitative Ability with
-                step-by-step verified solutions and timed, proctored attempts.
-              </p>
-            </div>
-            <button
-              type="button"
-              className={styles.pyqSearchBtn}
-              onClick={() => setSearchPYQModalOpen(true)}
-            >
-              <span>Explore CAT 2024 papers</span>
-              <ArrowRight size={16} aria-hidden="true" />
-            </button>
-          </Reveal>
-        )}
+        {/* ===== ALL COURSES / SEARCH RESULTS ===== */}
+        <section className={styles.section} aria-labelledby="all-courses-title">
+          {/* PYQ Search Match Banner */}
+          {matchesPYQ && (
+            <Reveal className={`glass-card ${styles.pyqSearchResultBanner}`} data-tint="amber">
+              <div className={styles.pyqSearchLeft}>
+                <span className={styles.pyqSearchBadge}>
+                  <FileText size={14} aria-hidden="true" /> Past paper found
+                </span>
+                <h3 className={styles.pyqSearchTitle}>CAT 2024 official question papers</h3>
+                <p className={styles.pyqSearchDesc}>
+                  Authentic questions across Slot 1, Slot 2 &amp; Slot 3. Covers VARC, DILR and Quantitative Ability with
+                  step-by-step verified solutions and timed, proctored attempts.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.pyqSearchBtn}
+                onClick={() => setSearchPYQModalOpen(true)}
+              >
+                <span>Explore CAT 2024 papers</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
+            </Reveal>
+          )}
 
-        {/* Course Grid */}
-        <div id="all-topics-section" className={styles.topicsHeaderRow}>
-          <h2 className={styles.sectionTitle}>
-            {searchQuery ? (
-              <>
-                Results for <span className={styles.queryEcho}>&ldquo;{searchQuery}&rdquo;</span>
-              </>
-            ) : (
-              "All courses"
+          {/* Course Grid */}
+          <div id="all-topics-section" className={`${styles.sectionHeadRow} ${styles.topicsHeaderRow}`}>
+            <h2 id="all-courses-title" className={styles.sectionTitle}>
+              {searchQuery ? (
+                <>
+                  Results for <span className={styles.queryEcho}>&ldquo;{searchQuery}&rdquo;</span>
+                </>
+              ) : (
+                "All courses"
+              )}
+              <span className={styles.titleCount}>
+                {filteredTopics.length} {filteredTopics.length === 1 ? "course" : "courses"}
+              </span>
+            </h2>
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.backBtn}
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategoryTab("All");
+                }}
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+                Back to sections
+              </button>
             )}
-          </h2>
-          {searchQuery ? (
-            <button
-              type="button"
-              className={styles.backBtn}
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategoryTab("All");
-              }}
-            >
-              <ArrowLeft size={16} aria-hidden="true" />
-              Back to sections
-            </button>
-          ) : (
-            <div className={styles.topicsControls}>
+          </div>
+
+          {/* Toolbar: section filters on the left, sort on the right */}
+          {!searchQuery && (
+            <div className={styles.toolbar}>
               <div className={styles.segmentedNav} role="tablist" aria-label="Topic categories">
                 {(["All", "Quantitative", "DILR", "VARC"] as const).map((tab) => {
                   const isActive = selectedCategoryTab === tab;
@@ -566,106 +566,106 @@ export default function BrowsePage() {
               </div>
             </div>
           )}
-        </div>
 
-        {filteredTopics.length === 0 ? (
-          <div className={styles.noResults}>No courses match your search.</div>
-        ) : (
-          <RevealGroup className={styles.topicsGrid}>
-            {filteredTopics.map((topic) => {
-              const isEnrolled = enrolledTopics.includes(topic.id);
-              const section = sectionOf(topic);
-              const prog = isDemo
-                ? { percent: topic.progressPercent || 0, done: topic.completedLessonsCount || 0 }
-                : progressById[topic.id] || { percent: 0, done: 0 };
-              const percent = Math.max(0, Math.min(100, Math.round(prog.percent)));
+          {filteredTopics.length === 0 ? (
+            <div className={styles.noResults}>No courses match your search.</div>
+          ) : (
+            <RevealGroup className={styles.topicsGrid}>
+              {filteredTopics.map((topic) => {
+                const isEnrolled = enrolledTopics.includes(topic.id);
+                const section = sectionOf(topic);
+                const prog = isDemo
+                  ? { percent: topic.progressPercent || 0, done: topic.completedLessonsCount || 0 }
+                  : progressById[topic.id] || { percent: 0, done: 0 };
+                const percent = Math.max(0, Math.min(100, Math.round(prog.percent)));
 
-              return (
-                <RevealItem key={topic.id} className={styles.topicItem}>
-                  <SpotlightCard as="article" tint={SECTION_TINT[section]} className={styles.topicCard} data-section={section}>
-                    {/* Banner */}
-                    <div className={styles.cardBanner} style={{ background: topic.bannerGradient || "#1F2937" }}>
-                      {topic.bannerImage && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={topic.bannerImage} alt={topic.title} className={styles.cardBannerBg} />
-                      )}
-                      <span className={styles.bannerShade} aria-hidden="true" />
-                      <span className={styles.topicBadge}>
-                        <span className={styles.badgeDot} aria-hidden="true" />
-                        {topic.category}
-                      </span>
-                      {isEnrolled && <span className={styles.enrolledFlag}>Enrolled</span>}
-                    </div>
-
-                    {/* Body */}
-                    <div className={styles.cardBody}>
-                      <h3 className={styles.cardTitle}>{topic.title}</h3>
-                      <p className={styles.cardDesc}>{topic.description}</p>
-
-                      <div className={styles.instructorRow}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={topic.instructor.avatar} alt={topic.instructor.name} className={styles.instructorAvatar} />
-                        <div className={styles.instructorInfo}>
-                          <span className={styles.instructorName}>{topic.instructor.name}</span>
-                          <span className={styles.instructorRole}>{topic.instructor.role}</span>
-                        </div>
-                      </div>
-
-                      {isEnrolled ? (
-                        <div className={styles.progressBlock}>
-                          <div className={styles.progressHead}>
-                            <span>
-                              <b>{prog.done}</b>/{topic.totalLessons} lessons
-                            </span>
-                            <span className={styles.progressPct}>{percent}%</span>
-                          </div>
-                          <div className={styles.progressTrack}>
-                            <div className={styles.progressFill} style={{ width: `${percent}%` }} />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.progressBlock}>
-                          <div className={styles.progressHead}>
-                            <span>
-                              <b>{topic.totalLessons}</b> lessons
-                            </span>
-                            <span className={styles.progressMuted}>Not started</span>
-                          </div>
-                          <div className={styles.progressTrack} />
-                        </div>
-                      )}
-
-                      <div className={styles.cardFooter}>
-                        {isEnrolled ? (
-                          <button
-                            type="button"
-                            className={`${styles.enrollBtn} ${styles.btnSecondary}`}
-                            onClick={() => router.push(`/topics/${topic.id}`)}
-                          >
-                            {percent > 0 ? "Resume course" : "Go to course"}
-                            <ArrowRight size={16} aria-hidden="true" />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className={`${styles.enrollBtn} ${styles.btnPrimary}`}
-                            disabled={enrollingTopicId === topic.id}
-                            onClick={() => handleEnroll(topic.id, topic.title)}
-                          >
-                            {enrollingTopicId === topic.id ? "Enrolling..." : "Enroll now"}
-                            <ArrowRight size={16} aria-hidden="true" />
-                          </button>
+                return (
+                  <RevealItem key={topic.id} className={styles.topicItem}>
+                    <SpotlightCard as="article" tint={SECTION_TINT[section]} className={styles.topicCard} data-section={section}>
+                      {/* Banner */}
+                      <div className={styles.cardBanner} style={{ background: topic.bannerGradient || "#1F2937" }}>
+                        {topic.bannerImage && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={topic.bannerImage} alt={topic.title} className={styles.cardBannerBg} />
                         )}
+                        <span className={styles.bannerShade} aria-hidden="true" />
+                        <span className={styles.topicBadge}>
+                          <span className={styles.badgeDot} aria-hidden="true" />
+                          {topic.category}
+                        </span>
+                        {isEnrolled && <span className={styles.enrolledFlag}>Enrolled</span>}
                       </div>
-                    </div>
-                  </SpotlightCard>
-                </RevealItem>
-              );
-            })}
-          </RevealGroup>
-        )}
 
-        {/* Past papers & full mocks (rendered by PYQSection) */}
+                      {/* Body */}
+                      <div className={styles.cardBody}>
+                        <h3 className={styles.cardTitle}>{topic.title}</h3>
+                        <p className={styles.cardDesc}>{topic.description}</p>
+
+                        <div className={styles.instructorRow}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={topic.instructor.avatar} alt={topic.instructor.name} className={styles.instructorAvatar} />
+                          <div className={styles.instructorInfo}>
+                            <span className={styles.instructorName}>{topic.instructor.name}</span>
+                            <span className={styles.instructorRole}>{topic.instructor.role}</span>
+                          </div>
+                        </div>
+
+                        {isEnrolled ? (
+                          <div className={styles.progressBlock}>
+                            <div className={styles.progressHead}>
+                              <span>
+                                <b>{prog.done}</b>/{topic.totalLessons} lessons
+                              </span>
+                              <span className={styles.progressPct}>{percent}%</span>
+                            </div>
+                            <div className={styles.progressTrack}>
+                              <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={styles.progressBlock}>
+                            <div className={styles.progressHead}>
+                              <span>
+                                <b>{topic.totalLessons}</b> lessons
+                              </span>
+                              <span className={styles.progressMuted}>Not started</span>
+                            </div>
+                            <div className={styles.progressTrack} />
+                          </div>
+                        )}
+
+                        <div className={styles.cardFooter}>
+                          {isEnrolled ? (
+                            <button
+                              type="button"
+                              className={`${styles.enrollBtn} ${styles.btnSecondary}`}
+                              onClick={() => router.push(`/topics/${topic.id}`)}
+                            >
+                              {percent > 0 ? "Resume course" : "Go to course"}
+                              <ArrowRight size={16} aria-hidden="true" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className={`${styles.enrollBtn} ${styles.btnPrimary}`}
+                              disabled={enrollingTopicId === topic.id}
+                              onClick={() => handleEnroll(topic.id, topic.title)}
+                            >
+                              {enrollingTopicId === topic.id ? "Enrolling..." : "Enroll now"}
+                              <ArrowRight size={16} aria-hidden="true" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </SpotlightCard>
+                  </RevealItem>
+                );
+              })}
+            </RevealGroup>
+          )}
+        </section>
+
+        {/* ===== PAST PAPERS & FULL MOCKS (rendered by PYQSection, which owns its heading) ===== */}
         {!searchQuery && (
           <div className={styles.pyqWrap}>
             <PYQSection />

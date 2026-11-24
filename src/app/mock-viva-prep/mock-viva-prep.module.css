@@ -10,101 +10,31 @@
   overflow-x: clip;
 }
 
-/* ===== PAGE HEADER ===== */
-.heroSection {
-  padding: 28px 24px 8px;
-}
-.heroInner {
-  max-width: 1280px;
+/* ===== PAGE SHELL =====
+   AppNav, PageHeader, the featured live viva (full width), then a main column (question practice)
+   and a right column (prep tools + checklist). Shared width tokens from globals.css. */
+.page {
+  max-width: var(--page-max);
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: 40px;
-  align-items: center;
-}
-.heroLeft {
+  padding: 32px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 44px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 32px;
+  row-gap: 44px;
+  align-items: start;
+}
+.mainCol,
+.railCol {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
   min-width: 0;
-}
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
-.breadcrumbLink {
-  color: var(--ink-3);
-  font-weight: 500;
-  transition: color var(--dur-fast) var(--ease-out);
-}
-.breadcrumbLink:hover {
-  color: var(--blue-700);
-}
-.breadcrumbSep {
-  color: var(--ink-4);
-}
-.breadcrumbCurrent {
-  color: var(--ink);
-  font-weight: 600;
-}
-.heroTitle {
-  font-family: var(--ff-display);
-  font-size: clamp(30px, 3.4vw, 48px);
-  font-weight: 700;
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-  max-width: 20ch;
-}
-.heroSubtitle {
-  max-width: 560px;
-  font-size: 16.5px;
-  line-height: 1.65;
-  color: var(--ink-3);
-}
-.heroActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
-}
-.btnPrimary,
-.btnSecondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  height: 50px;
-  padding: 0 22px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-}
-.btnPrimary {
-  color: #fff;
-  background: var(--grad-badge);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 14px 28px -14px rgba(37, 99, 235, 0.85);
-}
-.btnPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 20px 36px -16px rgba(37, 99, 235, 0.9);
-}
-.btnSecondary {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--line-strong);
-}
-.btnSecondary:hover {
-  transform: translateY(-2px);
-  color: var(--blue-700);
-  border-color: var(--blue-300);
-  box-shadow: 0 12px 24px -16px rgba(37, 99, 235, 0.5);
+  container-type: inline-size;
 }
 
 /* Prep at a glance */
@@ -121,23 +51,6 @@
 .prepGlancePanel > * {
   position: relative;
   z-index: 1;
-}
-.glanceHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.glanceTitle {
-  font-family: var(--ff-display);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.glanceSubtitle {
-  font-size: 13.5px;
-  color: var(--ink-3);
 }
 .glanceCardsList {
   display: flex;
@@ -257,31 +170,24 @@
   background: linear-gradient(90deg, var(--blue-200), var(--blue-100));
 }
 
-/* ===== CONTENT ===== */
-.contentWrapper {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 40px 24px 96px;
-  display: flex;
-  flex-direction: column;
-  gap: 72px;
-}
+/* ===== SECTIONS ===== */
 .roundSection {
   scroll-margin-top: 96px;
   min-width: 0;
 }
 .sectionHead {
-  margin-bottom: 22px;
-  max-width: 760px;
+  margin-bottom: 18px;
+  max-width: 70ch;
 }
 .sectionKicker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--blue-700);
 }
@@ -294,17 +200,17 @@
 }
 .sectionTitle {
   font-family: var(--ff-display);
-  font-size: clamp(24px, 2.5vw, 34px);
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.15;
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--ink);
 }
 .sectionSubtitle {
-  margin-top: 10px;
-  font-size: 15.5px;
-  line-height: 1.65;
+  margin-top: 6px;
+  font-size: 14.5px;
+  line-height: 1.6;
   color: var(--ink-3);
 }
 .roundSectionHead {
@@ -312,10 +218,11 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 .roundHeadLeft {
-  max-width: 720px;
+  min-width: 0;
+  max-width: 70ch;
 }
 .btnViewAllRounds {
   display: inline-flex;
@@ -338,11 +245,13 @@
 }
 
 /* ===== CATEGORY GRID ===== */
+/* 3 across in the main column on desktop, 2 on tablets, 1 on phones */
 .catGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 24px;
 }
+
 .catItem {
   display: flex;
   min-width: 0;
@@ -1223,8 +1132,8 @@
 /* ===== CHECKLIST ===== */
 .checklistGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
 }
 .checkCard {
   --chk: var(--data-blue);
@@ -1317,47 +1226,59 @@
 }
 
 /* ===== RESPONSIVE (page) ===== */
-@media (max-width: 1100px) {
-  .catGrid {
+/* Right column widgets adapt to the width they get */
+@container (min-width: 560px) {
+  .checklistGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .glanceCardsList {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
 }
-@media (max-width: 1023px) {
-  .heroInner {
+@container (max-width: 560px) {
+  .feedbackBody {
     grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .heroTitle {
-    max-width: none;
   }
 }
+
+@media (max-width: 1320px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 24px;
+  }
+}
+
+/* Below laptop width the columns stack: practice first, then tools and the checklist (full width) */
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 760px) {
+  .page {
+    padding: 22px var(--page-pad) 56px;
+    gap: 36px;
+  }
+  .layout,
+  .mainCol,
+  .railCol {
+    row-gap: 36px;
+  }
   .roundSectionHead {
     flex-direction: column;
     align-items: flex-start;
   }
-  .feedbackBody,
-  .checklistGrid {
-    grid-template-columns: 1fr;
+  .sectionTitle {
+    font-size: 20px;
   }
 }
 @media (max-width: 640px) {
-  .heroSection {
-    padding: 20px 16px 4px;
-  }
-  .heroActions > * {
-    flex: 1 1 auto;
-  }
   .prepGlancePanel {
     padding: 16px;
     border-radius: var(--radius-lg);
-  }
-  .contentWrapper {
-    padding: 28px 16px 72px;
-    gap: 52px;
-  }
-  .catGrid {
-    grid-template-columns: 1fr;
   }
   .qaHeader,
   .qaBody {
@@ -1380,7 +1301,7 @@
   .modeBtn {
     flex: 1;
     justify-content: center;
-    height: 40px;
+    height: 44px;
   }
   .feedbackTop {
     flex-direction: column;

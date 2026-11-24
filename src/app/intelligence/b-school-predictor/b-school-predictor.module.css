@@ -11,12 +11,12 @@
 }
 
 .main {
-  max-width: 1240px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: clamp(20px, 3vw, 36px) 24px 64px;
+  padding: 32px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: 24px;
 }
 
 .srOnly {
@@ -31,49 +31,8 @@
 /* Reveal-animated glass cards: let motion own the transform (no CSS transform transition). */
 .page :global(.glass-card[data-tint][style*="opacity"]) { transition: box-shadow var(--dur) var(--ease-out); }
 
-/* ---------- Page header ---------- */
-.head { display: flex; flex-direction: column; gap: 12px; }
-
-.crumbs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--ff-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.crumbs a { color: var(--blue-600); text-decoration: none; }
-.crumbs a:hover { color: var(--blue-800); text-decoration: underline; }
-.crumbs svg { color: var(--ink-4); }
-
-.headRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px 32px;
-  flex-wrap: wrap;
-}
-.headText { max-width: 720px; }
-
-.title {
-  margin: 0;
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(28px, min(3.1vw, 5.6vh), 44px);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.lede {
-  margin: 10px 0 0;
-  font-size: clamp(14.5px, 1.1vw, 16px);
-  line-height: 1.6;
-  color: var(--ink-2);
-}
-.headActions { display: flex; gap: 10px; flex-wrap: wrap; }
+/* ---------- Page header (BackLink + shared PageHeader) ---------- */
+.head { display: flex; flex-direction: column; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -142,16 +101,15 @@
 
 /* ---------- Banner ---------- */
 .banner {
-  display: flex;
-  align-items: center;
-  gap: 12px 16px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px 12px;
+  padding: 16px 18px;
   border-radius: var(--radius-md);
 }
-.bannerIcon { color: var(--blue-600); flex-shrink: 0; }
-.bannerText { flex: 1 1 420px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+.bannerIcon { color: var(--blue-600); flex-shrink: 0; margin-top: 2px; }
+.bannerText { min-width: 0; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .bannerText strong { color: var(--ink); }
 .bannerHighlight {
   font-family: var(--ff-mono);
@@ -161,19 +119,23 @@
   white-space: nowrap;
 }
 .bannerDisclaimer { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-3); }
-.bannerHint { font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+.bannerHint { grid-column: 2; font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
 
-/* ---------- Split grid ---------- */
-.splitGrid {
+/* ---------- Layout: form column | results column ---------- */
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: 440px minmax(0, 1fr);
+  column-gap: 32px;
+  row-gap: 28px;
   align-items: start;
+  margin-top: 16px;
 }
-.splitGrid > * { min-width: 0; }
+.layout > * { min-width: 0; }
+.resultsCol { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
 
 /* ---------- Form card ---------- */
 .formCard {
+  container-type: inline-size;
   padding: clamp(20px, 2.2vw, 28px);
   border-radius: var(--radius-xl);
   display: flex;
@@ -351,6 +313,7 @@
 
 /* ---------- Featured summary card (dark) ---------- */
 .summaryCard {
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -506,13 +469,13 @@
 .whatIfSmall { display: block; margin-top: 6px; font-size: 12px; color: rgba(219, 234, 254, 0.7); }
 
 /* ---------- Results ---------- */
-.results { display: flex; flex-direction: column; gap: 16px; }
+.results { display: flex; flex-direction: column; gap: 16px; container-type: inline-size; scroll-margin-top: 96px; }
 .resultsHead { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
 .sectionTitle {
   margin: 0;
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 800;
+  font-size: clamp(20px, 1.6vw, 22px);
   letter-spacing: 0.01em;
   text-transform: uppercase;
   line-height: 1.1;
@@ -861,53 +824,94 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1200px) {
-  .tableHead { display: none; }
-  .table { padding: 0; background: none !important; box-shadow: none !important; }
-  .table::before { display: none !important; }
-  .tableBody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .tableBody > * { min-width: 0; }
-  .row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 16px;
-    align-items: start;
-    padding: 18px 18px 16px 20px;
-    border-radius: var(--radius-lg);
-    height: 100%;
-  }
-  .rank { position: absolute; top: 18px; right: 18px; }
-  .school { grid-column: 1 / -1; padding-right: 36px; }
-  .chance { grid-column: 1 / -1; }
-  .cellLbl { display: block; }
-  .cellVal { white-space: normal; }
-  .criteriaBtn { grid-column: 1 / -1; order: 10; width: 100%; }
-  .advice { grid-column: 1 / -1; }
-}
-
-@media (max-width: 1000px) {
-  .splitGrid { grid-template-columns: 1fr; }
-  .guideGrid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 760px) {
-  .tableBody { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 720px) {
-  .main { padding: 18px 16px 48px; }
+/* ---------- Container-driven pieces (adapt to the column they sit in) ---------- */
+/* Form: two fields per row unless the card is narrow */
+@container (max-width: 330px) {
   .fieldsGrid { grid-template-columns: 1fr; }
+}
+/* Admission strength: gauge above the insights when narrow */
+@container (max-width: 520px) {
   .meterGrid { grid-template-columns: 1fr; justify-items: center; }
   .insights { width: 100%; }
   .gauge { width: 180px; }
   .factorRow { grid-template-columns: 1fr auto; row-gap: 6px; }
   .factorTrack { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Shortlist, medium width: two-line rows (identity + chance + criteria, then the figures) */
+@container (max-width: 1039px) {
+  .tableHead { display: none; }
+  .row {
+    grid-template-columns: 32px repeat(4, minmax(0, 1fr)) auto;
+    gap: 12px 16px;
+    padding: 16px 18px 14px 20px;
+  }
+  .rank { grid-column: 1; grid-row: 1 / span 3; align-self: start; padding-top: 10px; }
+  .school { grid-column: span 2; }
+  .chance { grid-column: span 2; }
+  .criteriaBtn { grid-column: 6; grid-row: 1; }
+  .cell { padding-top: 10px; border-top: 1px dashed var(--line); gap: 2px; }
+  .cellLbl { display: block; }
+  .advice { grid-column: 2 / -1; }
+  .guideGrid { grid-template-columns: 1fr; }
+}
+/* Shortlist, narrow: one card per school */
+@container (max-width: 639px) {
+  .table { padding: 0; background: none !important; box-shadow: none !important; }
+  .table::before { display: none !important; }
+  .tableBody { gap: 12px; }
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    padding: 18px 18px 16px 20px;
+    border-radius: var(--radius-lg);
+  }
+  .rank { position: absolute; top: 18px; right: 18px; grid-column: auto; grid-row: auto; padding-top: 0; }
+  .school { grid-column: 1 / -1; padding-right: 36px; }
+  .chance { grid-column: 1 / -1; }
+  .cell { padding-top: 0; border-top: 0; }
+  .cellVal { white-space: normal; }
+  .criteriaBtn { grid-column: 1 / -1; grid-row: auto; order: 10; width: 100%; min-height: 44px; }
+  .advice { grid-column: 1 / -1; }
   .resultsTools { width: 100%; }
   .segment { width: 100%; overflow-x: auto; }
   .segBtn { flex: 1; justify-content: center; min-height: 44px; }
   .guideBtn { width: 100%; justify-content: center; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1320px) {
+  .layout { grid-template-columns: 400px minmax(0, 1fr); column-gap: 24px; row-gap: 24px; }
+}
+
+/* Small laptop / large tablet: form | admission strength side by side, shortlist full width below */
+@media (min-width: 1000px) and (max-width: 1199px) {
+  .layout { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px 24px; }
+  .resultsCol { display: contents; }
+  .oForm { grid-column: 1; grid-row: 1; }
+  .oSummary { grid-column: 2; grid-row: 1; }
+  .oResults { grid-column: 1 / -1; grid-row: 2; margin-top: 12px; }
+}
+
+/* Tablet + phone: one column, form first */
+@media (max-width: 999px) {
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 28px; }
+  .resultsCol { gap: 40px; }
+}
+
+@media (max-width: 760px) {
+  .main { padding: 22px var(--page-pad) 56px; }
+  .layout { gap: 24px; margin-top: 8px; }
+  .resultsCol { gap: 32px; }
+}
+
+@media (max-width: 720px) {
   .weightsGrid { grid-template-columns: 1fr; }
   .modalBox { padding: 22px 18px; }
+}
+
+@media (max-width: 440px) {
+  .fieldsGrid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

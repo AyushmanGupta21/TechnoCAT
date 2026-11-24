@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import AppNav from "@/components/app/AppNav";
-import { GradientText, Reveal } from "@/components/landing/motion";
+import BackLink from "@/components/app/BackLink";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
+import { Reveal } from "@/components/landing/motion";
 import styles from "./settings.module.css";
 
 type SettingsTab = "notifications" | "exam" | "security";
@@ -282,47 +284,43 @@ function SettingsContent() {
 
   const activeMeta = TAB_META.find((t) => t.id === activeTab) ?? TAB_META[0];
 
+  const displayName = user?.fullName?.trim() || "Student";
+  const displayInitials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p, i, arr) => (i === 0 || i === arr.length - 1 ? p[0] : ""))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "S";
+  const syncsToAccount = Boolean(user && !isDemo);
+
   return (
     <div className={styles.pageWrapper}>
       <AppNav />
 
-      {/* ===== PAGE HEADER ===== */}
-      <header className={styles.pageHeader}>
-        <div className={styles.headerInner}>
-          <Reveal className={styles.heroRow}>
-            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-              <Link href="/dashboard" className={styles.breadcrumbLink}>
-                Dashboard
+      <main className={styles.page}>
+        {/* ===== PAGE HEADER ===== */}
+        <div className={styles.headGroup}>
+          <BackLink href="/dashboard" label="Back to dashboard" />
+          <PageHeader
+            title="Account"
+            accent="settings"
+            subtitle="Choose which reminders you get, tune the mock exam interface and keep your account secure."
+            actions={
+              <Link href="/profile/edit" className={pageHeaderStyles.secondaryAction}>
+                <UserPen size={18} strokeWidth={2} />
+                Edit profile
               </Link>
-              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
-              <span className={styles.breadcrumbCurrent}>Settings</span>
-            </nav>
-            <div className={styles.heroTitleRow}>
-              <div>
-                <h1 className={styles.heroHeading}>
-                  Account <GradientText>settings</GradientText>
-                </h1>
-                <p className={styles.heroSubtitle}>
-                  Choose which reminders you get, tune the mock exam interface and keep your account secure.
-                </p>
-              </div>
-              <div className={styles.heroActions}>
-                <Link href="/profile/edit" className={styles.heroBtn}>
-                  <UserPen size={16} strokeWidth={2} />
-                  Edit profile
-                </Link>
-              </div>
-            </div>
-          </Reveal>
+            }
+          />
         </div>
-      </header>
 
-      {/* ===== MAIN CONTENT GRID ===== */}
-      <main className={styles.mainContent}>
+        {/* ===== SECTION NAV + PANEL + RAIL ===== */}
         <div className={styles.settingsGrid}>
-          {/* Sub-navigation */}
+          {/* Sub-navigation: vertical + sticky on desktop, scrollable tab bar on tablet / phone */}
           <Reveal delay={0.05} className={styles.tabNavWrap}>
-            <aside className={`glass-card ${styles.tabNavCard}`} data-tint="blue" aria-label="Settings sections">
+            <nav className={`glass-card ${styles.tabNavCard}`} data-tint="blue" aria-label="Settings sections">
               <span className={styles.tabNavLabel}>Settings</span>
               <div className={styles.tabList} role="tablist" aria-orientation="vertical">
                 {TAB_META.map((t) => {
@@ -347,18 +345,11 @@ function SettingsContent() {
                   );
                 })}
               </div>
-              <div className={styles.tabNavFooter}>
-                <Link href="/profile/edit" className={styles.profileLink}>
-                  <UserPen size={16} strokeWidth={1.9} />
-                  <span>Edit profile</span>
-                  <ChevronRight size={15} className={styles.profileLinkArrow} />
-                </Link>
-              </div>
-            </aside>
+            </nav>
           </Reveal>
 
           {/* Content */}
-          <div className={styles.contentArea} key={activeTab}>
+          <div data-sticky-col className={styles.contentArea} key={activeTab}>
             {/* ================= TAB 1: NOTIFICATIONS ================= */}
             {activeTab === "notifications" && (
               <Reveal y={14}>
@@ -547,7 +538,7 @@ function SettingsContent() {
                           <div className={styles.optionText}>
                             <h3 className={styles.optionTitle}>Account password</h3>
                             <p className={styles.optionSub}>
-                              Last changed 2 months ago. Changing it regularly keeps your account safe.
+                              Changing it from time to time keeps your account and test history safe.
                             </p>
                           </div>
                           <button
@@ -680,6 +671,55 @@ function SettingsContent() {
                 </Reveal>
               </>
             )}
+          </div>
+
+          {/* At-a-glance rail: right column on wide screens, card pair below the panel on smaller ones */}
+          <div data-sticky-col className={styles.rail}>
+            <Reveal delay={0.1} className={styles.railItem}>
+              <section className={`glass-card ${styles.railCard}`} data-tint="violet" aria-labelledby="set-account-title">
+                <h2 id="set-account-title" className={styles.railTitle}>
+                  Your account
+                </h2>
+                <div className={styles.accountRow}>
+                  <span className={styles.accountAvatar} aria-hidden="true">
+                    {displayInitials}
+                  </span>
+                  <span className={styles.accountText}>
+                    <span className={styles.accountName}>{displayName}</span>
+                    {user?.email && <span className={styles.accountEmail}>{user.email}</span>}
+                  </span>
+                </div>
+                <Link href="/profile/edit" className={styles.railLink}>
+                  <UserPen size={16} strokeWidth={1.9} />
+                  <span>Edit name, photo and goals</span>
+                  <ChevronRight size={15} className={styles.railLinkArrow} />
+                </Link>
+              </section>
+            </Reveal>
+
+            <Reveal delay={0.15} className={styles.railItem}>
+              <section className={`glass-card ${styles.railCard}`} data-tint="teal" aria-labelledby="set-saving-title">
+                <h2 id="set-saving-title" className={styles.railTitle}>
+                  How changes save
+                </h2>
+                <ul className={styles.factList}>
+                  <li className={styles.factItem}>
+                    <Check size={16} strokeWidth={2.4} className={styles.factIcon} />
+                    <span>Switches apply the moment you flip them. There&apos;s no save button to press.</span>
+                  </li>
+                  <li className={styles.factItem}>
+                    <Check size={16} strokeWidth={2.4} className={styles.factIcon} />
+                    <span>
+                      {syncsToAccount
+                        ? "Preferences are synced to your account, so they follow you to any device."
+                        : isDemo
+                        ? "On this shared account, preferences are kept in this browser only."
+                        : "Preferences are kept in this browser."}
+                    </span>
+                  </li>
+                </ul>
+              </section>
+            </Reveal>
           </div>
         </div>
       </main>

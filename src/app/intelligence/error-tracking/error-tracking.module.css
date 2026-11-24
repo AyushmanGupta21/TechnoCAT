@@ -11,12 +11,12 @@
 }
 
 .main {
-  max-width: 1240px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: clamp(20px, 3vw, 36px) 24px 64px;
+  padding: 32px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: 24px;
 }
 
 .srOnly {
@@ -31,49 +31,8 @@
 /* Reveal-animated glass cards: let motion own the transform (no CSS transform transition). */
 .page :global(.glass-card[data-tint][style*="opacity"]) { transition: box-shadow var(--dur) var(--ease-out); }
 
-/* ---------- Page header ---------- */
-.head { display: flex; flex-direction: column; gap: 12px; }
-
-.crumbs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--ff-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.crumbs a { color: var(--blue-600); text-decoration: none; }
-.crumbs a:hover { color: var(--blue-800); text-decoration: underline; }
-.crumbs svg { color: var(--ink-4); }
-
-.headRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px 32px;
-  flex-wrap: wrap;
-}
-.headText { max-width: 720px; }
-
-.title {
-  margin: 0;
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(28px, min(3.1vw, 5.6vh), 44px);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.lede {
-  margin: 10px 0 0;
-  font-size: clamp(14.5px, 1.1vw, 16px);
-  line-height: 1.6;
-  color: var(--ink-2);
-}
-.headActions { display: flex; gap: 10px; flex-wrap: wrap; }
+/* ---------- Page header (BackLink + shared PageHeader) ---------- */
+.head { display: flex; flex-direction: column; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -132,7 +91,7 @@
 .textLink:hover svg { transform: translateX(3px); }
 
 /* ---------- Stat row ---------- */
-.statRow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.statRow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
 .statRow > * { min-width: 0; }
 .stat {
   height: 100%;
@@ -165,9 +124,19 @@
 .statNote { font-size: 12.5px; line-height: 1.45; color: var(--ink-3); }
 
 /* ---------- Cards ---------- */
-.analyticsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.analyticsGrid > * { min-width: 0; }
-.card { padding: 22px 24px; border-radius: var(--radius-lg); height: 100%; }
+/* ---------- Main column (filters + log) + right rail (summary) ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 32px;
+  row-gap: 28px;
+  align-items: start;
+  margin-top: 16px;
+}
+.mainCol { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.railCol { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+.card { padding: 22px 24px; border-radius: var(--radius-lg); min-width: 0; container-type: inline-size; }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .cardTitle {
   margin: 0;
@@ -187,7 +156,12 @@
   white-space: nowrap;
 }
 
-.whereBody { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 20px; align-items: center; }
+.whereBody { display: grid; grid-template-columns: 1fr; justify-items: center; gap: 18px; align-items: center; }
+.whereBody .secRows { width: 100%; }
+/* Donut beside the section rows only when the card is wide enough */
+@container (min-width: 520px) {
+  .whereBody { grid-template-columns: 180px minmax(0, 1fr); gap: 20px; justify-items: stretch; }
+}
 .donutWrap { position: relative; width: 180px; height: 180px; }
 .donutCenter { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
 .donutVal { font-family: var(--ff-mono); font-size: 30px; font-weight: 600; line-height: 1; color: var(--ink); }
@@ -342,7 +316,7 @@
 .chipBtn:hover { border-color: var(--blue-300); color: var(--blue-700); }
 .chipBtnActive { border-color: var(--blue-500); color: var(--blue-700); background: var(--blue-50); }
 
-.resultCount { margin: -6px 0 -8px; font-size: 13px; color: var(--ink-3); }
+.resultCount { margin: 0 0 -6px; font-size: 13px; color: var(--ink-3); }
 .resultCount strong { font-family: var(--ff-mono); color: var(--ink); }
 
 /* ---------- Error cards ---------- */
@@ -574,17 +548,38 @@ div.emptyCard[aria-busy] { color: var(--ink-3); }
 .emptyBody { max-width: 540px; margin: 0 auto 20px; font-size: 14px; line-height: 1.6; color: var(--ink-3); }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1320px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 24px; row-gap: 24px; }
+}
+
 @media (max-width: 1100px) {
   .statRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .analyticsGrid { grid-template-columns: 1fr; }
+}
+
+/* Tablet + phone: columns dissolve; summary first, then filters and the log */
+@media (max-width: 1199px) {
+  .mainCol, .railCol { display: contents; }
+  .oWhere { order: 1; }
+  .oConcepts { order: 2; }
+  .oFilter { order: 3; }
+  .oCount { order: 4; }
+  .oList { order: 5; }
+}
+/* Tablet: the two summary cards side by side, the log full width */
+@media (min-width: 700px) and (max-width: 1199px) {
+  .layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .oFilter, .oCount, .oList { grid-column: 1 / -1; }
+}
+/* Phone: one column */
+@media (max-width: 699px) {
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 20px; margin-top: 8px; }
+}
+
+@media (max-width: 760px) {
+  .main { padding: 22px var(--page-pad) 56px; }
 }
 
 @media (max-width: 720px) {
-  .main { padding: 18px 16px 48px; }
-  .headActions { width: 100%; }
-  .headActions .btn { flex: 1 1 auto; }
-  .whereBody { grid-template-columns: 1fr; justify-items: center; }
-  .secRows { width: 100%; }
   .options { grid-template-columns: 1fr; }
   .filterTop { flex-direction: column; align-items: stretch; }
   .segment { width: 100%; }
@@ -593,6 +588,7 @@ div.emptyCard[aria-busy] { color: var(--ink-3); }
   .chipBtn { min-height: 40px; }
   .qCard { padding: 18px 16px 16px; }
   .card { padding: 20px 18px; }
+  .statRow { gap: 16px; }
 }
 
 @media (max-width: 400px) {

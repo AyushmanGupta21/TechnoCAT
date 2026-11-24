@@ -9,51 +9,19 @@
   overflow-x: clip;
 }
 
-.container {
-  width: 100%;
-  max-width: 1280px;
+/* Shared page width (globals: --page-max / --page-pad) */
+.shell {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 32px var(--page-pad) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(36px, 3.6vw, 48px);
 }
 
 .mono {
   font-family: var(--ff-mono);
   font-variant-numeric: tabular-nums;
-}
-
-/* ---------- Page header ---------- */
-.pageHeader {
-  padding: clamp(24px, 5vh, 48px) 0 clamp(8px, 2vh, 16px);
-}
-.pageHeaderRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.pageHeaderText {
-  max-width: 680px;
-}
-.pageTitle {
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(30px, min(4vw, 6vh), 48px);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.pageSubtitle {
-  margin-top: 10px;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--ink-3);
-}
-.pageActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 /* ---------- Buttons ---------- */
@@ -89,16 +57,6 @@
 .btnPrimary:hover {
   background: var(--blue-700);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(13, 27, 66, 0.2), 0 12px 28px -10px rgba(37, 86, 224, 0.7);
-}
-.btnSecondary {
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  box-shadow: var(--elev-1);
-}
-.btnSecondary:hover {
-  border-color: var(--blue-300);
-  color: var(--blue-700);
 }
 .btnGhost {
   color: var(--ink-2);
@@ -147,30 +105,31 @@
 }
 
 /* ---------- Sections ---------- */
-.main {
-  padding-bottom: clamp(48px, 8vh, 96px);
-}
 .section {
-  padding-top: clamp(36px, 6vh, 64px);
+  min-width: 0;
 }
-.sectionLast {
-  padding-bottom: 8px;
+.section[id] {
+  scroll-margin-top: 96px;
+}
+/* Size container so inner grids adapt to the column they sit in */
+.cq {
+  container-type: inline-size;
 }
 .sectionHead {
-  margin-bottom: clamp(16px, 2.6vh, 24px);
+  margin-bottom: 20px;
 }
 .sectionHeadRow {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   flex-wrap: wrap;
 }
 .sectionTitle {
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(22px, min(2.4vw, 4vh), 30px);
-  line-height: 1.1;
+  font-weight: 800;
+  font-size: clamp(20px, 1.6vw, 22px);
+  line-height: 1.15;
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--ink);
@@ -180,7 +139,24 @@
   font-size: 15px;
   line-height: 1.5;
   color: var(--ink-3);
-  max-width: 640px;
+  max-width: 64ch;
+}
+
+/* ---------- Work area: main column + right column (same rhythm as the dashboard) ---------- */
+/* Challenge, then quick actions, stacked full width: no side-by-side columns here, so no gaps for any data */
+.work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 32px;
+  row-gap: 44px;
+  align-items: start;
+}
+.workMain,
+.workRail {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  min-width: 0;
 }
 .weekTag {
   color: var(--blue-600);
@@ -208,7 +184,7 @@
 .toolGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 24px;
 }
 .toolCell {
   display: flex;
@@ -224,15 +200,15 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
-  padding: 16px 16px 18px;
+  padding: 18px 18px 20px;
   border-radius: inherit;
   color: inherit;
   text-decoration: none;
 }
 .toolVisual {
-  height: 116px;
+  height: 108px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(226, 232, 240, 0.9);
@@ -504,11 +480,18 @@
 }
 
 /* ---------- Improvement loop ---------- */
+/* Compact numbered rows; 1 column in the right rail, 2-3 columns when the section is full width */
 .flowTrack {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+@container (min-width: 560px) {
+  .flowTrack { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+@container (min-width: 900px) {
+  .flowTrack { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .flowCell {
   display: flex;
@@ -517,11 +500,14 @@
 .flowStep {
   position: relative;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 14px 14px 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  row-gap: 2px;
+  align-items: center;
+  min-height: 64px;
+  padding: 12px 40px 12px 12px;
   text-align: left;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.86);
@@ -532,7 +518,7 @@
 }
 @media (hover: hover) {
   .flowStep:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-color: var(--step);
     box-shadow: 0 16px 32px -20px var(--step);
   }
@@ -552,8 +538,8 @@
   color: var(--step);
   background: #fff;
   border: 2px solid var(--step);
-  box-shadow: 0 0 0 5px var(--step-bg);
-  margin-bottom: 4px;
+  box-shadow: 0 0 0 4px var(--step-bg);
+  grid-row: 1 / span 2;
 }
 .flowLabel {
   font-family: var(--ff-display);
@@ -571,14 +557,15 @@
 }
 .flowChevron {
   position: absolute;
-  top: 16px;
+  top: 50%;
   right: 12px;
+  transform: translateY(-50%);
   color: var(--ink-4);
   transition: transform var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
 }
 .flowStep:hover .flowChevron {
   color: var(--step);
-  transform: translateX(2px);
+  transform: translate(2px, -50%);
 }
 
 /* Step modal */
@@ -762,9 +749,10 @@
 
 .readinessGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 32px;
+  row-gap: 24px;
+  align-items: start;
 }
 
 .gaugeCard {
@@ -1721,8 +1709,14 @@
 /* ---------- Quick actions ---------- */
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+}
+@container (min-width: 440px) {
+  .actionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (min-width: 880px) {
+  .actionGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 .actionCard {
   width: 100%;
@@ -1787,34 +1781,25 @@
   .modalOverlay, .modalCard, .scrim, .sidePanel, .challengeDrawer { animation: none; }
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1180px) {
-  .flowTrack { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* ---------- Responsive ----------
+   Desktop: readiness (gauge | holding back), tools 3-up, challenge | rail (quick actions + loop).
+   Tablet: everything full width, tools in pairs, rail sections spread their own grids.
+   Phone: one column; readiness first, then tools, challenge, quick actions, loop. */
+@media (max-width: 1320px) {
+  .readinessGrid,
+  .work { column-gap: 24px; }
 }
 @media (max-width: 1080px) {
+  .readinessGrid { grid-template-columns: minmax(0, 1fr); }
+  .work { grid-template-columns: minmax(0, 1fr); }
   .toolGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .readinessGrid { grid-template-columns: 1fr; }
-  .actionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .shell { padding: 22px var(--page-pad) 56px; gap: 36px; }
+  .workMain, .workRail, .work { gap: 36px; row-gap: 36px; }
 }
 @media (max-width: 720px) {
-  .container { padding: 0 16px; }
-  .pageHeaderRow { align-items: flex-start; }
-  .pageActions { width: 100%; }
-  .pageActions .btn { flex: 1 1 auto; }
-  .toolGrid { grid-template-columns: 1fr; }
-  .flowTrack { grid-template-columns: 1fr; gap: 8px; }
-  .flowStep {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 14px;
-    row-gap: 2px;
-    padding: 12px 40px 12px 12px;
-    align-items: center;
-  }
-  .flowNum { grid-row: 1 / span 2; margin-bottom: 0; }
-  .flowChevron { top: 50%; transform: translateY(-50%); }
-  .flowStep:hover .flowChevron { transform: translate(2px, -50%); }
+  .toolGrid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .gaugeTop { grid-template-columns: 1fr; justify-items: center; }
   .componentList { width: 100%; }
   .gaugeCard, .backCard, .todayCard { border-radius: var(--radius-lg); }
@@ -1840,6 +1825,5 @@
   .modalNav .btn { flex: 1; }
 }
 @media (max-width: 480px) {
-  .actionGrid { grid-template-columns: 1fr; }
   .strip { grid-template-columns: repeat(7, 64px); }
 }

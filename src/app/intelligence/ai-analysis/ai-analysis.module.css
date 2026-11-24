@@ -11,12 +11,12 @@
 }
 
 .main {
-  max-width: 1240px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: clamp(20px, 3vw, 36px) 24px 64px;
+  padding: 32px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: 24px;
 }
 
 .srOnly {
@@ -31,49 +31,8 @@
 /* Reveal-animated glass cards: let motion own the transform (no CSS transform transition). */
 .page :global(.glass-card[data-tint][style*="opacity"]) { transition: box-shadow var(--dur) var(--ease-out); }
 
-/* ---------- Page header ---------- */
-.head { display: flex; flex-direction: column; gap: 12px; }
-
-.crumbs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--ff-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.crumbs a { color: var(--blue-600); text-decoration: none; }
-.crumbs a:hover { color: var(--blue-800); text-decoration: underline; }
-.crumbs svg { color: var(--ink-4); }
-
-.headRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px 32px;
-  flex-wrap: wrap;
-}
-.headText { max-width: 720px; }
-
-.title {
-  margin: 0;
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(28px, min(3.1vw, 5.6vh), 44px);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.lede {
-  margin: 10px 0 0;
-  font-size: clamp(14.5px, 1.1vw, 16px);
-  line-height: 1.6;
-  color: var(--ink-2);
-}
-.headActions { display: flex; gap: 10px; flex-wrap: wrap; }
+/* ---------- Page header (BackLink + shared PageHeader) ---------- */
+.head { display: flex; flex-direction: column; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -115,7 +74,7 @@
   box-shadow: var(--elev-1);
 }
 .btnSecondary:hover { border-color: var(--blue-300); color: var(--blue-700); }
-.btnBlock { width: 100%; margin-top: auto; }
+.btnBlock { width: 100%; margin-top: 4px; }
 
 .textLink {
   display: inline-flex;
@@ -365,8 +324,8 @@
 .sectionTitle {
   margin: 0;
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 800;
+  font-size: clamp(20px, 1.6vw, 22px);
   letter-spacing: 0.01em;
   text-transform: uppercase;
   line-height: 1.1;
@@ -579,9 +538,7 @@ a.heatCell:hover, a.heatCell:focus-visible { transform: translateY(-2px); box-sh
 .heatCell[data-band="weak"], .heatLegend i[data-band="weak"] { background: #F43F5E; }
 
 /* ---------- Charts ---------- */
-.dualGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.dualGrid > * { min-width: 0; }
-.chartCard { padding: 22px 24px; border-radius: var(--radius-lg); height: 100%; }
+.chartCard { padding: 22px 24px; border-radius: var(--radius-lg); min-width: 0; }
 .chartBody { display: flex; gap: 18px; }
 .chartArea { flex: 1; min-width: 0; height: 240px; }
 .chartArea > .emptyState { height: 100%; }
@@ -608,9 +565,7 @@ a.heatCell:hover, a.heatCell:focus-visible { transform: translateY(-2px); box-sh
 .statInsight { margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
 
 /* ---------- Lower analytics ---------- */
-.lowerGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; scroll-margin-top: 96px; }
-.lowerGrid > * { min-width: 0; }
-.lowerCard { padding: 22px; border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.lowerCard { padding: 22px; border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 14px; min-width: 0; scroll-margin-top: 96px; }
 .lowerCard > .cardSub { margin-top: -10px; }
 
 .mistakeViz { display: flex; align-items: center; gap: 16px; }
@@ -651,6 +606,33 @@ a.heatCell:hover, a.heatCell:focus-visible { transform: translateY(-2px); box-sh
 .planContent { display: flex; flex-direction: column; gap: 4px; }
 .planName { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink); }
 .planDesc { font-size: 12.5px; line-height: 1.5; color: var(--ink-3); }
+
+/* ---------- Main column + right rail ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 32px;
+  row-gap: 28px;
+  align-items: start;
+  margin-top: 16px;
+}
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+  container-type: inline-size;
+}
+.railCol { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+/* Main column adapts to the width it gets */
+@container (max-width: 760px) {
+  .secGrid { grid-template-columns: 1fr; }
+}
+@container (max-width: 640px) {
+  .chartBody { flex-direction: column; }
+  .chartStats { width: 100%; }
+}
 
 /* ---------- Footer ---------- */
 .footNote {
@@ -696,10 +678,38 @@ a.heatCell:hover, a.heatCell:focus-visible { transform: translateY(-2px); box-sh
 @keyframes pulse { from { opacity: 0.55; } to { opacity: 1; } }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1100px) {
-  .lowerGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lowerGrid > :last-child { grid-column: 1 / -1; }
-  .dualGrid { grid-template-columns: 1fr; }
+@media (max-width: 1320px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 24px; row-gap: 24px; }
+}
+
+/* Tablet + phone: the two columns dissolve so cards can be re-ordered */
+@media (max-width: 1199px) {
+  .mainCol, .railCol { display: contents; }
+}
+
+/* Tablet: analysis full width, mistakes | opportunities as a pair, plan full width */
+@media (min-width: 700px) and (max-width: 1199px) {
+  .layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
+  .oStand, .oHeat, .oJourney, .oCompare, .oPlan { grid-column: 1 / -1; }
+  .oStand { order: 1; }
+  .oHeat { order: 2; }
+  .oJourney { order: 3; }
+  .oCompare { order: 4; }
+  .oMistakes { order: 5; }
+  .oOpp { order: 6; }
+  .oPlan { order: 7; }
+}
+
+/* Phone: one column, the actionable cards straight after the section view */
+@media (max-width: 699px) {
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 24px; margin-top: 8px; }
+  .oStand { order: 1; }
+  .oMistakes { order: 2; }
+  .oOpp { order: 3; }
+  .oPlan { order: 4; }
+  .oHeat { order: 5; }
+  .oJourney { order: 6; }
+  .oCompare { order: 7; }
 }
 
 @media (max-width: 900px) {
@@ -708,13 +718,13 @@ a.heatCell:hover, a.heatCell:focus-visible { transform: translateY(-2px); box-sh
   .kpiGrid, .summaryGrid, .secGrid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 760px) {
+  .main { padding: 22px var(--page-pad) 56px; }
+}
+
 @media (max-width: 720px) {
-  .main { padding: 18px 16px 48px; }
-  .lowerGrid { grid-template-columns: 1fr; }
   .chartBody { flex-direction: column; }
   .chartStats { width: 100%; }
-  .headActions { width: 100%; }
-  .headActions .btn { flex: 1 1 auto; }
   .featureSections { grid-template-columns: 1fr; gap: 12px; }
   .tabs { width: 100%; }
   .tab { flex: 1; min-height: 44px; }

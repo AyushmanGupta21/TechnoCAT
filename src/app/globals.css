@@ -148,7 +148,9 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  /* clip (not hidden): stops sideways scroll without turning <body> into a scroll container,
+     which would break position: sticky across the app */
+  overflow-x: clip;
   position: relative;
 }
 
@@ -396,3 +398,10 @@ body.exam-active header {
 /* Landing headings: Plus Jakarta Sans ExtraBold, uppercase */
 main.landing h1, main.landing h2 { font-weight: 800 !important; letter-spacing: -0.01em !important; text-transform: uppercase; line-height: 1.06; }
 main.landing h3 { font-weight: 800 !important; letter-spacing: 0 !important; text-transform: uppercase; }
+
+/* Smart sticky columns (see src/components/app/StickyColumns.tsx): applied only while columns sit side by side */
+[data-sticky-col][data-sticky-active] {
+  position: sticky;
+  top: var(--stick-top, 108px);
+  align-self: start;
+}

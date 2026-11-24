@@ -1,6 +1,7 @@
 /* ===== SETTINGS PAGE ===== */
 .pageWrapper {
   min-height: 100vh;
+  overflow-x: clip;
   background:
     linear-gradient(180deg, rgb(var(--tint-blue) / 0.06) 0%, rgba(255, 255, 255, 0) 340px),
     var(--canvas);
@@ -8,135 +9,38 @@
   color: var(--ink);
 }
 
-.headerInner {
-  max-width: 1200px;
+/* ===== Page frame (shared width) ===== */
+.page {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
-}
-
-/* ===== Page header ===== */
-.pageHeader {
-  padding: 28px 0 8px;
-}
-
-.heroRow {
+  padding: 32px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 28px;
 }
 
-.breadcrumb {
+.headGroup {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
-.breadcrumbLink {
-  color: var(--ink-3);
-  font-weight: 500;
-  transition: color var(--dur-fast) var(--ease-out);
-}
-.breadcrumbLink:hover {
-  color: var(--blue-700);
-}
-.breadcrumbSep {
-  color: var(--ink-4);
-}
-.breadcrumbCurrent {
-  color: var(--ink);
-  font-weight: 600;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.heroTitleRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.heroHeading {
-  font-family: var(--ff-display);
-  font-size: clamp(28px, 3.2vw, 40px);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-
-.heroSubtitle {
-  margin-top: 8px;
-  max-width: 620px;
-  font-size: 15.5px;
-  line-height: 1.6;
-  color: var(--ink-3);
-}
-
-.heroActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.demoChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #92400e;
-  background: rgb(var(--tint-amber) / 0.1);
-  box-shadow: inset 0 0 0 1px rgb(var(--tint-amber) / 0.28);
-}
-.demoDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--data-amber);
-}
-
-.heroBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--grad-badge);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 10px 22px -12px rgba(37, 99, 235, 0.8);
-  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
-}
-.heroBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 16px 30px -14px rgba(37, 99, 235, 0.9);
-}
-
-/* ===== Layout ===== */
-.mainContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 24px 72px;
-}
-
+/* ===== Layout: section nav | panel | at-a-glance rail ===== */
 .settingsGrid {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: 280px minmax(0, 1fr) 340px;
+  column-gap: 32px;
+  row-gap: 28px;
   align-items: start;
 }
 
 /* ===== Sub-navigation ===== */
 .tabNavWrap {
+  grid-column: 1;
+  grid-row: 1;
   position: sticky;
   top: 96px;
+  min-width: 0;
 }
 
 .tabNavCard {
@@ -226,42 +130,129 @@
   color: var(--ink-3);
 }
 
-.tabNavFooter {
+/* ===== At-a-glance rail ===== */
+.rail {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.railItem {
+  min-width: 0;
+}
+.railCard {
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.railCard > * {
   position: relative;
   z-index: 1;
-  margin-top: 8px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
 }
-
-.profileLink {
+.railTitle {
+  font-family: var(--ff-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.accountRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.accountAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-family: var(--ff-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--grad-badge);
+  box-shadow: 0 0 0 3px #fff, 0 10px 22px -12px rgba(23, 47, 110, 0.5);
+}
+.accountText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.accountName {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.accountEmail {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+.railLink {
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 44px;
   padding: 0 12px;
   border-radius: var(--radius-sm);
+  border-top: 1px solid var(--line);
   font-size: 14px;
   font-weight: 600;
   color: var(--blue-700);
   transition: background-color var(--dur-fast) var(--ease-out);
 }
-.profileLink:hover {
+.railLink:hover {
   background: rgba(37, 99, 235, 0.07);
 }
-.profileLinkArrow {
+.railLinkArrow {
   margin-left: auto;
+  flex-shrink: 0;
   transition: transform var(--dur-fast) var(--ease-out);
 }
-.profileLink:hover .profileLinkArrow {
+.railLink:hover .railLinkArrow {
   transform: translateX(2px);
+}
+.factList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.factItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.factIcon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--data-teal);
 }
 
 /* ===== Content cards ===== */
 .contentArea {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   min-width: 0;
 }
 
@@ -471,7 +462,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 40px;
+  height: 44px;
   padding: 0 16px;
   border-radius: 11px;
   font-size: 13.5px;
@@ -494,7 +485,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
+  height: 44px;
   padding: 0 20px;
   border-radius: 11px;
   font-size: 13.5px;
@@ -516,7 +507,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 40px;
+  height: 44px;
   padding: 0 16px;
   border-radius: 11px;
   font-size: 13.5px;
@@ -534,7 +525,7 @@
 }
 
 .dangerSolidBtn {
-  height: 42px;
+  height: 44px;
   padding: 0 20px;
   border-radius: 11px;
   font-size: 14px;
@@ -560,6 +551,10 @@
   flex-direction: column;
   gap: 16px;
   animation: fadeIn 0.25s var(--ease-out) both;
+}
+
+.passwordPanel > .formField:first-child {
+  max-width: calc(50% - 8px);
 }
 
 .passwordInputGrid {
@@ -761,20 +756,52 @@
 }
 
 /* ===== Responsive ===== */
+@media (max-width: 1535px) {
+  .settingsGrid {
+    grid-template-columns: 260px minmax(0, 1fr) 300px;
+    column-gap: 28px;
+  }
+}
+
+/* Laptop / small desktop: nav | panel, rail becomes a card pair under the panel */
+@media (max-width: 1279px) {
+  .settingsGrid {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+  .tabNavWrap {
+    grid-row: 1 / span 2;
+  }
+  .rail {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* Tablet / phone: section nav turns into a horizontal tab bar above the panel */
 @media (max-width: 960px) {
   .settingsGrid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    gap: 20px;
+  }
+  .tabNavWrap,
+  .contentArea,
+  .rail {
+    grid-column: 1;
+    grid-row: auto;
   }
   .tabNavWrap {
     position: static;
-    min-width: 0;
+  }
+  .rail {
+    margin-top: 8px;
   }
   .tabNavCard {
     padding: 6px;
   }
   .tabNavLabel,
-  .tabNavFooter,
   .tabHint {
     display: none;
   }
@@ -808,20 +835,23 @@
   }
 }
 
+@media (max-width: 760px) {
+  .page {
+    padding: 22px var(--page-pad) 56px;
+    gap: 22px;
+  }
+}
+
 @media (max-width: 640px) {
-  .headerInner,
-  .mainContent {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-  .pageHeader {
-    padding-top: 20px;
-  }
-  .heroBtn {
-    display: none;
+  .rail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
   }
   .cardBox {
     padding: 20px 16px 10px;
+  }
+  .railCard {
+    padding: 20px 18px 18px;
   }
   .cardHeader {
     flex-direction: column;
@@ -840,6 +870,9 @@
   .passwordPanel {
     padding: 16px;
   }
+  .passwordPanel > .formField:first-child {
+    max-width: none;
+  }
   .passwordInputGrid {
     grid-template-columns: 1fr;
   }
@@ -850,7 +883,6 @@
   .panelActions > *,
   .modalActions > * {
     width: 100%;
-    height: 44px;
   }
   .dangerRow {
     flex-direction: column;
@@ -858,7 +890,6 @@
   }
   .dangerBtn {
     justify-content: center;
-    height: 44px;
   }
   .tabIcon {
     display: none;

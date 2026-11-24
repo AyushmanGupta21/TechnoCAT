@@ -11,7 +11,6 @@ import {
   Camera,
   Check,
   ChevronRight,
-  LayoutDashboard,
   Mail,
   Phone,
   Save,
@@ -23,7 +22,9 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PROFILE_ICON } from "@/lib/nameUtils";
 import AppNav from "@/components/app/AppNav";
-import { GradientText, Reveal } from "@/components/landing/motion";
+import BackLink from "@/components/app/BackLink";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
+import { Reveal } from "@/components/landing/motion";
 import styles from "./edit-profile.module.css";
 
 export default function EditProfilePage() {
@@ -242,107 +243,110 @@ export default function EditProfilePage() {
     <div className={styles.pageWrapper}>
       <AppNav />
 
-      {/* ===== PAGE HEADER ===== */}
-      <header className={styles.pageHeader}>
-        <div className={styles.headerInner}>
-          <Reveal className={styles.heroRow}>
-            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-              <Link href="/dashboard" className={styles.breadcrumbLink}>
-                Dashboard
-              </Link>
-              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
-              <span className={styles.breadcrumbCurrent}>Edit profile</span>
-            </nav>
-            <div className={styles.heroTitleRow}>
-              <div>
-                <h1 className={styles.heroHeading}>
-                  Your <GradientText>profile</GradientText>
-                </h1>
-                <p className={styles.heroSubtitle}>
-                  Keep your name, contact details and CAT target up to date so your reports and plans stay personal.
-                </p>
-              </div>
-            </div>
-          </Reveal>
+      <main className={styles.page}>
+        {/* ===== PAGE HEADER ===== */}
+        <div className={styles.headGroup}>
+          <BackLink href="/dashboard" label="Back to dashboard" />
+          <PageHeader
+            title="Your"
+            accent="profile"
+            subtitle="Keep your name, contact details and CAT target up to date so your reports and plans stay personal."
+            actions={
+              <>
+                <Link href="/settings" className={pageHeaderStyles.secondaryAction}>
+                  <Settings size={18} strokeWidth={2} />
+                  Settings
+                </Link>
+                <button
+                  type="submit"
+                  form="edit-profile-form"
+                  disabled={isSubmitting}
+                  className={`${pageHeaderStyles.primaryAction} ${styles.headerSave}`}
+                >
+                  <Save size={18} strokeWidth={2.2} />
+                  {isSubmitting ? "Saving…" : "Save changes"}
+                </button>
+              </>
+            }
+          />
         </div>
-      </header>
 
-      {/* ===== MAIN CONTENT GRID ===== */}
-      <main className={styles.mainContent}>
+        {/* ===== SUMMARY (side column) + FORM (main column) ===== */}
         <div className={styles.profileLayoutGrid}>
-          {/* Left column: profile summary */}
-          <Reveal delay={0.05} className={styles.sidebarWrap}>
-            <aside className={`glass-card ${styles.sidebarCard}`} data-tint="blue">
+          {/* Profile summary: sticky side column on desktop, below the form on tablet / phone */}
+          <Reveal data-sticky-col delay={0.05} className={styles.sidebarWrap}>
+            <aside className={`glass-card ${styles.sidebarCard}`} data-tint="blue" aria-label="Profile summary">
               <div className={styles.sidebarBand} aria-hidden="true" />
-              <div className={styles.sidebarAvatarWrap}>
-                {renderAvatar(styles.sidebarAvatar, styles.sidebarInitials)}
-                <span className={styles.sidebarStatusBadge} title="Active" />
-              </div>
-
-              <h2 className={styles.sidebarName}>{fullNameDisplay}</h2>
-              <p className={styles.sidebarEmail}>
-                {user?.email || (isDemo ? "student@technocat.edu" : "aspirant@technocat.edu")}
-              </p>
-
-              <div className={styles.sidebarBadgeList}>
-                <span className={styles.sidebarPill}>{targetYear}</span>
-                <span className={`${styles.sidebarPill} ${styles.sidebarPillViolet}`}>CAT aspirant</span>
-              </div>
-
-              <dl className={styles.sidebarMetaList}>
-                <div className={styles.sidebarMetaItem}>
-                  <dt className={styles.sidebarMetaLabel}>
-                    <CalendarDays size={15} strokeWidth={1.9} style={{ color: "var(--data-blue)" }} />
-                    Target exam
-                  </dt>
-                  <dd className={styles.sidebarMetaValue}>{targetYear}</dd>
-                </div>
-                <div className={styles.sidebarMetaItem}>
-                  <dt className={styles.sidebarMetaLabel}>
-                    <Sparkles size={15} strokeWidth={1.9} style={{ color: "var(--data-violet)" }} />
-                    Account tier
-                  </dt>
-                  <dd className={`${styles.sidebarMetaValue} ${styles.metaBlue}`}>
-                    {isDemo ? "Demo Scholar" : "CAT Pro Scholar"}
-                  </dd>
-                </div>
-                <div className={styles.sidebarMetaItem}>
-                  <dt className={styles.sidebarMetaLabel}>
-                    <BadgeCheck size={15} strokeWidth={1.9} style={{ color: "var(--data-emerald)" }} />
-                    Verification
-                  </dt>
-                  <dd className={`${styles.sidebarMetaValue} ${styles.metaGreen}`}>Verified student</dd>
-                </div>
-                {dreamSchool && (
-                  <div className={styles.sidebarMetaItem}>
-                    <dt className={styles.sidebarMetaLabel}>
-                      <Building2 size={15} strokeWidth={1.9} style={{ color: "var(--data-amber)" }} />
-                      Dream school
-                    </dt>
-                    <dd className={`${styles.sidebarMetaValue} ${styles.metaTruncate}`} title={dreamSchool}>
-                      {dreamSchool}
-                    </dd>
+              <div className={styles.summaryBody}>
+                <div className={styles.summaryIdentity}>
+                  <div className={styles.sidebarAvatarWrap}>
+                    {renderAvatar(styles.sidebarAvatar, styles.sidebarInitials)}
+                    <span className={styles.sidebarStatusBadge} title="Active" />
                   </div>
-                )}
-              </dl>
 
-              <div className={styles.sidebarLinks}>
-                <Link href="/settings" className={styles.sidebarLinkBtn}>
-                  <Settings size={16} strokeWidth={1.9} />
-                  <span>Account &amp; security settings</span>
-                  <ChevronRight size={15} className={styles.sidebarLinkArrow} />
-                </Link>
-                <Link href="/dashboard" className={styles.sidebarLinkBtn}>
-                  <LayoutDashboard size={16} strokeWidth={1.9} />
-                  <span>Back to dashboard</span>
-                  <ChevronRight size={15} className={styles.sidebarLinkArrow} />
-                </Link>
+                  <h2 className={styles.sidebarName}>{fullNameDisplay}</h2>
+                  <p className={styles.sidebarEmail}>
+                    {user?.email || (isDemo ? "student@technocat.edu" : "aspirant@technocat.edu")}
+                  </p>
+
+                  <div className={styles.sidebarBadgeList}>
+                    <span className={styles.sidebarPill}>{targetYear}</span>
+                    <span className={`${styles.sidebarPill} ${styles.sidebarPillViolet}`}>CAT aspirant</span>
+                  </div>
+                </div>
+
+                <div className={styles.summaryDetails}>
+                  <dl className={styles.sidebarMetaList}>
+                    <div className={styles.sidebarMetaItem}>
+                      <dt className={styles.sidebarMetaLabel}>
+                        <CalendarDays size={15} strokeWidth={1.9} style={{ color: "var(--data-blue)" }} />
+                        Target exam
+                      </dt>
+                      <dd className={styles.sidebarMetaValue}>{targetYear}</dd>
+                    </div>
+                    <div className={styles.sidebarMetaItem}>
+                      <dt className={styles.sidebarMetaLabel}>
+                        <Sparkles size={15} strokeWidth={1.9} style={{ color: "var(--data-violet)" }} />
+                        Account tier
+                      </dt>
+                      <dd className={`${styles.sidebarMetaValue} ${styles.metaBlue}`}>
+                        {isDemo ? "Shared account" : "CAT Pro Scholar"}
+                      </dd>
+                    </div>
+                    <div className={styles.sidebarMetaItem}>
+                      <dt className={styles.sidebarMetaLabel}>
+                        <BadgeCheck size={15} strokeWidth={1.9} style={{ color: "var(--data-emerald)" }} />
+                        Verification
+                      </dt>
+                      <dd className={`${styles.sidebarMetaValue} ${styles.metaGreen}`}>Verified student</dd>
+                    </div>
+                    {dreamSchool && (
+                      <div className={styles.sidebarMetaItem}>
+                        <dt className={styles.sidebarMetaLabel}>
+                          <Building2 size={15} strokeWidth={1.9} style={{ color: "var(--data-amber)" }} />
+                          Dream school
+                        </dt>
+                        <dd className={`${styles.sidebarMetaValue} ${styles.metaTruncate}`} title={dreamSchool}>
+                          {dreamSchool}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+
+                  <div className={styles.sidebarLinks}>
+                    <Link href="/settings" className={styles.sidebarLinkBtn}>
+                      <Settings size={16} strokeWidth={1.9} />
+                      <span>Account &amp; security settings</span>
+                      <ChevronRight size={15} className={styles.sidebarLinkArrow} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             </aside>
           </Reveal>
 
-          {/* Right column: form */}
-          <Reveal delay={0.1}>
+          {/* Main column: form */}
+          <Reveal data-sticky-col delay={0.1} className={styles.formWrap}>
             <div className={`glass-card ${styles.formCard}`} data-tint="teal">
               {feedback && (
                 <div
@@ -358,14 +362,14 @@ export default function EditProfilePage() {
                 </div>
               )}
 
-              <form onSubmit={handleSaveChanges}>
+              <form id="edit-profile-form" onSubmit={handleSaveChanges}>
                 {/* Photo */}
                 <section className={styles.sectionGroup}>
                   <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>
+                    <h2 className={styles.sectionTitle}>
                       <span className={styles.sectionMarker} style={{ background: "var(--data-blue)" }} aria-hidden="true" />
                       Profile photo
-                    </h3>
+                    </h2>
                     <p className={styles.sectionSubtitle}>PNG, JPG or WebP up to 5MB. We centre and crop it into a circle.</p>
                   </div>
 
@@ -410,10 +414,10 @@ export default function EditProfilePage() {
                 {/* Personal information */}
                 <section className={styles.sectionGroup}>
                   <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>
+                    <h2 className={styles.sectionTitle}>
                       <span className={styles.sectionMarker} style={{ background: "var(--data-teal)" }} aria-hidden="true" />
                       Personal information
-                    </h3>
+                    </h2>
                     <p className={styles.sectionSubtitle}>
                       Your name appears on mock test reports, leaderboards and completion badges.
                     </p>
@@ -462,10 +466,10 @@ export default function EditProfilePage() {
                 {/* Contact */}
                 <section className={styles.sectionGroup}>
                   <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>
+                    <h2 className={styles.sectionTitle}>
                       <span className={styles.sectionMarker} style={{ background: "var(--data-violet)" }} aria-hidden="true" />
                       Contact details
-                    </h3>
+                    </h2>
                     <p className={styles.sectionSubtitle}>Where we send notifications and exam updates.</p>
                   </div>
 
@@ -513,10 +517,10 @@ export default function EditProfilePage() {
                 {/* Goals */}
                 <section className={styles.sectionGroup}>
                   <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>
+                    <h2 className={styles.sectionTitle}>
                       <span className={styles.sectionMarker} style={{ background: "var(--data-amber)" }} aria-hidden="true" />
                       Target and B-school goal
-                    </h3>
+                    </h2>
                     <p className={styles.sectionSubtitle}>
                       Used to set question difficulty and percentile projections in the Intelligence Hub.
                     </p>

@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import PostLoginNavActions from "@/components/PostLoginNavActions";
+import StickyColumns from "./StickyColumns";
 import styles from "./AppNav.module.css";
 
 export const APP_NAV_LINKS = [
@@ -48,6 +49,7 @@ export default function AppNav() {
     <>
     {/* Spacer keeps page content below the fixed bar */}
     <div className={styles.spacer} aria-hidden="true" />
+    <StickyColumns />
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`} data-app-chrome>
       <nav className={styles.inner} aria-label="Main">
         <button

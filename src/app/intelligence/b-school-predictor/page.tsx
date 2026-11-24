@@ -26,6 +26,7 @@ import {
 import styles from "./b-school-predictor.module.css";
 import AppNav from "@/components/app/AppNav";
 import BackLink from "@/components/app/BackLink";
+import PageHeader from "@/components/app/PageHeader";
 import { Reveal, RevealGroup, RevealItem, GradientText } from "@/components/landing/motion";
 import {
   CandidateProfile,
@@ -548,23 +549,22 @@ export default function BSchoolPredictorPage() {
 
       <main className={styles.main}>
         {/* Page header */}
-        <Reveal className={styles.head}>
+        <div className={styles.head}>
           <BackLink href="/intelligence" label="Back to Intelligence Hub" />
-          <div className={styles.headRow}>
-            <div className={styles.headText}>
-              <h1 className={styles.title}>
-                Your target B-schools, <GradientText>projected</GradientText>
-              </h1>
-              <p className={styles.lede}>
+          <PageHeader
+            eyebrow="B-school predictor"
+            title="Your target B-schools,"
+            accent="projected"
+            subtitle={
+              <>
                 You don&apos;t have an official CAT score yet, and that&apos;s okay. Enter your academics and a CAT percentile
                 (estimated from your PYQ section scores when available, or your own target) and the predictor applies each
                 institute&apos;s published cutoffs and shortlisting weights to estimate your call chances. These are model
                 estimates, not guarantees.
-              </p>
-            </div>
-          </div>
-
-          {/* Estimated percentile banner (from /api/me/metrics) */}
+              </>
+            }
+            aside={
+          /* Estimated percentile banner (from /api/me/metrics) */
           <div className={`glass-card ${styles.banner}`} data-tint="blue">
             <Target size={18} className={styles.bannerIcon} aria-hidden="true" />
             <div className={styles.bannerText}>
@@ -591,14 +591,16 @@ export default function BSchoolPredictorPage() {
                 <span>We couldn&apos;t load your estimated percentile right now. Enter a target percentile below.</span>
               )}
             </div>
-            <span className={styles.bannerHint}>Edit the percentile below to test what-if score goals.</span>
+            <span className={styles.bannerHint}>Edit the percentile in the form to test what-if score goals.</span>
           </div>
-        </Reveal>
+            }
+          />
+        </div>
 
-        {/* Split grid: inputs vs summary */}
-        <div className={styles.splitGrid}>
+        {/* Form (left) | admission strength + shortlist (right) */}
+        <div className={styles.layout}>
           {/* Left: candidate credentials & CAT target */}
-          <Reveal className={`glass-card ${styles.formCard}`} data-tint="blue">
+          <Reveal data-sticky-col className={`glass-card ${styles.formCard} ${styles.oForm}`} data-tint="blue">
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>Candidate credentials <span className={styles.titleMuted}>&amp; CAT target</span></h2>
               <p className={styles.cardSub}>
@@ -878,8 +880,10 @@ export default function BSchoolPredictorPage() {
             )}
           </Reveal>
 
-          {/* Right: admission strength (featured summary) */}
-          <Reveal delay={0.08} className={`${styles.summaryCard} ${recalcPulse ? styles.summaryPulse : ""}`}>
+          {/* Right: results column */}
+          <div data-sticky-col className={styles.resultsCol}>
+          {/* Admission strength (featured summary) */}
+          <Reveal delay={0.08} className={`${styles.summaryCard} ${styles.oSummary} ${recalcPulse ? styles.summaryPulse : ""}`}>
             <div className={styles.summaryHead}>
               <div>
                 <h2 className={styles.summaryTitle}>Admission strength</h2>
@@ -947,10 +951,9 @@ export default function BSchoolPredictorPage() {
               </div>
             )}
           </Reveal>
-        </div>
 
         {/* Results */}
-        <section className={styles.results} aria-labelledby="shortlist-title">
+        <section className={`${styles.results} ${styles.oResults}`} aria-labelledby="shortlist-title">
           <Reveal className={styles.resultsHead}>
             <div>
               <h2 id="shortlist-title" className={styles.sectionTitle}>
@@ -959,7 +962,7 @@ export default function BSchoolPredictorPage() {
               <p className={styles.sectionSub}>
                 {profile
                   ? `Model estimates for ${CATEGORY_LABEL[profile.category]} candidates, using published cutoffs and shortlisting weights.`
-                  : "Complete your profile above to see model estimates for each institute."}
+                  : "Complete your profile to see model estimates for each institute."}
               </p>
             </div>
 
@@ -1063,7 +1066,7 @@ export default function BSchoolPredictorPage() {
               <div className={styles.emptyTitle}>
                 {loaded ? "Your shortlist appears once your profile is complete" : "Loading…"}
               </div>
-              {loaded && <p>Fill in every field in candidate credentials &amp; CAT target above.</p>}
+              {loaded && <p>Fill in every field in the candidate credentials &amp; CAT target form.</p>}
             </div>
           ) : (
             <div className={`glass-card ${styles.table}`} data-tint="blue">
@@ -1136,6 +1139,8 @@ export default function BSchoolPredictorPage() {
             </div>
           )}
         </section>
+          </div>
+        </div>
       </main>
 
       {/* College criteria modal */}

@@ -1,4 +1,5 @@
-/* ===== My topics (enrolled courses) ===== */
+/* ===== My topics (enrolled courses) =====
+   Header band -> toolbar (tabs | search) -> main column (course rows) + right column (progress). */
 
 .topicsWrapper {
   min-height: 100vh;
@@ -7,92 +8,31 @@
     var(--canvas);
   color: var(--ink);
   font-family: var(--ff-sans);
+  overflow-x: clip;
 }
 
-.container {
-  width: 100%;
-  max-width: 1180px;
+.page {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
-  box-sizing: border-box;
-}
-
-@media (max-width: 480px) {
-  .container { padding: 0 16px; }
-}
-
-/* ---------- Header ---------- */
-.pageHeader {
-  padding: clamp(28px, 4vw, 46px) 0 0;
-  border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-.headerContent {
+  padding: 32px var(--page-pad) 80px;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.headerCopy { min-width: 0; flex: 1 1 380px; }
-
-.kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--blue-700);
-  margin-bottom: 12px;
-}
-
-.kickerLine {
-  width: 22px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--grad-accent);
-}
-
-.pageTitle {
-  margin: 0;
-  font-family: var(--ff-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  line-height: 1.06;
-  font-size: clamp(30px, 4.2vw, 46px);
-  color: var(--ink);
-}
-
-.pageSubtitle {
-  margin: 10px 0 0;
-  font-size: clamp(15px, 1.3vw, 17px);
-  line-height: 1.55;
-  color: var(--ink-3);
-  max-width: 520px;
-}
-
-.headerAside {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
+/* ---------- Header aside: summary stats ---------- */
 .summaryStats {
   display: flex;
   margin: 0;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(37, 99, 235, 0.14);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.8);
   overflow: hidden;
+  width: fit-content;
+  margin-left: auto;
 }
 
-.summaryStats > div { padding: 8px 16px; }
+.summaryStats > div { padding: 12px 22px; min-width: 0; }
 .summaryStats > div + div { border-left: 1px solid var(--line); }
 
 .summaryStats dt {
@@ -101,18 +41,20 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-4);
+  white-space: nowrap;
 }
 
 .summaryStats dd {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-family: var(--ff-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 600;
+  line-height: 1.1;
   color: var(--ink);
 }
 
-.summaryStats dd span { color: var(--ink-4); font-size: 14px; }
+.summaryStats dd span { color: var(--ink-4); font-size: 15px; }
 
 .primaryBtn {
   display: inline-flex;
@@ -138,26 +80,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 26px;
-  padding-bottom: 16px;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
 }
 
 .categoryTabs {
   display: flex;
   gap: 4px;
+  min-width: 0;
+  flex: 0 1 auto;
   overflow-x: auto;
   scrollbar-width: none;
-  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .categoryTabs::-webkit-scrollbar { display: none; }
 
 .categoryTab {
-  min-height: 40px;
-  padding: 0 14px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 16px;
   border-radius: 10px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink-3);
   white-space: nowrap;
@@ -178,7 +122,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 1 300px;
+  flex: 0 1 320px;
   min-width: 220px;
   cursor: text;
 }
@@ -208,26 +152,70 @@
 .searchInput::placeholder { color: var(--ink-4); }
 .searchInput:focus { border-color: var(--blue-400); box-shadow: var(--ring); }
 
-/* ---------- Rows ---------- */
-.mainContent {
-  padding-top: 28px;
-  padding-bottom: 80px;
+/* ---------- Layout: main column + right column ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  column-gap: 32px;
+  row-gap: 28px;
+  align-items: start;
+}
+.layoutSingle { grid-template-columns: minmax(0, 1fr); }
+
+.mainCol,
+.railCol {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.mainCol { container-type: inline-size; }
+.railCol { container-type: inline-size; }
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
+.sectionTitle {
+  margin: 0;
+  font-family: var(--ff-display);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.sectionCount {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.sectionCount b {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- Course rows ---------- */
 .rowList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .topicRow {
   --accent: var(--data-blue);
   position: relative;
   display: grid;
-  grid-template-columns: 168px minmax(0, 1fr) minmax(200px, 260px) auto;
+  grid-template-columns: 184px minmax(0, 1fr) minmax(210px, 280px) auto;
   align-items: center;
-  gap: 22px;
-  padding: 12px 18px 12px 12px;
+  gap: 24px;
+  padding: 14px 22px 14px 14px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--line);
@@ -236,10 +224,10 @@
   transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
 }
 
-.topicRow[data-section="dilr"] { --accent: var(--data-teal); }
-.topicRow[data-section="qa"] { --accent: var(--data-violet); }
-.topicRow[data-section="varc"] { --accent: var(--data-blue); }
-.topicRow[data-section="other"] { --accent: var(--data-amber); }
+.topicRow[data-section="dilr"], .sectionItem[data-section="dilr"] { --accent: var(--data-teal); }
+.topicRow[data-section="qa"], .sectionItem[data-section="qa"] { --accent: var(--data-violet); }
+.topicRow[data-section="varc"], .sectionItem[data-section="varc"] { --accent: var(--data-blue); }
+.topicRow[data-section="other"], .sectionItem[data-section="other"] { --accent: var(--data-amber); }
 
 .topicRow::before {
   content: "";
@@ -295,6 +283,7 @@
 }
 
 .badgeDot {
+  flex-shrink: 0;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -307,7 +296,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-size: 16.5px;
+  font-size: 17px;
   line-height: 1.3;
   color: var(--ink);
   display: -webkit-box;
@@ -394,9 +383,41 @@
   transition: width 600ms var(--ease-out);
 }
 
+.nextLesson {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.nextLabel {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.nextCode {
+  flex-shrink: 0;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--blue-700);
+}
+.nextTitle {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cardActionBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   min-height: 44px;
   padding: 0 18px;
@@ -407,6 +428,7 @@
   background: var(--blue-50);
   border: 1px solid var(--blue-100);
   white-space: nowrap;
+  box-sizing: border-box;
   transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
 }
 .cardActionBtn svg { transition: transform var(--dur) var(--ease-out); }
@@ -418,16 +440,193 @@
 }
 .topicRow:hover .cardActionBtn svg { transform: translateX(3px); }
 
+/* Rows adapt to the width of the main column */
+@container (max-width: 900px) {
+  .topicRow {
+    grid-template-columns: 160px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "thumb main action"
+      "thumb progress action";
+    row-gap: 14px;
+  }
+  .rowThumb { grid-area: thumb; }
+  .rowMain { grid-area: main; }
+  .rowProgress { grid-area: progress; }
+  .cardActionBtn { grid-area: action; }
+}
+
+/* Narrow: stacked card (image on top, full-width action) */
+@container (max-width: 560px) {
+  .topicRow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "thumb"
+      "main"
+      "progress"
+      "action";
+    gap: 14px;
+    padding: 12px 12px 16px;
+  }
+  .rowThumb { aspect-ratio: 16 / 7; }
+  .rowMain,
+  .rowProgress { padding: 0 4px; }
+  .cardTitle { font-size: 16px; }
+  .cardActionBtn { width: 100%; }
+}
+
+/* ---------- Right column: progress panel ---------- */
+.railCard {
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-width: 0;
+}
+
+.railTitle {
+  margin: 0 0 18px;
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.overall {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.overallValue {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+}
+.overallValue span { font-size: 20px; color: var(--ink-4); margin-left: 2px; }
+.overallLabel { font-size: 13.5px; color: var(--ink-3); }
+.overallLabel b {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.overallBar {
+  height: 8px;
+  margin-top: 14px;
+  border-radius: 8px;
+  background: rgba(12, 23, 48, 0.07);
+  overflow: hidden;
+}
+.overallFill {
+  height: 100%;
+  min-width: 8px;
+  border-radius: inherit;
+  background: var(--grad-accent, var(--blue-600));
+  transition: width 600ms var(--ease-out);
+}
+
+.stateRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 20px 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.7);
+}
+.stateRow > div { padding: 10px 12px; min-width: 0; }
+.stateRow > div + div { border-left: 1px solid var(--line); }
+.stateRow dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stateRow dd {
+  margin: 3px 0 0;
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.railSubTitle {
+  margin: 24px 0 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.sectionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.sectionItem { --accent: var(--data-blue); min-width: 0; }
+
+.sectionItemHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.sectionName {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  min-width: 0;
+}
+
+.sectionFigures {
+  font-family: var(--ff-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.sectionFigures b { font-weight: 600; color: var(--ink); }
+.sectionPct {
+  margin-left: 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* When the progress panel sits under the list (tablet), section bars pair up */
+@container (min-width: 620px) {
+  .sectionList { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+}
+
 /* ---------- Empty / no results ---------- */
 .emptyEnrollmentCard {
-  max-width: 620px;
-  margin: 24px auto 0;
-  padding: 36px 32px;
+  width: 100%;
+  max-width: 640px;
+  margin: 12px auto 0;
+  padding: 40px 32px;
   border-radius: var(--radius-xl);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .emptyIcon {
@@ -453,6 +652,7 @@
 
 .emptyEnrollmentDesc {
   margin: 0 0 22px;
+  max-width: 60ch;
   font-size: 15px;
   line-height: 1.6;
   color: var(--ink-3);
@@ -469,33 +669,48 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1023px) {
-  .topicRow {
-    grid-template-columns: 148px minmax(0, 1fr) auto;
-    grid-template-areas:
-      "thumb main action"
-      "thumb progress action";
-    row-gap: 12px;
-  }
-  .rowThumb { grid-area: thumb; }
-  .rowMain { grid-area: main; }
-  .rowProgress { grid-area: progress; }
-  .cardActionBtn { grid-area: action; }
+@media (max-width: 1320px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 24px; row-gap: 24px; }
+  .layoutSingle { grid-template-columns: minmax(0, 1fr); }
 }
 
-@media (max-width: 640px) {
-  .topicRow {
-    grid-template-columns: 96px minmax(0, 1fr);
-    grid-template-areas:
-      "thumb main"
-      "progress progress"
-      "action action";
-    gap: 12px 14px;
-    padding: 12px;
+/* Tablet and below: one column, progress panel after the course list */
+@media (max-width: 1080px) {
+  .layout,
+  .layoutSingle { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .summaryStats { margin-left: 0; }
+}
+
+/* Toolbar stacks: tabs scroll sideways, search goes full width */
+@media (max-width: 760px) {
+  .page { padding: 22px var(--page-pad) 56px; gap: 22px; }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 14px;
   }
-  .cardTitle { font-size: 15px; }
-  .instructorRole { display: none; }
-  .cardActionBtn { justify-content: center; width: 100%; box-sizing: border-box; }
-  .searchBox { flex: 1 1 100%; min-width: 0; }
-  .headerAside { width: 100%; justify-content: space-between; }
+  .categoryTabs {
+    margin: 0 calc(-1 * var(--page-pad));
+    padding: 0 var(--page-pad);
+    scroll-padding-inline: var(--page-pad);
+  }
+  .searchBox { flex: 1 1 auto; min-width: 0; }
+  .railCard { padding: 20px 18px; }
+  .sectionTitle { font-size: 19px; }
+}
+
+@media (max-width: 440px) {
+  .summaryStats { width: 100%; }
+  .summaryStats > div { flex: 1 1 0; padding: 10px 14px; }
+  .summaryStats dd { font-size: 21px; }
+  .emptyEnrollmentCard { padding: 32px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topicRow:hover { transform: none; }
+  .topicRow:hover .cardImage { transform: none; }
 }

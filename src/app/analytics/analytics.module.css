@@ -8,51 +8,26 @@
   overflow-x: clip;
 }
 
-.container {
-  width: 100%;
-  max-width: 1280px;
+/* Shared page width (globals.css tokens) */
+.page {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 32px var(--page-pad) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .muted {
   color: var(--ink-4);
 }
 
-/* ---------- Page header ---------- */
-.pageHeader {
-  padding: clamp(24px, 5vh, 48px) 0 0;
+/* Header buttons (PageHeader action classes + a disabled state) */
+.headerAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-.pageHeaderRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.pageHeaderText {
-  max-width: 680px;
-}
-.pageTitle {
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(30px, min(4vw, 6vh), 48px);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.pageSubtitle {
-  margin-top: 10px;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--ink-3);
-}
-.pageActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+.headerAction svg { flex-shrink: 0; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -110,9 +85,9 @@
   justify-content: space-between;
   gap: 12px 20px;
   flex-wrap: wrap;
-  margin-top: clamp(20px, 3.5vh, 32px);
-  padding-bottom: 14px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
+  min-width: 0;
 }
 .viewTabs {
   display: flex;
@@ -194,9 +169,8 @@
 .mainContent {
   display: flex;
   flex-direction: column;
-  gap: clamp(24px, 4vh, 36px);
-  padding-top: clamp(20px, 3.5vh, 32px);
-  padding-bottom: clamp(48px, 8vh, 80px);
+  gap: 44px;
+  min-width: 0;
 }
 
 .sectionHead {
@@ -205,12 +179,12 @@
   justify-content: space-between;
   gap: 8px 16px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 .sectionTitle {
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 800;
+  font-size: clamp(19px, 1.6vw, 22px);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--ink);
@@ -230,8 +204,8 @@
 /* ---------- Stat row ---------- */
 .statGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
 .statCell,
 .statCellFeatured {
@@ -515,7 +489,7 @@
 .habitsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 24px;
 }
 .habitsGrid > div { display: flex; min-width: 0; }
 .habitCard {
@@ -523,7 +497,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  padding: 16px 18px;
+  padding: 18px 20px;
   border-radius: var(--radius-lg);
   text-align: left;
   font: inherit;
@@ -619,12 +593,14 @@
 /* ---------- Panels & charts ---------- */
 .panel {
   position: relative;
-  padding: clamp(18px, 2.4vw, 24px);
+  padding: clamp(18px, 2.2vw, 28px);
   border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--elev-2);
   min-width: 0;
+  /* Widgets inside adapt to the width the panel gets */
+  container-type: inline-size;
 }
 .panelHead {
   display: flex;
@@ -632,15 +608,15 @@
   justify-content: space-between;
   gap: 12px 20px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 .panelHead > div:first-child {
-  max-width: 640px;
+  max-width: 70ch;
 }
 .panelTitle {
   font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: 17px;
+  font-weight: 800;
+  font-size: 18px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--ink);
@@ -654,8 +630,9 @@
 
 .chartsGrid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  align-items: start;
+  gap: 28px 32px;
 }
 .mainChartPanel {
   background:
@@ -663,7 +640,7 @@
     var(--surface);
 }
 .mainChart {
-  height: clamp(260px, 38vh, 340px);
+  height: clamp(300px, 40vh, 380px);
   width: 100%;
 }
 .legend {
@@ -699,14 +676,24 @@
   background: var(--canvas);
 }
 .donutBox {
-  height: 200px;
+  height: 220px;
   width: 100%;
 }
 .donutLegend {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-top: 14px;
+  margin-top: 16px;
+}
+/* Full-width panel (tablet): donut beside its legend instead of a tall stack */
+@container (min-width: 560px) {
+  .donutLayout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: center;
+    gap: 36px;
+  }
+  .donutLayout .donutLegend { margin-top: 0; }
 }
 .donutLegendItem {
   display: flex;
@@ -747,8 +734,14 @@
 /* Section breakdown */
 .sectionGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+@container (min-width: 700px) {
+  .sectionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
 }
 .sectionGrid > div { display: flex; min-width: 0; }
 .sectionCard {
@@ -1064,8 +1057,8 @@
 
 /* Score trend */
 .trendBox {
-  margin-bottom: 18px;
-  padding: 14px 14px 6px;
+  margin-bottom: 24px;
+  padding: 16px 16px 8px;
   border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), rgba(6, 182, 212, 0.02));
   border: 1px solid var(--line);
@@ -1077,7 +1070,7 @@
   color: var(--ink-3);
 }
 .trendChart {
-  height: 240px;
+  height: clamp(240px, 32vh, 300px);
   width: 100%;
 }
 
@@ -1085,7 +1078,7 @@
 .badgeGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 24px;
 }
 .badgeGrid > div { display: flex; min-width: 0; }
 .badgeCard {
@@ -1330,24 +1323,37 @@
   color: var(--ink-3);
 }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive ----------
+   Desktop: KPIs 4 across, daily chart + section-time rail, 3 section cards, 3 badge columns.
+   Tablet: KPIs 2x2, charts stacked full width (donut beside legend), 2 badge columns.
+   Phone: one column; tabs and filter chips scroll sideways; tables scroll inside their card. */
+@media (max-width: 1320px) {
+  .chartsGrid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+  }
+}
+
 @media (max-width: 1180px) {
   .statGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .statCellFeatured {
-    grid-column: 1 / -1;
+}
+
+@media (max-width: 1080px) {
+  .chartsGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
+  .mainChart { height: clamp(280px, 36vh, 340px); }
+}
+
+@media (max-width: 1024px) {
   .habitsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 960px) {
-  .chartsGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .sectionGrid,
   .badgeGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1355,35 +1361,42 @@
     flex-direction: column;
     align-items: stretch;
   }
+  .viewTabs { align-self: flex-start; }
   .timeframeGroup {
     justify-content: space-between;
   }
 }
 
-@media (max-width: 720px) {
-  .statGrid {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 760px) {
+  .page {
+    padding: 22px var(--page-pad) 56px;
+    gap: 22px;
   }
+  .mainContent { gap: 36px; }
+  .statGrid,
+  .habitsGrid,
+  .badgeGrid { gap: 16px; }
   .certificateBanner {
     flex-direction: column;
     align-items: flex-start;
   }
 }
 
-@media (max-width: 560px) {
-  .container { padding: 0 16px; }
-  .pageActions { width: 100%; }
-  .pageActions .btn { flex: 1; }
-  .habitsGrid,
-  .sectionGrid,
+@media (max-width: 600px) {
+  .statGrid,
   .badgeGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+@media (max-width: 560px) {
+  .viewTabs { align-self: stretch; }
   .viewTab { padding: 0 12px; min-height: 44px; }
   .viewTab span { font-size: 13.5px; }
   .timeframeHint { display: none; }
+  .timeframeGroup { width: 100%; }
   .segmented { width: 100%; }
-  .segment { flex: 1; min-height: 40px; padding: 0 8px; }
+  .segment { flex: 1; min-height: 44px; padding: 0 8px; }
   .filterChips {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -1392,9 +1405,18 @@
     scrollbar-width: none;
   }
   .filterChips::-webkit-scrollbar { display: none; }
-  .filterChip { min-height: 40px; }
+  .filterChip { min-height: 44px; flex-shrink: 0; }
   .panel { padding: 16px; }
-  .mainChart { height: 240px; }
+  .mainChart { height: 250px; }
+  .trendChart { height: 220px; }
+  .trendBox { padding: 12px 10px 6px; }
+  .rowAction { min-height: 40px; }
+}
+
+@media (max-width: 480px) {
+  .habitsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

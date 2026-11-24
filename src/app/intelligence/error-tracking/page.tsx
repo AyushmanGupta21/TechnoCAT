@@ -6,7 +6,8 @@ import { ArrowDown, ArrowRight, Check, ChevronRight, Clock, Lightbulb, Search, X
 import styles from "./error-tracking.module.css";
 import AppNav from "@/components/app/AppNav";
 import BackLink from "@/components/app/BackLink";
-import { Reveal, RevealGroup, RevealItem, SpotlightCard, GradientText, CountUp, type Tint } from "@/components/landing/motion";
+import PageHeader, { pageHeaderStyles } from "@/components/app/PageHeader";
+import { Reveal, RevealGroup, RevealItem, SpotlightCard, CountUp, type Tint } from "@/components/landing/motion";
 import PYQMarkdownViewer, { MathText } from "@/components/pyq/PYQMarkdownViewer";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { StudentMetrics, SectionKey, MistakeRecord } from "@/lib/metrics/types";
@@ -190,27 +191,25 @@ export default function ErrorTrackingPage() {
 
       <main className={styles.main}>
         {/* Page header */}
-        <Reveal className={styles.head}>
+        <div className={styles.head}>
           <BackLink href="/intelligence" label="Back to Intelligence Hub" />
-          <div className={styles.headRow}>
-            <div className={styles.headText}>
-              <h1 className={styles.title}>
-                Stop repeating the <GradientText>same mistakes</GradientText>
-              </h1>
-              <p className={styles.lede}>
-                Every wrong answer from your tests and CAT PYQs, with the correct answer and explanation, grouped by section and concept.
-              </p>
-            </div>
-            <div className={styles.headActions}>
-              <a href="#mistakes-review-list" onClick={(e) => { e.preventDefault(); jumpToList("ALL"); }} className={`${styles.btn} ${styles.btnPrimary}`}>
-                Review detailed log <ArrowDown size={16} aria-hidden="true" />
-              </a>
-              <Link href="/browse#pyq-section" className={`${styles.btn} ${styles.btnSecondary}`}>
-                Practise PYQs
-              </Link>
-            </div>
-          </div>
-        </Reveal>
+          <PageHeader
+            eyebrow="Error log"
+            title="Stop repeating the"
+            accent="same mistakes"
+            subtitle="Every wrong answer from your tests and CAT PYQs, with the correct answer and explanation, grouped by section and concept."
+            actions={
+              <>
+                <a href="#mistakes-review-list" onClick={(e) => { e.preventDefault(); jumpToList("ALL"); }} className={pageHeaderStyles.primaryAction}>
+                  Review detailed log <ArrowDown size={16} aria-hidden="true" />
+                </a>
+                <Link href="/browse#pyq-section" className={pageHeaderStyles.secondaryAction}>
+                  Practise PYQs
+                </Link>
+              </>
+            }
+          />
+        </div>
 
         {/* Stat row */}
         <RevealGroup className={styles.statRow}>
@@ -270,10 +269,11 @@ export default function ErrorTrackingPage() {
             </Link>
           </Reveal>
         ) : (
-          <>
-            <RevealGroup className={styles.analyticsGrid}>
+          <div className={styles.layout}>
+            {/* RIGHT RAIL: summary by section and concept */}
+            <aside data-sticky-col className={styles.railCol} aria-label="Mistakes by section and concept">
               {/* Where the mistakes are */}
-              <RevealItem className={`glass-card ${styles.card}`} data-tint="blue">
+              <Reveal className={`glass-card ${styles.card} ${styles.oWhere}`} data-tint="blue">
                 <div className={styles.cardHead}>
                   <h2 className={styles.cardTitle}>Where your mistakes are</h2>
                   <span className={styles.cardMeta}>By section</span>
@@ -319,10 +319,10 @@ export default function ErrorTrackingPage() {
                     )}
                   </div>
                 </div>
-              </RevealItem>
+              </Reveal>
 
               {/* Concepts */}
-              <RevealItem className={`glass-card ${styles.card}`} data-tint="amber">
+              <Reveal className={`glass-card ${styles.card} ${styles.oConcepts}`} data-tint="amber">
                 <div className={styles.cardHead}>
                   <h2 className={styles.cardTitle}>Concepts with the most mistakes</h2>
                   <span className={styles.cardMeta}>By concept</span>
@@ -360,11 +360,13 @@ export default function ErrorTrackingPage() {
                     );
                   })}
                 </ol>
-              </RevealItem>
-            </RevealGroup>
+              </Reveal>
+            </aside>
 
+            {/* MAIN COLUMN: filters, then the log */}
+            <div data-sticky-col className={styles.mainCol}>
             {/* Filter bar */}
-            <Reveal id="mistakes-review-list" className={`glass-card ${styles.filterBar}`} data-tint="blue">
+            <Reveal id="mistakes-review-list" className={`glass-card ${styles.filterBar} ${styles.oFilter}`} data-tint="blue">
               <div className={styles.filterTop}>
                 <div className={styles.segment} role="group" aria-label="Filter by section">
                   {(["ALL", "QA", "DILR", "VARC"] as const).map((sec) => (
@@ -412,11 +414,11 @@ export default function ErrorTrackingPage() {
               </div>
             </Reveal>
 
-            <p className={styles.resultCount}>
+            <p className={`${styles.resultCount} ${styles.oCount}`}>
               Showing <strong>{Math.min(visible, filtered.length)}</strong> of <strong>{filtered.length}</strong> {filtered.length === 1 ? "mistake" : "mistakes"}
             </p>
 
-            <div className={styles.list}>
+            <div className={`${styles.list} ${styles.oList}`}>
               {filtered.length === 0 ? (
                 <div className={`glass-card ${styles.emptyCard}`} data-tint="blue">
                   <h3 className={styles.emptyTitle}>No mistakes found for this filter</h3>
@@ -534,7 +536,8 @@ export default function ErrorTrackingPage() {
                 </button>
               )}
             </div>
-          </>
+            </div>
+          </div>
         )}
       </main>
     </div>

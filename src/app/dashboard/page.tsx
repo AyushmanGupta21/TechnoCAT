@@ -816,7 +816,7 @@ export default function DashboardPage() {
           </RevealGroup>
 
           {/* MAIN: continue learning, today's schedule, study performance, upcoming classes */}
-          <div className={styles.mainCol}>
+          <div data-sticky-col className={styles.mainCol}>
             <Reveal className={styles.oCont}>
               <ContinueLearningWidget metrics={metrics} isLoading={metricsLoading} />
             </Reveal>
@@ -970,7 +970,7 @@ export default function DashboardPage() {
           </div>
 
           {/* RIGHT: today's focus, calendar, percentile, leaderboard, notices */}
-          <aside className={styles.railCol} aria-label="Today at a glance">
+          <aside data-sticky-col className={styles.railCol} aria-label="Today at a glance">
             {/* ===== TODAY'S FOCUS: the one place for guidance (tasks, streak, next step) ===== */}
             <Reveal className={styles.oFocus} delay={0.04}>
               <AiMotivationWidget

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowRight,
   Award,
   Bookmark,
@@ -33,6 +32,8 @@ import {
   Zap,
 } from "lucide-react";
 import AppNav from "@/components/app/AppNav";
+import BackLink from "@/components/app/BackLink";
+import PageHeader from "@/components/app/PageHeader";
 import { Reveal } from "@/components/landing/motion";
 import TopicQuizModal from "@/components/TopicQuizModal";
 import ModuleQuizModal from "@/components/ModuleQuizModal";
@@ -2009,52 +2010,79 @@ export default function TopicDetailPage() {
       ? topic.lessons[currentLessonIndex + 1]
       : null;
 
+  // Page header: split the short course title so its last word carries the accent
+  const headerTitle = (() => {
+    const words = (topic.shortTitle || topic.title).trim().split(/\s+/);
+    if (words.length < 2) return { lead: words.join(" "), accent: "" };
+    return { lead: words.slice(0, -1).join(" "), accent: words[words.length - 1] };
+  })();
+  const lessonsDoneCount = topic.lessons.filter((l) => completedLessonIds.includes(l.id)).length;
+
   return (
     <div className={styles.pageWrapper} data-section={sectionOf(topic)}>
       <AppNav />
 
-      {/* ===== SUBHEADER: BREADCRUMBS & COURSE TITLE ===== */}
-      <section className={styles.subHeader}>
-        <Reveal className={styles.subHeaderInner}>
-          <div className={styles.subHeaderCopy}>
-            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-              <Link href="/topics" className={styles.breadcrumbLink}>
-                My topics
-              </Link>
-              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
-              <span className={styles.breadcrumbLink}>{topic.shortTitle || topic.title}</span>
-              <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
-              <span className={styles.breadcrumbCurrent}>{activeLesson.code || "Video lesson"}</span>
-            </nav>
-            <h1 className={styles.topicMainTitle}>{topic.title}</h1>
-            <p className={styles.subHeaderMeta}>
-              <span className={styles.sectionDot} aria-hidden="true" />
-              <span>{topic.category || "CAT Preparation"}</span>
-              <span className={styles.metaSep}>/</span>
-              <span>
-                <b>{modulesList.length}</b> modules
-              </span>
-              <span className={styles.metaSep}>/</span>
-              <span>
-                <b>{overallProgressPercent}%</b> complete
-              </span>
-            </p>
-          </div>
-          <Link href="/topics" className={styles.backLink}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            Back to my topics
-          </Link>
-        </Reveal>
-      </section>
+      <div className={styles.page}>
+        {/* ===== BACK LINK + BREADCRUMB ===== */}
+        <div className={styles.topRow}>
+          <BackLink href="/topics" label="Back to my topics" />
+          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+            <Link href="/topics" className={styles.breadcrumbLink}>
+              My topics
+            </Link>
+            <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+            <span className={styles.breadcrumbLink}>{topic.shortTitle || topic.title}</span>
+            <ChevronRight size={14} className={styles.breadcrumbSep} aria-hidden="true" />
+            <span className={styles.breadcrumbCurrent}>{activeLesson.code || "Video lesson"}</span>
+          </nav>
+        </div>
+
+        {/* ===== PAGE HEADER: COURSE TITLE + AT-A-GLANCE STATS ===== */}
+        <PageHeader
+          eyebrow={topic.category || "CAT Preparation"}
+          title={headerTitle.lead}
+          accent={headerTitle.accent || undefined}
+          subtitle={
+            <>
+              Taught by {topic.instructor.name}. Watch each lesson, then pass the module quiz to unlock the next
+              module.
+            </>
+          }
+          aside={
+            <dl className={styles.headerStats}>
+              <div>
+                <dt>Lessons</dt>
+                <dd>
+                  {lessonsDoneCount}
+                  <span>/{topic.lessons.length}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Modules passed</dt>
+                <dd>
+                  {Object.values(modulesProgress).filter((m) => m.quizPassed).length}
+                  <span>/{modulesList.length}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Complete</dt>
+                <dd>
+                  {overallProgressPercent}
+                  <span>%</span>
+                </dd>
+              </div>
+            </dl>
+          }
+        />
 
       {/* ===== MAIN 2-COLUMN CONTAINER ===== */}
       <main className={styles.mainContainer}>
         {/* ===== LEFT COLUMN: VIDEO PLAYER & DETAILS ===== */}
-        <div className={styles.leftColumn}>
+        <div data-sticky-col className={styles.leftColumn}>
           {/* 1. REAL YOUTUBE PLAYER WITH CENTERED PLAY BUTTON */}
           <div
             ref={playerCardRef}
-            className={`${styles.playerCard} ${isFullscreen ? styles.playerCardFullscreen : ""}`}
+            className={`${styles.playerCard} ${styles.oPlayer} ${isFullscreen ? styles.playerCardFullscreen : ""}`}
             onMouseMove={handleMouseMovePlayer}
             onMouseLeave={() => {
               if (playerState === "playing") setShowControls(false);
@@ -2314,7 +2342,7 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 2. Active Video Meta Bar */}
-          <div className={styles.activeLessonBar}>
+          <div className={`${styles.activeLessonBar} ${styles.oLesson}`}>
             <div className={styles.activeLessonMetaRow}>
               {activeLesson.code && <span className={styles.codeBadge}>{activeLesson.code}</span>}
               {activeLesson.moduleTitle && <span className={styles.moduleTag}>{activeLesson.moduleTitle}</span>}
@@ -2398,7 +2426,7 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 3. ABOUT THIS TOPIC & LECTURE (DIRECTLY AFTER VIDEO) */}
-          <div className={styles.aboutLessonBox}>
+          <div className={`${styles.aboutLessonBox} ${styles.oAbout}`}>
             <div className={styles.aboutLessonHeader}>
               <h3 className={styles.aboutLessonHeading}>
                 <span className={styles.iconLabel}>
@@ -2440,7 +2468,7 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 4. Instructor Profile Card */}
-          <div className={styles.instructorCard}>
+          <div className={`${styles.instructorCard} ${styles.oInstructor}`}>
             <div className={styles.instructorInfoLeft}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -2482,7 +2510,7 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 5. Ask AI Tutor Panel (Video RAG & Chat) */}
-          <div id="aiTutorSection" className={styles.tutorAnchor}>
+          <div id="aiTutorSection" className={`${styles.tutorAnchor} ${styles.oTutor}`}>
             <VideoAskPanel
               topicId={topic.id}
               topicTitle={topic.title}
@@ -2502,9 +2530,9 @@ export default function TopicDetailPage() {
         </div>
 
         {/* ===== RIGHT COLUMN: STUDY PROGRESS, MODULE CURRICULUM, AI ADVISOR ===== */}
-        <Reveal className={styles.rightColumn} delay={0.08}>
+        <Reveal data-sticky-col className={styles.rightColumn} delay={0.08}>
           {/* 1. Study Progress Card */}
-          <div className={styles.progressCard}>
+          <div className={`${styles.progressCard} ${styles.oProgress}`}>
             <div className={styles.progressCardHeader}>
               <h2 className={styles.progressCardTitle}>Your progress</h2>
               <span className={styles.progressPercentBadge}>{overallProgressPercent}%</span>
@@ -2572,7 +2600,7 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 2. Module Curriculum Card (With Accordion & Dedicated Quiz Row inside each module) */}
-          <div className={styles.curriculumCard}>
+          <div className={`${styles.curriculumCard} ${styles.oCurriculum}`}>
             <div className={styles.curriculumHeader}>
               <h2 className={styles.curriculumTitle}>Curriculum</h2>
               <span className={styles.curriculumCount}>
@@ -3008,26 +3036,29 @@ export default function TopicDetailPage() {
           </div>
 
           {/* 3. AI Study Advisor Card */}
-          <AiAdvisorCard
-            topicTitle={topic.title}
-            activeModuleTitle={activeModuleTitle}
-            modulesProgress={modulesProgress}
-            modulesList={modulesList}
-            isAllModLessonsWatched={
-              (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.filter((l) =>
-                completedLessonIds.includes(l.id)
-              ).length || 0) ===
-              (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.length || 1)
-            }
-            isAllModulesPassed={isAllModulesPassed}
-            grandQuizPassed={grandQuizPassed}
-            onSelectRewatch={handleAdvisorSelectRewatch}
-            onStartModuleQuiz={handleOpenModuleQuiz}
-            onStartGrandQuiz={handleOpenGrandQuiz}
-            onAskAiPrompt={handleAdvisorAskAi}
-          />
+          <div className={styles.oAdvisor}>
+            <AiAdvisorCard
+              topicTitle={topic.title}
+              activeModuleTitle={activeModuleTitle}
+              modulesProgress={modulesProgress}
+              modulesList={modulesList}
+              isAllModLessonsWatched={
+                (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.filter((l) =>
+                  completedLessonIds.includes(l.id)
+                ).length || 0) ===
+                (modulesList.find((m) => m.title === activeModuleTitle)?.lessons.length || 1)
+              }
+              isAllModulesPassed={isAllModulesPassed}
+              grandQuizPassed={grandQuizPassed}
+              onSelectRewatch={handleAdvisorSelectRewatch}
+              onStartModuleQuiz={handleOpenModuleQuiz}
+              onStartGrandQuiz={handleOpenGrandQuiz}
+              onAskAiPrompt={handleAdvisorAskAi}
+            />
+          </div>
         </Reveal>
       </main>
+      </div>
 
       {/* ===== MODALS ===== */}
 

@@ -92,63 +92,15 @@
   background: linear-gradient(180deg, var(--blue-50) 0%, var(--canvas) 340px, var(--canvas) 100%);
 }
 
-.container {
-  width: 100%;
-  max-width: 1320px;
+.page {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px 72px;
+  padding: 32px var(--page-pad) 80px;
 }
 
-/* ---------- Page header ---------- */
-.pageHeader {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 28px 0 24px;
-}
-
-.pageHeaderText {
-  min-width: 0;
-}
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-3);
-}
-.breadcrumb span[aria-current] {
-  color: var(--ink-2);
-}
-
-.breadcrumbLink {
-  color: var(--blue-700);
-  transition: color var(--dur-fast) var(--ease-out);
-}
-.breadcrumbLink:hover {
-  color: var(--blue-900);
-}
-
-.pageTitle {
-  font-family: var(--ff-display);
-  font-weight: 700;
-  font-size: clamp(28px, 2.6vw, 40px);
-  line-height: 1.08;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-
-.pageSubtitle {
-  margin-top: 8px;
-  max-width: 560px;
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: var(--ink-2);
+/* Shared PageHeader: spacing to the content below */
+.header {
+  margin-bottom: 32px;
 }
 
 /* ---------- Buttons ---------- */
@@ -368,11 +320,15 @@
   background: var(--line-strong);
 }
 
-/* ---------- Three-column layout ---------- */
+/* ---------- Layout ----------
+   Wide screens: channels left, feed centre (comfortable reading width), insights right.
+   Laptops: channels fold into the chip toolbar; feed + right column.
+   Tablets/phones: feed first, insight cards after. */
 .layout {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr) 304px;
-  gap: 28px;
+  grid-template-columns: 240px minmax(0, 1fr) 340px;
+  column-gap: 32px;
+  row-gap: 28px;
   align-items: start;
 }
 
@@ -945,8 +901,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
-  margin: 20px 0 14px;
+  margin: 24px 0 16px;
 }
 
 .tabs {
@@ -986,7 +943,8 @@
 
 .search {
   position: relative;
-  flex: 0 1 260px;
+  flex: 1 1 220px;
+  max-width: 320px;
   min-width: 180px;
 }
 
@@ -1368,7 +1326,12 @@
 .rightStack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+}
+/* Each insight card adapts to the width it gets */
+.rightStack > * {
+  min-width: 0;
+  container-type: inline-size;
 }
 
 .cardHead {
@@ -2977,43 +2940,27 @@ button.solvedItem:hover {
 }
 
 /* ---------- Responsive ---------- */
+/* Wide stats card (tablet, full width): four figures in one row */
+@container (min-width: 560px) {
+  .pulseGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Laptops: channels fold into the chip toolbar; feed + right column */
 @media (max-width: 1279px) {
   .layout {
-    grid-template-columns: 216px minmax(0, 1fr) 284px;
-    gap: 22px;
-  }
-}
-
-@media (max-width: 1199px) {
-  .layout {
-    grid-template-columns: 212px minmax(0, 1fr);
-  }
-  .rightCol {
-    grid-column: 2;
-  }
-  .rightStack {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-}
-
-@media (max-width: 1023px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    column-gap: 28px;
   }
   .leftCol {
     display: none;
   }
-  .rightCol {
-    grid-column: auto;
-  }
   .mobileChips {
     display: flex;
     gap: 8px;
-    margin: 0 -24px 16px;
-    padding: 2px 24px 6px;
+    margin: 0 calc(-1 * var(--page-pad)) 20px;
+    padding: 2px var(--page-pad) 6px;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -3021,30 +2968,49 @@ button.solvedItem:hover {
   .mobileChips::-webkit-scrollbar {
     display: none;
   }
-  .pageHeader {
-    padding: 22px 0 18px;
+}
+
+/* Tablets: one column, feed first; stats full width, then contributors | guidelines */
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 44px;
+  }
+  .rightStack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px;
+  }
+  .rightStack > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Phones: single column throughout */
+@media (max-width: 699px) {
+  .layout {
+    row-gap: 36px;
+  }
+  .rightStack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 22px var(--page-pad) 56px;
+  }
+  .header {
+    margin-bottom: 22px;
+  }
+  .mobileChips {
+    margin-bottom: 16px;
   }
 }
 
 @media (max-width: 680px) {
-  .container {
-    padding: 0 16px 56px;
-  }
-  .mobileChips {
-    margin: 0 -16px 14px;
-    padding: 2px 16px 6px;
-  }
-  .pageHeader {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-  .pageSubtitle {
-    font-size: 14.5px;
-  }
-  .rightStack {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -3057,6 +3023,7 @@ button.solvedItem:hover {
   }
   .search {
     flex: 1 1 auto;
+    max-width: none;
     min-width: 0;
   }
   .searchInput {
