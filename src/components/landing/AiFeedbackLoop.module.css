@@ -18,15 +18,6 @@
 .loopWrap {
   position: relative;
 }
-.connector {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  width: 100%;
-  height: 20px;
-  pointer-events: none;
-  z-index: 0;
-}
 .loopGrid {
   position: relative;
   z-index: 1;
@@ -442,9 +433,6 @@
     grid-template-columns: minmax(0, 1fr);
     max-width: 560px;
     margin: 0 auto;
-  }
-  .connector {
-    display: none;
   }
   .stepDesc {
     min-height: 0;

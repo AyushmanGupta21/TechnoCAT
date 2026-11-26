@@ -258,21 +258,6 @@ export default function AiFeedbackLoop() {
         />
 
         <div className={styles.loopWrap}>
-          {/* Connector line that draws across the three steps (desktop) */}
-          <svg className={styles.connector} viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
-            <motion.path
-              d="M 60 10 L 940 10"
-              stroke="var(--blue-300)"
-              strokeWidth="1.5"
-              strokeDasharray="4 6"
-              fill="none"
-              vectorEffect="non-scaling-stroke"
-              initial={{ pathLength: reduce ? 1 : 0 }}
-              animate={rv ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
-              transition={{ duration: 0.55, ease: EASE_OUT }}
-            />
-          </svg>
-
           <RevealGroup className={styles.loopGrid} stagger={0.05}>
             {STEPS.map((s) => (
               <RevealItem key={s.n} className={styles.stepCell}>
